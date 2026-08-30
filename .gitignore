@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+
+# Local ledger data (append-only demo/test output) — never commit generated claims.
+packages/*/data/*.jsonl
+
+# Real env files — only .env.example files are tracked.
+.env
+.env.local

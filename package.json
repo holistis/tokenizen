@@ -1,0 +1,8 @@
+{
+  "name": "tokenizen",
+  "private": true,
+  "description": "Monorepo root for tokenizen.nl packages.",
+  "workspaces": [
+    "packages/*"
+  ]
+}
