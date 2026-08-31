@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="nl">
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Tokenizen | Bewijs van levering voor de AI-agent-economie</title>
+    <meta
+      name="description"
+      content="Tokenizen bouwt open-source infrastructuur voor de verkoperskant van de AI-agent-economie. Capacity Attest laat na een x402-betaling een ondertekende, feitelijke leveringsclaim achter, zodat de volgende koper de geschiedenis van een verkoper kan checken vóór hij zelf betaalt. Geen token, geen rente, geen lening."
+    />
+    <meta name="author" content="tokenizen" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#2B3A55" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#171613" media="(prefers-color-scheme: dark)" />
+    <link rel="canonical" href="https://tokenizen.nl/" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.svg" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="nl_NL" />
+    <meta property="og:url" content="https://tokenizen.nl/" />
+    <meta property="og:title" content="Tokenizen | Bewijs van levering voor de AI-agent-economie" />
+    <meta
+      property="og:description"
+      content="Iedereen bouwt de koperskant van de AI-agent-economie (identiteit, spend-limits, betaalrails). Tokenizen bouwt de verkoperskant: een ondertekend, feitelijk bewijs dat het geleverde overeenkomt met wat beloofd was."
+    />
+    <meta property="og:site_name" content="tokenizen" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Tokenizen | Bewijs van levering voor de AI-agent-economie" />
+    <meta
+      name="twitter:description"
+      content="Open-source infrastructuur voor de verkoperskant van de AI-agent-economie: een ondertekende, feitelijke leveringsclaim na elke x402-betaling."
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Fonts non-render-blocking: media=print wisselt naar all zodra het stylesheet geladen is -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      />
+    </noscript>
+
+    <!-- Thema vóór eerste paint zetten (voorkomt flits van verkeerd thema) -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("tokenizen-theme");
+          var root = document.documentElement;
+          if (stored === "dark") root.classList.add("dark");
+          else if (stored === "light") root.classList.add("light");
+        } catch (e) {
+          /* localStorage niet beschikbaar (privémodus e.d.), val terug op systeemvoorkeur via CSS */
+        }
+      })();
+    </script>
+
+    <!-- Organization schema -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "tokenizen",
+        "url": "https://tokenizen.nl",
+        "logo": "https://tokenizen.nl/favicon.svg",
+        "email": "info@holistischadviseur.nl",
+        "description": "Open-source infrastructuur die AI-agents in staat stelt rechten op economische assets te begrijpen, verifiëren en afwikkelen: agent → identiteit → recht → asset → betaling → afwikkeling.",
+        "sameAs": ["https://github.com/holistis/tokenizen"]
+      }
+    </script>
+
+    <!-- SoftwareApplication schema -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Capacity Attest",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Node.js",
+        "softwareVersion": "0.1.0",
+        "isAccessibleForFree": true,
+        "license": "https://opensource.org/licenses/MIT",
+        "codeRepository": "https://github.com/holistis/tokenizen",
+        "description": "MCP-server voor leverings-attestaties bij x402-capaciteitshandel tussen AI-agents. Na een x402-betaling voor GPU-uren, opslag, API-credits of bandbreedte laat de kopende agent een ondertekende, feitelijke claim achter of het beloofde ook echt geleverd is, op een append-only ledger, opvraagbaar door de volgende koper vóór hij zelf betaalt.",
+        "publisher": {
+          "@type": "Organization",
+          "name": "tokenizen",
+          "url": "https://tokenizen.nl"
+        }
+      }
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <main style="font-family: sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem">
+        <h1>Tokenizen: bewijs van levering voor de AI-agent-economie</h1>
+        <p>
+          Tokenizen bouwt open-source infrastructuur voor de verkoperskant van de AI-agent-economie: een
+          verifieerbaar bewijs dat een verkoper een recht echt heeft, en dat wat geleverd is overeenkomt met wat
+          beloofd was.
+        </p>
+        <h2>Capacity Attest</h2>
+        <p>
+          Wanneer een AI-agent via het x402-protocol betaalt voor capaciteit (GPU-uren, opslag, API-credits,
+          bandbreedte) bij een andere agent, laat de betalende agent na afwikkeling een cryptografisch ondertekende
+          claim achter of het geleverde overeenkwam met wat beloofd was. Andere agents kunnen die geschiedenis
+          opvragen vóórdat ze zaken doen met een verkoper.
+        </p>
+        <p><a href="https://github.com/holistis/tokenizen">Bekijk de code op GitHub</a></p>
+      </main>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+
+</html>
