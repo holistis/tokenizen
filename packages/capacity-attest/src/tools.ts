@@ -14,8 +14,14 @@ export type RecordDeliveryResult = { ok: true; claimId: string } | { ok: false; 
  * Validate the claim's schema, verify its signature (must recover to
  * buyerAddress), and persist it to the append-only ledger. This is the
  * logic behind the `record_delivery` MCP tool.
+ *
+ * Async because appendClaim() is: its lock-contention retry awaits a real
+ * timer instead of busy-waiting, so this function must be awaited by every
+ * caller — an un-awaited call here would let the caller's next statement
+ * run before the claim is actually locked/checked/written, reordering the
+ * exact read-check-write sequence the lock exists to make atomic.
  */
-export function recordDelivery(input: unknown): RecordDeliveryResult {
+export async function recordDelivery(input: unknown): Promise<RecordDeliveryResult> {
   const parsed = DeliveryClaimSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, reason: `invalid_claim: ${parsed.error.issues.map((i) => i.message).join("; ")}` };
@@ -37,7 +43,7 @@ export function recordDelivery(input: unknown): RecordDeliveryResult {
   }
 
   try {
-    appendClaim(claim);
+    await appendClaim(claim);
   } catch (e) {
     return { ok: false, reason: (e as Error).message };
   }
@@ -56,8 +62,10 @@ export interface DeliveryHistoryResult {
  * oldest first. Purely factual — no aggregate score, rating, or reputation
  * judgment is computed here; see README.md "Wat dit NIET is". This is the
  * logic behind the `get_delivery_history` MCP tool.
+ *
+ * Async to match claimsForSeller()'s now-async signature (see ledger.ts).
  */
-export function getDeliveryHistory(sellerAddress: string): DeliveryHistoryResult {
-  const claims = claimsForSeller(sellerAddress);
+export async function getDeliveryHistory(sellerAddress: string): Promise<DeliveryHistoryResult> {
+  const claims = await claimsForSeller(sellerAddress);
   return { sellerAddress, count: claims.length, claims };
 }

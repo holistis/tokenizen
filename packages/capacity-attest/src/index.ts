@@ -37,7 +37,7 @@ server.registerTool(
     inputSchema: DeliveryClaimSchema.shape,
   },
   async (args) => {
-    const result = recordDelivery(args);
+    const result = await recordDelivery(args);
     if (!result.ok) return errorResult(result.reason);
     return textResult({ ok: true, claimId: result.claimId });
   },
@@ -57,7 +57,7 @@ server.registerTool(
     },
   },
   async ({ sellerAddress }) => {
-    return textResult(getDeliveryHistory(sellerAddress));
+    return textResult(await getDeliveryHistory(sellerAddress));
   },
 );
 

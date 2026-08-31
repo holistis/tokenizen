@@ -24,7 +24,7 @@ describe("recordDelivery", () => {
     const buyer = testWallet();
     const claim = await buildSignedClaim(buyer);
 
-    const result = recordDelivery(claim);
+    const result = await recordDelivery(claim);
 
     expect(result).toEqual({ ok: true, claimId: claim.claimId });
   });
@@ -47,14 +47,14 @@ describe("recordDelivery", () => {
     };
     const { claimId, signature } = await signClaim(impostor, claimContent);
 
-    const result = recordDelivery({ ...claimContent, claimId, signature });
+    const result = await recordDelivery({ ...claimContent, claimId, signature });
 
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/signature_invalid/);
   });
 
-  it("weigert input die niet aan het schema voldoet", () => {
-    const result = recordDelivery({ not: "a claim" });
+  it("weigert input die niet aan het schema voldoet", async () => {
+    const result = await recordDelivery({ not: "a claim" });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toMatch(/invalid_claim/);
   });
@@ -63,8 +63,8 @@ describe("recordDelivery", () => {
     const buyer = testWallet();
     const claim = await buildSignedClaim(buyer);
 
-    expect(recordDelivery(claim)).toEqual({ ok: true, claimId: claim.claimId });
-    const second = recordDelivery(claim);
+    expect(await recordDelivery(claim)).toEqual({ ok: true, claimId: claim.claimId });
+    const second = await recordDelivery(claim);
     expect(second.ok).toBe(false);
   });
 });
@@ -90,28 +90,28 @@ describe("getDeliveryHistory", () => {
       settlementRef: "0x" + "03".repeat(32),
     });
 
-    recordDelivery(newer);
-    recordDelivery(older);
-    recordDelivery(otherSeller);
+    await recordDelivery(newer);
+    await recordDelivery(older);
+    await recordDelivery(otherSeller);
 
-    const history = getDeliveryHistory(sellerA);
+    const history = await getDeliveryHistory(sellerA);
 
     expect(history.sellerAddress).toBe(sellerA);
     expect(history.count).toBe(2);
     expect(history.claims.map((c) => c.claimId)).toEqual([older.claimId, newer.claimId]);
   });
 
-  it("retourneert een lege lijst voor een verkoper zonder claims (geen crash)", () => {
-    const history = getDeliveryHistory("0x00000000000000000000000000000000000000ff");
+  it("retourneert een lege lijst voor een verkoper zonder claims (geen crash)", async () => {
+    const history = await getDeliveryHistory("0x00000000000000000000000000000000000000ff");
     expect(history).toEqual({ sellerAddress: "0x00000000000000000000000000000000000000ff", count: 0, claims: [] });
   });
 
   it("berekent geen samengevat score-getal — enkel de ruwe claims komen terug", async () => {
     const buyer = testWallet();
     const claim = await buildSignedClaim(buyer);
-    recordDelivery(claim);
+    await recordDelivery(claim);
 
-    const history = getDeliveryHistory(claim.sellerAddress);
+    const history = await getDeliveryHistory(claim.sellerAddress);
     expect(Object.keys(history).sort()).toEqual(["claims", "count", "sellerAddress"]);
   });
 });
@@ -132,7 +132,7 @@ describe("recordDelivery met een standaard ethers.Wallet", () => {
     };
     const { claimId, signature } = await signClaim(wallet, content);
 
-    const result = recordDelivery({ ...content, claimId, signature });
+    const result = await recordDelivery({ ...content, claimId, signature });
     expect(result).toEqual({ ok: true, claimId });
   });
 });

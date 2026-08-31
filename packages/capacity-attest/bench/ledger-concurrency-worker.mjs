@@ -11,6 +11,11 @@
 // makes the test a genuine concurrent-write test rather than N sequential
 // writes that merely look concurrent because they were kicked off close
 // together.
+//
+// appendClaim() is async since the 2026-08-31 non-blocking-lock fix (its
+// retry-on-contention now awaits a real timer instead of spinning), so this
+// worker awaits it and reports APPENDED/REJECTED from inside the .then()/
+// catch() path rather than assuming the call completed synchronously.
 
 import { appendClaim } from "../dist/ledger.js";
 
@@ -23,7 +28,7 @@ while (Date.now() < targetMs) {
 }
 
 try {
-  appendClaim(claim);
+  await appendClaim(claim);
   console.log(`APPENDED ${claim.claimId}`);
   process.exit(0);
 } catch (e) {

@@ -9,3 +9,6 @@ packages/*/data/*.jsonl
 # Real env files — only .env.example files are tracked.
 .env
 .env.local
+
+# Internal drafts/notes, never public (outreach text awaiting king-approval, etc.)
+.internal/

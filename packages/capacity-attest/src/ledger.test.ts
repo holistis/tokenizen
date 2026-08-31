@@ -24,9 +24,9 @@ describe("ledger", () => {
   it("slaat een claim op en leest hem terug", async () => {
     const buyer = testWallet();
     const claim = await buildSignedClaim(buyer);
-    appendClaim(claim);
+    await appendClaim(claim);
 
-    const claims = claimsForSeller(claim.sellerAddress);
+    const claims = await claimsForSeller(claim.sellerAddress);
     expect(claims).toHaveLength(1);
     expect(claims[0]?.claimId).toBe(claim.claimId);
   });
@@ -37,10 +37,10 @@ describe("ledger", () => {
     const newer = await buildSignedClaim(buyer, { timestamp: "2026-06-01T00:00:00.000Z", settlementRef: "0x" + "bb".repeat(32) });
 
     // Append in reverse order on purpose — the ledger, not insertion order, must sort them.
-    appendClaim(newer);
-    appendClaim(older);
+    await appendClaim(newer);
+    await appendClaim(older);
 
-    const claims = claimsForSeller(older.sellerAddress);
+    const claims = await claimsForSeller(older.sellerAddress);
     expect(claims.map((c) => c.claimId)).toEqual([older.claimId, newer.claimId]);
   });
 
@@ -54,10 +54,10 @@ describe("ledger", () => {
       sellerAddress: "0x00000000000000000000000000000000000000bb",
       settlementRef: "0x" + "bb".repeat(32),
     });
-    appendClaim(forSellerA);
-    appendClaim(forSellerB);
+    await appendClaim(forSellerA);
+    await appendClaim(forSellerB);
 
-    const claims = claimsForSeller("0x00000000000000000000000000000000000000aa");
+    const claims = await claimsForSeller("0x00000000000000000000000000000000000000aa");
     expect(claims).toHaveLength(1);
     expect(claims[0]?.claimId).toBe(forSellerA.claimId);
   });
@@ -65,19 +65,19 @@ describe("ledger", () => {
   it("is case-insensitief op adressen bij het filteren", async () => {
     const buyer = testWallet();
     const claim = await buildSignedClaim(buyer, { sellerAddress: "0x00000000000000000000000000000000000000aa" });
-    appendClaim(claim);
+    await appendClaim(claim);
 
-    const claims = claimsForSeller("0x00000000000000000000000000000000000000AA");
+    const claims = await claimsForSeller("0x00000000000000000000000000000000000000AA");
     expect(claims).toHaveLength(1);
   });
 
   it("is append-only: een tweede keer dezelfde claim opslaan wordt geweigerd, niet overschreven", async () => {
     const buyer = testWallet();
     const claim = await buildSignedClaim(buyer);
-    appendClaim(claim);
+    await appendClaim(claim);
 
-    expect(() => appendClaim(claim)).toThrow(/claim_already_recorded/);
-    expect(allClaims()).toHaveLength(1);
+    await expect(appendClaim(claim)).rejects.toThrow(/claim_already_recorded/);
+    expect(await allClaims()).toHaveLength(1);
   });
 
   it("heeft geen enkele update- of delete-functie geëxporteerd", async () => {

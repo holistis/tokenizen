@@ -6,16 +6,17 @@
 //   npm run build && node bench/ledger-concurrency.mjs [N]
 //
 // WHY THIS SPAWNS SEPARATE OS PROCESSES, NOT Promise.all() IN ONE PROCESS:
-// ledger.ts's appendClaim() is fully SYNCHRONOUS (readFileSync,
-// Array#some, appendFileSync — no `await` anywhere in the call chain from
-// readClaims() through the final write). In a single Node.js process,
-// synchronous code cannot be preempted mid-function by the event loop, so
-// firing many appendClaim() calls from Promise.all() in one process cannot
-// ever interleave two calls' file I/O — each call fully completes (its
-// read, its dedup check, its write) before the next one starts, no matter
-// how "concurrently" they were kicked off. Such a test would trivially
-// pass 100% of the time and would not actually be testing anything about
-// concurrent-write safety.
+// (Note, 2026-08-31: appendClaim() itself became `async` the same day this
+// script was written, so that a contended lock's retry can `await` a real
+// timer instead of busy-waiting the event loop — see ledger.ts's header
+// comment. Its actual read-check-write CRITICAL SECTION, the part between
+// acquiring and releasing the lock, is still plain synchronous code with no
+// `await` in it, so within one Node.js process it still cannot be
+// preempted mid-critical-section by the event loop — Promise.all() in one
+// process still cannot make two calls' file I/O genuinely interleave
+// inside that section. What changed is only that the WAIT for a contended
+// lock no longer blocks other work; it does not weaken the atomicity this
+// benchmark is about.)
 //
 // The real question — the one this package's design actually depends on,
 // since get_delivery_history's whole value proposition is a SHARED history

@@ -61,7 +61,7 @@ async function main(): Promise<void> {
   console.log("Built + signed claim:", JSON.stringify(claim, null, 2), "\n");
 
   // 3. Submit it — same path as the `record_delivery` MCP tool.
-  const recordResult = recordDelivery(claim);
+  const recordResult = await recordDelivery(claim);
   console.log("record_delivery ->", recordResult, "\n");
   if (!recordResult.ok) {
     console.error("Demo claim was rejected — this should not happen for a freshly-built valid claim.");
@@ -73,11 +73,11 @@ async function main(): Promise<void> {
   const impostor = ethers.Wallet.createRandom();
   const forgedContent: ClaimContent = { ...content, settlementRef: "0x" + "bb".repeat(32) };
   const forged = await signClaim(impostor, forgedContent); // signed by impostor, but claims buyerAddress = buyer
-  const forgedRejection = recordDelivery({ ...forgedContent, ...forged });
+  const forgedRejection = await recordDelivery({ ...forgedContent, ...forged });
   console.log("record_delivery (forged signature) ->", forgedRejection, "\n");
 
   // 4. Query the seller's history — same path as `get_delivery_history`.
-  const history = getDeliveryHistory(seller.address);
+  const history = await getDeliveryHistory(seller.address);
   console.log(`get_delivery_history("${seller.address}") ->`, JSON.stringify(history, null, 2));
 
   console.log("\n=== Demo complete. No live network, wallet, or production data was touched. ===");

@@ -124,7 +124,7 @@ async function runScale(n, mods) {
       timestamp: new Date().toISOString(),
     });
     const t0 = performance.now();
-    appendClaim(claim);
+    await appendClaim(claim);
     const t1 = performance.now();
     appendTimings.push(t1 - t0);
   }
@@ -141,7 +141,7 @@ async function runScale(n, mods) {
   let lastCount = 0;
   for (let i = 0; i < HISTORY_SAMPLES; i++) {
     const t0 = performance.now();
-    const sellerClaims = claimsForSeller(TARGET_SELLER);
+    const sellerClaims = await claimsForSeller(TARGET_SELLER);
     const t1 = performance.now();
     lastCount = sellerClaims.length;
     historyTimings.push(t1 - t0);
