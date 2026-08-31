@@ -1,8 +1,6 @@
 {
   "name": "capacity-attest",
   "version": "0.1.0",
-  "private": true,
-  "_comment_private": "NOG NIET GEPUBLICEERD. 'private:true' is een bewuste, tijdelijke blokkade tegen een per-ongeluk 'npm publish' tijdens de MVP-fase. Structuur (bin/files/mcpName/server.json) is al wel publicatie-klaar; verwijder 'private' pas na expliciet akkoord van de koning.",
   "description": "MCP server for capacity-delivery attestations: after an x402 payment for compute capacity (GPU-hours, storage, API credits, bandwidth), the paying agent leaves a signed, factual claim of what was actually delivered — so other agents can check a seller's delivery history before paying. No reputation score, no judgment, no financial instrument.",
   "keywords": [
     "mcp",
@@ -20,14 +18,14 @@
   "homepage": "https://tokenizen.nl",
   "repository": {
     "type": "git",
-    "url": "https://github.com/holistis/tokenizen.git",
+    "url": "git+https://github.com/holistis/tokenizen.git",
     "directory": "packages/capacity-attest"
   },
   "mcpName": "io.github.holistis/capacity-attest",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
-    "capacity-attest": "./dist/index.js"
+    "capacity-attest": "dist/index.js"
   },
   "files": [
     "dist",
