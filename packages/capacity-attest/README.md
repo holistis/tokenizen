@@ -21,7 +21,7 @@ Dit is bewust en hardcoded **niet**:
 - **Geen eigen token of munt.** Betalingen lopen via x402/USDC zoals gebruikelijk; dit project registreert alleen de *bon* van een afwikkeling die al ergens anders heeft plaatsgevonden.
 - **Geen krediet-verlening.** Een claim wordt pas gemaakt **na** een voltooide betaling — dit project financiert niets, het documenteert een reeds afgeronde ijara (verhuur/dienst)-transactie.
 
-Dit is een sharia-getoetste (halal) ontwerpkeuze, niet een toevallige scope-beperking. Zie de guardrails-sectie in het project-brief als je overweegt hier iets aan toe te voegen: bij twijfel of een veld/functie hiertegenaan schuurt, laat het weg.
+Dit is een bewuste, formeel getoetste ontwerpkeuze, niet een toevallige scope-beperking. Zie de guardrails-sectie in het project-brief als je overweegt hier iets aan toe te voegen: bij twijfel of een veld/functie hiertegenaan schuurt, laat het weg.
 
 ## Hoe het werkt
 

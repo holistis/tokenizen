@@ -29,9 +29,9 @@ export function Hero() {
 
             <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg">
               Agent-identiteit, spend-limits en betaalrails zijn onderweg (x402, Google AP2, ERC-8004). Wat nog
-              ontbreekt: het bewijs dat een verkoper het recht echt heeft, en dat wat geleverd is overeenkomt met
-              wat beloofd was. Tokenizen bouwt precies dat, te beginnen met Capacity Attest: een ondertekende,
-              feitelijke kwitantie voor x402-capaciteitshandel tussen agents.
+              ontbreekt: een ondertekend spoor van wat een verkoper claimt geleverd te hebben, en of dat overeenkwam
+              met wat beloofd was. Tokenizen bouwt dat spoor, te beginnen met Capacity Attest: een ondertekende,
+              feitelijke leveringsclaim voor x402-capaciteitshandel tussen agents.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">

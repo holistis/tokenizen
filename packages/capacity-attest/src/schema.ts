@@ -5,11 +5,11 @@
 // actually arrived." It is deliberately NOT a score, rating, or judgment —
 // see README.md "Wat dit NIET is".
 //
-// GUARDRAIL (halal): assetType is a closed enum of physical/compute capacity
-// kinds. Do not add anything that looks like a financial instrument (credit,
-// loan, yield, interest-bearing balance, invoice-financing) to this file —
-// see the "HALAL GUARDRAILS" section of the project brief. If a field or enum
-// value even smells like that, leave it out.
+// GUARDRAIL (design boundary): assetType is a closed enum of physical/compute
+// capacity kinds. Do not add anything that looks like a financial instrument
+// (credit, loan, yield, interest-bearing balance, invoice-financing) to this
+// file — see the "DESIGN GUARDRAILS" section of the project brief. If a field
+// or enum value even smells like that, leave it out.
 
 import * as z from "zod/v4";
 import { createHash } from "node:crypto";

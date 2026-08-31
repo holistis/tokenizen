@@ -17,7 +17,7 @@ Voor ideeën of vragen die geen bug zijn: open gewoon een issue zonder template,
 1. Fork de repo en werk op een eigen branch, nooit direct op `main`.
 2. Houd de PR gericht op één ding. Een PR die twee ongerelateerde dingen tegelijk oplost is moeilijker te beoordelen en duurt langer om te mergen.
 3. Zorg dat de bestaande tests van het package dat je aanraakt nog slagen (zie hieronder).
-4. Vul de PR-checklist in (`.github/pull_request_template.md`), inclusief de halal-checkbox.
+4. Vul de PR-checklist in (`.github/pull_request_template.md`), inclusief de checkbox over de ontwerpgrens.
 5. Beschrijf in de PR-omschrijving wat en waarom, niet alleen wat.
 
 ## Lokaal testen
@@ -55,9 +55,9 @@ CI draait dezelfde commando's automatisch op elke push en PR (zie `.github/workf
 - Geen em-dash in code-comments of gebruikersgerichte tekst; gebruik een punt of komma.
 - Volg de bestaande structuur van een package (zie de architectuur-sectie in de README van dat package) in plaats van een eigen patroon te introduceren.
 
-## De halal-lijn (harde regel)
+## De ontwerpgrens (harde regel)
 
-Tokenizen heeft een permanente grens die voortkomt uit een formele sharia-toetsing, beschreven in de root-README. Deze grens is niet onderhandelbaar en geldt voor elke bijdrage, ongeacht technische kwaliteit:
+Tokenizen heeft een permanente grens die voortkomt uit een formele interne toetsing, beschreven in de root-README. Deze grens is niet onderhandelbaar en geldt voor elke bijdrage, ongeacht technische kwaliteit:
 
 **Pull requests die rente, leningen, yield-producten, factoring/invoice-financing, of een eigen token/munt toevoegen worden niet geaccepteerd.**
 

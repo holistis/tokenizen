@@ -4,14 +4,14 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card";
 
 const REASONS: Array<{ date: string; title: string; body: string }> = [
   {
-    date: "19 juli 2026",
-    title: "EU Digital Product Passport verplicht",
-    body: "Machineleesbaar asset-paspoort wordt de norm: financiën-vrij, maar wel bewijs over herkomst en staat van een asset.",
+    date: "20 juli 2026",
+    title: "EU Digital Product Passport-register live",
+    body: "De Europese Commissie opende het DPP-register; verplichte paspoorten volgen gefaseerd per productcategorie (batterijen vanaf feb. 2027). Bewijst dat een machineleesbaar, financiën-vrij asset-paspoort een reële EU-norm wordt, niet dat het nu al overal verplicht is.",
   },
   {
     date: "2 augustus 2026",
-    title: "EU AI Act, Artikel 14 live",
-    body: "Proof-of-authorization voor autonome systemen: een autonoom handelende agent moet aantoonbaar bevoegd zijn.",
+    title: "EU AI Act, Artikel 14 in werking",
+    body: "Hoog-risico AI-systemen moeten aantoonbaar door mensen te overzien zijn. Dat vraagt om een controleerbaar spoor van wat een autonome agent deed, precies het soort auditeerbaarheid waar Tokenizen op inspeelt, zonder dat wij zelf een Artikel 14-nalevingsclaim doen.",
   },
   {
     date: "doorlopend",

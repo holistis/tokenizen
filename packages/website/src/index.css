@@ -42,12 +42,12 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --color-halal-green: var(--halal-green);
-  --color-halal-green-soft: var(--halal-green-soft);
-  --color-halal-yellow: var(--halal-yellow);
-  --color-halal-yellow-soft: var(--halal-yellow-soft);
-  --color-halal-red: var(--halal-red);
-  --color-halal-red-soft: var(--halal-red-soft);
+  --color-rule-green: var(--rule-green);
+  --color-rule-green-soft: var(--rule-green-soft);
+  --color-rule-yellow: var(--rule-yellow);
+  --color-rule-yellow-soft: var(--rule-yellow-soft);
+  --color-rule-red: var(--rule-red);
+  --color-rule-red-soft: var(--rule-red-soft);
 }
 
 /* Licht thema: de basis. Alles hier is ook de fallback voor systemen
@@ -67,12 +67,12 @@
   --input: #dcd6c8;
   --ring: #2b3a55;
 
-  --halal-green: #3f6b4a;
-  --halal-green-soft: #e7eee6;
-  --halal-yellow: #8c6d22;
-  --halal-yellow-soft: #f2ecda;
-  --halal-red: #8b4a3c;
-  --halal-red-soft: #f3e7e3;
+  --rule-green: #3f6b4a;
+  --rule-green-soft: #e7eee6;
+  --rule-yellow: #8c6d22;
+  --rule-yellow-soft: #f2ecda;
+  --rule-red: #8b4a3c;
+  --rule-red-soft: #f3e7e3;
 }
 
 /* Systeemvoorkeur = donker, en de gebruiker heeft niet expliciet voor licht
@@ -91,12 +91,12 @@
     --input: #34312a;
     --ring: #8fa4c4;
 
-    --halal-green: #7fae8a;
-    --halal-green-soft: #1e2a20;
-    --halal-yellow: #d2ae5c;
-    --halal-yellow-soft: #2e2818;
-    --halal-red: #c77e6c;
-    --halal-red-soft: #2e1f1b;
+    --rule-green: #7fae8a;
+    --rule-green-soft: #1e2a20;
+    --rule-yellow: #d2ae5c;
+    --rule-yellow-soft: #2e2818;
+    --rule-red: #c77e6c;
+    --rule-red-soft: #2e1f1b;
   }
 }
 
@@ -114,12 +114,12 @@
   --input: #34312a;
   --ring: #8fa4c4;
 
-  --halal-green: #7fae8a;
-  --halal-green-soft: #1e2a20;
-  --halal-yellow: #d2ae5c;
-  --halal-yellow-soft: #2e2818;
-  --halal-red: #c77e6c;
-  --halal-red-soft: #2e1f1b;
+  --rule-green: #7fae8a;
+  --rule-green-soft: #1e2a20;
+  --rule-yellow: #d2ae5c;
+  --rule-yellow-soft: #2e2818;
+  --rule-red: #c77e6c;
+  --rule-red-soft: #2e1f1b;
 }
 
 @layer base {
@@ -145,7 +145,7 @@
   }
 
   ::selection {
-    background-color: var(--halal-yellow-soft);
+    background-color: var(--rule-yellow-soft);
     color: var(--foreground);
   }
 

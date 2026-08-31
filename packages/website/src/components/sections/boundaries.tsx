@@ -47,21 +47,21 @@ const COLUMNS: Column[] = [
 ];
 
 const STYLES: Record<Column["key"], { border: string; bg: string; text: string }> = {
-  green: { border: "border-halal-green/30", bg: "bg-halal-green-soft", text: "text-halal-green" },
-  yellow: { border: "border-halal-yellow/30", bg: "bg-halal-yellow-soft", text: "text-halal-yellow" },
-  red: { border: "border-halal-red/30", bg: "bg-halal-red-soft", text: "text-halal-red" },
+  green: { border: "border-rule-green/30", bg: "bg-rule-green-soft", text: "text-rule-green" },
+  yellow: { border: "border-rule-yellow/30", bg: "bg-rule-yellow-soft", text: "text-rule-yellow" },
+  red: { border: "border-rule-red/30", bg: "bg-rule-red-soft", text: "text-rule-red" },
 };
 
-export function HalalLine() {
+export function Boundaries() {
   return (
-    <Section id="halal-lijn" index="05" eyebrow="De halal-lijn">
+    <Section id="ontwerpgrenzen" index="05" eyebrow="Ontwerpgrenzen">
       <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
         Bewust géén token, géén rente, géén lening.
       </h2>
       <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
-        Dit is geen marketing-truc. Het is een principiële keuze (formele sharia-toetsing) én een strategische:
-        het houdt Tokenizen buiten de zwaarst gereguleerde en meest gehypte hoek van crypto. Sharia-status is
-        expliciet, niet weggemoffeld.
+        Dit is geen marketing-truc. Het is een bewuste, harde ontwerpgrens, en een strategische: het houdt
+        Tokenizen buiten de zwaarst gereguleerde en meest gehypte hoek van crypto. De grens is expliciet
+        ingebakken in het schema en de documentatie, niet weggemoffeld.
       </p>
 
       <div className="mt-10 grid gap-4 md:grid-cols-3">

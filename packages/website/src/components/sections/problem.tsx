@@ -5,12 +5,13 @@ export function Problem() {
   return (
     <Section id="probleem" index="01" eyebrow="Het probleem">
       <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-        Een agent betaalt, krijgt minder, en heeft niets om dat te bewijzen.
+        Een agent betaalt, krijgt minder, en heeft er geen ondertekend spoor van.
       </h2>
       <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
         Een AI-agent betaalt via x402 voor capaciteit bij een andere agent of dienst: GPU-uren, opslag,
         API/inference-credits, bandbreedte. De levering valt tegen: minder uren dan toegezegd, lagere kwaliteit,
-        minder opslag. Er is geen kwitantie die dat vastlegt.
+        minder opslag. Er is geen kwitantie die vastlegt wat beloofd en geclaimd werd. Dat is geen bewijs dat de
+        levering zelf klopte, wel een ondertekend spoor dat een agent later kan raadplegen en tonen.
       </p>
 
       <div className="mt-10 grid gap-4 sm:grid-cols-3">
@@ -27,9 +28,10 @@ export function Problem() {
           </CardContent>
         </Card>
         <Card>
-          <CardTitle>De verkoper draagt geen bewijslast</CardTitle>
+          <CardTitle>Niemand legt de claim vast</CardTitle>
           <CardContent className="text-muted-foreground">
-            Zonder ondertekend bewijs is er niets dat een belofte aan een levering koppelt.
+            Zonder ondertekend spoor is er niets dat een belofte aan een geclaimde levering koppelt, laat staan
+            iets dat een volgende koper kan controleren.
           </CardContent>
         </Card>
       </div>

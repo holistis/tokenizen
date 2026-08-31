@@ -4,9 +4,9 @@ const GITHUB_URL = "https://github.com/holistis/tokenizen";
 const CONTACT_EMAIL = "info@holistischadviseur.nl";
 
 const LEGEND: Array<{ dot: string; label: string }> = [
-  { dot: "bg-halal-green", label: "wel: bouwen we" },
-  { dot: "bg-halal-yellow", label: "met guardrail" },
-  { dot: "bg-halal-red", label: "nooit, hardcoded uitgesloten" },
+  { dot: "bg-rule-green", label: "wel: bouwen we" },
+  { dot: "bg-rule-yellow", label: "met guardrail" },
+  { dot: "bg-rule-red", label: "nooit, hardcoded uitgesloten" },
 ];
 
 export function Footer() {
@@ -18,7 +18,7 @@ export function Footer() {
             <p className="font-display text-lg font-semibold tracking-tight">tokenizen</p>
             <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
               Open-source infrastructuur voor de verkoperskant van de AI-agent-economie. Nieuw, in actieve
-              ontwikkeling, halal-getoetst.
+              ontwikkeling, met vaste ontwerpgrenzen.
             </p>
           </div>
 

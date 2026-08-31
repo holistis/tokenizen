@@ -12,4 +12,4 @@
 - [ ] Build slaagt waar het package een build-stap heeft
 - [ ] Tests toegevoegd of aangepast voor nieuw gedrag
 - [ ] Geen secrets gecommit
-- [ ] Deze PR voegt geen rente/lening/yield/eigen-token-functionaliteit toe (halal-lijn, zie CONTRIBUTING.md)
+- [ ] Deze PR voegt geen rente/lening/yield/eigen-token-functionaliteit toe (ontwerpgrens, zie CONTRIBUTING.md)

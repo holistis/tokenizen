@@ -11,7 +11,7 @@ const NAV_LINKS: Array<{ href: string; label: string }> = [
   { href: "#waarom-nu", label: "Waarom nu" },
   { href: "#product", label: "Product" },
   { href: "#hoe-het-werkt", label: "Hoe het werkt" },
-  { href: "#halal-lijn", label: "Halal-lijn" },
+  { href: "#ontwerpgrenzen", label: "Grenzen" },
   { href: "#open-source", label: "Open source" },
   { href: "#status", label: "Status" },
 ];

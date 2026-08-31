@@ -6,7 +6,7 @@ import { Problem } from "@/components/sections/problem";
 import { WhyNow } from "@/components/sections/why-now";
 import { Product } from "@/components/sections/product";
 import { HowItWorks } from "@/components/sections/how-it-works";
-import { HalalLine } from "@/components/sections/halal-line";
+import { Boundaries } from "@/components/sections/boundaries";
 import { OpenSource } from "@/components/sections/open-source";
 import { Status } from "@/components/sections/status";
 
@@ -21,7 +21,7 @@ export default function App() {
           <WhyNow />
           <Product />
           <HowItWorks />
-          <HalalLine />
+          <Boundaries />
           <OpenSource />
           <Status />
         </main>

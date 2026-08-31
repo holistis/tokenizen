@@ -4,13 +4,13 @@ Open-source infrastructuur voor agent-commerce: AI-agents leren rechten op econo
 
 ## Waarom dit bestaat
 
-De keten van een agent die iets koopt of verkoopt bestaat uit zes stappen: agent, identity, rights, asset, payment, settlement. De koperskant van die keten is al druk in ontwikkeling: wallets, betaalprotocollen zoals x402, agent-identity. Wat ontbreekt is de verkoperskant: hoe bewijs je wat je als agent hebt geleverd, wat je bezit, en wat de rechten daarop zijn, op een manier die een andere agent zonder mens ertussen kan verifiëren.
+De keten van een agent die iets koopt of verkoopt bestaat uit zes stappen: agent, identity, rights, asset, payment, settlement. De koperskant van die keten is al druk in ontwikkeling: wallets, betaalprotocollen zoals x402, agent-identity. Wat ontbreekt is de verkoperskant: hoe leg je vast wat je als agent claimt te hebben geleverd, wat je bezit, en wat de rechten daarop zijn, op een manier die een andere agent zonder mens ertussen kan controleren. Dat is een ondertekend spoor, geen onafhankelijk bewijs van de onderliggende werkelijkheid.
 
-Tokenizen bouwt aan dat object, niet aan de koperskant. Drie sporen zijn onafhankelijk van elkaar bij dezelfde conclusie uitgekomen: een sharia-toetsing van wat wel en niet toelaatbaar is in agent-tot-agent handel, marktonderzoek naar wat er in dit veld al bestaat en wat ontbreekt, en een inventaris van eigen code die al jaren op vergelijkbare problemen stuitte. Alle drie wezen naar hetzelfde gat: verificatie en afwikkeling aan de verkoperskant, zonder financiële constructies die niet toelaatbaar zijn.
+Tokenizen bouwt aan dat object, niet aan de koperskant. Drie sporen zijn onafhankelijk van elkaar bij dezelfde conclusie uitgekomen: een formele interne toetsing van wat wel en niet toelaatbaar is in agent-tot-agent handel, marktonderzoek naar wat er in dit veld al bestaat en wat ontbreekt, en een inventaris van eigen code die al jaren op vergelijkbare problemen stuitte. Alle drie wezen naar hetzelfde gat: verificatie en afwikkeling aan de verkoperskant, zonder financiële constructies die niet toelaatbaar zijn.
 
-## De halal-lijn
+## De ontwerpgrens
 
-Dit project heeft een permanente, bewuste grens, voortgekomen uit een formele sharia-toetsing. Die grens geldt voor het hele project, niet alleen voor een los package.
+Dit project heeft een permanente, bewuste grens, voortgekomen uit een formele interne toetsing. Die grens geldt voor het hele project, niet alleen voor een los package.
 
 **Groen (dit bouwen we):**
 
@@ -25,7 +25,7 @@ Dit project heeft een permanente, bewuste grens, voortgekomen uit een formele sh
 
 **Rood (nooit):**
 
-- Rente of enige vorm van riba
+- Rente of tijd-disconto op betalingen
 - Leningen of kredietverlening
 - Een eigen token of munt
 - Factoring of invoice-financing
@@ -62,11 +62,11 @@ npm run build --workspace=capacity-attest
 
 ## Status
 
-Vroeg-stadium open source. Nog niet gepubliceerd naar npm. `packages/capacity-attest` staat bewust op `"private": true` in zijn `package.json` totdat er expliciet akkoord is voor publicatie.
+Vroeg-stadium open source. `packages/capacity-attest` staat gepubliceerd op npm (`npm install capacity-attest`).
 
 ## Contributing
 
-Zie [`CONTRIBUTING.md`](CONTRIBUTING.md) voor hoe je een issue of pull request indient, hoe je lokaal test, en de harde contributie-regel rond de halal-lijn.
+Zie [`CONTRIBUTING.md`](CONTRIBUTING.md) voor hoe je een issue of pull request indient, hoe je lokaal test, en de harde contributie-regel rond de ontwerpgrens.
 
 ## License
 

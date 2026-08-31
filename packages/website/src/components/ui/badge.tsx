@@ -10,9 +10,9 @@ const badgeVariants = cva(
       variant: {
         neutral: "border-border bg-muted text-muted-foreground",
         primary: "border-transparent bg-primary text-primary-foreground",
-        green: "border-transparent bg-halal-green-soft text-halal-green",
-        yellow: "border-transparent bg-halal-yellow-soft text-halal-yellow",
-        red: "border-transparent bg-halal-red-soft text-halal-red",
+        green: "border-transparent bg-rule-green-soft text-rule-green",
+        yellow: "border-transparent bg-rule-yellow-soft text-rule-yellow",
+        red: "border-transparent bg-rule-red-soft text-rule-red",
       },
     },
     defaultVariants: {

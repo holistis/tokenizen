@@ -13,9 +13,9 @@ function highlightJson(json: string): string {
     (match) => {
       let cls = "text-primary"; // getallen
       if (/^"/.test(match)) {
-        cls = /:\s*$/.test(match) ? "text-muted-foreground" : "text-halal-green";
+        cls = /:\s*$/.test(match) ? "text-muted-foreground" : "text-rule-green";
       } else if (/^(true|false)$/.test(match)) {
-        cls = "text-halal-green";
+        cls = "text-rule-green";
       } else if (match === "null") {
         cls = "text-muted-foreground";
       }
@@ -33,9 +33,9 @@ export function CodeBlock({ label, code }: CodeBlockProps) {
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-card">
       <div className="flex items-center gap-2 border-b border-border bg-muted px-4 py-2">
-        <span className="size-2 rounded-full bg-halal-red/60" aria-hidden="true" />
-        <span className="size-2 rounded-full bg-halal-yellow/60" aria-hidden="true" />
-        <span className="size-2 rounded-full bg-halal-green/60" aria-hidden="true" />
+        <span className="size-2 rounded-full bg-rule-red/60" aria-hidden="true" />
+        <span className="size-2 rounded-full bg-rule-yellow/60" aria-hidden="true" />
+        <span className="size-2 rounded-full bg-rule-green/60" aria-hidden="true" />
         <span className="ml-2 font-mono text-xs text-muted-foreground">{label}</span>
       </div>
       <pre className="overflow-x-auto px-4 py-4 text-xs leading-relaxed md:text-[13px]">
