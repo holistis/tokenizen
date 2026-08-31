@@ -22,7 +22,16 @@ export function recordDelivery(input: unknown): RecordDeliveryResult {
   }
 
   const claim = parsed.data;
-  const verdict = verifyClaim(claim);
+  let verdict: ReturnType<typeof verifyClaim>;
+  try {
+    verdict = verifyClaim(claim);
+  } catch (e) {
+    // computeClaimId() (called inside verifyClaim, before any signature is
+    // even checked) can throw on pathological input, e.g. promisedSpec
+    // nested past schema.ts's MAX_DEPTH. That must degrade to the tool's
+    // normal error contract, not an uncaught exception.
+    return { ok: false, reason: `invalid_claim: ${(e as Error).message}` };
+  }
   if (!verdict.ok) {
     return { ok: false, reason: `signature_invalid: ${verdict.reason}` };
   }

@@ -32,18 +32,74 @@ const SIGNATURE_RE = /^0x[0-9a-fA-F]{130}$/;
  * signed. Everything in here is chosen by the buyer at claim-creation time;
  * claimId and signature (in DeliveryClaimSchema below) are derived from it.
  */
+// Guardrails against two verified bugs (2026-08-31 adversarial audit):
+// - MAX_PROMISED_SPEC_STRING_LENGTH / MAX_SETTLEMENT_REF_LENGTH: without a
+//   bound, a multi-megabyte string was accepted in ~6ms, letting any caller
+//   grow the append-only ledger and every future read's memory footprint
+//   without limit.
+// - MAX_PROMISED_SPEC_JSON_BYTES: the object branch of promisedSpec has no
+//   own length check, so it needs an explicit serialized-size cap instead.
+const MAX_PROMISED_SPEC_STRING_LENGTH = 4_000;
+const MAX_SETTLEMENT_REF_LENGTH = 512;
+const MAX_PROMISED_SPEC_JSON_BYTES = 8_000;
+// Shared with sortKeysDeep() below: how deep promisedSpec may nest.
+const MAX_DEPTH = 32;
+
+// Iterative (non-recursive) depth check for the object branch of
+// promisedSpec, used at schema-parse time. This deliberately does NOT use
+// recursion, and deliberately runs BEFORE any JSON.stringify of the raw
+// input: an earlier version of this guard called JSON.stringify(v) directly
+// inside the refine below to enforce MAX_PROMISED_SPEC_JSON_BYTES, and that
+// call is itself a recursive walk that blew the call stack on the exact
+// pathologically-deep input it was meant to reject (caught by this
+// package's own fuzz tests). Checking depth first, with an explicit stack
+// instead of language-level recursion, closes that gap for good.
+function exceedsMaxDepth(value: unknown, maxDepth: number): boolean {
+  const stack: Array<{ v: unknown; d: number }> = [{ v: value, d: 0 }];
+  while (stack.length > 0) {
+    const { v, d } = stack.pop()!;
+    if (d > maxDepth) return true;
+    if (Array.isArray(v)) {
+      for (const item of v) stack.push({ v: item, d: d + 1 });
+    } else if (v !== null && typeof v === "object") {
+      for (const key of Object.keys(v as Record<string, unknown>)) {
+        stack.push({ v: (v as Record<string, unknown>)[key], d: d + 1 });
+      }
+    }
+  }
+  return false;
+}
+
 export const ClaimContentSchema = z.object({
+  // .transform(toLowerCase): a fuzz-and-benchmark audit found that
+  // computeClaimId() hashed addresses exactly as submitted while every other
+  // address comparison in this codebase (signature recovery, seller
+  // filtering) was already case-insensitive. That let the same real claim be
+  // resubmitted under a different claimId by only re-casing a hex letter,
+  // defeating appendClaim()'s claimId-based duplicate rejection. Normalizing
+  // here, once, before anything is hashed or compared, closes that gap for
+  // every consumer of this schema.
   sellerAddress: z
     .string()
     .regex(ETH_ADDRESS_RE, "sellerAddress must be a 0x-prefixed 20-byte address")
+    .transform((v) => v.toLowerCase())
     .describe("0x address of the agent/service that was paid and was supposed to deliver"),
   buyerAddress: z
     .string()
     .regex(ETH_ADDRESS_RE, "buyerAddress must be a 0x-prefixed 20-byte address")
+    .transform((v) => v.toLowerCase())
     .describe("0x address of the paying agent — must match the address recovered from `signature`"),
   assetType: z.enum(ASSET_TYPES).describe("What kind of capacity this claim is about"),
   promisedSpec: z
-    .union([z.string().min(1), z.record(z.string(), z.unknown())])
+    .union([
+      z.string().min(1).max(MAX_PROMISED_SPEC_STRING_LENGTH),
+      z.record(z.string(), z.unknown()).refine((v) => {
+        if (exceedsMaxDepth(v, MAX_DEPTH)) return false;
+        // Only safe to JSON.stringify for the size check once depth is
+        // bounded — see exceedsMaxDepth's comment above.
+        return Buffer.byteLength(JSON.stringify(v), "utf8") <= MAX_PROMISED_SPEC_JSON_BYTES;
+      }, `promisedSpec object exceeds the allowed nesting depth (${MAX_DEPTH}) or size (${MAX_PROMISED_SPEC_JSON_BYTES} bytes)`),
+    ])
     .describe("What the seller promised to deliver — free text or a structured object"),
   delivered: z.enum(DELIVERED_VALUES).describe("Whether what was promised actually arrived"),
   evidenceHash: z
@@ -53,6 +109,7 @@ export const ClaimContentSchema = z.object({
   settlementRef: z
     .string()
     .min(1, "settlementRef is required (x402 payment reference or on-chain tx hash)")
+    .max(MAX_SETTLEMENT_REF_LENGTH)
     .describe("x402 payment reference or on-chain tx hash for the settlement this claim is about"),
   timestamp: z
     .string()
@@ -81,16 +138,32 @@ export type DeliveryClaim = z.infer<typeof DeliveryClaimSchema>;
  * sorted.
  */
 export function canonicalize(value: unknown): string {
-  return JSON.stringify(sortKeysDeep(value));
+  return JSON.stringify(sortKeysDeep(value, 0));
 }
 
-function sortKeysDeep(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(sortKeysDeep);
+// A fuzz audit found that a promisedSpec nested a few thousand levels deep
+// (no valid signature required — this runs before signature verification)
+// crashes the process with an uncaught RangeError instead of the normal
+// {ok:false, reason} response every other invalid claim gets. MAX_DEPTH
+// (declared above, shared with the schema-level guard on promisedSpec)
+// turns that crash into a clean, catchable Error well before the engine's
+// own call-stack limit, however it's shaped (objects or arrays) — kept here
+// too as defense-in-depth in case computeClaimId is ever called on content
+// that bypassed schema validation.
+function sortKeysDeep(value: unknown, depth: number): unknown {
+  if (depth > MAX_DEPTH) {
+    throw new Error(`promisedSpec nesting exceeds max depth of ${MAX_DEPTH}`);
+  }
+  if (Array.isArray(value)) return value.map((v) => sortKeysDeep(v, depth + 1));
   if (value !== null && typeof value === "object") {
     const input = value as Record<string, unknown>;
-    const out: Record<string, unknown> = {};
+    // Object.create(null) has no inherited `__proto__` accessor, so a key
+    // literally named "__proto__" becomes a normal own property instead of
+    // silently reassigning out's prototype (and vanishing from the hashed
+    // output) the way `out["__proto__"] = ...` would on a plain {} object.
+    const out: Record<string, unknown> = Object.create(null);
     for (const key of Object.keys(input).sort()) {
-      out[key] = sortKeysDeep(input[key]);
+      out[key] = sortKeysDeep(input[key], depth + 1);
     }
     return out;
   }
