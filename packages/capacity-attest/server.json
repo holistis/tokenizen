@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.holistis/capacity-attest",
-  "description": "Record and query signed, factual delivery claims for x402 capacity trades (GPU-hours, storage, API credits, bandwidth) — no reputation score, no judgment.",
+  "description": "Signed delivery claims for x402 capacity trades: GPU-hours, storage, API credits, bandwidth.",
   "repository": {
     "url": "https://github.com/holistis/tokenizen",
     "source": "github",
