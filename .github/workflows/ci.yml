@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies (root + all workspaces)
+        run: npm ci
+
+      # Runs "build" in every workspace that defines it, skips the rest.
+      # No package path is hardcoded here, so a future packages/website
+      # with its own build script is picked up automatically.
+      - name: Build workspaces
+        run: npm run build --workspaces --if-present
+
+      # Same pattern for "test": only capacity-attest has one today,
+      # any future package with a test script is picked up automatically.
+      - name: Test workspaces
+        run: npm test --workspaces --if-present

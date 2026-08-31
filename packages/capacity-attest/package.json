@@ -9,6 +9,8 @@
     "model-context-protocol",
     "x402",
     "agent-to-agent",
+    "agent-commerce",
+    "capacity-trade",
     "attestation",
     "provenance",
     "ai-agent"
