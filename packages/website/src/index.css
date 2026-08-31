@@ -3,14 +3,17 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Lettertype-tokens. Fraunces voor koppen (font-display), IBM Plex Sans voor
- * body-tekst (default), IBM Plex Mono voor code/hashes/labels/kwitantie-regels.
+ * Lettertype-tokens. Instrument Serif voor koppen (font-display), Big
+ * Shoulders als "signage"-accent voor plekken met extra visuele impact
+ * (font-signage, spaarzaam gebruiken), Public Sans voor body-tekst
+ * (default), IBM Plex Mono voor code/hashes/labels/kwitantie-regels.
  * Statische waarden, dus in een gewone @theme-blok (niet @theme inline).
  * Deze veranderen niet tussen licht/donker.
  */
 @theme {
-  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-display: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
+  --font-sans: "Public Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
+  --font-signage: "Big Shoulders", "Arial Narrow", ui-sans-serif, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 

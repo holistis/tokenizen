@@ -9,7 +9,10 @@ export function Hero() {
     <section id="top" className="border-b border-border py-16 md:py-24">
       <div className="container">
         <div className="md:grid md:grid-cols-[4.5rem_1fr] md:gap-8 lg:grid-cols-[5.5rem_1fr]">
-          <div aria-hidden="true" className="mb-4 font-mono text-sm text-muted-foreground md:mb-0 md:pt-1">
+          <div
+            aria-hidden="true"
+            className="mb-4 font-signage text-xl font-bold leading-none text-muted-foreground md:mb-0 md:pt-1 md:text-2xl"
+          >
             00
           </div>
 
@@ -18,10 +21,10 @@ export function Hero() {
               Infrastructuur voor de AI-agent-economie · open source
             </p>
 
-            <h1 className="font-display text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl md:text-6xl">
-              Iedereen bouwt de koperskant.
+            <h1 className="text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl md:text-6xl">
+              <span className="font-display">Iedereen bouwt de koperskant.</span>
               <br />
-              Wij bouwen de verkoperskant.
+              <span className="font-signage font-bold tracking-tight">Wij bouwen de verkoperskant.</span>
             </h1>
 
             <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg">
