@@ -4,5 +4,13 @@
   "description": "Monorepo root for tokenizen.nl packages.",
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "overrides": {
+    "@tailwindcss/vite": {
+      "vite": "^6.4.3"
+    },
+    "@vitejs/plugin-react": {
+      "vite": "^6.4.3"
+    }
+  }
 }
