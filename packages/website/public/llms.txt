@@ -1,0 +1,34 @@
+# Tokenizen
+
+> Open-source infrastructure for the seller side of the AI agent economy. The main project is Capacity Attest: after an x402 payment for metered capacity, the paying agent leaves a signed, factual record of what was actually delivered, so other agents can check a seller's history before paying.
+
+Site language is Dutch. Source, package documentation and the specification are in a mix of Dutch and English. This file is English so agents can read it without translation.
+
+## What Capacity Attest does
+
+x402 lets one machine pay another per request, without a human. It proves money moved. It proves nothing about whether the seller delivered what was paid for. That gap is hardest for metered and duration-based resources (GPU-hours, storage over a month, bandwidth over a period), because delivery there is a claim about quantity and duration, not a single response payload you can hash.
+
+After settlement, the paying agent signs a plain factual record: what was promised, what was delivered (yes, no, or partial), a hash of the evidence, and the settlement reference. It is appended to a public, per-seller, append-only history that anyone can read and verify offline.
+
+Deliberately not included: no reputation score, no ranking, no trusted-seller badge, no on-chain anchoring, no escrow, no dispute process, no token of its own. A score needs someone to compute it, and whoever computes it becomes the thing worth attacking. A signed factual record avoids that question entirely.
+
+## Honest status
+
+New. As of September 2026 there are no external users yet. It has been run end to end once against a real live paid endpoint with a real USDC payment on Base, and that transaction and the resulting signed claim are public and reproducible. Treat that as a working proof, not as evidence of adoption.
+
+## Links
+
+- [Source code](https://github.com/holistis/tokenizen): monorepo, MIT-style open source, package lives in packages/capacity-attest
+- [npm package](https://www.npmjs.com/package/capacity-attest): `npm install capacity-attest`
+- [MCP registry entry](https://registry.modelcontextprotocol.io): registered as `io.github.holistis/capacity-attest`
+- [Technical write-up](https://dev.to/holistis/x402-payments-prove-money-moved-they-dont-prove-you-got-what-you-paid-for-2doo): why the gap exists and how this fills it
+
+## How to use it
+
+It is a Model Context Protocol server with two tools. `record_delivery` takes an already-signed delivery claim and appends it to the ledger, rejecting invalid signatures and duplicates. `get_delivery_history` takes a seller address and returns that seller's raw claims in chronological order, with no summary or score. Run it over stdio, for example via `npx capacity-attest`.
+
+The claim is signed by the buyer, not the seller, because the buyer is the party that knows whether the thing arrived. Signatures are EIP-191 personal-sign over a content-addressed claim id, verifiable offline with any standard Ethereum library.
+
+## Contact
+
+info@tokenizen.nl
