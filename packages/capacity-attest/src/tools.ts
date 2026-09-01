@@ -4,7 +4,7 @@
 // and examples/demo.ts call the real logic directly without spinning up a
 // stdio JSON-RPC transport.
 
-import { DeliveryClaimSchema, type DeliveryClaim } from "./schema.js";
+import { StrictDeliveryClaimSchema, type DeliveryClaim } from "./schema.js";
 import { verifyClaim } from "./signing.js";
 import { appendClaim, claimsForSeller } from "./ledger.js";
 
@@ -22,7 +22,25 @@ export type RecordDeliveryResult = { ok: true; claimId: string } | { ok: false; 
  * exact read-check-write sequence the lock exists to make atomic.
  */
 export async function recordDelivery(input: unknown): Promise<RecordDeliveryResult> {
-  const parsed = DeliveryClaimSchema.safeParse(input);
+  // StrictDeliveryClaimSchema, not DeliveryClaimSchema: new claims must also
+  // pass the ingest hardening of S-1..S-5 (see schema.ts). That schema is a
+  // superset of the frozen one, so it never changes a claimId — it only
+  // refuses input the frozen schema would have accepted. Historical ledger
+  // lines are still read back through the FROZEN DeliveryClaimSchema in
+  // ledger.ts, so a claim recorded before 0.2.0 with (say) a float in
+  // promisedSpec stays readable and verifiable forever.
+  // safeParse() is wrapped for the same reason verifyClaim() below is: the
+  // ingest checks walk caller-supplied data, and hostile or merely odd input
+  // (a cyclic object, a shared-reference graph) has already been shown to
+  // throw from inside a zod check rather than return a failed parse. The
+  // tool's contract is {ok:false, reason}, never an uncaught exception, so
+  // every step that touches untrusted input belongs inside a try/catch.
+  let parsed: ReturnType<typeof StrictDeliveryClaimSchema.safeParse>;
+  try {
+    parsed = StrictDeliveryClaimSchema.safeParse(input);
+  } catch (e) {
+    return { ok: false, reason: `invalid_claim: ${(e as Error).message}` };
+  }
   if (!parsed.success) {
     return { ok: false, reason: `invalid_claim: ${parsed.error.issues.map((i) => i.message).join("; ")}` };
   }

@@ -1,0 +1,49 @@
+{
+  "_README": "Self-contained test vector for the `measured` extension of capacity-attest (0.2.0). Everything needed to verify this offline is in this file. See docs/metered-delivery-spec.md for the rules. The signing key is the publicly known Hardhat/anvil account #0 test key — never funded, never used for anything real. Verify with: node examples/verify-metered-example.mjs",
+  "spec": "docs/metered-delivery-spec.md",
+  "signingKeyNote": "Signed with the publicly known Hardhat/anvil account #0 private key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80. TEST KEY ONLY.",
+  "claim": {
+    "sellerAddress": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+    "buyerAddress": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "assetType": "gpu-hours",
+    "promisedSpec": {
+      "gpuModel": "A100-80GB",
+      "region": "eu-west",
+      "devices": 2,
+      "hours": 4
+    },
+    "delivered": "partial",
+    "evidenceHash": "37353ee638699ea6fd598863a1b55b3713fca76bd8f103c69f7c1dc0f9d36be5",
+    "settlementRef": "0x1111111111111111111111111111111111111111111111111111111111111111",
+    "timestamp": "2026-09-01T08:00:12.417Z",
+    "measured": {
+      "unit": "gpu-second",
+      "basis": "supplied",
+      "promisedAmount": "28800",
+      "deliveredAmount": "25230",
+      "period": {
+        "start": "2026-09-01T04:00:00Z",
+        "end": "2026-09-01T08:00:00Z"
+      },
+      "method": {
+        "attribution": "buyer",
+        "instrument": "nvidia-smi accounting, 10s polling, job 8f21a3",
+        "readingsHash": "0d08539780ad082368c65079bf21cc1daaf62617549d20d5a304cc551248021d"
+      }
+    },
+    "claimId": "0x2c9885426ba05e58d8c364ab5612c9da7aeed54bdb201f8a76ffe9bb0626b95d",
+    "signature": "0x93b7fcbc12ee65ca99cc929cdd5fa3036fad047d5f8259f09aa4d72a335f32985c88f685f62fa2c54758c216fdb03a71e6c3f93a2e6850e343ee608c9b341cf61c"
+  },
+  "canonicalPreimage": "{\"assetType\":\"gpu-hours\",\"buyerAddress\":\"0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266\",\"delivered\":\"partial\",\"evidenceHash\":\"37353ee638699ea6fd598863a1b55b3713fca76bd8f103c69f7c1dc0f9d36be5\",\"measured\":{\"basis\":\"supplied\",\"deliveredAmount\":\"25230\",\"method\":{\"attribution\":\"buyer\",\"instrument\":\"nvidia-smi accounting, 10s polling, job 8f21a3\",\"readingsHash\":\"0d08539780ad082368c65079bf21cc1daaf62617549d20d5a304cc551248021d\"},\"period\":{\"end\":\"2026-09-01T08:00:00Z\",\"start\":\"2026-09-01T04:00:00Z\"},\"promisedAmount\":\"28800\",\"unit\":\"gpu-second\"},\"promisedSpec\":{\"devices\":2,\"gpuModel\":\"A100-80GB\",\"hours\":4,\"region\":\"eu-west\"},\"sellerAddress\":\"0x70997970c51812dc3a010c7d01b50e0d17dc79c8\",\"settlementRef\":\"0x1111111111111111111111111111111111111111111111111111111111111111\",\"timestamp\":\"2026-09-01T08:00:12.417Z\"}",
+  "canonicalPreimageByteLength": 806,
+  "claimId": "0x2c9885426ba05e58d8c364ab5612c9da7aeed54bdb201f8a76ffe9bb0626b95d",
+  "eip191MessageDigestOverClaimIdString": "0x81137392187c91041cf33ee2cd9e908b8939dba03fa9b62c07ad957a399a7be5",
+  "signature": "0x93b7fcbc12ee65ca99cc929cdd5fa3036fad047d5f8259f09aa4d72a335f32985c88f685f62fa2c54758c216fdb03a71e6c3f93a2e6850e343ee608c9b341cf61c",
+  "expectedRecoveredAddress": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "notes": {
+    "preimage": "The preimage is canonicalize(ClaimContentSchema.parse(content)), NOT canonicalize(content): the parse step lower-cases sellerAddress/buyerAddress and strips unknown top-level keys. claimId = '0x' + lowercase hex sha256 of the UTF-8 bytes of canonicalPreimage.",
+    "signature": "EIP-191 personal_sign over the 66-character ASCII STRING claimId (prefix '\\x19Ethereum Signed Message:\\n66'), not over the 32 raw bytes. This is the most likely reimplementation mistake.",
+    "closedPeriod": "period.end[0..19) = '2026-09-01T08:00:00' <= timestamp[0..19) = '2026-09-01T08:00:12' — the 19-character prefix rule, which is why a fractional-second timestamp in the same second still validates.",
+    "unmeasuredTwinClaimId": "0x004132f3c9f16176ae606df242846a193f1d2b293b1e2e238d15e4bfd8b87343"
+  }
+}

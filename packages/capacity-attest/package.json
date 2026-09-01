@@ -1,6 +1,6 @@
 {
   "name": "capacity-attest",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "MCP server for capacity-delivery attestations: after an x402 payment for compute capacity (GPU-hours, storage, API credits, bandwidth), the paying agent leaves a signed, factual claim of what was actually delivered, so other agents can check a seller's delivery history before paying. No reputation score, no judgment, no financial instrument.",
   "keywords": [
     "mcp",
