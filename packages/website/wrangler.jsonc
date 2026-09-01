@@ -2,8 +2,21 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "tokenizen-website",
   "compatibility_date": "2026-08-31",
+  // Expliciet aan houden: zonder deze regel schakelt wrangler de
+  // workers.dev-URL bij elke deploy uit, en dat was tot 2026-09-01 de
+  // enige werkende link naar de site.
+  "workers_dev": true,
   "assets": {
     "directory": "./dist",
     "not_found_handling": "single-page-application"
-  }
+  },
+  // Bewust routes en geen custom_domain: de van TransIP overgenomen
+  // DNS-records staan nog op tokenizen.nl en Cloudflare weigert een custom
+  // domain zolang die er zijn. Die records zijn al geproxied (oranje wolk),
+  // dus een route onderschept het verkeer voordat het de oude oorsprong
+  // bereikt. Werkt zonder DNS-rechten en zonder iets te verwijderen.
+  "routes": [
+    { "pattern": "tokenizen.nl/*", "zone_name": "tokenizen.nl" },
+    { "pattern": "www.tokenizen.nl/*", "zone_name": "tokenizen.nl" }
+  ]
 }
