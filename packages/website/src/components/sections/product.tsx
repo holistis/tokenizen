@@ -9,6 +9,8 @@ function shorten(hex: string, head = 10, tail = 6): string {
   return `${hex.slice(0, head)}…${hex.slice(-tail)}`;
 }
 
+// Verzonnen voorbeeldwaarden, geen echte claim. Zie note-tekst hieronder en
+// de "onafhankelijk geverifieerd"-sectie in Status voor de echte, live claim.
 const SELLER = shorten("0x9f1C1a3b7E2d4F5a6B8c9D0e1F2a3B4c5D6e7F80");
 const BUYER = shorten("0x1a2B3c4D5e6F7089aB0c1D2e3F4a5B6c7D8e9F01");
 

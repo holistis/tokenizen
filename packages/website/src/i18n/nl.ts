@@ -100,7 +100,7 @@ export const nl: Dictionary = {
     codeLabelRecordCall: "MCP tool-call → record_delivery",
     codeLabelHistoryCall: "MCP tool-call → get_delivery_history",
     codeLabelResult: "antwoord",
-    note: "Hashes, adressen en de handtekening zijn ingekort voor leesbaarheid. Het volledige schema staat in `packages/capacity-attest/src/schema.ts`.",
+    note: "Dit is een fictief voorbeeld: de adressen, hashes en handtekening hierboven zijn verzonnen om het schema te tonen, niet afgeleid van een echte claim. Voor een echte, live claim zie het bewijs-blok in de Status-sectie hieronder. Het volledige schema staat in `packages/capacity-attest/src/schema.ts`.",
     cards: [
       {
         title: "record_delivery",

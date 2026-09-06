@@ -118,7 +118,7 @@ export const en: Dictionary = {
     "codeLabelRecordCall": "MCP tool call → record_delivery",
     "codeLabelHistoryCall": "MCP tool call → get_delivery_history",
     "codeLabelResult": "response",
-    "note": "Hashes, addresses, and the signature are shortened for readability. The full schema is in `packages/capacity-attest/src/schema.ts`.",
+    "note": "This is a fictional example: the addresses, hashes, and signature above are made up to illustrate the schema, not derived from a real claim. For a real, live claim, see the proof block in the Status section below. The full schema is in `packages/capacity-attest/src/schema.ts`.",
     "cards": [
       {
         "title": "record_delivery",

@@ -23,6 +23,8 @@ Dit is bewust en hardcoded **niet**:
 
 Dit is een bewuste, formeel getoetste ontwerpkeuze, niet een toevallige scope-beperking. Zie de guardrails-sectie in het project-brief als je overweegt hier iets aan toe te voegen: bij twijfel of een veld/functie hiertegenaan schuurt, laat het weg.
 
+Bewust uitgestelde features (verankering, tussentijdse status, formele conformance-vectoren), inclusief de precieze voorwaarde waaronder we ze alsnog zouden bouwen: zie [DECISIONS.md](./DECISIONS.md).
+
 ## Hoe het werkt
 
 ### 1. `record_delivery`
@@ -52,6 +54,29 @@ Gegeven een `sellerAddress`, retourneert dit alle bekende claims tegen die verko
 
 De claim wordt ondertekend door de **koper** (de partij die betaalde en dus weet wat er wel/niet aankwam), niet door de verkoper. Dit is bewust eenvoudige EIP-191 `personal_sign` over `claimId` (via `ethers.Signer#signMessage`), geen EIP-712 typed data. Dat houdt het crypto-oppervlak van deze MVP klein en makkelijk te controleren. Een latere upgrade naar EIP-712 (zoals in `mcp-paywall/src/x402.mjs`) is additief mogelijk zonder bestaande claims ongeldig te maken.
 
+## Een claim onafhankelijk verifiëren
+
+Elke claim in de ledger is met alleen het npm-package en de rauwe claim-bytes na te rekenen, zonder toegang tot dit project of een netwerkoproep naar ons. Geen account, geen hosted call.
+
+```bash
+npm install capacity-attest@0.2.0
+```
+
+```js
+// verify.mjs, als ES module draaien (top-level await)
+import { verifyClaim } from "capacity-attest/dist/signing.js";
+
+const claim = JSON.parse(await (await fetch("<url naar een claim.jsonl-regel>")).text());
+console.log(verifyClaim(claim));
+// { ok: true } als claimId echt de hash van de inhoud is EN signature echt naar buyerAddress terugrekent
+```
+
+Let op: importeer `capacity-attest/dist/signing.js` rechtstreeks, niet het package-root. De root (`dist/index.js`) start bij het importeren meteen de MCP-server over stdio, wat een los verificatie-script laat hangen.
+
+`verifyClaim()` controleert precies twee dingen: dat `claimId` de content-addressed hash van de claim-velden is, en dat `signature` (EIP-191) terugrekent naar `buyerAddress`. Het controleert niet of de onderliggende afwikkeling (`settlementRef`) echt on-chain klopt, dat is een losse, aparte check tegen de betreffende chain, en het controleert niet of `delivered` waar is of of `evidenceHash` een echt bewijsstuk dekt, dat blijft de eigen verklaring van de kopende agent.
+
+Een werkend, extern gereproduceerd voorbeeld van deze exacte stappen staat in [github.com/YE-YI7/asm-spec, PR #18](https://github.com/YE-YI7/asm-spec/pull/18): een onafhankelijk project dat dit tegen een echte, live geregistreerde claim heeft gedraaid.
+
 ## Lokaal draaien
 
 ```bash
@@ -67,7 +92,7 @@ De ledger-locatie is instelbaar via `CAPACITY_ATTEST_DATA_DIR` (default: `./data
 
 ## Architectuur
 
-```
+```text
 src/
   schema.ts        DeliveryClaim zod-schema + content-addressing (computeClaimId, canonicalize)
   signing.ts        sign/verify van een claim (ethers, EIP-191 personal-sign)
