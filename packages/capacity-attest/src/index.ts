@@ -9,6 +9,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import * as z from "zod/v4";
 import { ASSET_TYPES, DELIVERED_VALUES, ClaimContentSchema, DeliveryClaimSchema } from "./schema.js";
 import { recordDelivery, getDeliveryHistory } from "./tools.js";
+import { resolveAgentIdentity, ResolveAgentIdentityInputSchema } from "./erc8004.js";
 
 const server = new McpServer({
   name: "capacity-attest",
@@ -78,6 +79,27 @@ server.registerTool(
     } catch (e) {
       return errorResult((e as Error).message);
     }
+  },
+);
+
+server.registerTool(
+  "resolve_agent_identity",
+  {
+    title: "Resolve an ERC-8004 agent identity (read-only, on-chain)",
+    description:
+      "Look up an agent's on-chain identity registration in an ERC-8004 Identity Registry: who owns the agentId " +
+      "(ownerOf) and where its registration file lives (tokenURI). Read-only — never writes anything, never touches " +
+      "the delivery ledger. Requires the caller to supply BOTH the registry reference (chain + contract address) AND " +
+      "an RPC endpoint for that chain: this tool does not assume, default, or bundle its own RPC provider or a " +
+      "canonical registry address, since ERC-8004 has independent deployments on multiple chains. This tool does NOT " +
+      "fetch or parse what tokenURI points to — it returns that pointer as-is for the caller to resolve themselves. " +
+      "capacity-attest never verifies or endorses what an ERC-8004 registration claims; see DECISIONS.md D-007.",
+    inputSchema: ResolveAgentIdentityInputSchema.shape,
+  },
+  async (args) => {
+    const result = await resolveAgentIdentity(args);
+    if (!result.ok) return errorResult(result.reason);
+    return textResult(result);
   },
 );
 

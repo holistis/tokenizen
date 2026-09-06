@@ -54,6 +54,12 @@ Gegeven een `sellerAddress`, retourneert dit alle bekende claims tegen die verko
 
 Het antwoord bevat naast `sellerAddress`, `count` en `claims` ook `scope` (altijd `"local-ledger"`) en `note`: een vaste, feitelijke tekst die uitlegt dat dit resultaat alleen de lokale ledger van déze installatie weerspiegelt. Een lege of korte geschiedenis betekent niet dat de verkoper een schone staat van dienst heeft, het kan ook betekenen dat er hier simpelweg nog geen claims zijn vastgelegd. Zie [DECISIONS.md](./DECISIONS.md) (D-005) voor de bredere architectuurvraag hierachter: hoe vindt een koper claims die op een ándere installatie zijn vastgelegd.
 
+### 3. `resolve_agent_identity` *(sinds 0.3.0)*
+
+Read-only opzoeking tegen een ERC-8004 Identity Registry: wie bezit `agentId` (`ownerOf`) en waar staat zijn registratiebestand (`tokenURI`). Alleen de standaard ERC-721-interface wordt aangeroepen, niets ERC-8004-specifieks. Vereist van de aanroeper zowel `agentRegistryRef` (`"eip155:<chainId>:<registryAddress>"`) als een `rpcUrl` voor die chain: dit project bundelt bewust geen eigen RPC-provider en geen canoniek registry-adres, want ERC-8004 heeft onafhankelijke deployments per chain en de EIP-tekst zelf noemt geen vast adres. Haalt bewust NOOIT op wat `tokenURI` aanwijst (dat blijft een pointer die de aanroeper zelf desgewenst opvraagt); dat zou een SSRF-vormig risico zijn op aanroeper-gecontroleerde on-chain data.
+
+Getest tegen een injecteerbare `ContractFactory` (`src/erc8004.test.ts`, geen netwerkafhankelijkheid) én live tegen de echte, gedeployde registry op Base mainnet (`examples/verify-erc8004-live.mjs`, `npm run build && node examples/verify-erc8004-live.mjs`). Zie [DECISIONS.md](./DECISIONS.md) D-007 voor de volledige achtergrond.
+
 ## Ondertekening
 
 De claim wordt ondertekend door de **koper** (de partij die betaalde en dus weet wat er wel/niet aankwam), niet door de verkoper. Dit is bewust eenvoudige EIP-191 `personal_sign` over `claimId` (via `ethers.Signer#signMessage`), geen EIP-712 typed data. Dat houdt het crypto-oppervlak van deze MVP klein en makkelijk te controleren. Een latere upgrade naar EIP-712 (zoals in `mcp-paywall/src/x402.mjs`) is additief mogelijk zonder bestaande claims ongeldig te maken.

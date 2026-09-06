@@ -431,14 +431,41 @@ ongeverifieerde verwijs-strings naar een externe identiteitsbron (bv. een
 ERC-8004-agent-id of DID). capacity-attest resolvet of beoordeelt dit veld
 zelf niet, exact dezelfde postuur als `evidenceHash`.
 
-**Trigger-criterium voor méér dan het citaat-veld** (bv. een read-only
-`resolve_agent_identity`-hulptool die een ERC-8004-registry of DID-resolver
-bevraagt): een echte externe partij noemt het ontbreken hiervan expliciet
-als concreet obstakel. **Wat NIET telt als trigger:** een algemene wens dat
-"dit ooit handig zou zijn".
+**Update dezelfde dag, later:** de koning gaf expliciet opdracht om verder
+te gaan dan het citaat-veld, zodat "de grote jongens" (ERC-8004 als eerste,
+gegeven evidence-niveau 7 hierboven) daadwerkelijk met dit systeem kunnen
+praten, niet alleen ernaar verwezen worden. Dat is zelf een geldig
+trigger-criterium: een expliciete, bewuste product-beslissing van de
+projecteigenaar is geen "onderbuikgevoel" of "dit leek me nuttig" (de
+dingen die D-001 t/m D-006 willen voorkomen), het is een bewuste afweging
+door de partij die uiteindelijk verantwoordelijk is voor de scope.
 
-**Status:** veld gebouwd (0.3.0, ongepubliceerd, dev-branch). Hulptool: niet
-bouwen, wacht op trigger.
+**Wat daardoor ook gebouwd is:** `resolve_agent_identity`, een read-only
+MCP-tool (`src/erc8004.ts`) die `ownerOf(agentId)` en `tokenURI(agentId)`
+aanroept op een door de aanroeper zelf opgegeven ERC-8004 Identity Registry
+(`eip155:<chainId>:<registryAddress>` + `rpcUrl`, beide verplicht, geen
+hardcoded adres of RPC, want ERC-8004 heeft onafhankelijke deployments per
+chain en de EIP-tekst zelf noemt geen canoniek adres). Alleen de standaard
+ERC-721-interface wordt gebruikt, niets ERC-8004-specifieks. Haalt bewust
+NOOIT op wat `tokenURI` aanwijst (dat zou een SSRF-vormig risico zijn op
+aanroeper-gecontroleerde on-chain data); geeft de rauwe pointer terug.
+
+**Echt getest, niet alleen gemockt:** 14 tests in `erc8004.test.ts` tegen
+een injecteerbare `ContractFactory` (geen netwerkafhankelijkheid in CI).
+Daarbovenop een ECHTE, live controle (`examples/verify-erc8004-live.mjs`):
+het adres `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432` is op 2026-09-06
+geverifieerd via een losse `eth_getCode`-aanroep op Base mainnet (echte
+bytecode, geen leeg adres), en `ownerOf(2290)`/`tokenURI(2290)` zijn zowel
+via rauwe `eth_call`-calldata als via de daadwerkelijke package-code
+opgevraagd, met identiek resultaat: eigenaar `0x715Dc035fFb97dD7bB4095C6670138BA05BB4E6d`,
+`tokenUri` `ipfs://bafkreifa2kvzjrtozvznce2bc3rwc7uzronxkm3w5fe2v6bjyfp52tci6e`.
+Dit is dus aantoonbaar werkende interoperabiliteit met een echt, live,
+extern systeem, niet alleen een schema-veld dat niemand ooit aanroept.
+
+**Status:** veld gebouwd (0.3.0, ongepubliceerd, dev-branch).
+`resolve_agent_identity`-tool gebouwd en live geverifieerd tegen Base
+mainnet (0.3.0, ongepubliceerd, dev-branch), op expliciete opdracht van de
+koning, niet op een externe trigger.
 
 ---
 
