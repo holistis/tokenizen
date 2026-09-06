@@ -1,7 +1,7 @@
 import { Github, Mail } from "lucide-react";
 
 const GITHUB_URL = "https://github.com/holistis/tokenizen";
-const CONTACT_EMAIL = "info@holistischadviseur.nl";
+const CONTACT_EMAIL = "info@tokenizen.nl";
 
 const LEGEND: Array<{ dot: string; label: string }> = [
   { dot: "bg-rule-green", label: "wel: bouwen we" },
