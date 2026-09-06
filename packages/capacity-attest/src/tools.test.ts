@@ -127,6 +127,12 @@ describe("getDeliveryHistory", () => {
     expect(history.note).toMatch(/local ledger/i);
     expect(history.note).toMatch(/does not mean the seller has a clean record/i);
   });
+
+  it("noemt ook expliciet dat volledigheid op eerlijkheid van de host rust, niet alleen dat cross-installatie ontbreekt (D-006)", async () => {
+    const history = await getDeliveryHistory("0x00000000000000000000000000000000000000ff");
+    expect(history.note).toMatch(/cannot prove the operator/i);
+    expect(history.note).toMatch(/completeness rests on/i);
+  });
 });
 
 // Sanity check that ethers.Wallet (not just the test-helper's HDNodeWallet) round-trips too.

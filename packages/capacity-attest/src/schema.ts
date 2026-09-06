@@ -60,9 +60,29 @@ const MAX_DEPTH = 32;
 // instead of language-level recursion, closes that gap for good.
 function exceedsMaxDepth(value: unknown, maxDepth: number): boolean {
   const stack: Array<{ v: unknown; d: number }> = [{ v: value, d: 0 }];
+  // TENTH FIX (2026-09-06, found by the same adversarial audit as the
+  // ledger.ts SEVENTH/EIGHTH/NINTH fixes): promisedSpecIngestProblem() below
+  // was hardened with exactly this `visited` guard after a real, measured
+  // hang (an acyclic DAG of 41 shared-reference objects at depth 40 explored
+  // ~2^40 nodes and ran past 55 seconds — see that function's own comment).
+  // This sibling walker had the identical unguarded shape and was never
+  // updated to match, even though it runs on the exact same promisedSpec
+  // input, just earlier (this is the schema-level `.refine()`, which zod
+  // runs before checkIngestHardening's superRefine). Not reachable over the
+  // MCP wire protocol (JSON.parse of a JSON-RPC message can never produce
+  // aliased object references — only a direct library caller building
+  // ClaimContent by hand with real JS reference sharing can trigger it), but
+  // left inconsistent otherwise: two functions walking the same data, one
+  // hardened and one not, is exactly the kind of drift that turns into a
+  // real bug the next time either one is copied as a template for a third.
+  const visited = new Set<object>();
   while (stack.length > 0) {
     const { v, d } = stack.pop()!;
     if (d > maxDepth) return true;
+    if (v !== null && typeof v === "object") {
+      if (visited.has(v as object)) continue;
+      visited.add(v as object);
+    }
     if (Array.isArray(v)) {
       for (const item of v) stack.push({ v: item, d: d + 1 });
     } else if (v !== null && typeof v === "object") {

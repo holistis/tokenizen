@@ -210,9 +210,24 @@ gelegenheid om 'm te toetsen.
 voorstel, x402-foundation/x402#3379, bouwer van Tamga Protocol) stelde
 letterlijk deze vraag in een openbare reactie: "for 'a future buyer pulls
 that seller's history', what is the intended hosting model: every buyer runs
-their own, or federation?" Dat is precies het trigger-criterium hierboven,
-eerder dan de EmbryoSpace-PR. Zie D-006 voor het antwoord en de bijbehorende,
+their own, or federation?" Zie D-006 voor het antwoord en de bijbehorende,
 scherpere vervolgvraag die hij tegelijk stelde.
+
+**Correctie, nog dezelfde avond:** de zin hierboven noemde dit eerder "precies
+het trigger-criterium hierboven". Dat was te snel. Het trigger-criterium eist
+letterlijk "een ECHTE situatie... met minstens twee onafhankelijke
+installaties die daadwerkelijk over dezelfde verkoper zouden moeten kunnen
+praten". Een scherpe, goed onderbouwde vraag van een geloofwaardige externe
+partij is een signaal dat de prioriteit verhoogt, maar is niet hetzelfde als
+die concrete situatie zelf: goun7 vraagt naar het beoogde model, hij zit zelf
+niet vast als tweede installatie die met een eerste over dezelfde verkoper
+moet praten. D-012 hieronder (dezelfde dag, los onderzoek) trekt dezelfde
+conclusie zonder dit expliciet te herzien: "D-005's eigen trigger-criterium
+... blijft ongewijzigd van kracht." De EmbryoSpace-PR blijft dus de concrete,
+nog openstaande gelegenheid om de trigger echt te laten afgaan. Wat vandaag
+wél verandert: D-012 identificeert de concrete mechaniek voor route (c) zodra
+die trigger afgaat (EAS/ERC-8004, zie hieronder). De keuze zelf blijft open,
+maar is niet langer ongericht.
 
 ---
 
@@ -265,9 +280,98 @@ Dit betekent NIET meteen bouwen: welke van de drie routes (of een combinatie)
 de juiste is, is nog niet uitgezocht, en dat uitzoeken is de volgende stap,
 geen aanname.
 
-**Status:** erkend en publiekelijk beantwoord (zie de reactie op
-x402-foundation/x402#3379). Welke oplossingsrichting: open onderzoek, geen
-bouwbeslissing vandaag.
+**Vervolg, later dezelfde dag: een echte adversariële toets voordat er iets
+naar buiten ging.** Op uitdrukkelijk verzoek van de koning ("wij gaan eerst
+ervoor zorgen dat we het probleem echt hebben opgelost... bereid scherpe
+vragen van professors voor") is er NIET gereageerd op goun7's vraag voordat
+vier onafhankelijke reviews hun werk hadden gedaan: één brede misbruik-scan
+over het hele pakket (de 4 verplichte checks: auth/data/exposure/rate, plus
+race conditions en "wat kan een oneerlijke host nog meer doen") en drie
+onafhankelijke ontwerp-pogingen voor D-005+D-006 samen (transparency-log-lens,
+on-chain-anchoring-lens met een echte kostenanalyse tegen de werkelijke
+settlement-code, en een "bouw zo min mogelijk"-tegengeluid).
+
+**Wat die misbruik-scan echt vond, en wat dat betekent voor de eigen
+aanname hierboven:** het klopt NIET dat "elke getoonde claim nog steeds 100%
+authentiek is". De leesroute (`resyncFromDisk` in ledger.ts, de basis van
+`get_delivery_history`) controleerde tot vandaag alleen de VORM van `claimId`
+en `signature` (twee regexes), nooit of ze ook echt bij de inhoud horen.
+Een tweede proces met schrijftoegang tot dezelfde `CAPACITY_ATTEST_DATA_DIR`
+(een gedeelde ledger is een expliciet ondersteunde inzet, zie ledger.ts's
+eigen headercommentaar) kon dus een compleet verzonnen, verkeerd-toegeschreven
+of getamperde regel rechtstreeks in `claims.jsonl` plaatsen en die kwam er
+zonder enige controle weer uit. Dat is een reëler probleem dan D-006 hierboven
+veronderstelde: niet alleen weglating, ook fabricage. Gerepareerd (SEVENTH FIX
+in ledger.ts, 2026-09-06): de leesroute rekent `verifyClaim()` nu ook zelf na
+per regel, met vier nieuwe tests die precies dit scenario natrekken
+(verkeerde claimId, ongeldige handtekening, en de reattributie-variant met
+een handtekening van een ander wallet dan de opgegeven buyer). Drie kleinere,
+losstaande bevindingen uit dezelfde scan zijn tegelijk gerepareerd omdat ze
+mechanisch en ondiscutabel waren: een absoluut bestandspad dat via een
+lock-timeout-foutmelding naar de MCP-caller lekte (EIGHTH FIX), een
+ontbrekende try/catch rond de `get_delivery_history`-handler zelf (NINTH
+FIX, inconsistent met de rest van het codebase-patroon), en een
+cyclus-bewaking die wel op de ingest-route stond maar niet op haar eigen
+tweelingfunctie op de schema-route (TENTH FIX, niet bereikbaar via MCP, wel
+inconsistent). Twee grotere bevindingen zijn NIET vandaag gerepareerd, expres:
+zie D-014 en D-015 hieronder.
+
+**Wat vandaag wél is uitgebreid, als directe, eerlijke reactie op de vraag
+zelf:** de `note` in `get_delivery_history`'s antwoord (en de MCP
+tool-beschrijving) noemden tot vandaag alleen D-005 (cross-installatie).
+Vanaf vandaag noemen ze ook expliciet dat volledigheid op de eerlijkheid van
+de host rust, niet op cryptografie: precies het onderscheid dat dit
+document zelf al maakte, nu ook zichtbaar voor een AI-agent die de tool
+aanroept zonder deze file te lezen. Daarnaast staat er nu een README-sectie
+("Je eigen ingediende claims delen, los van een host") met een kant-en-klaar
+voorbeeld: een koper kan zijn eigen, al ondertekende claims filteren en
+rechtstreeks aan een wantrouwende tegenpartij laten zien, buiten elke host
+om. Geen nieuw schema, geen nieuwe tool, hergebruikt alleen wat al
+geëxporteerd werd (`claimsForSeller`), exact het soort goedkope, reële
+mitigatie die de "bouw zo min mogelijk"-review aanraadde.
+
+**Waarom er vandaag GEEN on-chain/blockchain-mechanisme is gebouwd, ook al
+leverden twee van de drie ontwerp-reviews onafhankelijk een variant daarvan
+op:** de derde review las de daadwerkelijke settlement-code
+(`mcp-paywall/src/x402.mjs`) in plaats van aan te nemen, en vond dat
+meeliften op dezelfde x402-transactie niet kan (de koper ondertekent alleen
+een off-chain EIP-3009-autorisatie; een facilitator van een derde partij
+zendt de echte transactie uit, dit project bouwt of beheert die transactie
+nooit). Een apart, nieuw on-chain-bericht zou dus de EERSTE keer zijn dat een
+koper Base-ETH moet aanhouden, een transactie moet uitzenden en op bevestiging
+moet wachten, iets wat vandaag nergens in dit pakket nodig is (ondertekenen
+is overal puur offline). Het verschuift het weglatingsprobleem ook niet weg,
+het verplaatst het: van "één host kan iets verzwijgen" naar "elke individuele
+koper moet zelf de moeite en kosten nemen om iets te publiceren, anders is
+het net zo onzichtbaar als vandaag". Geen overduidelijke verbetering dus. Los
+daarvan bevestigde D-012 (hieronder, dezelfde dag, apart onderzoek) dat de
+markt dit al heeft gevuld: EAS (Ethereum Attestation Service, live op Base
+sinds meerdere jaren, bevraagbaar via een gratis GraphQL-API, onafhankelijk
+geverifieerd vandaag) en ERC-8004 zijn precies de publieke,
+niet-Tokenizen-gehoste opslag die D-005's route (c) zocht. Zelf een nieuw
+contract bouwen zou exact de fout herhalen die D-007 t/m D-013 net vermeden
+voor de zes andere lagen: een slechter alternatief bouwen voor iets dat elders
+al beter en groter bestaat. Als D-005's trigger ooit afgaat, is het antwoord
+dus waarschijnlijk "publiceer een verwijzing naar EAS/ERC-8004", niet "bouw
+een eigen ledger-contract", maar dat blijft, net als de rest van route (c),
+wachten op die trigger.
+
+**Trigger-criterium voor het on-chain/anchoring-stuk specifiek:** een
+concrete, betalende partij (een integrator, geen losse commentator) heeft
+een reëel, operationeel probleem met de huidige aanpak (README-uitleg +
+zelf-export) EN is bereid de bijkomende complexiteit (gas, wallet-beheer,
+transactiebevestiging) zelf te dragen of te financieren. **Wat NIET telt als
+trigger:** een tweede goede vraag zonder een tweede echte partij die er
+concreet tegenaan loopt, zie D-002's eigen redenering, dezelfde meetlat.
+
+**Status:** vandaag NIET publiekelijk beantwoord: de koning gaf expliciet
+opdracht eerst de twee onderliggende problemen aan te pakken voordat er
+gereageerd wordt. Concreet gerepareerd: de fabricage-fout hierboven (SEVENTH
+FIX) plus drie kleinere, mechanische bevindingen (EIGHTH/NINTH/TENTH FIX).
+Concreet uitgebreid: de disclosure (`note`/tool-beschrijving) en een
+zelf-export-recept in README. Bewust NIET gebouwd: een on-chain/anchoring-
+mechanisme, zie redenering hierboven; blijft open onderzoek met een eigen
+trigger-criterium, geen bouwbeslissing vandaag.
 
 ---
 
@@ -535,3 +639,89 @@ trigger:** een hypothetisch "er zou ooit een geschil kunnen zijn".
 
 **Status:** veld gebouwd (0.3.0, ongepubliceerd, dev-branch). Eigen
 geschillenlogica: niet bouwen, wacht op trigger.
+
+---
+
+## D-014 t/m D-015: twee overgebleven bevindingen uit de misbruik-scan van 2026-09-06, bewust niet vandaag gerepareerd
+
+Achtergrond: dezelfde brede misbruik-scan die de SEVENTH/EIGHTH/NINTH/TENTH
+fix in D-006 hierboven opleverde, vond ook deze twee. Beide zijn ECHT, geen
+van beide is vandaag gerepareerd, en dat is een bewuste keuze, geen
+oversight: beide vereisen een eigen ontwerpbeslissing (welke limiet, welk
+gedrag bij overschrijding) in plaats van een ondiscutabele mechanische fix.
+Ze hier apart loggen in plaats van stilzwijgend te laten liggen is precies
+het verschil tussen "eerlijk een open poort melden" en "een lek stilletjes
+doorlaten" (koning-profiel 5.2).
+
+### D-014: niets kost een koper iets om onbeperkt claims te fabriceren
+
+**Hypothese:** `settlementRef` en `evidenceHash` zijn vrije, zelf-opgegeven
+velden (bewust, zie README "Relatie tot x402"), niets controleert dat er
+echt een x402-betaling achter zit. Een aanvaller met één (ongefinancierd)
+testwallet kan dus, zonder ooit echt te betalen, in een lus geldige,
+correct-ondertekende claims blijven produceren (elke keer een andere
+`settlementRef` of timestamp geeft een andere, geldige `claimId`). Dat opent
+twee concrete misbruiken: een verkoper die zichzelf honderden `delivered:
+"yes"`-claims geeft (zelf-inflatie), of een aanvaller die een concurrent
+`delivered: "no"`-claims geeft met een waardeloze `settlementRef`
+(reputatieschade). Beide zien er in `get_delivery_history`'s antwoord
+identiek uit aan een echte claim. Een aanverwant effect: `appendClaim()`
+gebruikt precies één, bestandsbrede lock (niet per verkoper), dus een vloed
+van claims voor willekeurig welke verkoper vertraagt tijdelijk ALLE andere
+`record_delivery`-aanroepen op dezelfde gedeelde ledger.
+
+**Waarom nu niet:** dit is een reeds bekend, bewust aanvaard MVP-grens, geen
+nieuwe ontdekking: README's eigen "Relatie tot x402"-sectie noemt
+`settlementRef`-verificatie tegen een echte facilitator al expliciet als TODO
+buiten deze MVP. De misbruik-scan maakt het concreter (een exacte
+aanvalslus, een naam voor het lock-effect) maar verandert de onderliggende
+afweging niet: een echte oplossing (settlementRef actief bevragen bij een
+facilitator/chain, of een soort bonding/rate-limit per sleutel) is precies
+het soort "actieve verificatielogica" dat D-011 hierboven om dezelfde reden
+NIET vandaag bouwt: een half werkend veld zonder de bijbehorende actieve
+controle is schijnzekerheid, erger dan de huidige eerlijke "vrije tekst,
+koper vult eerlijk in"-aanname.
+
+**Trigger-criterium:** een echte partij ondervindt hier concrete schade van
+(een verkoper wijst op zelf-inflatie door een concurrent, of een koper meldt
+een vloed van valse claims tegen zijn adres), OF de D-011-trigger afgaat
+(iemand noemt een ongeverifieerde `settlementRef` concreet als reden om een
+claim te wantrouwen); in dat laatste geval lost de D-011-oplossing dit
+grotendeels vanzelf mee op. **Wat NIET telt als trigger:** de theoretische
+constatering dat dit "zou kunnen" zonder een echte partij die het doet of
+erdoor geraakt wordt.
+
+**Status:** niet bouwen. Bekende, bewuste MVP-grens, nu explicieter
+gedocumenteerd. Wacht op trigger.
+
+### D-015: `get_delivery_history`'s antwoord is onbegrensd en synchroon
+
+**Hypothese:** elke andere O(n)-route over de ledger in dit bestand
+(`resyncFromDisk`'s parse/sort/bySeller-opbouw) is vandaag al eerder
+gehard met batches en een echte yield, na gemeten blokkades van
+tientallen tot honderden milliseconden bij realistische schaal (zie
+ledger.ts's eigen FIRST/THIRD/SIXTH FIX-commentaar). `get_delivery_history`'s
+eigen antwoordpad (`textResult()` in index.ts, één ongebatchte
+`JSON.stringify(value, null, 2)` over de volledige, ongelimiteerde
+`claims`-array) kreeg diezelfde behandeling nooit. Bij een verkoper met een
+organisch lange geschiedenis, of bij het D-014-scenario hierboven
+(duizenden gefabriceerde claims tegen één verkoper), blokkeert dit exact
+dezelfde klasse probleem die elders in dit bestand al meermaals is gefixt.
+
+**Waarom nu niet:** de juiste oplossing (limiet op aantal geretourneerde
+claims? paginering? alleen de meest recente N met het echte totaal erbij?)
+is een productbeslissing die het antwoord-contract wijzigt, niet een
+mechanische toevoeging zoals de SEVENTH t/m TENTH fix. Zonder een reëel
+geval van een lange geschiedenis is elke keuze hier een gok naar de
+verkeerde kant: te laag afkappen verbergt net de late, mogelijk negatieve
+claims die het belangrijkst zijn om te zien.
+
+**Trigger-criterium:** een reële verkoper-geschiedenis (organisch, of via
+D-014) wordt daadwerkelijk lang genoeg om dit merkbaar te maken (trage
+respons, of een gemeten event-loop-blokkade zoals de bestaande bench/-
+scripts dat voor de andere routes al meten). **Wat NIET telt als trigger:**
+de theoretische constatering dat een array "in principe" onbegrensd kan
+groeien.
+
+**Status:** niet bouwen. Bekend, gedocumenteerd, wacht op een gemeten geval
+voordat er een keuze wordt gemaakt over HOE te begrenzen.

@@ -50,9 +50,12 @@ server.registerTool(
     description:
       "Return every signature-verified delivery claim recorded against a given sellerAddress in THIS installation's " +
       "local ledger, oldest first. Purely factual — no aggregate score, rating, or reputation judgment is computed. " +
-      "IMPORTANT: this is scoped to the local ledger only. A different installation may hold other claims against " +
-      "the same seller that this call cannot see, so an empty or short result does NOT mean the seller has a clean " +
-      "record elsewhere, only that no claims have been recorded here. The response's own `note` field repeats this. " +
+      "IMPORTANT, two separate caveats, both repeated in the response's own `note` field: (1) this is scoped to the " +
+      "local ledger only — a different installation may hold other claims against the same seller that this call " +
+      "cannot see, so an empty or short result does NOT mean the seller has a clean record elsewhere, only that no " +
+      "claims have been recorded here; (2) even within this installation, a shown claim's signature is genuinely " +
+      "verified, but nothing proves this is the COMPLETE set of claims the operator actually holds — completeness " +
+      "depends on the operator's honesty, not cryptography. " +
       "A buying agent can call this BEFORE paying a seller to see that seller's raw delivery history for gpu-hours, " +
       "storage, api-credits, and bandwidth claims.",
     inputSchema: {
@@ -60,7 +63,21 @@ server.registerTool(
     },
   },
   async ({ sellerAddress }) => {
-    return textResult(await getDeliveryHistory(sellerAddress));
+    // NINTH FIX (2026-09-06, found by the same adversarial audit as the
+    // ledger.ts SEVENTH/EIGHTH fixes): every other handler/entry point in
+    // this codebase (record_delivery below, recordDelivery() in tools.ts)
+    // is deliberately wrapped so untrusted-input-triggered errors degrade to
+    // the tool's normal {ok:false}/errorResult contract instead of an
+    // uncaught exception — this handler was the one place that discipline
+    // was not applied. A real fs error surfaced from getFreshCache()/
+    // resyncFromDisk() (e.g. a transient EACCES/EBUSY, deliberately made
+    // non-swallowed by an earlier fix in ledger.ts) would otherwise escape
+    // this handler unhandled instead of returning a normal error result.
+    try {
+      return textResult(await getDeliveryHistory(sellerAddress));
+    } catch (e) {
+      return errorResult((e as Error).message);
+    }
   },
 );
 

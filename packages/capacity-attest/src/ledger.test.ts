@@ -388,3 +388,73 @@ describe("ledger cache adversarial-verification-round fixes (2026-08-31, same da
     }
   });
 });
+
+// Tests for the SEVENTH FIX (2026-09-06, found by an adversarial misuse-scenario
+// audit): the read path (resyncFromDisk, backing claimsForSeller()/allClaims()/
+// get_delivery_history) only ever checked claimId/signature's SHAPE via regex —
+// it never recomputed either, so a well-shaped but fabricated line, written
+// directly to claims.jsonl (the same "second writer" scenario the cache tests
+// above simulate for a LEGITIMATE claim), was served back out as if genuine.
+// Each test injects such a line with the exact raw-fs technique used above, but
+// with a tampered claimId, a garbage signature, or a real-but-misattributed
+// signature instead of a legitimate second write.
+describe("ledger read-path signature verification (2026-09-06 fix)", () => {
+  it("een direct in het bestand geplaatste regel met een claimId die niet bij de inhoud hoort wordt genegeerd, niet teruggegeven", async () => {
+    const buyer = testWallet();
+    const genuine = await buildSignedClaim(buyer, { settlementRef: "0x" + "81".repeat(32) });
+    await appendClaim(genuine);
+
+    const fabricated = await buildSignedClaim(buyer, { settlementRef: "0x" + "82".repeat(32) });
+    // Same shape (0x + 64 hex) as a real claimId, but does not hash this
+    // content — exactly what a second writer bypassing recordDelivery()'s
+    // verifyClaim() gate could produce.
+    const tampered = { ...fabricated, claimId: "0x" + "ab".repeat(32) };
+    appendFileSync(join(tmpDir, "claims.jsonl"), JSON.stringify(tampered) + "\n");
+
+    expect((await allClaims()).map((c) => c.claimId)).toEqual([genuine.claimId]);
+    expect(await claimsForSeller(genuine.sellerAddress)).toHaveLength(1);
+  });
+
+  it("een direct in het bestand geplaatste regel met een handtekening van het verkeerde soort (garbage) wordt genegeerd", async () => {
+    const buyer = testWallet();
+    const genuine = await buildSignedClaim(buyer, { settlementRef: "0x" + "83".repeat(32) });
+    await appendClaim(genuine);
+
+    const fabricated = await buildSignedClaim(buyer, { settlementRef: "0x" + "84".repeat(32) });
+    // claimId stays correct (it really is the hash of this content) — only
+    // the signature is garbage of the right shape (0x + 130 hex).
+    const tampered = { ...fabricated, signature: "0x" + "cd".repeat(65) };
+    appendFileSync(join(tmpDir, "claims.jsonl"), JSON.stringify(tampered) + "\n");
+
+    expect((await allClaims()).map((c) => c.claimId)).toEqual([genuine.claimId]);
+  });
+
+  it("een handtekening van een ANDER wallet dan de opgegeven buyerAddress wordt genegeerd (reattributie-scenario)", async () => {
+    const buyer = testWallet();
+    const impostor = testWallet();
+    const genuine = await buildSignedClaim(buyer, { settlementRef: "0x" + "85".repeat(32) });
+    await appendClaim(genuine);
+
+    // Content honestly claims buyerAddress = buyer, but is actually signed
+    // by `impostor` — internally consistent (claimId really does hash this
+    // content) but signature recovers to impostor, not the declared buyer.
+    // The closest a hand-edited ledger line can get to "looking real"
+    // without holding buyer's private key.
+    const impostorClaim = await buildSignedClaim(impostor, {
+      buyerAddress: buyer.address,
+      settlementRef: "0x" + "86".repeat(32),
+    });
+    appendFileSync(join(tmpDir, "claims.jsonl"), JSON.stringify(impostorClaim) + "\n");
+
+    expect((await allClaims()).map((c) => c.claimId)).toEqual([genuine.claimId]);
+  });
+
+  it("regressie: een echt via appendClaim() opgeslagen claim blijft na deze fix gewoon zichtbaar", async () => {
+    const buyer = testWallet();
+    const claim = await buildSignedClaim(buyer);
+    await appendClaim(claim);
+
+    expect(await allClaims()).toHaveLength(1);
+    expect((await claimsForSeller(claim.sellerAddress))[0]?.claimId).toBe(claim.claimId);
+  });
+});

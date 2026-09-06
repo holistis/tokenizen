@@ -11,6 +11,7 @@ import { readFileSync, appendFileSync, openSync, closeSync, unlinkSync, statSync
 import { join } from "node:path";
 import { dataDir, ensureDataDir } from "./config.js";
 import { DeliveryClaimSchema, type DeliveryClaim } from "./schema.js";
+import { verifyClaim } from "./signing.js";
 
 function claimsFile(): string {
   return join(dataDir(), "claims.jsonl");
@@ -104,7 +105,18 @@ async function acquireLock(path: string): Promise<void> {
         continue;
       }
       if (Date.now() > deadline) {
-        throw new Error(`ledger_lock_timeout: could not acquire lock at ${path}`);
+        // EIGHTH FIX (2026-09-06, found by the same adversarial audit as the
+        // SEVENTH FIX above): this used to interpolate the full resolved
+        // `path` (== CAPACITY_ATTEST_DATA_DIR + "/claims.jsonl.lock") into the
+        // thrown message. That propagates unchanged through appendClaim() ->
+        // recordDelivery()'s `{ok:false, reason: e.message}` -> the MCP
+        // tool's error text (index.ts's errorResult) — a caller who simply
+        // triggers ordinary lock contention (trivial: a few concurrent
+        // record_delivery calls) gets the server's absolute filesystem path
+        // handed back, which on a real deployment can reveal the install
+        // location and, on Windows, the operating user's name. No caller
+        // needs that path to understand or retry the failure.
+        throw new Error("ledger_lock_timeout: could not acquire the ledger lock in time");
       }
       // Non-blocking backoff: await a real timer instead of spinning, so the
       // event loop stays free to process other work (timers, other
@@ -410,8 +422,34 @@ async function resyncFromDisk(file: string): Promise<LedgerCache> {
     const line = lines[i]!;
     try {
       const claim = DeliveryClaimSchema.parse(JSON.parse(line));
-      decorated.push({ claim, ts: timestampMs(claim) });
-      claimIdSet.add(claim.claimId.toLowerCase());
+      // SEVENTH FIX (2026-09-06, found by an adversarial audit): until this
+      // fix, a line only had to match DeliveryClaimSchema's SHAPE (claimId a
+      // 0x+64-hex string, signature a 0x+130-hex string — see schema.ts's
+      // claimIdField/signatureField, both plain regexes) to be accepted into
+      // the cache and served back out through get_delivery_history. Neither
+      // claimId (does it really hash the claim's own content?) nor signature
+      // (does it really recover to buyerAddress?) was ever recomputed on
+      // this READ path — only appendClaim()'s caller (recordDelivery() in
+      // tools.ts) verifies before writing. That is airtight for claims that
+      // only ever arrive via record_delivery, but this ledger's own header
+      // comment documents a deployment shape this package is explicitly
+      // built for — multiple OS processes sharing one
+      // CAPACITY_ATTEST_DATA_DIR — where nothing stops a second writer (or a
+      // corrupted/hand-edited file) from appending a well-shaped but entirely
+      // fabricated line directly to claims.jsonl, bypassing recordDelivery()
+      // and its verifyClaim() gate completely. Before this fix such a line
+      // would resync into the cache and get returned as if genuine,
+      // contradicting both get_delivery_history's own tool description
+      // ("every SIGNATURE-VERIFIED delivery claim") and DECISIONS.md D-006's
+      // reasoning, which assumed authenticity of every shown claim was never
+      // in question — it was, on this exact path. Fix: reuse the same
+      // verifyClaim() the write path already trusts, and treat a claim that
+      // fails it exactly like a corrupt/truncated line below — silently
+      // excluded, ledger stays readable, no new error surface.
+      if (verifyClaim(claim).ok) {
+        decorated.push({ claim, ts: timestampMs(claim) });
+        claimIdSet.add(claim.claimId.toLowerCase());
+      }
     } catch {
       // A corrupt/partial line (e.g. a truncated write) must not take down
       // reads of the rest of the ledger — same tolerance as before this fix.

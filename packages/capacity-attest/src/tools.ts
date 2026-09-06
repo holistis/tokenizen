@@ -74,10 +74,18 @@ export async function recordDelivery(input: unknown): Promise<RecordDeliveryResu
  * where this data came from, never how trustworthy the seller is. Adding a
  * quality/confidence field here would be exactly the score this package
  * refuses to compute (see "Wat dit NIET is" in README.md) — these two exist
- * only to close a different, real gap: without them, an empty `claims` array
- * is indistinguishable from "this seller has a clean record" when it may
- * just mean "no claims have been recorded on THIS ledger". A caller (human
- * or agent) reading only `count: 0` has no way to tell those apart.
+ * to close two different, real gaps, both discovered from the same root
+ * cause: without them, an empty `claims` array is indistinguishable from
+ * "this seller has a clean record" when it may just mean "no claims have
+ * been recorded on THIS ledger" (gap 1, DECISIONS.md D-005), and a caller
+ * has no way to tell "the host showed everything it has" from "the host
+ * showed a curated subset" (gap 2, DECISIONS.md D-006) — every claim that IS
+ * shown has its own independently checkable signature (doubly true after the
+ * 2026-09-06 fix in ledger.ts that made the read path itself re-verify that,
+ * not just check shape), but nothing proves the SET shown is the full set
+ * the host actually holds. A caller (human or agent) reading only
+ * `count: 0`, or reading any count without this note, has no way to tell
+ * either of those apart from a genuinely clean, complete record.
  */
 export interface DeliveryHistoryResult {
   sellerAddress: string;
@@ -91,7 +99,10 @@ const LOCAL_LEDGER_NOTE =
   "This reflects only claims recorded on this installation's local ledger (see CAPACITY_ATTEST_DATA_DIR in README.md). " +
   "A different installation may hold other claims against the same sellerAddress that this call cannot see. " +
   "An empty or short history does not mean the seller has a clean record elsewhere: it may just mean no claims " +
-  "have been recorded here yet.";
+  "have been recorded here yet. Separately: every claim shown here has an independently checkable signature, but " +
+  "this tool cannot prove the operator of this installation has shown you every claim it actually holds — " +
+  "completeness rests on that operator's honesty, not on cryptography. For stronger assurance about one specific " +
+  "claim, ask the buyer who filed it to share their own signed copy of it directly.";
 
 /**
  * Every known, signature-verified claim recorded against sellerAddress in

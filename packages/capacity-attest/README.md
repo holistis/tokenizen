@@ -81,6 +81,27 @@ Let op: importeer `capacity-attest/dist/signing.js` rechtstreeks, niet het packa
 
 Een werkend, extern gereproduceerd voorbeeld van deze exacte stappen staat in [github.com/YE-YI7/asm-spec, PR #18](https://github.com/YE-YI7/asm-spec/pull/18): een onafhankelijk project dat dit tegen een echte, live geregistreerde claim heeft gedraaid.
 
+## Je eigen ingediende claims delen, los van een host (D-006)
+
+`get_delivery_history` vertrouwt op de eerlijkheid van wie de MCP-server bedient: zie de `note` in dat tool-antwoord en [DECISIONS.md](./DECISIONS.md) (D-006). Elke getoonde claim is wel degelijk echt (ondertekening wordt sinds 2026-09-06 ook bij het lezen opnieuw gecontroleerd, niet alleen bij het schrijven), maar niets bewijst dat de host de VOLLEDIGE set laat zien die hij daadwerkelijk heeft.
+
+Als jij zelf de koper bent die een claim indiende, hoef je op die host niet te wachten: jij hebt die claim zelf al ondertekend, dus jij kan 'm rechtstreeks aan een wantrouwende tegenpartij laten zien, buiten elke host om.
+
+```js
+// export-my-claims.mjs
+import { claimsForSeller } from "capacity-attest/dist/ledger.js";
+
+const myAddress = "0x...";     // jouw buyerAddress
+const seller = "0x...";        // de verkoper waar het over gaat
+
+const mine = (await claimsForSeller(seller)).filter(
+  (c) => c.buyerAddress.toLowerCase() === myAddress.toLowerCase(),
+);
+console.log(JSON.stringify(mine, null, 2));
+```
+
+Elke claim in die lijst is zelfstandig verifieerbaar met `verifyClaim()` (zie hierboven), zonder dat de ontvanger jouw installatie of enige host hoeft te vertrouwen. Dit lost geen vindbaarheid op (D-005: hoe vindt iemand anders jouw claim zonder dat jij 'm deelt) en geen volledigheid over ALLE kopers samen (D-006: dit bewijst alleen wat JIJ indiende, niet wat een host verder mogelijk verzwijgt van andere kopers), maar het geeft een concrete, kosteloze manier om één specifiek geschil te bewijzen zonder een host te hoeven vertrouwen.
+
 ## Lokaal draaien
 
 ```bash
