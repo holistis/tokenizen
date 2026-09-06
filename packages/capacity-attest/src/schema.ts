@@ -359,6 +359,120 @@ function checkMeasuredConsistency(
   }
 }
 
+// ---------------------------------------------------------------------------
+// `externalRefs` — optional, unverified pointers into other agent-economy
+// infrastructure, added in 0.3.0.
+//
+// Background: a 2026-09-06 workflow checked the six layers that sit next to
+// this package's own Evidence layer (Identity, Authority, Intent, Execution,
+// Settlement, Discovery, Liability) against what the wider agent-economy
+// ecosystem (ERC-8004, Google AP2, the x402 Foundation, the Legal Context
+// Protocol, and others) already ships in production. Every one of them is
+// already being built by parties with far more reach than this project —
+// see knowledge/al-mizaan/... in wazir-al-ghanima for the sourced writeup.
+// Building any of those layers ourselves would duplicate infrastructure that
+// already exists and is better resourced. What DOES fit this package's own
+// "verify yourself, we assert facts, never authority" philosophy: a place to
+// CITE one of those external systems from inside a claim, without this
+// package ever validating, resolving, or trusting what is cited. Same
+// posture as `evidenceHash` (a hash of evidence that is never itself
+// checked) and `settlementRef` (a payment reference that is never itself
+// resolved on-chain).
+//
+// Same preimage discipline as `measured`: `externalRefs` is exactly one
+// `.optional()` key on ClaimContentObject, never `.default()`. An older
+// parser that does not know this key strips it and computes a different
+// (mismatching) claimId rather than silently trusting an unverified
+// reference — the same safe failure direction `measured`'s own comment
+// describes. Claims that omit the key hash bit-for-bit identically to
+// before this field existed; enforced by the frozen regression anchor in
+// external-refs.test.ts.
+//
+// Every leaf string below is deliberately format-light: these reference
+// external systems (DIDs, CAIP-10-style chain identifiers, AP2 mandate ids,
+// LCP terms hashes) whose own syntax this package has no business policing
+// beyond basic length and hygiene. `mandateIssuerDid` is the one exception —
+// a real, narrow DID-syntax check — because W3C DID Core defines that
+// syntax precisely and a malformed DID here is unambiguously a caller bug,
+// not a valid-but-unusual value this package should let through.
+// ---------------------------------------------------------------------------
+
+const MAX_EXTERNAL_REF_LENGTH = 512;
+const MAX_PROTOCOL_LABEL_LENGTH = 64;
+// Minimal W3C DID Core syntax: `did:<method-name>:<method-specific-id>`.
+// method-name is ASCII lowercase letters/digits; method-specific-id is left
+// broad (colons separate additional segments across DID methods) but still
+// restricted to a safe, portable character set — the same reasoning as
+// hasForbiddenTextChars elsewhere in this file, applied via character class
+// instead of a separate refine, since the regex already forbids the
+// offending bytes outright.
+const DID_RE = /^did:[a-z0-9]+:[A-Za-z0-9._:%-]+$/;
+
+function externalRefIssue(v: string): string | null {
+  if (hasForbiddenTextChars(v)) {
+    return "must not contain C0 control characters, U+007F, or lone surrogates";
+  }
+  return null;
+}
+
+const ExternalRefSchema = z
+  .string()
+  .min(1, "must not be empty — omit the field entirely instead")
+  .max(MAX_EXTERNAL_REF_LENGTH)
+  .refine((v) => externalRefIssue(v) === null, {
+    message: "must not contain C0 control characters, U+007F, or lone surrogates",
+  });
+
+const MandateIssuerDidSchema = z
+  .string()
+  .max(MAX_EXTERNAL_REF_LENGTH)
+  .regex(DID_RE, "mandateIssuerDid must be a syntactically valid DID: did:<method>:<method-specific-id>");
+
+const DisputeContextSchema = z.strictObject({
+  protocol: z
+    .string()
+    .min(1, "protocol is required and must not be empty")
+    .max(MAX_PROTOCOL_LABEL_LENGTH)
+    .refine((v) => externalRefIssue(v) === null, {
+      message: "must not contain C0 control characters, U+007F, or lone surrogates",
+    })
+    .describe('Short label for the external dispute/liability protocol this claim can be evidence for, e.g. "LCP"'),
+  termsHash: z
+    .string()
+    .regex(LOWER_SHA256_HEX_RE, "termsHash must be a lower-case sha256 hex digest (64 chars, no 0x prefix)")
+    .describe("sha256 of the governing terms both parties accepted at settlement time — the terms themselves are not stored here"),
+  resolutionRef: ExternalRefSchema.optional().describe(
+    "Optional pointer to a resolution/case record in the external protocol named by `protocol`, once one exists",
+  ),
+});
+export type DisputeContext = z.infer<typeof DisputeContextSchema>;
+
+export const ExternalRefsSchema = z
+  .strictObject({
+    sellerAgentRef: ExternalRefSchema.optional().describe(
+      "Unverified pointer to an external agent-identity record for the seller (e.g. an ERC-8004 agent id or a DID). Tokenizen does not resolve or verify this",
+    ),
+    buyerAgentRef: ExternalRefSchema.optional().describe(
+      "Unverified pointer to an external agent-identity record for the buyer. Tokenizen does not resolve or verify this",
+    ),
+    mandateRef: ExternalRefSchema.optional().describe(
+      "Unverified pointer to an externally issued authority/mandate object (e.g. an AP2 Payment/Cart Mandate) that the buyer claims covers this delivery. Tokenizen does not check scope, budget, or validity against it",
+    ),
+    mandateIssuerDid: MandateIssuerDidSchema.optional().describe(
+      "DID of the principal who is claimed to have issued the mandate referenced by `mandateRef`. Not verified against the mandate itself",
+    ),
+    intentRef: ExternalRefSchema.optional().describe(
+      "Unverified pointer to an externally issued, pre-signed intent object (e.g. an AP2 IntentMandate) describing what the buyer's principal originally asked for",
+    ),
+    disputeContext: DisputeContextSchema.optional().describe(
+      "Present only if buyer and seller had already agreed to external dispute terms at settlement time. Makes a delivered:no claim usable as evidence in that external protocol instead of Tokenizen adjudicating anything itself",
+    ),
+  })
+  .refine((v) => Object.keys(v).length > 0, {
+    message: "externalRefs must not be an empty object — omit the field entirely if there is nothing to reference",
+  });
+export type ExternalRefs = z.infer<typeof ExternalRefsSchema>;
+
 export const ClaimContentObject = z.object({
   // .transform(toLowerCase): a fuzz-and-benchmark audit found that
   // computeClaimId() hashed addresses exactly as submitted while every other
@@ -415,6 +529,11 @@ export const ClaimContentObject = z.object({
   // production claim in data-selftest/claims.jsonl).
   measured: MeasuredSchema.optional().describe(
     "Optional quantitative record of how much was promised and how much was measured. Presence is the version marker; absence is the only encoding of 'not measured'",
+  ),
+  // Added in 0.3.0, same optional/never-defaulted discipline as `measured`
+  // above — see the ExternalRefsSchema comment block for the full rationale.
+  externalRefs: ExternalRefsSchema.optional().describe(
+    "Optional, unverified pointers into other agent-economy infrastructure (identity, authority, intent, dispute). Tokenizen never resolves or trusts these — they are citations, not verified facts",
   ),
 });
 

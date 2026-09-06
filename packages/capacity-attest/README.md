@@ -20,6 +20,7 @@ Dit is bewust en hardcoded **niet**:
 - **Geen financieel product.** Geen rente, geen tijd-disconto op betalingen, geen yield op het ledger-saldo (er ís geen saldo, dit is geen escrow), geen lening, geen onderpand, geen invoice-financing/factoring. `assetType` is een gesloten enum van capaciteitssoorten (`gpu-hours`, `storage`, `api-credits`, `bandwidth`) en bevat bewust niets dat op een financieel instrument lijkt.
 - **Geen eigen token of munt.** Betalingen lopen via x402/USDC zoals gebruikelijk; dit project registreert alleen de *bon* van een afwikkeling die al ergens anders heeft plaatsgevonden.
 - **Geen krediet-verlening.** Een claim wordt pas gemaakt **na** een voltooide betaling. Dit project financiert niets, het documenteert een reeds afgeronde ijara (verhuur/dienst)-transactie.
+- **Geen eigen identity-, autoriteits- of geschillenlaag.** `externalRefs` (zie hieronder) is puur een citaat naar een systeem van een ander (ERC-8004, AP2, Legal Context Protocol, ...). Dit project resolvet, verifieert of beoordeelt die verwijzing zelf nooit. Zie [DECISIONS.md](./DECISIONS.md) D-007 t/m D-013 voor waarom dit bewust geen eigen protocol is geworden.
 
 Dit is een bewuste, formeel getoetste ontwerpkeuze, niet een toevallige scope-beperking. Zie de guardrails-sectie in het project-brief als je overweegt hier iets aan toe te voegen: bij twijfel of een veld/functie hiertegenaan schuurt, laat het weg.
 
@@ -43,6 +44,7 @@ De betalende agent (de koper) roept dit aan **na** een x402-afwikkeling, zodra b
 | `timestamp` | ISO-8601 tijdstip |
 | `claimId` | content-addressed sha256-hash van alle velden hierboven, zie `computeClaimId()` in `src/schema.ts` |
 | `signature` | EIP-191 personal-sign handtekening van de koper over `claimId` |
+| `externalRefs` | *(optioneel, sinds 0.3.0)* ongeverifieerde verwijzingen naar andere agent-economie-infrastructuur: `sellerAgentRef`/`buyerAgentRef` (bv. een ERC-8004-agent-id of DID), `mandateRef`+`mandateIssuerDid` (een extern uitgegeven AP2/AAE-mandaat), `intentRef` (een extern AP2 IntentMandate), `disputeContext` (`protocol`+`termsHash`+optioneel `resolutionRef`, bv. een Legal Context Protocol-verwijzing). Zie [DECISIONS.md](./DECISIONS.md) D-007 t/m D-013 |
 
 De server valideert eerst het schema, dan of `claimId` echt de hash van de inhoud is, en dan of `signature` echt terugrekent naar `buyerAddress`. Alleen dan wordt de claim toegevoegd aan de append-only ledger (`data/claims.jsonl`). Een ongeldige handtekening of een claim die al eerder is opgeslagen (zelfde `claimId`) wordt geweigerd.
 

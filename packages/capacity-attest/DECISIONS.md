@@ -205,3 +205,333 @@ loopt. Zelfde meetlat als elk ander item hier.
 **Status:** de disclosure-fix is vandaag gedaan en live. De onderliggende
 architectuurkeuze (a/b/c) staat open, wachtend op de eerste echte
 gelegenheid om 'm te toetsen.
+
+**Update dezelfde dag, avond:** goun7 (auteur van het "proof-of-done"-
+voorstel, x402-foundation/x402#3379, bouwer van Tamga Protocol) stelde
+letterlijk deze vraag in een openbare reactie: "for 'a future buyer pulls
+that seller's history', what is the intended hosting model: every buyer runs
+their own, or federation?" Dat is precies het trigger-criterium hierboven,
+eerder dan de EmbryoSpace-PR. Zie D-006 voor het antwoord en de bijbehorende,
+scherpere vervolgvraag die hij tegelijk stelde.
+
+---
+
+## D-006: kan een oneerlijke host claims selectief verbergen?
+
+**De vraag, letterlijk van goun7:** "The claim ledger is append-only JSONL —
+is it hash-chained, or does integrity rest on the host? (Our F25 lesson:
+append-only without cross-verification is one hostile writer away from a
+consistent fake history.)" Zijn eigen team vond exact dit lek in hun eigen
+systeem via een adversariële audit (finding F25: een seed-houder kan een
+consistente nepgeschiedenis naar een vers node fabriceren).
+
+**Nagekeken in de eigen code, niet aangenomen (`grep` op ledger.ts):** er zit
+GEEN hash-koppeling tussen opeenvolgende claims. Elke claim is op zichzelf
+inhoud-geadresseerd en ondertekend (`claimId` + `signature`), dat blijft
+altijd controleerbaar. Maar het ledger-BESTAND als geheel heeft geen
+mechanisme dat bewijst dat er niets is weggelaten. Wie `get_delivery_history`
+bedient (zie D-005: dat is vandaag niet gedefinieerd wie dat is) kan simpelweg
+een deelverzameling van de echte claims teruggeven, bijvoorbeeld alle
+positieve en geen enkele negatieve, en de vragende koper heeft geen manier om
+dat te ontdekken. Elke getoonde claim is dan nog steeds 100% authentiek,
+`verifyClaim()` zegt overal `{ok: true}`, maar het geheel is misleidend door
+weglating, niet door vervalsing.
+
+**Waarom dit anders is dan D-001:** D-001 (bestaans-verankering) bewijst dat
+ÉÉN claim op tijdstip X bestond. Dat lost dit probleem niet op: een host kan
+prima een echte, verankerde claim tonen en gewoon een ANDERE, ook echte,
+verankerde claim niet tonen. Volledigheid (niets is weggelaten) en
+bestaan (dit ene ding is echt en van toen) zijn twee aparte eigenschappen.
+
+**Eerlijk antwoord aan goun7:** nee, niet hash-chained vandaag, en ja, het
+weglating-scenario is op dit moment mogelijk. Dat is een reëel, vandaag nog
+onopgelost gat, niet iets om te verbloemen.
+
+**Mogelijke routes, geen van alle nu al gekozen:**
+- (a) een periodiek gepubliceerde, verankerde merkle-root over alle bekende
+  claimId's per verkoper, zodat een koper kan controleren of de getoonde set
+  overeenkomt met de laatst gepubliceerde volledige set;
+- (b) claims laten publiceren op een plek die de host niet zelf beheert
+  (raakt direct aan D-005's route c, gedecentraliseerde vindbaarheid);
+- (c) meerdere, onafhankelijke hosts laten aanroepen en de resultaten
+  vergelijken (verschuift het vertrouwen naar "genoeg onafhankelijke bronnen
+  zijn het eens", in plaats van één host).
+
+**Trigger-criterium:** dit is al getriggerd, niet hypothetisch: een
+geïdentificeerde, technisch onderlegde externe partij heeft de vraag al
+gesteld, in het openbaar, met een eigen vergelijkbare bevinding in eigen werk
+als onderbouwing. Dat is zwaarder bewijs dan wat D-001 tot D-005 nodig hadden.
+Dit betekent NIET meteen bouwen: welke van de drie routes (of een combinatie)
+de juiste is, is nog niet uitgezocht, en dat uitzoeken is de volgende stap,
+geen aanname.
+
+**Status:** erkend en publiekelijk beantwoord (zie de reactie op
+x402-foundation/x402#3379). Welke oplossingsrichting: open onderzoek, geen
+bouwbeslissing vandaag.
+
+---
+
+## D-007 t/m D-013: de zes lagen naast Evidence (2026-09-06 workflow)
+
+Achtergrond die voor alle zeven items hieronder geldt: een workflow van 14
+agents (2026-09-06) onderzocht met echte webresearch of dit project ook de
+zes lagen naast zijn eigen Evidence-laag moet bouwen: Identity, Authority,
+Intent, Execution, Settlement, Discovery, Liability. Elk van de zeven kreeg
+een eigen research-agent (met WebSearch/WebFetch) en daarna een aparte,
+onafhankelijke kill-test-agent met opdracht de conclusie te ontkrachten.
+Volledige bronnen, redenering en scores per laag: het artifact
+`tokenizen-lagenkaart` (gepubliceerd 2026-09-06, gelinkt vanuit de sessie in
+wazir-al-ghanima) en de ruwe agent-journal van die workflow-run.
+
+De meta-uitkomst gold voor alle zeven: de markt heeft elke laag sneller
+gevuld dan een los onderzoek naar "wat ontbreekt er in de agent-economie"
+had aangenomen. ERC-8004, Google AP2, Microsoft Entra Agent ID, Okta/Auth0,
+de x402 Foundation en het Legal Context Protocol bezetten elke laag al met
+echte productie-infrastructuur, gebouwd door partijen met een schaal die een
+team van 1-3 engineers niet kan evenaren. Zelf zo'n laag bouwen zou dus geen
+gat vullen, het zou een slechter alternatief bouwen voor iets dat elders al
+beter en groter bestaat.
+
+Belangrijk onderscheid met D-001 t/m D-006: die items zijn allemaal "niet
+bouwen, wacht op een trigger". D-007, D-008, D-009 en D-013 hieronder zijn
+dat OOK voor de laag als geheel (bouw geen eigen Identity/Authority/Intent/
+Liability-protocol), maar bevatten daarnaast een klein, apart besluit: een
+puur citerend, nooit-geverifieerd verwijs-veld toevoegen aan het bestaande
+`DeliveryClaim`-schema kost niets (geen nieuwe autoriteit, geen nieuwe
+trust-registry, backward-compatible zoals `measured` in 0.2.0), dus dat IS
+vandaag al gebouwd, zonder op een trigger te wachten. Voor Execution en
+Settlement geldt die uitzondering niet: daar zou zelfs het kleine veld een
+halfafgemaakte functie zijn zonder de bijbehorende actieve verificatielogica,
+dus die blijven volledig wachten op een trigger, net als D-001 t/m D-004.
+
+---
+
+### D-007: Identity, wie is deze agent?
+
+**Hypothese:** capacity-attest kent een agent alleen als een 0x-adres plus
+een sluitende handtekening. Zou een rijkere, eigen identiteitslaag (een
+naam, een profiel, een eigen registry) iets toevoegen?
+
+**Waarom nu niet als eigen laag:** ERC-8004 (Identity/Reputation/Validation-
+registries) draait sinds 29-01-2026 op Ethereum-mainnet, precies in
+capacity-attest's eigen niche van wallet-adres-gebaseerde agents, met ENS/
+EigenLayer/The Graph/Ethereum Foundation-adjacente steun. Daarnaast is elke
+aangrenzende sub-laag al bezet: Microsoft Entra Agent ID (verplicht in
+Copilot Studio sinds juli 2026), Okta Agent SSO (GA aug 2026), en
+commerciële Know-Your-Agent-diensten (Sumsub, Vouched). Evidence-niveau 7:
+infrastructuur wordt hier al verplicht gesteld, niet alleen aangeboden.
+
+**Wat vandaag wel gebouwd is (geen trigger nodig, kost niets):**
+`externalRefs.sellerAgentRef` / `externalRefs.buyerAgentRef`: optionele,
+ongeverifieerde verwijs-strings naar een externe identiteitsbron (bv. een
+ERC-8004-agent-id of DID). capacity-attest resolvet of beoordeelt dit veld
+zelf niet, exact dezelfde postuur als `evidenceHash`.
+
+**Trigger-criterium voor méér dan het citaat-veld** (bv. een read-only
+`resolve_agent_identity`-hulptool die een ERC-8004-registry of DID-resolver
+bevraagt): een echte externe partij noemt het ontbreken hiervan expliciet
+als concreet obstakel. **Wat NIET telt als trigger:** een algemene wens dat
+"dit ooit handig zou zijn".
+
+**Status:** veld gebouwd (0.3.0, ongepubliceerd, dev-branch). Hulptool: niet
+bouwen, wacht op trigger.
+
+---
+
+### D-008: Authority, wat mag deze agent doen?
+
+**Hypothese:** de README noemt "policy- en scope-controle tussen agents"
+als groen-gewenst, maar niets in het schema controleert budget, scope of
+mandaat. Moet capacity-attest dat zelf bouwen?
+
+**Waarom nu niet als eigen laag:** de vraag valt in drie stukken en elk stuk
+is al bezet. Enterprise/single-org-autoriteit: Microsoft Entra Agent ID en
+Okta/Auth0 Fine-Grained Authorization, GA en betaald sinds april 2026.
+Cross-org kaartrail-autoriteit: Google AP2's Mandates, gedoneerd aan de FIDO
+Alliance, gekoppeld aan Mastercard. De crypto-native/x402-niche die het best
+bij capacity-attest zou passen: op 14-07-2026 formeel eerstvolgend werkitem
+van de operationeel geworden x402 Foundation (Linux Foundation, Visa/
+Mastercard/Google/Coinbase/Stripe als leden); de kill-test vond
+daarbovenop al 9+ concurrerende individuele IETF-drafts (AIP, AAE, x402-
+delegation-binding, draft-singla-agent-identity-protocol,
+draft-mcgraw-httpapi-agent-budget e.a.) plus een al-productie a2a-x402-
+extensie van Google/Coinbase/Ethereum Foundation/MetaMask. Een team van 1-3
+zou hier geen vierde maar een tiende toetreder zijn.
+
+**Wat vandaag wel gebouwd is (geen trigger nodig, kost niets):**
+`externalRefs.mandateRef` + `externalRefs.mandateIssuerDid`: optionele
+verwijzing naar een extern uitgegeven autoriteits-/mandaat-object en de DID
+van de uitgever. Puur citaat, geen eigen autoriteit, geen eigen sleutel-
+beheer.
+
+**Trigger-criterium voor méér dan het citaat-veld** (de voorgestelde
+`verify_mandate_scope`-tool, die actief zou controleren of een extern
+mandaat de claim dekt): een externe partij vraagt concreet om budget/scope-
+controle bovenop een claim. **Wat NIET telt als trigger:** het feit dat de
+README dit ooit als wenselijk noemde, dat is de oorspronkelijke hypothese,
+geen bevestiging uit de praktijk.
+
+**Status:** velden gebouwd (0.3.0, ongepubliceerd, dev-branch). Tool: niet
+bouwen, wacht op trigger.
+
+---
+
+### D-009: Intent, wat wilde de opdrachtgever oorspronkelijk?
+
+**Hypothese:** `promisedSpec` is de koper's eigen invulling van wat beloofd
+was. Ontbreekt er een apart, vooraf ondertekend mandaat van de échte
+opdrachtgever?
+
+**Waarom nu niet als eigen laag:** Google AP2's IntentMandate (W3C
+Verifiable Credential, productie sinds sep 2025, v0.2 apr 2026) plus
+Mastercard/Google's "Verifiable Intent" (mrt 2026) en Visa's Trusted Agent
+Protocol dekken dit al. AP2 zit bovendien expliciet als autorisatielaag
+BOVEN x402, de rail die capacity-attest zelf gebruikt, en waar dit project
+al twee bijdragen aan leverde. De kill-test vond een feitelijke fout in het
+eerste onderzoek (een verzonnen "budget"-veld op IntentMandate, dat in
+werkelijkheid op een apart object zit), de correctie maakt de conclusie
+steviger: de echte IntentMandate is nog smaller retail/SKU-vormig dan
+gedacht, dus zelfs de "dunne niche" (compute-vormig intent) is te mager
+voor een 12-maanden-project.
+
+**Wat vandaag wel gebouwd is (geen trigger nodig, kost niets):**
+`externalRefs.intentRef`: optionele verwijzing naar een extern, vooraf
+ondertekend intent-object (bv. een AP2 IntentMandate).
+
+**Trigger-criterium voor meer** (een eigen schema-mapping tussen assetType
+en AP2's retail-vormige IntentContents): een echte externe gebruiker
+probeert via een AP2-achtig mandaat compute/GPU-uren/API-credits/bandbreedte
+te verhandelen en loopt vast omdat AP2's velden niet passen.
+
+**Status:** veld gebouwd (0.3.0, ongepubliceerd, dev-branch). Schema-mapping:
+niet bouwen, wacht op trigger.
+
+---
+
+### D-010: Execution, wat heeft de verkoper werkelijk gedaan?
+
+**Hypothese:** `evidenceHash` is een hash die niemand verifieert en
+`delivered` is de koper's eigen oordeel. Zou een tweede, onafhankelijke
+handtekening (verkoper of derde partij) hier waarde toevoegen?
+
+**Waarom nu niet, en waarom dit WAIT is, geen DO_NOT_BUILD:** het zware,
+technisch interessante deel (cryptografisch/hardware-bewijs dat een
+berekening echt plaatsvond) wordt al gebouwd door gespecialiseerde,
+gefinancierde teams: Phala Network (productie, TEE-GPU's), Attestable ($20M
+seed, aug 2026), Intel Trust Authority. Gensyn's Judge/Verde lost het ook op,
+maar met een eigen token, precies de rode lijn van dit project. Zelfs
+Google's AP2/Universal Commerce Protocol laat fulfillment bewust aan de
+verkoper. De kill-test vond bovendien dat ERC-8004's Validation Registry al
+generiek precies het voorgestelde `counterSignature`-idee aanbiedt (een
+derde partij tekent een attestatie terug, zonder verplichte TEE/zkML). Bij
+een echte trigger is de eerste stap dus ERC-8004-interoperabiliteit
+onderzoeken, geen eigen veld verzinnen.
+
+**Waarom hier, anders dan D-007/D-008/D-009, GEEN veld vandaag is gebouwd:**
+geen van de twee echte externe contacten van dit project heeft ooit gevraagd
+om onafhankelijke verificatie van een `delivered`-claim. Vooruitbouwen zou
+de eigen discipline van D-001/D-002/D-003 doorbreken: wacht op een echt
+gemeld geval, niet op een hypothese, ook al is het veld zelf goedkoop.
+
+**Trigger-criterium:** een tweede partij (verkoper of een door beide
+partijen aangewezen onafhankelijke verifier) vraagt concreet om een claim te
+kunnen tegenspreken of bevestigen. **Wat NIET telt als trigger:** een
+theoretisch "dit zou nuttig kunnen zijn".
+
+**Status:** niet bouwen. Geen code vandaag. Wacht op trigger.
+
+---
+
+### D-011: Settlement, hoe wordt er afgerekend?
+
+**Hypothese:** `settlementRef` is vrije tekst, nooit geverifieerd tegen een
+echte facilitator of chain. Zou een `settlementVerified`-veld dat gat
+dichten?
+
+**Waarom nu niet:** de rail zelf (geld echt verplaatsen, on-chain
+bevestigen) is volledig gedomineerd door de x402 Foundation (Linux
+Foundation, ~40 leden, honderden miljoenen euro's jaarvolume), Google AP2 en
+Base's Commerce Payments Protocol (5x extern geaudit, live op mainnet). De
+ene subniche die nog open ligt (leverings-conditionele escrow-release)
+vereist per definitie uitgestelde afwikkeling, en dat is precies wat dit
+project's eigen gele regel ("settlement is spot-only") uitsluit. Dit project
+kan die subniche dus niet eens betreden zonder de eigen ontwerpgrens te
+breken.
+
+**Waarom hier GEEN veld is gebouwd, in tegenstelling tot D-007/D-008/D-009:**
+de enige waarde van `settlementVerified` zou zitten in de ACTIEVE controle
+(automatisch de settlementRef bevragen bij een publieke facilitator/RPC en
+vergelijken met de claim). Een kaal veld zonder die logica is een
+halfafgemaakte functie die meer suggereert dan hij waarmaakt, precies het
+soort ding dat dit project's eigen discipline (geen schijnzekerheid)
+verbiedt. De actieve verificatielogica zelf is een apart, groter stuk werk
+(netwerkaanroepen, meerdere chains/facilitators) dat een eigen ontwerp- en
+trigger-beslissing verdient, geen bijvangst van deze workflow.
+
+**Trigger-criterium:** een externe partij noemt een niet-geverifieerde
+`settlementRef` concreet als probleem, of als reden om een claim te
+wantrouwen. **Wat NIET telt als trigger:** de algemene observatie dat
+verificatie "vast wel eens nuttig is".
+
+**Status:** niet bouwen. Geen code vandaag. Wacht op trigger.
+
+---
+
+### D-012: Discovery, hoe vindt agent B een claim over agent A op een andere installatie?
+
+**Hypothese:** is dit een nieuwe, aparte vraag naast D-005?
+
+**Antwoord: nee, dit IS D-005, opnieuw getoetst met verse webresearch.** De
+uitkomst bevestigt D-005's eigen analyse en maakt hem sterker: ERC-8004
+(Identity/Reputation/Validation-registries, mainnet, ~500k geregistreerde
+agents) en de Ethereum Attestation Service (9,5M+ attestaties sinds 2021)
+geven al precies het publieke, niet-Tokenizen-gehoste opslag- en lookup-
+mechanisme dat D-005's optie (c) zocht. De kill-test vond zelfs nog directere
+concurrenten specifiek binnen de x402-ecosystem zelf (AgentZone, Onyx
+Bazaar, gold-402, x402Scan) die precies "vind signalen over een verkoper
+over installaties heen" al oplossen, gebouwd door kleine teams bovenop
+bestaande infra.
+
+**Wat dit betekent:** geen nieuw veld, geen nieuwe tool. D-005's eigen
+trigger-criterium en de drie routes (a/b/c) blijven ongewijzigd van kracht.
+`claimId`/`signature` zijn al direct publiceerbaar als EAS-schema of
+ERC-8004-feedback zodra D-005's trigger (de EmbryoSpace cross-chain
+bijdrage) zich voordoet.
+
+**Status:** geen actie. Zie D-005 voor het trigger-criterium.
+
+---
+
+### D-013: Liability, wie draagt de gevolgen bij een geschil?
+
+**Hypothese:** een `delivered: no`-claim is bewijs, maar wijst niemand aan
+wie verantwoordelijk is of wat er daarna gebeurt. Moet capacity-attest een
+eigen geschillen-/aansprakelijkheidsmechanisme krijgen?
+
+**Waarom nu niet als eigen laag:** het Legal Context Protocol (American
+Arbitration Association + Integra Ledger, Apache-2.0, live sinds 24-06-2026)
+is functioneel al de Liability-laag: een open, ondertekenbaar record van
+geldend recht en geschilverwijzing per transactie, met expliciete
+koppelvlakken naar x402, AP2 en MCP, gesteund door Google, IBM, Circle,
+Wayfair en meer. Wat het niet dekt, dekken Mastercard/Visa (kaartrail-
+fraude), Justt/Chargeflow ($100M opgehaald, 250+ enterprise klanten) en
+Armilla+Chaucer bij Lloyd's (AI-aansprakelijkheidsverzekering, feb 2026). De
+kill-test vond bovendien x402Refunds.com, een live, solo-founder-gebouwde
+dienst voor exact deze niche op dezelfde rail, bewijst dat een klein team
+dit technisch kan bouwen, maar ook dat de niche al bezet is.
+
+**Wat vandaag wel gebouwd is (geen trigger nodig, kost niets):**
+`externalRefs.disputeContext` (`protocol` + `termsHash` + optioneel
+`resolutionRef`): alleen te vullen als koper en verkoper al externe
+geschil-voorwaarden accepteerden bij settlement. Geen eigen arbitrage, geen
+eigen oordeel: een `delivered: no`-claim met dit veld wordt bruikbaar bewijs
+in een bestaand extern geschil, in plaats van dat dit project zelf beslist
+wie gelijk heeft.
+
+**Trigger-criterium voor méér** (eigen geschillenlogica, wat het rode-lijn-
+risico "eigen arbitrage/eigen waarheid" zou oproepen): een echt gemeld
+geschil tussen een koper en verkoper op dit project. **Wat NIET telt als
+trigger:** een hypothetisch "er zou ooit een geschil kunnen zijn".
+
+**Status:** veld gebouwd (0.3.0, ongepubliceerd, dev-branch). Eigen
+geschillenlogica: niet bouwen, wacht op trigger.

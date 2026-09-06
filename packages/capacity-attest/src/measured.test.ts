@@ -750,6 +750,7 @@ describe("schema surface", () => {
       "claimId",
       "delivered",
       "evidenceHash",
+      "externalRefs",
       "measured",
       "promisedSpec",
       "sellerAddress",

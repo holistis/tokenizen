@@ -2,6 +2,27 @@
 
 Alle noemenswaardige wijzigingen aan dit package worden hier bijgehouden.
 
+## 0.3.0
+
+**Nieuw: `externalRefs`, een optioneel blok met zes ongeverifieerde velden die naar andere agent-economie-infrastructuur verwijzen.** Aanleiding: een workflow (2026-09-06) onderzocht met echte webresearch of dit project ook de zes lagen naast zijn eigen Evidence-laag zou moeten bouwen: Identity, Authority, Intent, Execution, Settlement, Discovery, Liability. Uitkomst voor alle zes: DO_NOT_BUILD of WAIT, elk overleefde een aparte adversariële kill-test. Grotere partijen (ERC-8004, Google AP2, Microsoft Entra Agent ID, Okta, de x402 Foundation, het Legal Context Protocol, en meer) hebben elke laag al bezet met echte productie-infrastructuur; zelf zo'n laag bouwen zou tijd verspillen aan iets dat al bestaat en beter gekapitaliseerd is. Volledige onderbouwing en bronnen: `DECISIONS.md` D-007 t/m D-013.
+
+Wat wél bij dit project past: een plek om naar zo'n extern systeem te CITEREN vanuit een claim, zonder dat dit project ooit zelf verifieert, resolvet of vertrouwt wat er wordt geciteerd. Zelfde postuur als `evidenceHash` (een hash van bewijs die nooit zelf gecontroleerd wordt) en `settlementRef` (een betaalreferentie die nooit zelf on-chain wordt nagetrokken).
+
+De zes velden, allemaal binnen het nieuwe optionele `externalRefs`-blok, allemaal zelf ook optioneel (minstens één moet aanwezig zijn, een leeg blok wordt geweigerd):
+
+- `sellerAgentRef` / `buyerAgentRef`: verwijzing naar een externe agent-identiteit (bv. een ERC-8004-agent-id of DID). D-007.
+- `mandateRef` + `mandateIssuerDid`: verwijzing naar een extern uitgegeven autoriteits-/mandaat-object (bv. een AP2 Payment/Cart Mandate) en de DID van wie het uitgaf. D-008. `mandateIssuerDid` is de enige van de zes met een echte syntaxcontrole (W3C DID Core `did:<method>:<method-specific-id>`), omdat die syntax nauwkeurig gedefinieerd is en een misvormde DID hier ondubbelzinnig een aanroepfout is.
+- `intentRef`: verwijzing naar een extern, vooraf ondertekend intent-object (bv. een AP2 IntentMandate). D-009.
+- `disputeContext` (`protocol` + `termsHash` + optioneel `resolutionRef`): alleen gevuld als koper en verkoper al externe geschil-voorwaarden accepteerden bij settlement (bv. het Legal Context Protocol). D-013.
+
+Expliciet NIET meegenomen, bewust en met reden in `DECISIONS.md`: een veld voor Execution (`counterSignature`, D-010, geen enkele echte externe partij heeft hier ooit om gevraagd) en een veld voor Settlement (`settlementVerified`, D-011, zou een half afgemaakte functie zijn zonder de bijbehorende actieve verificatie-logica tegen een facilitator/RPC, en die logica is een apart, groter stuk werk dat op een eigen trigger wacht). Discovery (D-012) heeft geen nieuw veld nodig: `claimId`/`signature` zijn al direct publiceerbaar naar EAS of ERC-8004, zoals D-005 al beschreef.
+
+Zelfde preimage-discipline als `measured` in 0.2.0: `externalRefs` is precies één `.optional()`-sleutel op `ClaimContentObject`, nooit `.default()`. Een claim die het blok weglaat hasht bit-voor-bit identiek aan vóór deze release; afgedwongen door een nieuwe frozen-regression-anchor-test tegen de echte productieclaim in `data-selftest/claims.jsonl` (`src/external-refs.test.ts`). Alle zes referentie-strings zijn lengte- en hygiëne-gecontroleerd (dezelfde controle als `settlementRef`'s S-4-regel, hier direct in het basis-schema afgedwongen omdat het veld nieuw is en er geen historische data mee compatibel hoeft te blijven); `termsHash` volgt dezelfde streng-vanaf-dag-één-conventie als `readingsHash` in 0.2.0 (alleen kleine letters).
+
+**Eerlijke kanttekening bij de omvang van de controle.** Dit heeft NIET de drie-onafhankelijke-adversariële-audits-behandeling gehad die de S-1 t/m S-6-verscherpingen in 0.1.3 kregen. Wat er wel is: 455 tests groen (439 bestaand + 16 nieuw in `external-refs.test.ts`), `tsc --noEmit` schoon, de end-to-end demo ongewijzigd werkend, en een expliciete canary-test (`measured.test.ts`'s schema-surface-test) die de nieuwe sleutel moest erkennen voor hij weer groen werd. Wie dit veld in productie gaat gebruiken tegen een echt extern protocol (in plaats van het puur als citaat te laten liggen), doet er goed aan eerst een eigen adversariële controle te laten draaien, zoals bij `measured` ook is aanbevolen.
+
+Niets hiervan is gepubliceerd naar npm of het MCP-register; staat klaar voor koning-review op een dev-branch.
+
 ## 0.2.0
 
 Deze release bevat twee dingen tegelijk: het nieuwe optionele `measured`-blok (hieronder) en alle identiteits-verscherpingen die onder 0.1.3 staan beschreven. 0.1.3 is nooit gepubliceerd; het was een tussenstap in dezelfde werkstroom. De losse sectie hieronder blijft staan omdat de code er op drie plaatsen naar verwijst en omdat de redenering achter elke weigering daar staat.
