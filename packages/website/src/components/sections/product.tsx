@@ -40,17 +40,23 @@ const historyCall = {
   arguments: { sellerAddress: SELLER },
 };
 
-const historyResult = [
-  {
-    sellerAddress: SELLER,
-    buyerAddress: BUYER,
-    assetType: "gpu-hours",
-    delivered: "yes",
-    settlementRef: recordDeliveryCall.arguments.settlementRef,
-    timestamp: recordDeliveryCall.arguments.timestamp,
-    claimId: recordDeliveryCall.arguments.claimId,
-  },
-];
+const historyResult = {
+  sellerAddress: SELLER,
+  count: 1,
+  claims: [
+    {
+      sellerAddress: SELLER,
+      buyerAddress: BUYER,
+      assetType: "gpu-hours",
+      delivered: "yes",
+      settlementRef: recordDeliveryCall.arguments.settlementRef,
+      timestamp: recordDeliveryCall.arguments.timestamp,
+      claimId: recordDeliveryCall.arguments.claimId,
+    },
+  ],
+  scope: "local-ledger",
+  note: "This reflects only claims recorded on this installation's local ledger...",
+};
 
 export function Product() {
   const { t } = useLocale();

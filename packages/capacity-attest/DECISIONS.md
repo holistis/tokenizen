@@ -141,3 +141,67 @@ toevoegt.
 **Status:** bevestigd, geen open punt. Blijft een bewaakpunt: als ooit een
 echte partij een score als concrete adoptie-blokkade noemt, is dát het moment
 om dit dossier te heropenen, niet eerder.
+
+---
+
+## D-005: claim-vindbaarheid tussen onafhankelijke installaties
+
+**Hypothese:** `get_delivery_history` belooft dat een koper de geschiedenis
+van een verkoper kan checken vóór hij zelf betaalt. Maar de ledger is
+standaard lokaal per installatie (`CAPACITY_ATTEST_DATA_DIR`). Als koper A en
+koper B allebei hun eigen installatie draaien, ziet B de claim die A over
+dezelfde verkoper vastlegde niet automatisch. Dat is geen slordigheid, dat
+staat al expliciet in de Status-sectie van de site sinds vandaag.
+
+**Hoe dit punt ontstond, en waarom het zwaarder weegt dan D-001 t/m D-003:**
+twee onafhankelijke bronnen kwamen op dezelfde dag, via twee heel verschillende
+wegen, op precies hetzelfde gat uit. Wijzelf, door eerlijk te zijn over de
+architectuur op de site. En ChatGPT, aan de koning voorgelegd na het lezen van
+de repository, dat het "centrale database versus portable evidence"-vraagstuk
+noemde. Dat zijn niet twee meningen, dat is hetzelfde reële gat, twee keer
+onafhankelijk gevonden. Dat maakt dit zwaarder dan een los verbetervoorstel.
+
+**Meteen gedaan, vandaag (geen wacht-op-trigger-item, dit was een reeds
+aanwezige onduidelijkheid in geleverde code, geen nieuwe feature):** het
+antwoord van `get_delivery_history` bevat nu twee extra velden, `scope`
+(altijd `"local-ledger"`) en `note` (een vaste, feitelijke tekst die uitlegt
+dat een lege of korte geschiedenis niet betekent dat de verkoper schoon is,
+het kan ook betekenen dat hier simpelweg nog niets is vastgelegd). Dit stond
+al zo in de README voor mensen die het lazen, maar de MCP-tool-beschrijving
+en de daadwerkelijke JSON-uitkomst zeiden het niet, en een AI-agent die de
+tool aanroept leest typisch geen README. Getest: 439 tests slagen, inclusief
+twee nieuwe die specifiek controleren dat `scope`/`note` aanwezig zijn en dat
+er nooit een score/rating-veld naast sluipt (zie tools.test.ts).
+
+**Wat NOG NIET gedaan is, en dat is wel een wacht-op-bewijs-vraagstuk:** of
+en hoe claims tussen onafhankelijke installaties vindbaar worden gemaakt.
+ChatGPT's suggestie ("word niet de centrale database, maak het protocol-
+neutraal en portable") is een architectuurvoorkeur, geen bewezen oplossing.
+De keuze staat open tussen minstens drie routes, geen ervan is nu al
+beargumenteerd de juiste:
+
+- (a) niets doen: een marktplaats of integrator draait zelf één gedeelde
+  installatie voor al zijn verkopers, en het probleem lost zich vanzelf op
+  zonder dat wij iets hoeven te bouwen;
+- (b) een gedeelde, door ons gehoste index bouwen (het scenario dat we zelf
+  al hebben afgewezen: dat zou "vertrouw Tokenizen" impliceren in plaats van
+  "verifieer de claim zelf", precies tegen onze eigen filosofie in);
+- (c) een gedecentraliseerde vindbaarheids-afspraak (bijvoorbeeld: claims
+  publiceren op een voorspelbare, per-verkoper-adres plek), zonder dat
+  Tokenizen zelf een centrale autoriteit wordt.
+
+**Trigger-criterium:** dit wordt pas een bouwbeslissing zodra er een ECHTE
+situatie is met minstens twee onafhankelijke installaties die daadwerkelijk
+over dezelfde verkoper zouden moeten kunnen praten. De EmbryoSpace-bijdrage
+(Base-installaties naast een BSV-installatie) is de eerst mogelijke, al
+geplande gelegenheid om dit in het echt te zien gebeuren of net niet. Zodra
+die PR er is: expliciet checken of dit voor hem al een probleem is, en zo ja,
+pas dan de drie routes hierboven met echt bewijs tegen elkaar afwegen.
+
+**Wat NIET telt als trigger:** een strategische suggestie, hoe goed
+beargumenteerd ook, zonder een concrete partij die er daadwerkelijk tegenaan
+loopt. Zelfde meetlat als elk ander item hier.
+
+**Status:** de disclosure-fix is vandaag gedaan en live. De onderliggende
+architectuurkeuze (a/b/c) staat open, wachtend op de eerste echte
+gelegenheid om 'm te toetsen.

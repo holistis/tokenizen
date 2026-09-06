@@ -103,16 +103,29 @@ describe("getDeliveryHistory", () => {
 
   it("retourneert een lege lijst voor een verkoper zonder claims (geen crash)", async () => {
     const history = await getDeliveryHistory("0x00000000000000000000000000000000000000ff");
-    expect(history).toEqual({ sellerAddress: "0x00000000000000000000000000000000000000ff", count: 0, claims: [] });
+    expect(history.sellerAddress).toBe("0x00000000000000000000000000000000000000ff");
+    expect(history.count).toBe(0);
+    expect(history.claims).toEqual([]);
   });
 
-  it("berekent geen samengevat score-getal — enkel de ruwe claims komen terug", async () => {
+  it("berekent geen samengevat score-getal — enkel de ruwe claims plus een scope-disclosure komen terug", async () => {
     const buyer = testWallet();
     const claim = await buildSignedClaim(buyer);
     await recordDelivery(claim);
 
     const history = await getDeliveryHistory(claim.sellerAddress);
-    expect(Object.keys(history).sort()).toEqual(["claims", "count", "sellerAddress"]);
+    // Vaste lijst: scope/note zijn een feitelijke herkomst-disclosure, geen
+    // score. Als hier ooit een veld als "reliability", "rating" of "trust"
+    // bijkomt, moet deze test dat expliciet tegenhouden, vandaar de exacte
+    // sleutel-lijst i.p.v. alleen "bevat minstens".
+    expect(Object.keys(history).sort()).toEqual(["claims", "count", "note", "scope", "sellerAddress"]);
+  });
+
+  it("maakt de local-only scope onmogelijk te missen, ook zonder de tool-beschrijving te lezen (D-005)", async () => {
+    const history = await getDeliveryHistory("0x00000000000000000000000000000000000000ff");
+    expect(history.scope).toBe("local-ledger");
+    expect(history.note).toMatch(/local ledger/i);
+    expect(history.note).toMatch(/does not mean the seller has a clean record/i);
   });
 });
 

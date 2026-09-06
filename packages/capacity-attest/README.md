@@ -48,7 +48,9 @@ De server valideert eerst het schema, dan of `claimId` echt de hash van de inhou
 
 ### 2. `get_delivery_history`
 
-Gegeven een `sellerAddress`, retourneert dit alle bekende claims tegen die verkoper, chronologisch (oudst eerst). Puur feitelijk, geen samengevat getal. Een kopende agent roept dit aan **vóórdat** hij betaalt, om de ruwe leveringsgeschiedenis van een potentiële verkoper te zien en zelf te beoordelen.
+Gegeven een `sellerAddress`, retourneert dit alle bekende claims tegen die verkoper op déze installatie, chronologisch (oudst eerst). Puur feitelijk, geen samengevat getal. Een kopende agent roept dit aan **vóórdat** hij betaalt, om de ruwe leveringsgeschiedenis van een potentiële verkoper te zien en zelf te beoordelen.
+
+Het antwoord bevat naast `sellerAddress`, `count` en `claims` ook `scope` (altijd `"local-ledger"`) en `note`: een vaste, feitelijke tekst die uitlegt dat dit resultaat alleen de lokale ledger van déze installatie weerspiegelt. Een lege of korte geschiedenis betekent niet dat de verkoper een schone staat van dienst heeft, het kan ook betekenen dat er hier simpelweg nog geen claims zijn vastgelegd. Zie [DECISIONS.md](./DECISIONS.md) (D-005) voor de bredere architectuurvraag hierachter: hoe vindt een koper claims die op een ándere installatie zijn vastgelegd.
 
 ## Ondertekening
 

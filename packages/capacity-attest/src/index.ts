@@ -48,10 +48,13 @@ server.registerTool(
   {
     title: "Get a seller's delivery history",
     description:
-      "Return every known, signature-verified delivery claim recorded against a given sellerAddress, oldest first. " +
-      "Purely factual — no aggregate score, rating, or reputation judgment is computed. A buying agent can call this " +
-      "BEFORE paying a seller to see that seller's raw delivery history for gpu-hours, storage, api-credits, and " +
-      "bandwidth claims.",
+      "Return every signature-verified delivery claim recorded against a given sellerAddress in THIS installation's " +
+      "local ledger, oldest first. Purely factual — no aggregate score, rating, or reputation judgment is computed. " +
+      "IMPORTANT: this is scoped to the local ledger only. A different installation may hold other claims against " +
+      "the same seller that this call cannot see, so an empty or short result does NOT mean the seller has a clean " +
+      "record elsewhere, only that no claims have been recorded here. The response's own `note` field repeats this. " +
+      "A buying agent can call this BEFORE paying a seller to see that seller's raw delivery history for gpu-hours, " +
+      "storage, api-credits, and bandwidth claims.",
     inputSchema: {
       sellerAddress: ClaimContentSchema.shape.sellerAddress,
     },

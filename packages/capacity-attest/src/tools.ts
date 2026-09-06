@@ -69,21 +69,44 @@ export async function recordDelivery(input: unknown): Promise<RecordDeliveryResu
   return { ok: true, claimId: claim.claimId };
 }
 
+/**
+ * `scope` and `note` are a factual disclosure, not a judgment: they say
+ * where this data came from, never how trustworthy the seller is. Adding a
+ * quality/confidence field here would be exactly the score this package
+ * refuses to compute (see "Wat dit NIET is" in README.md) — these two exist
+ * only to close a different, real gap: without them, an empty `claims` array
+ * is indistinguishable from "this seller has a clean record" when it may
+ * just mean "no claims have been recorded on THIS ledger". A caller (human
+ * or agent) reading only `count: 0` has no way to tell those apart.
+ */
 export interface DeliveryHistoryResult {
   sellerAddress: string;
   count: number;
   claims: DeliveryClaim[];
+  scope: "local-ledger";
+  note: string;
 }
 
+const LOCAL_LEDGER_NOTE =
+  "This reflects only claims recorded on this installation's local ledger (see CAPACITY_ATTEST_DATA_DIR in README.md). " +
+  "A different installation may hold other claims against the same sellerAddress that this call cannot see. " +
+  "An empty or short history does not mean the seller has a clean record elsewhere: it may just mean no claims " +
+  "have been recorded here yet.";
+
 /**
- * Every known, signature-verified claim recorded against sellerAddress,
- * oldest first. Purely factual — no aggregate score, rating, or reputation
- * judgment is computed here; see README.md "Wat dit NIET is". This is the
- * logic behind the `get_delivery_history` MCP tool.
+ * Every known, signature-verified claim recorded against sellerAddress in
+ * THIS installation's ledger, oldest first. Purely factual — no aggregate
+ * score, rating, or reputation judgment is computed here; see README.md
+ * "Wat dit NIET is". This is the logic behind the `get_delivery_history` MCP
+ * tool.
+ *
+ * "Known" is scoped to this ledger, not globally known — see
+ * DeliveryHistoryResult's own comment and packages/capacity-attest/DECISIONS.md
+ * (D-005) for why that distinction is load-bearing, not pedantic.
  *
  * Async to match claimsForSeller()'s now-async signature (see ledger.ts).
  */
 export async function getDeliveryHistory(sellerAddress: string): Promise<DeliveryHistoryResult> {
   const claims = await claimsForSeller(sellerAddress);
-  return { sellerAddress, count: claims.length, claims };
+  return { sellerAddress, count: claims.length, claims, scope: "local-ledger", note: LOCAL_LEDGER_NOTE };
 }
