@@ -64,6 +64,7 @@ export const en: Dictionary = {
     "h1Line1": "Everyone is building the buyer side.",
     "h1Line2": "We're building the seller side.",
     "body": "Agent identity, spend limits, and payment rails are on their way (x402: per-call machine payments, Google AP2: an authorization protocol, ERC-8004: on-chain reputation registries). What's still missing: a signed record of what a seller claims to have delivered, and whether that matched what was promised. Tokenizen builds that record, starting with Capacity Attest: a signed, factual delivery claim for x402 capacity trading between agents.",
+    "clarifier": "The buyer signs the claim, because only the buyer knows what actually arrived. What it produces is still the seller's track record: the evidence a good seller can point to for the next buyer.",
     "trustLine": "No token · no lending · no yield",
     "ctaPrimary": "View the code on GitHub",
     "ctaSecondary": "How it works",
@@ -234,10 +235,15 @@ export const en: Dictionary = {
       "body": "An external project (ASM spec) independently verified a real payment claim on September 1, 2026: same claimId, same signature recovered to the buyer, same on-chain payment.",
       "txLabel": "View the transaction",
       "verificationLabel": "View the verification"
+    },
+    "limitation": {
+      "title": "Known limit: the ledger is still local",
+      "body": "`npm install capacity-attest` starts a local, per-installation ledger by default (configurable via `CAPACITY_ATTEST_DATA_DIR`). Two independent installations don't automatically see each other's claims yet: a shared or discoverable ledger across installations doesn't exist yet. That's the next build step, not a hidden assumption. Where this touches ERC-8004: that protocol builds on-chain reputation registries, Capacity Attest records the raw, signed event without judgment. The two could complement each other; ERC-8004 could become a place these claims get referenced, that doesn't exist yet."
     }
   },
   "footer": {
     "tagline": "Open-source infrastructure for the seller side of the AI agent economy. New, in active development, with fixed design limits.",
+    "maintainedBy": "Maintained by",
     "githubLabel": "github.com/holistis/tokenizen",
     "copyright": "© 2026 tokenizen. Open source, MIT license.",
     "legend": [

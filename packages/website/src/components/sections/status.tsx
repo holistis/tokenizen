@@ -1,8 +1,9 @@
-import { ArrowUpRight, CheckCircle2, Circle } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Circle, ShieldAlert } from "lucide-react";
 
 import { Section } from "@/components/section";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { useLocale } from "@/i18n/context";
+import { withInlineCode } from "@/i18n/inline-code";
 import { cn } from "@/lib/utils";
 
 const TX_URL = "https://basescan.org/tx/0xc00a638491986962ca125c01da4e3df8a07d715216694bb0a59ff257c88e6880";
@@ -65,6 +66,14 @@ export function Status() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      <div className="mt-4 flex flex-col gap-2 rounded-lg border border-rule-yellow/30 bg-rule-yellow-soft p-5">
+        <div className="flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-wide text-rule-yellow">
+          <ShieldAlert className="size-4 shrink-0" aria-hidden="true" />
+          {t.status.limitation.title}
+        </div>
+        <p className="text-sm leading-relaxed text-foreground/80">{withInlineCode(t.status.limitation.body)}</p>
       </div>
     </Section>
   );

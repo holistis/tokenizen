@@ -43,6 +43,7 @@ export interface Dictionary {
     h1Line1: string;
     h1Line2: string;
     body: string;
+    clarifier: string;
     trustLine: string;
     ctaPrimary: string;
     ctaSecondary: string;
@@ -110,9 +111,14 @@ export interface Dictionary {
       txLabel: string;
       verificationLabel: string;
     };
+    limitation: {
+      title: string;
+      body: string;
+    };
   };
   footer: {
     tagline: string;
+    maintainedBy: string;
     githubLabel: string;
     copyright: string;
     legend: Array<{ dot: string; label: string }>;

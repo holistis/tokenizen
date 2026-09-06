@@ -46,6 +46,7 @@ export const nl: Dictionary = {
     h1Line1: "Iedereen bouwt de koperskant.",
     h1Line2: "Wij bouwen de verkoperskant.",
     body: "Agent-identiteit, spend-limits en betaalrails zijn onderweg (x402: betaling per API-call, Google AP2: autorisatie-protocol, ERC-8004: on-chain reputatie-registers). Wat nog ontbreekt: een ondertekend spoor van wat een verkoper claimt geleverd te hebben, en of dat overeenkwam met wat beloofd was. Tokenizen bouwt dat spoor, te beginnen met Capacity Attest: een ondertekende, feitelijke leveringsclaim voor x402-capaciteitshandel tussen agents.",
+    clarifier: "De koper tekent de claim, want alleen hij weet wat er echt aankwam. Wat ontstaat is desondanks het trackrecord van de verkoper: het bewijs dat een goede verkoper aan de volgende koper kan tonen.",
     trustLine: "Geen token · geen lening · geen yield",
     ctaPrimary: "Bekijk de code op GitHub",
     ctaSecondary: "Hoe het werkt",
@@ -217,9 +218,14 @@ export const nl: Dictionary = {
       txLabel: "Bekijk de transactie",
       verificationLabel: "Bekijk de verificatie",
     },
+    limitation: {
+      title: "Bewuste grens: de ledger is nog lokaal",
+      body: "`npm install capacity-attest` start standaard een lokale ledger per installatie (in te stellen via `CAPACITY_ATTEST_DATA_DIR`). Twee onafhankelijke installaties zien elkaars claims nog niet automatisch: een gedeelde of vindbare ledger tussen installaties bestaat nog niet. Dat is de volgende bouwstap, geen verborgen aanname. Waar dit ERC-8004 raakt: dat protocol bouwt on-chain reputatie-registers, Capacity Attest legt de ruwe, ondertekende gebeurtenis vast zonder oordeel. Ze kunnen elkaar aanvullen; ERC-8004 zou een plek kunnen worden waar deze claims naar verwijzen, dat bestaat nu nog niet.",
+    },
   },
   footer: {
     tagline: "Open-source infrastructuur voor de verkoperskant van de AI-agent-economie. Nieuw, in actieve ontwikkeling, met vaste ontwerpgrenzen.",
+    maintainedBy: "Onderhouden door",
     githubLabel: "github.com/holistis/tokenizen",
     copyright: "© 2026 tokenizen. Open source, MIT-licentie.",
     legend: [

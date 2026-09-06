@@ -35,6 +35,7 @@ export function Hero() {
             <p className="mt-3 font-mono text-xs uppercase tracking-wide text-rule-green">{t.hero.trustLine}</p>
 
             <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg">{t.hero.body}</p>
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground/80">{t.hero.clarifier}</p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button asChild size="lg">

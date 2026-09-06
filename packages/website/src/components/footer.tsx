@@ -3,6 +3,7 @@ import { Github, Mail } from "lucide-react";
 import { useLocale } from "@/i18n/context";
 
 const GITHUB_URL = "https://github.com/holistis/tokenizen";
+const MAINTAINER_URL = "https://github.com/holistis";
 const CONTACT_EMAIL = "info@tokenizen.nl";
 
 export function Footer() {
@@ -15,6 +16,17 @@ export function Footer() {
           <div>
             <p className="font-display text-lg font-semibold tracking-tight">tokenizen</p>
             <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">{t.footer.tagline}</p>
+            <p className="mt-2 font-mono text-xs text-muted-foreground">
+              {t.footer.maintainedBy}{" "}
+              <a
+                href={MAINTAINER_URL}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="text-foreground underline-offset-2 hover:underline"
+              >
+                holistis
+              </a>
+            </p>
           </div>
 
           <div className="flex flex-col gap-3 font-mono text-sm">
