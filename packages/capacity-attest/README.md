@@ -74,6 +74,12 @@ Eerlijke grens: ook zelf-herrekenen betrapt geen verborgen laatste claim en geen
 
 Een openbaar, zelf-controleerbaar voorbeeld met een nagebootste verbergende host en expres-kapotte testgevallen staat in [docs/COMPLETENESS-FIXTURE.md](./docs/COMPLETENESS-FIXTURE.md). Draai het met `npm run fixture`; dezelfde controles draaien bij elke push als test. Zo kun je onze claim zelf natellen in plaats van ons op ons woord te geloven.
 
+## Claims van andere installaties vinden (D-005)
+
+`get_delivery_history` is per definitie lokaal: koper B ziet niet wat koper A op een andere installatie vastlegde over dezelfde verkoper. Omdat elke claim zelf-verifieerbaar is, heeft vindbaarheid geen vertrouwde index nodig. `discoverDeliveryHistory(seller, sources)` (zie `src/discovery.ts`) leest een verkopers claims uit meerdere onafhankelijke, ONvertrouwde bronnen (je lokale ledger plus elk host-onafhankelijk substraat dat je wilt lezen), ontdubbelt, herverifieert elke claim, filtert andere verkopers eruit, en draait de completeness-check over het geheel. Een bron die nep injecteert wordt geweigerd; een bron die weglaat is het D-006-probleem, meegenomen maar niet magisch opgelost.
+
+De productie-onderlaag (EAS op Base, ERC-8004) is bewust nog niet live gekoppeld: dat kost gas en wacht op een echte integrator. De naad staat klaar. Een openbaar, draaibaar voorbeeld met twee nagebootste installaties staat in [docs/DISCOVERY-FIXTURE.md](./docs/DISCOVERY-FIXTURE.md), draai het met `npm run discovery-fixture`. Zie [DECISIONS.md](./DECISIONS.md) D-005.
+
 ### 3. `resolve_agent_identity` *(sinds 0.3.0)*
 
 Read-only opzoeking tegen een ERC-8004 Identity Registry: wie bezit `agentId` (`ownerOf`) en waar staat zijn registratiebestand (`tokenURI`). Alleen de standaard ERC-721-interface wordt aangeroepen, niets ERC-8004-specifieks. Vereist van de aanroeper zowel `agentRegistryRef` (`"eip155:<chainId>:<registryAddress>"`) als een `rpcUrl` voor die chain: dit project bundelt bewust geen eigen RPC-provider en geen canoniek registry-adres, want ERC-8004 heeft onafhankelijke deployments per chain en de EIP-tekst zelf noemt geen vast adres. Haalt bewust NOOIT op wat `tokenURI` aanwijst (dat blijft een pointer die de aanroeper zelf desgewenst opvraagt); dat zou een SSRF-vormig risico zijn op aanroeper-gecontroleerde on-chain data.

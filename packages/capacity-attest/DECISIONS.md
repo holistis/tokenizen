@@ -229,6 +229,69 @@ wél verandert: D-012 identificeert de concrete mechaniek voor route (c) zodra
 die trigger afgaat (EAS/ERC-8004, zie hieronder). De keuze zelf blijft open,
 maar is niet langer ongericht.
 
+**Vervolg 0.4.0, expliciete koning-opdracht: het detecteerbare/bouwbare deel
+van vindbaarheid nu gebouwd, op dezelfde manier als D-006.** Na D-006 gaf de
+koning opdracht ook vraag 2 (deze) op te pakken, "in loops en checks", met de
+eerder door hemzelf voorgestelde aanpak: een echt geval NABOOTSEN en er een
+benchmark op maken, in plaats van te wachten op een externe partij. Dat kan,
+want een simulatie bewijst dat het mechanisme WERKT (technische validiteit),
+ook al bewijst het geen marktvraag. Precies wat goun7 zelf publiek doet met
+zijn Tamga-fixture (settlement "simulated", Tamga-kant echt).
+
+**Het inzicht dat vindbaarheid bouwbaar maakt zonder centrale index:** onze
+claims zijn al zelf-verifieerbaar (`claimId` = inhoud-hash, handtekening →
+`buyerAddress`). Vindbaarheid heeft dus geen vertrouwde index nodig. Claims
+mogen overal gepubliceerd worden; de vinder verifieert elke gevonden claim
+zelf. Nep wordt geweigerd door `verifyClaim`; weglating blijft het
+D-006-probleem, ongewijzigd en meegenomen. Vindbaarheid en verificatie passen
+dus schoon op elkaar: verzamel uit willekeurige, onvertrouwde bronnen,
+verifieer alles lokaal.
+
+**Wat gebouwd is (0.4.0, branch `feat/cross-installation-discovery`):** een
+substraat-agnostische aggregatie-naad, `discoverDeliveryHistory(seller,
+sources)` (discovery.ts). Leest een verkopers claims uit meerdere
+onafhankelijke `ClaimSource`s (de lokale ledger, plus elk host-onafhankelijk
+substraat dat de koper wil lezen), ontdubbelt op `claimId`, HERVERIFIEERT elke
+claim ongeacht de bron, filtert claims over andere verkopers eruit, en draait
+`analyzeCompleteness` over het resultaat. Per-bron-boekhouding (fetched,
+accepted, rejected, duplicates) laat zien wat elke bron bijdroeg. Geen bron
+wordt vertrouwd. Openbare, draaibare fixture (`npm run discovery-fixture`,
+`docs/DISCOVERY-FIXTURE.md`): twee nagebootste installaties, 8 controles (6
+GREEN, 2 RED), waaronder het bewijs dat B zonder discovery A's claim mist, met
+discovery wel ziet, dat nep/verkeerde-verkoper wordt geweigerd, en dat een
+verborgen middelste claim óók over installaties heen wordt betrapt (compositie
+met D-006). 502 tests groen.
+
+**Wat NIET gebouwd is, expres:** de echte publieke onderlaag (EAS op Base,
+ERC-8004) is NIET live gekoppeld. Dat kost gas, een echte chain, en verdient
+een echte integrator; de naad is er klaar voor, de live-koppeling wacht op de
+D-005-trigger (twee echte installaties die moeten interopereren). En, hardcoded
+eerlijk: dit lost VINDBAARHEID op, niet VOLLEDIGHEID. Een bron kan nog steeds
+weglaten; meer onafhankelijke bronnen verhogen de kosten van een
+gecoördineerde weglating maar bereiken nooit een bewijs. Zelfde grens als
+D-006, nu over installaties heen.
+
+**Wat verificatie hier WEL en NIET bewijst (toegevoegd na adversariële review,
+zodat het niet wordt oververkocht):** `verifyClaim` bewijst AUTEURSCHAP van de
+inhoud, meer niet. Het bewijst niet dat er echt betaald of geleverd is
+(`settlementRef` wordt hier niet on-chain gecontroleerd) en niet dat kopers
+verschillende personen zijn. Eén sleutelpaar kan dus geldige positieve claims
+spammen om een verkoper op te blazen, of geldige negatieve om er een te
+beschadigen. Volume en Sybil worden door aggregatie NIET opgelost; de
+per-bron-cap begrenst alleen het werk (DoS-bescherming), het is geen
+Sybil-verdediging. Dit staat expliciet in DISCOVERY_NOTE, het `note`-veld en
+docs/DISCOVERY-FIXTURE.md, zodat een lezer die alleen "geverifieerd" ziet niet
+meer zekerheid afleidt dan er is. De blocker uit die review (een bron die geen
+array teruggaf liet de hele aggregatie crashen en censureerde zo alle andere
+bronnen) is gerepareerd met een non-array-guard plus tests; ook de
+boekhoudkundige verwarring tussen "geweigerd (crypto)" en "andere verkoper" is
+opgesplitst in aparte tellers.
+
+**Status:** vindbaarheids-naad + fixture gebouwd en getest (0.4.0, branch
+`feat/cross-installation-discovery`, nog niet naar main, nog niet gepubliceerd,
+wacht op review door de koning). Live koppeling aan EAS/ERC-8004: open, wacht
+op de trigger hierboven.
+
 ---
 
 ## D-006: kan een oneerlijke host claims selectief verbergen?
