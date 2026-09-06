@@ -289,8 +289,34 @@ opgesplitst in aparte tellers.
 
 **Status:** vindbaarheids-naad + fixture gebouwd en getest (0.4.0, branch
 `feat/cross-installation-discovery`, nog niet naar main, nog niet gepubliceerd,
-wacht op review door de koning). Live koppeling aan EAS/ERC-8004: open, wacht
-op de trigger hierboven.
+wacht op review door de koning).
+
+**LIVE BEWEZEN op Base mainnet (2026-09-06), op koning-opdracht:** de EAS-route
+is niet langer alleen gedocumenteerd, hij is echt uitgevoerd op chainId 8453.
+Een schema (`bytes32 claimId,string claim`, UID
+`0x1dd19408345dee43b432b89ccb68760265ecff506098b6efe8ba82ad0d52b195`) is
+geregistreerd, en twee claims zijn als EAS-attestaties gepubliceerd, publiek
+te bekijken:
+- c1 (delivered yes): `0x81a55d54452b2cf8bdda7918f63a27bf9ff79e5025b485f7316aae6259288ccc`
+- c2 (delivered NO): `0xe736b005cbcb54f8f196ac64ef09d75d939c8a18c0d5d9670b5c5025c07398c4`
+  (https://base.easscan.org/attestation/view/<uid>)
+
+Daarna vond een apart, read-only script (een "verse installatie") beide
+attestaties terug van de keten via `eth_getLogs` op recipient=seller, decodeerde
+ze en verifieerde elke claim LOKAAL (inclusief de negatieve), zonder iets te
+vertrouwen behalve Base zelf. Totale kosten: ~0.0000096 ETH (ongeveer 2,5
+dollarcent) voor alle drie de transacties. Uitgevoerd vanaf de VPS
+(euler-liquidator-wallet als gas-betaler; de claim zelf is door een aparte,
+wegwerp-koperssleutel ondertekend, dus attester != koper). Dit bewijst het
+mechanisme end-to-end op een echte publieke keten. Het bewijst nog steeds geen
+VOLLEDIGHEID (een indexer/host kan nog steeds weglaten; de koper kan zelf de
+keten bevragen om dat te omzeilen) en geen marktvraag; wat het wel bewijst is
+dat cross-installatie-vindbaarheid echt werkt en publiek natrekbaar is.
+
+Live koppeling als herbruikbare functie in het pakket (`src/eas.ts`,
+offline-getest) staat klaar; het bundelen van een RPC/gas blijft aan de
+aanroeper, en een echte productie-integrator blijft de trigger voor verdere
+uitbouw.
 
 ---
 
