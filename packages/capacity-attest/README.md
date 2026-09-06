@@ -45,6 +45,7 @@ De betalende agent (de koper) roept dit aan **na** een x402-afwikkeling, zodra b
 | `claimId` | content-addressed sha256-hash van alle velden hierboven, zie `computeClaimId()` in `src/schema.ts` |
 | `signature` | EIP-191 personal-sign handtekening van de koper over `claimId` |
 | `externalRefs` | *(optioneel, sinds 0.3.0)* ongeverifieerde verwijzingen naar andere agent-economie-infrastructuur: `sellerAgentRef`/`buyerAgentRef` (bv. een ERC-8004-agent-id of DID), `mandateRef`+`mandateIssuerDid` (een extern uitgegeven AP2/AAE-mandaat), `intentRef` (een extern AP2 IntentMandate), `disputeContext` (`protocol`+`termsHash`+optioneel `resolutionRef`, bv. een Legal Context Protocol-verwijzing). Zie [DECISIONS.md](./DECISIONS.md) D-007 t/m D-013 |
+| `priorClaimId` | *(optioneel, sinds 0.4.0)* de `claimId` van jouw vorige claim over dezelfde `sellerAddress`, zodat jouw claims over die verkoper een ketting vormen. Weggelaten bij je eerste claim over een verkoper. Zit in de ondertekende inhoud, dus een host kan het niet weghalen. Laat een lezer een host betrappen die een middelste claim verbergt. Zie [DECISIONS.md](./DECISIONS.md) D-006 |
 
 De server valideert eerst het schema, dan of `claimId` echt de hash van de inhoud is, en dan of `signature` echt terugrekent naar `buyerAddress`. Alleen dan wordt de claim toegevoegd aan de append-only ledger (`data/claims.jsonl`). Een ongeldige handtekening of een claim die al eerder is opgeslagen (zelfde `claimId`) wordt geweigerd.
 
@@ -53,6 +54,23 @@ De server valideert eerst het schema, dan of `claimId` echt de hash van de inhou
 Gegeven een `sellerAddress`, retourneert dit alle bekende claims tegen die verkoper op déze installatie, chronologisch (oudst eerst). Puur feitelijk, geen samengevat getal. Een kopende agent roept dit aan **vóórdat** hij betaalt, om de ruwe leveringsgeschiedenis van een potentiële verkoper te zien en zelf te beoordelen.
 
 Het antwoord bevat naast `sellerAddress`, `count` en `claims` ook `scope` (altijd `"local-ledger"`) en `note`: een vaste, feitelijke tekst die uitlegt dat dit resultaat alleen de lokale ledger van déze installatie weerspiegelt. Een lege of korte geschiedenis betekent niet dat de verkoper een schone staat van dienst heeft, het kan ook betekenen dat er hier simpelweg nog geen claims zijn vastgelegd. Zie [DECISIONS.md](./DECISIONS.md) (D-005) voor de bredere architectuurvraag hierachter: hoe vindt een koper claims die op een ándere installatie zijn vastgelegd.
+
+Sinds 0.4.0 bevat het antwoord ook `completeness`: een analyse van de per-koper ketens (`priorClaimId`) in precies deze uitkomst. Als een getoonde claim terugverwijst naar een claim die NIET in de uitkomst zit, komt die in `possibleOmissions` te staan. Dat is een concreet, controleerbaar signaal dat de host mogelijk een middelste claim verbergt, in plaats van een vaag vermoeden.
+
+Let op, dit is het belangrijkste punt: dat `completeness`-veld wordt berekend door dezelfde server die de claims teruggeeft. Vertrouw je die server niet, vertrouw dan ook het veld niet, want een oneerlijke host kan er gewoon "alles compleet" in zetten. De echte zekerheid zit in de ondertekende `priorClaimId` in de claims zelf, die een host niet kan vervalsen of weghalen. Reken de controle dus zelf opnieuw uit over de teruggekregen claims:
+
+```js
+// recompute-completeness.mjs
+import { verifyClaim } from "capacity-attest/dist/signing.js";
+import { analyzeCompleteness } from "capacity-attest/dist/completeness.js";
+
+// `claims` = de array uit het get_delivery_history-antwoord.
+const allSigned = claims.every((c) => verifyClaim(c).ok);   // elke claim echt?
+const report = analyzeCompleteness(claims);                  // zelf herrekenen, niet het host-veld geloven
+console.log({ allSigned, chainConsistent: report.chainConsistent, possibleOmissions: report.possibleOmissions });
+```
+
+Eerlijke grens: ook zelf-herrekenen betrapt geen verborgen laatste claim en geen verborgen hele koper, want daar valt geen schakel over te struikelen. En een losse terugverwijzing hoeft geen bedrog te zijn: de eerdere claim kan ook gewoon op een andere installatie zijn vastgelegd (het D-005-geval). Voor echte zekerheid blijven de externe getuigen nodig: je eigen bewaarde kopie hierboven, en de betaling op de keten via `settlementRef`. Zie [DECISIONS.md](./DECISIONS.md) D-006.
 
 ### 3. `resolve_agent_identity` *(sinds 0.3.0)*
 

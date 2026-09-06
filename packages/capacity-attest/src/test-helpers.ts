@@ -26,6 +26,7 @@ export interface BuildClaimOverrides {
   evidenceHash?: string;
   settlementRef?: string;
   timestamp?: string;
+  priorClaimId?: string;
 }
 
 /** Build a valid, signed DeliveryClaim for buyer `wallet`, with sensible defaults. */
@@ -42,6 +43,9 @@ export async function buildSignedClaim(
     evidenceHash: overrides.evidenceHash ?? evidenceHash("demo evidence payload"),
     settlementRef: overrides.settlementRef ?? "0x" + "11".repeat(32),
     timestamp: overrides.timestamp ?? new Date().toISOString(),
+    // Only set priorClaimId when a test explicitly asks for it, so the default
+    // claim stays a chain-genesis (no link) and existing tests are unaffected.
+    ...(overrides.priorClaimId !== undefined ? { priorClaimId: overrides.priorClaimId } : {}),
   };
   const { claimId, signature } = await signClaim(wallet, content);
   return { ...content, claimId, signature };

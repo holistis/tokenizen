@@ -545,7 +545,7 @@ export const ClaimContentObject = z.object({
     .describe("ISO-8601 timestamp of when this claim was made"),
   // The one and only addition of 0.2.0. Optional, never defaulted: an absent
   // key is absent from the preimage, so every claim recorded before 0.2.0
-  // hashes bit-for-bit identically (proven in schema.test.ts against the real
+  // hashes bit-for-bit identically (proven in measured.test.ts against the real
   // production claim in data-selftest/claims.jsonl).
   measured: MeasuredSchema.optional().describe(
     "Optional quantitative record of how much was promised and how much was measured. Presence is the version marker; absence is the only encoding of 'not measured'",
@@ -555,6 +555,46 @@ export const ClaimContentObject = z.object({
   externalRefs: ExternalRefsSchema.optional().describe(
     "Optional, unverified pointers into other agent-economy infrastructure (identity, authority, intent, dispute). Tokenizen never resolves or trusts these — they are citations, not verified facts",
   ),
+  // priorClaimId — the per-buyer, per-seller chain link. Added in 0.4.0, SAME
+  // optional/never-defaulted discipline as `measured` and `externalRefs`: an
+  // absent key is absent from the preimage, so every claim recorded before
+  // 0.4.0 still hashes bit-for-bit identically (proven by the frozen-preimage
+  // tests in completeness.test.ts, plus the real-production-claim anchors in
+  // measured.test.ts / external-refs.test.ts / identity-hardening.test.ts,
+  // all of which still hash to the stored id with priorClaimId in the schema).
+  //
+  // WHAT IT IS: the claimId of THIS buyer's immediately previous claim about
+  // THE SAME sellerAddress. A buyer's very first claim about a seller omits it
+  // (the chain's genesis). Each later claim references the one before it, so a
+  // buyer's claims about one seller form a singly-linked chain the buyer
+  // signs into existence link by link. This is the one thing a lone buyer CAN
+  // commit to unilaterally — it needs no coordinator, no shared log, no
+  // network — because a buyer always knows its own history with a seller.
+  //
+  // WHAT IT BUYS (see completeness.ts + DECISIONS.md D-006): because the link
+  // sits INSIDE the signed content, a host serving get_delivery_history cannot
+  // strip or alter it. So a host that hides one of a buyer's middle claims is
+  // caught: the next shown claim in that buyer's chain references a priorClaimId
+  // that is not in the result, a dangling back-reference that
+  // analyzeCompleteness() flags. It is a DETECTION primitive, not prevention.
+  //
+  // WHAT IT DELIBERATELY DOES NOT DO, stated so it is never oversold: it does
+  // NOT catch a host hiding a buyer's most RECENT claim (a tail truncation
+  // leaves no dangling reference behind), and it does NOT catch a host hiding
+  // an ENTIRE buyer's chain (you cannot miss a back-reference to a chain you
+  // were never shown any link of). Those need the external witnesses that no
+  // schema field can replace: the buyer's own retained copy (README "Je eigen
+  // ingediende claims delen") and the on-chain payment record. Not validated
+  // at ingest (a buyer may legitimately record on a fresh installation that
+  // has never seen the prior claim), so this is a self-asserted pointer in
+  // the same "cite, verify separately" posture as evidenceHash/settlementRef.
+  priorClaimId: z
+    .string()
+    .regex(CLAIM_ID_RE, "priorClaimId must be a 0x-prefixed sha256 hex digest (the claimId of this buyer's previous claim about this seller)")
+    .optional()
+    .describe(
+      "Optional chain link: the claimId of this buyer's immediately previous claim about the SAME sellerAddress. Omitted on a buyer's first claim about a seller. Lets a reader detect a host that hides a middle claim — see analyzeCompleteness and DECISIONS.md D-006",
+    ),
 });
 
 const claimIdField = z

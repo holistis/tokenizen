@@ -34,7 +34,10 @@ server.registerTool(
       "The buyer agent calls this AFTER paying, once it knows whether what was promised actually arrived. " +
       "The claim's schema and signature (must recover to buyerAddress) are validated before it is written to the " +
       "append-only ledger. This is a factual receipt, not a reputation score — see get_delivery_history for how " +
-      "other agents read it back.",
+      "other agents read it back. OPTIONAL priorClaimId: set it to the claimId of your (this buyer's) previous claim " +
+      "about the SAME sellerAddress, so your claims about that seller form a chain. It is optional and omitted on your " +
+      "first claim about a seller. Chaining lets a reader later detect a host that hides one of your middle claims; it " +
+      "is signed into the claim so a host cannot strip it. See DECISIONS.md D-006.",
     inputSchema: DeliveryClaimSchema.shape,
   },
   async (args) => {
@@ -56,7 +59,13 @@ server.registerTool(
       "cannot see, so an empty or short result does NOT mean the seller has a clean record elsewhere, only that no " +
       "claims have been recorded here; (2) even within this installation, a shown claim's signature is genuinely " +
       "verified, but nothing proves this is the COMPLETE set of claims the operator actually holds — completeness " +
-      "depends on the operator's honesty, not cryptography. " +
+      "depends on the operator's honesty, not cryptography. The response's `completeness` field analyzes the per-buyer " +
+      "claim chains (priorClaimId) and flags, in possibleOmissions, any shown claim that links back to a claim NOT in " +
+      "the result — a concrete sign the operator may be hiding a middle claim. IMPORTANT: that field is computed by " +
+      "this same server, so if you do not run it yourself, do NOT trust the field — recompute it locally by calling " +
+      "analyzeCompleteness() over the returned claims, whose priorClaimId links are signed and cannot be forged or " +
+      "stripped. It cannot catch a hidden most-recent claim or a hidden whole buyer, and a dangling link can also just " +
+      "mean the prior claim lives on another installation; see DECISIONS.md D-006. " +
       "A buying agent can call this BEFORE paying a seller to see that seller's raw delivery history for gpu-hours, " +
       "storage, api-credits, and bandwidth claims.",
     inputSchema: {

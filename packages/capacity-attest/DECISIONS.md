@@ -373,6 +373,82 @@ zelf-export-recept in README. Bewust NIET gebouwd: een on-chain/anchoring-
 mechanisme, zie redenering hierboven; blijft open onderzoek met een eigen
 trigger-criterium, geen bouwbeslissing vandaag.
 
+**Vervolg 0.4.0, expliciete koning-beslissing: van "alleen documenteren" naar
+"het detecteerbare deel bouwen".** De status hierboven zei "geen bouwbeslissing
+vandaag". Dat is herzien, en de herziening staat hier zichtbaar in plaats van
+dat de oude regel stilletjes wordt weggepoetst: de koning gaf daarna de
+expliciete opdracht het probleem alsnog op te lossen, direct of indirect, na
+een tweede, diepere onderzoeksronde (Certificate Transparency in de praktijk,
+EAS/ERC-8004, cryptografische accumulators, transparency-log-werk 2024-2026,
+inclusief een parallel voorstel van een externe AI). Die opdracht van de koning
+is zelf een geldige trigger, en het onderzoek gaf een scherp, eerlijk resultaat
+dat het bouwen stuurde in plaats van tegenhield.
+
+**Wat het onderzoek vaststelde (met bronnen, samengevat):** volledigheid
+VOORAF afdwingen of bewijzen uit één antwoord kan niemand, ook Google's
+Certificate Transparency niet (het gossip-mechanisme dat split-view zou
+vangen is in 2018 formeel doodverklaard en nooit uitgerold; CT leunt in de
+praktijk op een handvol zwaar gefinancierde monitors plus browser-dreigementen,
+niet op een bewijs binnen het log). EAS/ERC-8004 lossen vindbaarheid op maar
+niet volledigheid tegen een oneerlijke indexer, en ERC-8004's reputatiedata is
+empirisch 73-91% sybil-vervuild. Accumulators/sparse-Merkle geven wel een
+afwezigheids-bewijs, maar alleen binnen een reeds gecommitteerde toestand, niet
+dat de werkelijkheid volledig in die toestand zat. De enige realistische zet
+voor een klein pakket is dus de herformulering die zowel de externe AI als het
+2024-werk (Consistency-or-Die) delen: maak weglating EXTERN WAARNEEMBAAR in
+plaats van onmogelijk, met getuigen die de host niet in handen heeft.
+
+**Wat vandaag gebouwd is (0.4.0):** de goedkoopste getuige die geen coördinator
+en geen netwerk nodig heeft is de koper zelf. Nieuw, additief veld
+`priorClaimId` (schema.ts, exact dezelfde optioneel/nooit-gedefaulte discipline
+als `measured` en `externalRefs`, dus geen enkele bestaande claim verandert,
+bewezen door een frozen-preimage-test): elke koper rijgt zijn eigen
+opeenvolgende claims over dezelfde verkoper aan elkaar. Omdat de schakel in de
+ondertekende inhoud zit, kan een host hem niet weghalen. Nieuwe functie
+`analyzeCompleteness` (completeness.ts) draait automatisch in
+`get_delivery_history`'s antwoord (`completeness`-veld) en meldt in
+`possibleOmissions` elke getoonde claim die terugverwijst naar een claim die
+NIET in de uitkomst zit. Dat is het concrete "hier verbergt de host mogelijk
+iets"-signaal.
+
+**Het kernpunt dat een adversariële review terecht als blocker markeerde,
+zodat we het niet oversellen:** dat `completeness`-veld wordt berekend door
+dezelfde (mogelijk oneerlijke) host en zit in het antwoord dat die host
+volledig beheert. Een kwaadwillende host kan er dus simpelweg
+`chainConsistent: true, possibleOmissions: []` in zetten en toch claims
+weglaten. De waarde zit NIET in het veld, maar in de ondertekende
+`priorClaimId` in de claims zelf, die de host niet kan vervalsen of weghalen
+(bevestigd: `priorClaimId` gaat door `computeClaimId()` en wordt dus door de
+handtekening gedekt; strippen breekt de handtekening en de leesroute weigert
+de claim). De detectie heeft dus alleen tanden als de LEZER de controle zelf
+opnieuw uitrekent (`analyzeCompleteness()` over de teruggekregen, zelf
+geverifieerde claims). Het veld in het antwoord is puur een gemak voor de
+eerlijke of zelf-gehoste situatie. Dit staat nu expliciet in
+completeness.ts, de tool-beschrijving, README (met een recept) en het
+`note`-veld zelf, zodat een agent die alleen `chainConsistent` afleest niet
+in slaap wordt gesust door een liegende host.
+
+**Wat het NIET oplost, in code en docs eerlijk benoemd:** het betrapt een
+verborgen MIDDELSTE claim, niet een verborgen laatste claim (een afgekapte
+staart laat geen losse terugverwijzing achter) en niet een verborgen HELE
+koper (je kunt geen schakel missen van een keten waarvan je nul schakels zag).
+Daarvoor blijven de twee externe getuigen nodig die geen schema-veld kan
+vervangen: de eigen bewaarde kopie van de koper (README-recept, D-006 hierboven)
+en de publieke betaling op de keten (`settlementRef`). Dit is dus DETECTIE, geen
+preventie, en het wordt nergens als preventie gepresenteerd.
+
+**Trigger voor de volgende, zwaardere stap (transparency-log met witness-
+cosigning, of on-chain anchoring):** een echte, betalende integrator die het
+huidige detectie-niveau aantoonbaar te zwak vindt voor zijn geval en de
+bijbehorende complexiteit/kosten wil dragen. Zie de aparte trigger hierboven
+voor het on-chain-stuk. Tot dan is de per-koper-keten het eerlijke,
+proportionele antwoord.
+
+**Status:** per-koper-keten gebouwd en getest (0.4.0, branch
+`feat/per-buyer-claim-chain`, nog niet naar main, nog niet gepubliceerd,
+wacht op review door de koning). Zwaardere transparency-infrastructuur: nog
+steeds open, met de scherpere trigger hierboven.
+
 ---
 
 ## D-007 t/m D-013: de zes lagen naast Evidence (2026-09-06 workflow)

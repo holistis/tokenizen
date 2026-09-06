@@ -114,11 +114,11 @@ describe("getDeliveryHistory", () => {
     await recordDelivery(claim);
 
     const history = await getDeliveryHistory(claim.sellerAddress);
-    // Vaste lijst: scope/note zijn een feitelijke herkomst-disclosure, geen
-    // score. Als hier ooit een veld als "reliability", "rating" of "trust"
-    // bijkomt, moet deze test dat expliciet tegenhouden, vandaar de exacte
-    // sleutel-lijst i.p.v. alleen "bevat minstens".
-    expect(Object.keys(history).sort()).toEqual(["claims", "count", "note", "scope", "sellerAddress"]);
+    // Vaste lijst: scope/note/completeness zijn een feitelijke herkomst- en
+    // volledigheids-disclosure, geen score. Als hier ooit een veld als
+    // "reliability", "rating" of "trust" bijkomt, moet deze test dat expliciet
+    // tegenhouden, vandaar de exacte sleutel-lijst i.p.v. alleen "bevat minstens".
+    expect(Object.keys(history).sort()).toEqual(["claims", "completeness", "count", "note", "scope", "sellerAddress"]);
   });
 
   it("maakt de local-only scope onmogelijk te missen, ook zonder de tool-beschrijving te lezen (D-005)", async () => {

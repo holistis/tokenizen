@@ -7,6 +7,7 @@
 import { StrictDeliveryClaimSchema, type DeliveryClaim } from "./schema.js";
 import { verifyClaim } from "./signing.js";
 import { appendClaim, claimsForSeller } from "./ledger.js";
+import { analyzeCompleteness, type CompletenessReport } from "./completeness.js";
 
 export type RecordDeliveryResult = { ok: true; claimId: string } | { ok: false; reason: string };
 
@@ -93,6 +94,13 @@ export interface DeliveryHistoryResult {
   claims: DeliveryClaim[];
   scope: "local-ledger";
   note: string;
+  // Per-buyer chain analysis over exactly the claims returned above. Turns the
+  // abstract "can a host hide claims" worry into a concrete, checkable signal:
+  // possibleOmissions is non-empty when a shown claim links back to a claim
+  // that is NOT in this result. See completeness.ts for the honest boundary
+  // (it catches hidden MIDDLE claims, not a hidden tail or a hidden whole
+  // buyer) and DECISIONS.md D-006.
+  completeness: CompletenessReport;
 }
 
 const LOCAL_LEDGER_NOTE =
@@ -119,5 +127,12 @@ const LOCAL_LEDGER_NOTE =
  */
 export async function getDeliveryHistory(sellerAddress: string): Promise<DeliveryHistoryResult> {
   const claims = await claimsForSeller(sellerAddress);
-  return { sellerAddress, count: claims.length, claims, scope: "local-ledger", note: LOCAL_LEDGER_NOTE };
+  return {
+    sellerAddress,
+    count: claims.length,
+    claims,
+    scope: "local-ledger",
+    note: LOCAL_LEDGER_NOTE,
+    completeness: analyzeCompleteness(claims),
+  };
 }

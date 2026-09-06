@@ -2,6 +2,12 @@
 
 Alle noemenswaardige wijzigingen aan dit package worden hier bijgehouden.
 
+## 0.4.0
+
+**Nieuw: `priorClaimId`, de per-koper leveringsketen, plus `completeness` in het antwoord van `get_delivery_history`.** Dit is het antwoord op de vraag van goun7 (x402-foundation/x402#3379): kan een oneerlijke host claims verbergen? Volledig voorkomen kan niemand, ook Certificate Transparency niet (zie het onderzoek in `DECISIONS.md` D-006). Wat wel kan: weglating detecteerbaar maken. `priorClaimId` is een optioneel veld (exact dezelfde optioneel/nooit-gedefaulte discipline als `measured` en `externalRefs`, dus geen enkele bestaande claim verandert van `claimId`, bewezen door een frozen-preimage-test) waarmee een koper zijn opeenvolgende claims over dezelfde verkoper aan elkaar rijgt. Omdat de schakel in de ondertekende inhoud zit, kan een host hem niet weghalen. De nieuwe functie `analyzeCompleteness` (`completeness.ts`) draait automatisch in het antwoord van `get_delivery_history` en meldt in `possibleOmissions` elke getoonde claim die terugverwijst naar een claim die niet in de uitkomst zit: het concrete signaal dat een host mogelijk een middelste claim verbergt.
+
+Eerlijke grens, in code en docs benoemd: dit betrapt een verborgen middelste claim, niet een verborgen laatste claim en niet een verborgen hele koper. Daarvoor blijven de externe getuigen nodig die geen schema-veld kan vervangen: de eigen bewaarde kopie van de koper en de publieke betaling op de keten (`settlementRef`). Detectie dus, geen preventie. Volledige onderbouwing, inclusief de tweede onderzoeksronde (CT in de praktijk, EAS/ERC-8004, accumulators, transparency-log-werk 2024-2026): `DECISIONS.md` D-006.
+
 ## 0.3.0
 
 **Nieuw: `externalRefs`, een optioneel blok met zes ongeverifieerde velden die naar andere agent-economie-infrastructuur verwijzen.** Aanleiding: een workflow (2026-09-06) onderzocht met echte webresearch of dit project ook de zes lagen naast zijn eigen Evidence-laag zou moeten bouwen: Identity, Authority, Intent, Execution, Settlement, Discovery, Liability. Uitkomst voor alle zes: DO_NOT_BUILD of WAIT, elk overleefde een aparte adversariële kill-test. Grotere partijen (ERC-8004, Google AP2, Microsoft Entra Agent ID, Okta, de x402 Foundation, het Legal Context Protocol, en meer) hebben elke laag al bezet met echte productie-infrastructuur; zelf zo'n laag bouwen zou tijd verspillen aan iets dat al bestaat en beter gekapitaliseerd is. Volledige onderbouwing en bronnen: `DECISIONS.md` D-007 t/m D-013.
