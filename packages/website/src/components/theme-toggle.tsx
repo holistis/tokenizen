@@ -1,24 +1,26 @@
 import { Monitor, Moon, Sun } from "lucide-react";
 
 import { useTheme, type Theme } from "@/hooks/use-theme";
+import { useLocale } from "@/i18n/context";
 import { cn } from "@/lib/utils";
-
-const OPTIONS: Array<{ value: Theme; label: string; icon: typeof Sun }> = [
-  { value: "light", label: "Licht", icon: Sun },
-  { value: "system", label: "Systeem", icon: Monitor },
-  { value: "dark", label: "Donker", icon: Moon },
-];
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
+  const { t } = useLocale();
+
+  const options: Array<{ value: Theme; label: string; icon: typeof Sun }> = [
+    { value: "light", label: t.themeToggle.light, icon: Sun },
+    { value: "system", label: t.themeToggle.system, icon: Monitor },
+    { value: "dark", label: t.themeToggle.dark, icon: Moon },
+  ];
 
   return (
     <div
       role="radiogroup"
-      aria-label="Kies thema"
+      aria-label={t.themeToggle.groupLabel}
       className="inline-flex items-center rounded-md border border-border bg-muted p-0.5"
     >
-      {OPTIONS.map(({ value, label, icon: Icon }) => {
+      {options.map(({ value, label, icon: Icon }) => {
         const active = theme === value;
         return (
           <button

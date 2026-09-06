@@ -3,20 +3,13 @@ import { Github, Menu, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageToggle } from "@/components/language-toggle";
+import { useLocale } from "@/i18n/context";
 
 const GITHUB_URL = "https://github.com/holistis/tokenizen";
 
-const NAV_LINKS: Array<{ href: string; label: string }> = [
-  { href: "#probleem", label: "Probleem" },
-  { href: "#waarom-nu", label: "Waarom nu" },
-  { href: "#product", label: "Product" },
-  { href: "#hoe-het-werkt", label: "Hoe het werkt" },
-  { href: "#ontwerpgrenzen", label: "Grenzen" },
-  { href: "#open-source", label: "Open source" },
-  { href: "#status", label: "Status" },
-];
-
 export function Header() {
+  const { t } = useLocale();
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -29,8 +22,8 @@ export function Header() {
           </span>
         </a>
 
-        <nav aria-label="Hoofdnavigatie" className="hidden items-center gap-6 lg:flex">
-          {NAV_LINKS.map((link) => (
+        <nav aria-label={t.header.navLabel} className="hidden items-center gap-6 lg:flex">
+          {t.header.links.map((link) => (
             <a
               key={link.href}
               href={link.href}
@@ -42,17 +35,18 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <LanguageToggle />
           <ThemeToggle />
           <Button variant="outline" size="sm" asChild className="hidden sm:inline-flex">
             <a href={GITHUB_URL} target="_blank" rel="noreferrer noopener">
               <Github className="size-3.5" aria-hidden="true" />
-              GitHub
+              {t.header.github}
             </a>
           </Button>
           <button
             type="button"
             className="inline-flex size-9 items-center justify-center rounded-md border border-border text-foreground lg:hidden"
-            aria-label={menuOpen ? "Sluit menu" : "Open menu"}
+            aria-label={menuOpen ? t.header.closeMenu : t.header.openMenu}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((open) => !open)}
           >
@@ -62,9 +56,9 @@ export function Header() {
       </div>
 
       {menuOpen ? (
-        <nav aria-label="Mobiele navigatie" className="border-t border-border bg-background lg:hidden">
+        <nav aria-label={t.header.mobileNavLabel} className="border-t border-border bg-background lg:hidden">
           <ul className="container flex flex-col gap-1 py-3">
-            {NAV_LINKS.map((link) => (
+            {t.header.links.map((link) => (
               <li key={link.href}>
                 <a
                   href={link.href}
@@ -83,7 +77,7 @@ export function Header() {
                 className="mt-1 flex items-center gap-2 rounded-md px-2 py-2 font-mono text-sm uppercase tracking-wide text-primary"
               >
                 <Github className="size-3.5" aria-hidden="true" />
-                GitHub
+                {t.header.github}
               </a>
             </li>
           </ul>

@@ -15,6 +15,9 @@
     <meta name="theme-color" content="#2B3A55" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#171613" media="(prefers-color-scheme: dark)" />
     <link rel="canonical" href="https://tokenizen.nl/" />
+    <link rel="alternate" hreflang="nl" href="https://tokenizen.nl/" />
+    <link rel="alternate" hreflang="en" href="https://tokenizen.nl/en" />
+    <link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/" />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="shortcut icon" href="/favicon.svg" />
@@ -28,13 +31,18 @@
       content="Iedereen bouwt de koperskant van de AI-agent-economie (identiteit, spend-limits, betaalrails). Tokenizen bouwt de verkoperskant: een ondertekend, feitelijk bewijs dat het geleverde overeenkomt met wat beloofd was."
     />
     <meta property="og:site_name" content="tokenizen" />
+    <meta property="og:image" content="https://tokenizen.nl/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Tokenizen: infrastructuur voor de AI-agent-economie" />
 
-    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Tokenizen | Bewijs van levering voor de AI-agent-economie" />
     <meta
       name="twitter:description"
       content="Open-source infrastructuur voor de verkoperskant van de AI-agent-economie: een ondertekende, feitelijke leveringsclaim na elke x402-betaling."
     />
+    <meta name="twitter:image" content="https://tokenizen.nl/og-image.png" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -75,7 +83,7 @@
         "url": "https://tokenizen.nl",
         "logo": "https://tokenizen.nl/favicon.svg",
         "email": "info@tokenizen.nl",
-        "description": "Open-source infrastructuur die AI-agents in staat stelt rechten op economische assets te begrijpen, verifiëren en afwikkelen: agent → identiteit → recht → asset → betaling → afwikkeling.",
+        "description": "Open-source infrastructuur voor de verkoperskant van de AI-agent-economie. Het huidige product, Capacity Attest, laat na een x402-afwikkeling een ondertekende, feitelijke leveringsclaim achter, zodat een volgende koper de leveringsgeschiedenis van een verkoper kan checken vóór hij zelf betaalt. Verifieert of settelt zelf geen betalingen.",
         "sameAs": ["https://github.com/holistis/tokenizen"],
         "contactPoint": {
           "@type": "ContactPoint",
@@ -93,11 +101,12 @@
         "name": "Capacity Attest",
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Node.js",
-        "softwareVersion": "0.1.0",
+        "softwareVersion": "0.2.0",
         "isAccessibleForFree": true,
         "license": "https://opensource.org/licenses/MIT",
         "codeRepository": "https://github.com/holistis/tokenizen",
-        "description": "MCP-server voor leverings-attestaties bij x402-capaciteitshandel tussen AI-agents. Na een x402-betaling voor GPU-uren, opslag, API-credits of bandbreedte laat de kopende agent een ondertekende, feitelijke claim achter of het beloofde ook echt geleverd is, op een append-only ledger, opvraagbaar door de volgende koper vóór hij zelf betaalt.",
+        "downloadUrl": "https://www.npmjs.com/package/capacity-attest",
+        "description": "MCP-server voor leverings-attestaties bij x402-capaciteitshandel tussen AI-agents. Live op npm en geregistreerd in het officiële MCP-register als io.github.holistis/capacity-attest. Na een x402-betaling voor GPU-uren, opslag, API-credits of bandbreedte laat de kopende agent een ondertekende, feitelijke claim achter of het beloofde ook echt geleverd is, op een append-only ledger, opvraagbaar door de volgende koper vóór hij zelf betaalt.",
         "publisher": {
           "@type": "Organization",
           "name": "tokenizen",

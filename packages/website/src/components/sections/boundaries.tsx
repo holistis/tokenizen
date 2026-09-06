@@ -2,75 +2,34 @@ import { CheckCircle2, ShieldAlert, XCircle } from "lucide-react";
 
 import { Section } from "@/components/section";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/i18n/context";
 
-interface Column {
-  key: "green" | "yellow" | "red";
-  label: string;
-  icon: typeof CheckCircle2;
-  items: string[];
-}
+const ICONS = [CheckCircle2, ShieldAlert, XCircle] as const;
+const KEYS = ["green", "yellow", "red"] as const;
 
-const COLUMNS: Column[] = [
-  {
-    key: "green",
-    label: "Wel: bouwen we",
-    icon: CheckCircle2,
-    items: [
-      "Verificatie van levering (delivered: yes/no/partial + evidence hash)",
-      "Append-only audit-trail, content-addressed, niet achteraf te wijzigen",
-      "MCP-tools om vóór betaling de geschiedenis van een verkoper te checken",
-      "Echte capaciteitshandel: GPU-uren, opslag, API-credits, bandbreedte",
-    ],
-  },
-  {
-    key: "yellow",
-    label: "Met guardrail",
-    icon: ShieldAlert,
-    items: [
-      "Settlement is spot-only, geen termijn- of derivatenconstructie",
-      "Credits zijn inwisselbare vouchers voor capaciteit, geen verhandelbaar instrument",
-      "Bewijsmateriaal wordt als hash opgeslagen, niet als data zelf",
-    ],
-  },
-  {
-    key: "red",
-    label: "Nooit: hardcoded uitgesloten",
-    icon: XCircle,
-    items: [
-      "Geen eigen token of munt",
-      "Geen leningen",
-      "Geen rente-op-betalingen",
-      "Geen factoring / invoice-financing",
-      "Geen yield-producten",
-    ],
-  },
-];
-
-const STYLES: Record<Column["key"], { border: string; bg: string; text: string }> = {
+const STYLES: Record<(typeof KEYS)[number], { border: string; bg: string; text: string }> = {
   green: { border: "border-rule-green/30", bg: "bg-rule-green-soft", text: "text-rule-green" },
   yellow: { border: "border-rule-yellow/30", bg: "bg-rule-yellow-soft", text: "text-rule-yellow" },
   red: { border: "border-rule-red/30", bg: "bg-rule-red-soft", text: "text-rule-red" },
 };
 
 export function Boundaries() {
+  const { t } = useLocale();
+
   return (
-    <Section id="ontwerpgrenzen" index="05" eyebrow="Ontwerpgrenzen">
-      <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-        Bewust géén token, géén rente, géén lening.
-      </h2>
-      <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
-        Dit is geen marketing-truc. Het is een bewuste, harde ontwerpgrens, en een strategische: het houdt
-        Tokenizen buiten de zwaarst gereguleerde en meest gehypte hoek van crypto. De grens is expliciet
-        ingebakken in het schema en de documentatie, niet weggemoffeld.
-      </p>
+    <Section id="ontwerpgrenzen" index="05" eyebrow={t.boundaries.eyebrow}>
+      <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">{t.boundaries.h2}</h2>
+      <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">{t.boundaries.body}</p>
 
       <div className="mt-10 grid gap-4 md:grid-cols-3">
-        {COLUMNS.map((column) => {
-          const style = STYLES[column.key];
+        {t.boundaries.columns.map((column, i) => {
+          const key = KEYS[i];
+          const Icon = ICONS[i];
+          const style = STYLES[key];
           return (
-            <div key={column.key} className={cn("flex flex-col gap-4 rounded-lg border p-5", style.border, style.bg)}>
+            <div key={column.label} className={cn("flex flex-col gap-4 rounded-lg border p-5", style.border, style.bg)}>
               <div className={cn("flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-wide", style.text)}>
-                <column.icon className="size-4" aria-hidden="true" />
+                <Icon className="size-4" aria-hidden="true" />
                 {column.label}
               </div>
               <ul className="flex flex-col gap-2.5">

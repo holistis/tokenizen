@@ -1,3 +1,5 @@
+import { CopyButton } from "@/components/copy-button";
+
 /**
  * Kleine, dependency-vrije JSON-"highlighter". Geen syntax-highlight-library
  * nodig voor één statisch code-voorbeeld: dit tokeniseert met een enkele
@@ -27,9 +29,11 @@ function highlightJson(json: string): string {
 interface CodeBlockProps {
   label: string;
   code: string;
+  copyLabel?: string;
+  copiedLabel?: string;
 }
 
-export function CodeBlock({ label, code }: CodeBlockProps) {
+export function CodeBlock({ label, code, copyLabel, copiedLabel }: CodeBlockProps) {
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-card">
       <div className="flex items-center gap-2 border-b border-border bg-muted px-4 py-2">
@@ -37,6 +41,9 @@ export function CodeBlock({ label, code }: CodeBlockProps) {
         <span className="size-2 rounded-full bg-rule-yellow/60" aria-hidden="true" />
         <span className="size-2 rounded-full bg-rule-green/60" aria-hidden="true" />
         <span className="ml-2 font-mono text-xs text-muted-foreground">{label}</span>
+        {copyLabel && copiedLabel ? (
+          <CopyButton value={code} copyLabel={copyLabel} copiedLabel={copiedLabel} className="ml-auto" />
+        ) : null}
       </div>
       <pre className="overflow-x-auto px-4 py-4 text-xs leading-relaxed md:text-[13px]">
         <code

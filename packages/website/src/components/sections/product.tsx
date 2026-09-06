@@ -1,6 +1,8 @@
 import { Section } from "@/components/section";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { CodeBlock } from "@/components/code-block";
+import { useLocale } from "@/i18n/context";
+import { withInlineCode } from "@/i18n/inline-code";
 
 function shorten(hex: string, head = 10, tail = 6): string {
   if (hex.length <= head + tail + 1) return hex;
@@ -49,49 +51,34 @@ const historyResult = [
 ];
 
 export function Product() {
+  const { t } = useLocale();
+
   return (
-    <Section id="product" index="03" eyebrow="Het product: Capacity Attest">
-      <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-        Een ondertekende, feitelijke leveringsclaim. Geen oordeel, geen score.
-      </h2>
+    <Section id="product" index="03" eyebrow={t.product.eyebrow}>
+      <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">{t.product.h2}</h2>
       <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
-        Na een x402-afwikkeling voor capaciteit (GPU-uren, opslag, API-credits, bandbreedte) laat de betalende
-        agent een cryptografisch ondertekende claim achter: <code className="font-mono text-foreground">delivered</code>{" "}
-        (yes/no/partial) plus een hash van het bewijsmateriaal, content-addressed en op een append-only ledger.
-        Andere agents kunnen die geschiedenis opvragen vóórdat ze zelf zaken doen met een verkoper.
+        {withInlineCode(t.product.body)}
       </p>
 
       <div className="mt-10 grid gap-6 lg:grid-cols-2">
-        <div className="flex flex-col gap-3">
-          <CodeBlock label="MCP tool-call → record_delivery" code={JSON.stringify(recordDeliveryCall, null, 2)} />
-          <CodeBlock label="antwoord" code={JSON.stringify(recordDeliveryResult, null, 2)} />
+        <div className="flex min-w-0 flex-col gap-3">
+          <CodeBlock label={t.product.codeLabelRecordCall} code={JSON.stringify(recordDeliveryCall, null, 2)} />
+          <CodeBlock label={t.product.codeLabelResult} code={JSON.stringify(recordDeliveryResult, null, 2)} />
         </div>
-        <div className="flex flex-col gap-3">
-          <CodeBlock label="MCP tool-call → get_delivery_history" code={JSON.stringify(historyCall, null, 2)} />
-          <CodeBlock label="antwoord" code={JSON.stringify(historyResult, null, 2)} />
+        <div className="flex min-w-0 flex-col gap-3">
+          <CodeBlock label={t.product.codeLabelHistoryCall} code={JSON.stringify(historyCall, null, 2)} />
+          <CodeBlock label={t.product.codeLabelResult} code={JSON.stringify(historyResult, null, 2)} />
         </div>
       </div>
-      <p className="mt-3 font-mono text-xs text-muted-foreground">
-        Hashes, adressen en de handtekening zijn ingekort voor leesbaarheid. Het volledige schema staat in{" "}
-        <code>packages/capacity-attest/src/schema.ts</code>.
-      </p>
+      <p className="mt-3 font-mono text-xs text-muted-foreground">{withInlineCode(t.product.note)}</p>
 
       <div className="mt-10 grid gap-4 sm:grid-cols-2">
-        <Card>
-          <CardTitle>record_delivery</CardTitle>
-          <CardContent className="text-muted-foreground">
-            De betalende agent roept dit aan ná een x402-afwikkeling. De server valideert eerst het schema, dan of{" "}
-            <code>claimId</code> echt de hash van de inhoud is, en dan of <code>signature</code> terugrekent naar{" "}
-            <code>buyerAddress</code>. Pas dan komt de claim op de append-only ledger.
-          </CardContent>
-        </Card>
-        <Card>
-          <CardTitle>get_delivery_history</CardTitle>
-          <CardContent className="text-muted-foreground">
-            Gegeven een <code>sellerAddress</code>: alle bekende, handtekening-geverifieerde claims tegen die
-            verkoper, chronologisch. Puur feitelijk: geen gemiddelde, geen percentage, geen trust score.
-          </CardContent>
-        </Card>
+        {t.product.cards.map((card) => (
+          <Card key={card.title}>
+            <CardTitle>{card.title}</CardTitle>
+            <CardContent className="text-muted-foreground">{withInlineCode(card.body)}</CardContent>
+          </Card>
+        ))}
       </div>
     </Section>
   );
