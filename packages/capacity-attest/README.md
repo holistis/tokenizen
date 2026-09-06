@@ -72,6 +72,8 @@ console.log({ allSigned, chainConsistent: report.chainConsistent, possibleOmissi
 
 Eerlijke grens: ook zelf-herrekenen betrapt geen verborgen laatste claim en geen verborgen hele koper, want daar valt geen schakel over te struikelen. En een losse terugverwijzing hoeft geen bedrog te zijn: de eerdere claim kan ook gewoon op een andere installatie zijn vastgelegd (het D-005-geval). Voor echte zekerheid blijven de externe getuigen nodig: je eigen bewaarde kopie hierboven, en de betaling op de keten via `settlementRef`. Zie [DECISIONS.md](./DECISIONS.md) D-006.
 
+Een openbaar, zelf-controleerbaar voorbeeld met een nagebootste verbergende host en expres-kapotte testgevallen staat in [docs/COMPLETENESS-FIXTURE.md](./docs/COMPLETENESS-FIXTURE.md). Draai het met `npm run fixture`; dezelfde controles draaien bij elke push als test. Zo kun je onze claim zelf natellen in plaats van ons op ons woord te geloven.
+
 ### 3. `resolve_agent_identity` *(sinds 0.3.0)*
 
 Read-only opzoeking tegen een ERC-8004 Identity Registry: wie bezit `agentId` (`ownerOf`) en waar staat zijn registratiebestand (`tokenURI`). Alleen de standaard ERC-721-interface wordt aangeroepen, niets ERC-8004-specifieks. Vereist van de aanroeper zowel `agentRegistryRef` (`"eip155:<chainId>:<registryAddress>"`) als een `rpcUrl` voor die chain: dit project bundelt bewust geen eigen RPC-provider en geen canoniek registry-adres, want ERC-8004 heeft onafhankelijke deployments per chain en de EIP-tekst zelf noemt geen vast adres. Haalt bewust NOOIT op wat `tokenURI` aanwijst (dat blijft een pointer die de aanroeper zelf desgewenst opvraagt); dat zou een SSRF-vormig risico zijn op aanroeper-gecontroleerde on-chain data.
