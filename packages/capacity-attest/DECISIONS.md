@@ -371,7 +371,10 @@ FIX) plus drie kleinere, mechanische bevindingen (EIGHTH/NINTH/TENTH FIX).
 Concreet uitgebreid: de disclosure (`note`/tool-beschrijving) en een
 zelf-export-recept in README. Bewust NIET gebouwd: een on-chain/anchoring-
 mechanisme, zie redenering hierboven; blijft open onderzoek met een eigen
-trigger-criterium, geen bouwbeslissing vandaag.
+trigger-criterium, geen bouwbeslissing vandaag. (Deze tussenstand is later
+diezelfde dag ingehaald: zie het 0.4.0-vervolg en de bijgewerkte eindstatus
+onderaan D-006. De detectie-keten is toen alsnog gebouwd op expliciete
+koning-opdracht, en de publieke reactie is daarna geplaatst.)
 
 **Vervolg 0.4.0, expliciete koning-beslissing: van "alleen documenteren" naar
 "het detecteerbare deel bouwen".** De status hierboven zei "geen bouwbeslissing
@@ -444,10 +447,15 @@ bijbehorende complexiteit/kosten wil dragen. Zie de aparte trigger hierboven
 voor het on-chain-stuk. Tot dan is de per-koper-keten het eerlijke,
 proportionele antwoord.
 
-**Status:** per-koper-keten gebouwd en getest (0.4.0, branch
-`feat/per-buyer-claim-chain`, nog niet naar main, nog niet gepubliceerd,
-wacht op review door de koning). Zwaardere transparency-infrastructuur: nog
-steeds open, met de scherpere trigger hierboven.
+**Status (bijgewerkt 2026-09-06, avond):** per-koper-keten gebouwd, getest
+(494 tests, plus een openbare fixture met 9 controles, `npm run fixture`),
+gemerged naar main en gepubliceerd als `capacity-attest@0.4.0` op npm, met een
+GitHub-release (v0.4.0). Daarna, en pas daarna, publiekelijk beantwoord op
+x402-foundation/x402#3379 (comment 5560977571): het antwoord verwijst naar de
+draaibare fixture en deze D-006-sectie, zodat de lezer alles zelf kan
+natrekken in plaats van ons op ons woord te geloven. Zwaardere
+transparency-infrastructuur: nog steeds open, met de scherpere trigger
+hierboven.
 
 ---
 
