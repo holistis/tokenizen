@@ -2,6 +2,16 @@
 
 Alle noemenswaardige wijzigingen aan dit package worden hier bijgehouden.
 
+## 0.5.0
+
+**Nieuw: cross-installatie discovery (D-005) en een EAS-op-Base bron.** Dit is het antwoord op goun7's tweede vraag (x402-foundation/x402#3379): hoe vindt een koper claims die op een andere installatie zijn vastgelegd? Omdat elke claim zelf-verifieerbaar is, heeft vindbaarheid geen vertrouwde index nodig.
+
+- `src/discovery.ts`: `discoverDeliveryHistory(seller, sources)` voegt claims uit meerdere onafhankelijke, ONvertrouwde bronnen samen, ontdubbelt op `claimId`, herverifieert ELKE claim, filtert andere verkopers eruit, en draait de completeness-analyse over het geheel, met per-bron-boekhouding. Geen bron wordt vertrouwd. Robuust gemaakt na adversariële review: een bron die geen array teruggeeft crasht de aggregatie niet meer, aparte tellers voor crypto-afwijzing versus verkeerde-verkoper, een volume-cap tegen DoS, en de geparste vorm wordt opgeslagen zodat geen ongeverifieerd veld meelift.
+- `src/eas.ts`: publiceer een claim als EAS-attestatie op Base (recipient = verkoper) en vind hem terug van de keten via `eth_getLogs`, decodeer en herverifieer lokaal. Plain ethers, geen eas-sdk. Voorbeeld: `npm run eas-demo`.
+- Openbare fixtures: `docs/DISCOVERY-FIXTURE.md` (`npm run discovery-fixture`, 8 controles) plus de bestaande `docs/COMPLETENESS-FIXTURE.md`.
+
+Live bewezen op Base mainnet (2026-09-06): schema geregistreerd, twee claims als attestaties gepubliceerd, en teruggevonden + lokaal geverifieerd. Zie `DECISIONS.md` D-005. Eerlijke grens: dit lost VINDBAARHEID op, niet volledigheid; de EAS-koppeling bundelt bewust geen RPC of gas.
+
 ## 0.4.0
 
 **Nieuw: `priorClaimId`, de per-koper leveringsketen, plus `completeness` in het antwoord van `get_delivery_history`.** Dit is het antwoord op de vraag van goun7 (x402-foundation/x402#3379): kan een oneerlijke host claims verbergen? Volledig voorkomen kan niemand, ook Certificate Transparency niet (zie het onderzoek in `DECISIONS.md` D-006). Wat wel kan: weglating detecteerbaar maken. `priorClaimId` is een optioneel veld (exact dezelfde optioneel/nooit-gedefaulte discipline als `measured` en `externalRefs`, dus geen enkele bestaande claim verandert van `claimId`, bewezen door een frozen-preimage-test) waarmee een koper zijn opeenvolgende claims over dezelfde verkoper aan elkaar rijgt. Omdat de schakel in de ondertekende inhoud zit, kan een host hem niet weghalen. De nieuwe functie `analyzeCompleteness` (`completeness.ts`) draait automatisch in het antwoord van `get_delivery_history` en meldt in `possibleOmissions` elke getoonde claim die terugverwijst naar een claim die niet in de uitkomst zit: het concrete signaal dat een host mogelijk een middelste claim verbergt.
