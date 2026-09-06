@@ -89,7 +89,7 @@ De claim wordt ondertekend door de **koper** (de partij die betaalde en dus weet
 Elke claim in de ledger is met alleen het npm-package en de rauwe claim-bytes na te rekenen, zonder toegang tot dit project of een netwerkoproep naar ons. Geen account, geen hosted call.
 
 ```bash
-npm install capacity-attest@0.2.0
+npm install capacity-attest
 ```
 
 ```js
