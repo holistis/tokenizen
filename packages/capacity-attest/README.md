@@ -4,6 +4,18 @@ MCP-server voor leverings-attestaties bij x402-capaciteitshandel tussen AI-agent
 
 > Status: MVP, gepubliceerd op npm (`npm install capacity-attest`) en in het officiële MCP-register (`io.github.holistis/capacity-attest`).
 
+## Onafhankelijk gecontroleerd, niet alleen beweerd
+
+Beweringen over dit project zijn hieronder allemaal aanklikbaar en zelf na te trekken, niet op ons woord te geloven.
+
+| Wat | Door wie | Status |
+|---|---|---|
+| Gebruikt `capacity-attest@0.2.0` als echte dependency, verifieert claim-digest/claimId/handtekening via onze eigen code | [YE-YI7/asm-spec#18](https://github.com/YE-YI7/asm-spec/pull/18) | Gemerged |
+| BSV-rail-adapter op hetzelfde content-geadresseerde claim-formaat | [YE-YI7/asm-spec#19](https://github.com/YE-YI7/asm-spec/pull/19) (auteur EmbryoSpace) | Gemerged |
+| Onze grensuitspraken ("vindbaarheid ≠ volledigheid") zelf op de keten geverifieerd door een derde, geen woord aangenomen | [x402-foundation/x402#3379](https://github.com/x402-foundation/x402/issues/3379) | Publiek, doorlopend |
+| Live delivery-claims als on-chain attestaties op Base mainnet, door iedereen te decoderen | [delivered=yes](https://base.easscan.org/attestation/view/0x81a55d54452b2cf8bdda7918f63a27bf9ff79e5025b485f7316aae6259288ccc) · [delivered=no](https://base.easscan.org/attestation/view/0xe736b005cbcb54f8f196ac64ef09d75d939c8a18c0d5d9670b5c5025c07398c4) | Live |
+| Voorgesteld als koperszijde-aanvulling op een andermans agent-spec | [omworldprotocol/om-world#18](https://github.com/omworldprotocol/om-world/pull/18) | In review, nog niet gemerged |
+
 ## Waarom dit bestaat
 
 Wanneer een AI-agent via het [x402-protocol](https://www.x402.org/) betaalt voor capaciteit (GPU-uren, opslag, API/inference-credits, bandbreedte) bij een andere agent of dienst, is er na de betaling geen bewijs dat het beloofde ook echt geleverd is. De kopende agent weet het zelf (hij zag de output, of zag hem niet), maar die kennis gaat verloren zodra de sessie eindigt. De volgende agent die met dezelfde verkoper zaken wil doen, begint weer blind.
