@@ -130,9 +130,13 @@ export interface PublishResult {
 
 /**
  * Publish one claim to EAS as an attestation with recipient = sellerAddress, so
- * it is discoverable by that seller. The attester is the signer (normally the
- * buyer who signed the claim). Requires a funded signer. Returns the new
- * attestation UID and tx hash.
+ * it is discoverable by that seller. `signer` only pays gas and writes the
+ * transaction; it does not need to be, and normally is not, the buyer. The
+ * buyer identity lives entirely inside `claim` (buyerAddress, checked by
+ * verifyClaim against the signature over claimId): nothing on the read path
+ * (easSource, discoverDeliveryHistory) ever looks at who published the
+ * attestation, only at what the claim itself proves. Requires a funded signer.
+ * Returns the new attestation UID and tx hash.
  */
 export async function publishClaim(signer: ethers.Signer, claim: DeliveryClaim): Promise<PublishResult> {
   const eas = new ethers.Contract(EAS_ADDRESS, EAS_ABI, signer) as unknown as EasWriteContract;
