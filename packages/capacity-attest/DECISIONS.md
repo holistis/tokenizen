@@ -130,13 +130,23 @@ blokkade om dit later alsnog toe te voegen als de trigger afgaat.
 
 **Bewijs, letterlijk nagekeken in de woorden van beide echte contacten
 (2026-09-06):** geen van beide heeft ooit, expliciet of impliciet, gevraagd
-om een score. Sterker, YE-YI7 schreef in zijn eigen ASM-spec-werk expliciet:
-"raw post-call payer attestation rather than turn it into a trust score",
-een directe bevestiging van onze eigen ontwerpkeuze, van de persoon die er het
-dichtst bovenop zit. Los daarvan bevestigde dezelfde dag een ander incident
-(een publiekelijk betrapte lege economische bond bij een ander project in
+om een score. Los daarvan bevestigde dezelfde dag een ander incident (een
+publiekelijk betrapte lege economische bond bij een ander project in
 dezelfde discussie) waarom een score/geldbuffer extra aanvalsoppervlak
 toevoegt.
+
+**CORRECTIE (2026-09-07):** deze sectie citeerde eerder YE-YI7 met "raw
+post-call payer attestation rather than turn it into a trust score" als
+zogenaamde directe bevestiging van deze keuze. Dat citaat is niet
+terug te vinden in YE-YI7's PR #18, diens reviews, of ergens in de
+asm-spec-repository (volledig doorzocht, geen treffer), en is dus verwijderd.
+Sterker nog: asm-spec's eigen werk (Trust Delta, `get_trust_score`,
+exponential-decay trust-scoring) draait juist voor een groot deel OM een
+reputatiescore, het tegenovergestelde van wat het verwijderde citaat
+suggereerde. De onderliggende conclusie (geen van beide contacten heeft ooit
+om een score gevraagd) blijft overeind, maar stond hier eerder ten onrechte
+sterker aangezet dan de bron droeg. Gevonden tijdens het feitchecken van een
+concept-artikel, niet door een externe partij.
 
 **Status:** bevestigd, geen open punt. Blijft een bewaakpunt: als ooit een
 echte partij een score als concrete adoptie-blokkade noemt, is dát het moment
