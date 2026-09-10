@@ -41,6 +41,7 @@
     "start": "node dist/index.js",
     "demo": "tsx examples/demo.ts",
     "fixture": "tsx examples/completeness-fixture.ts",
+    "completeness-fixture": "tsx examples/completeness-fixture.ts",
     "discovery-fixture": "tsx examples/discovery-fixture.ts",
     "eas-demo": "tsx examples/eas-live-demo.ts"
   },
