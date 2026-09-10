@@ -2,6 +2,17 @@
 
 Alle noemenswaardige wijzigingen aan dit package worden hier bijgehouden.
 
+## 0.6.0
+
+**Nieuw: `publishReputationFeedback`, publiceert het `delivered`-feit van een claim naar de ERC-8004 Reputation Registry se `giveFeedback()`.** Aanleiding: de koning wees erop dat ~500k al geregistreerde ERC-8004-agents een concreet, zakelijk publiceer-doel zijn, los van D-005's eigen (nog niet afgegane) interoperabiliteit-trigger — zelfde categorie besluit als het eerdere expliciete order achter `resolve_agent_identity` in 0.3.0. Bouwt niets eigen: het plugt in op bestaande infrastructuur, exact de "citeer, herbouw nooit"-postuur van de rest van dit pakket.
+
+- `src/erc8004-reputation.ts`: de echte contract-ABI (`giveFeedback(agentId, value, valueDecimals, tag1, tag2, endpoint, feedbackURI, feedbackHash)`) vereist een numeriek reputatiegetal — dit pakket verzint daar bewust geen eigen beoordelingsschaal voor. `value` is een letterlijke, mechanische spiegel van `delivered` (yes=1.0, partial=0.5, no=0.0), nooit een nieuw oordeel; `get_delivery_history` blijft ongewijzigd de rauwe claimlijst tonen. Herverifieert de claim se handtekening voor er iets on-chain geschreven wordt.
+- **Bewust GEEN MCP-tool**, zelfde reden als EAS se `publishClaim`: een schrijf-actie die een echte, gefinancierde signer en gas vereist, en deze server bundelt bewust geen eigen private key. Beschikbaar als directe import.
+- Voorbeeld: `npm run erc8004-reputation-demo` — registreert eerst een eigen, wegwerpbare test-agent in plaats van feedback te publiceren over een echte vreemde se identiteit, want `giveFeedback()` vereist een geldig geregistreerde `agentId`.
+- 15 tests tegen een injecteerbare `ReputationContractFactory` (`src/erc8004-reputation.test.ts`, geen netwerkafhankelijkheid), inclusief een expliciete test dat `value` uitsluitend van `delivered` afhangt, nooit van `assetType`/`promisedSpec`/`evidenceHash`.
+
+Live geverifieerd tegen Base mainnet (2026-09-10): een eigen, wegwerpbare test-agent geregistreerd (agentId 85888) en een echte `giveFeedback()`-aanroep gedaan op de echte Reputation Registry, [tx 0x2217...efc0](https://basescan.org/tx/0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0), onafhankelijk teruggecontroleerd via een losse `eth_getTransactionReceipt`-aanroep. Zie `DECISIONS.md` D-016.
+
 ## 0.5.0
 
 **Nieuw: cross-installatie discovery (D-005) en een EAS-op-Base bron.** Dit is het antwoord op goun7's tweede vraag (x402-foundation/x402#3379): hoe vindt een koper claims die op een andere installatie zijn vastgelegd? Omdat elke claim zelf-verifieerbaar is, heeft vindbaarheid geen vertrouwde index nodig.

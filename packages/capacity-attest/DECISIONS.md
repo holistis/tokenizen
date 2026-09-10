@@ -935,3 +935,107 @@ groeien.
 
 **Status:** niet bouwen. Bekend, gedocumenteerd, wacht op een gemeten geval
 voordat er een keuze wordt gemaakt over HOE te begrenzen.
+
+---
+
+### D-016: Reputation, publiceren op de plek waar agents al kijken
+
+**Hypothese:** D-005/D-012 noemen ERC-8004-feedback (de Reputation Registry)
+als een van twee mogelijke publiceer-substraten voor claim-vindbaarheid,
+naast EAS. EAS is gebouwd (0.4.0). ERC-8004-feedback niet, met als
+trigger-criterium D-005's eigen "twee onafhankelijke installaties die
+daadwerkelijk over dezelfde verkoper moeten kunnen praten" (concreet: de
+EmbryoSpace-PR). Die situatie heeft zich nog niet voorgedaan.
+
+**Waarom dit toch vandaag gebouwd is, ondanks dat D-005's eigen
+interoperabiliteit-trigger niet is afgegaan:** de koning wees op een ANDER,
+even geldig zakelijk criterium dat D-005's tekst niet had voorzien: ERC-8004
+heeft ~500k geregistreerde agents (zie D-012), en zichtbaar zijn op de plek
+waar die agents al kijken is een eigen, directe waarde, los van of Tokenizen
+zelf ooit twee installaties hoeft te laten interopereren. Dat is dezelfde
+categorie besluit als D-007's eigen precedent: "een expliciete, bewuste
+product-beslissing van de projecteigenaar is geen onderbuikgevoel, het is
+een bewuste afweging door de partij die uiteindelijk verantwoordelijk is
+voor de scope." Het bouwt bovendien niets EIGEN: het plugt in op
+infrastructuur die al bestaat en al door anderen gebruikt wordt, exact de
+"cite, never re-implement"-postuur van resolveAgentIdentity() en
+publishClaim(), niet het soort eigen-protocol-bouwen dat D-001 t/m D-013
+terecht afwijzen.
+
+**De echte spanning die dit blootlegde, en hoe die is opgelost:** de
+werkelijke, geverifieerde contract-ABI (`erc-8004/erc-8004-contracts`,
+`ReputationRegistryUpgradeable.sol`, gelezen 2026-09-10, niet aangenomen)
+vereist een numeriek `value`+`valueDecimals`-veld bij `giveFeedback()` — er
+bestaat geen manier om alleen een rauw citaat te publiceren zoals bij EAS.
+Dat raakt rechtstreeks aan de hardcoded "geen reputatiescore"-regel (README
+"Wat dit NIET is"). Oplossing: geen eigen beoordelingsschaal verzinnen.
+`value` is een letterlijke, mechanische spiegel van het `delivered`-veld dat
+de koper toch al ondertekende (yes=1.0, partial=0.5, no=0.0, via
+`valueDecimals=1`), nooit een nieuw oordeel. `get_delivery_history` blijft
+ongewijzigd de rauwe claimlijst tonen; capacity-attest leest, toont of
+aggregeert dat getal zelf nergens. Als de Reputation Registry's eigen
+`getSummary()` later een gemiddelde berekent over VELE kopers se getallen,
+gebeurt dat in hun contract, over hun data, niet in dit pakket.
+
+**Wat gebouwd is (0.6.0, ongepubliceerd, branch
+`feat/erc8004-reputation-feedback`):** `publishReputationFeedback()`
+(`src/erc8004-reputation.ts`), dezelfde caller-levert-alles-postuur als
+`resolveAgentIdentity()` (geen hardcoded registry-adres of RPC, want ERC-8004
+kent onafhankelijke deployments per chain). Herverifieert de claim se eigen
+handtekening voor er iets on-chain geschreven wordt, zodat een getamperde of
+ongeldige claim nooit gespiegeld kan worden alsof hij echt was. `tag1` is
+altijd het vaste `"capacity-attest:delivered"` (zodat een lezer die op de
+geindexeerde `indexedTag1`-topic filtert, capacity-attest-feedback nooit
+verwart met een andere conventie zoals `starred`/`uptime`), `tag2` draagt
+`assetType`. `feedbackURI`/`feedbackHash` zijn optioneel, caller-geleverd
+(bv. de EAS-attestatie-URL van dezelfde claim) — bewust NIET automatisch
+afgeleid, want de spec zelf zegt dat `feedbackHash` de keccak256 is van wat
+`feedbackURI` aanwijst, een ander hash-doel dan claim se eigen sha256
+`claimId`.
+
+**Bewust NIET als MCP-tool gekoppeld, zelfde reden als `publishClaim` (EAS)
+al nooit een MCP-tool was:** dit is een schrijf-actie die een echte,
+gefinancierde signer en gas vereist. De MCP-server zelf bundelt en bewaart
+bewust geen private key (zelfde "geen eigen RPC, geen sleutel, geen gas"-
+postuur als eas.ts). Beschikbaar als directe library-functie voor wie zelf
+een signer beheert, met een klaar-om-te-draaien live-voorbeeld
+(`examples/erc8004-reputation-live-demo.ts`, `npm run erc8004-reputation-demo`),
+zelfde vorm als `eas-live-demo.ts`.
+
+**Bewust GEEN synthetische feedback over een echte, bestaande agent van een
+vreemde:** `giveFeedback()` vereist een geldig geregistreerde Identity-
+Registry-`agentId` (reverts anders met `ERC721NonexistentToken`), dus een
+compleet nep-adres zoals EAS's demo-seller kan hier niet. In plaats daarvan
+registreert het live-voorbeeld zelf eerst een eigen, wegwerpbare test-agent
+(`register()` op de Identity Registry staat open voor iedereen), en geeft
+een APARTE wegwerp-wallet daarna feedback daarover — nooit ruis op iemand
+anders se echte, publieke reputatie-record, om iets te bewijzen dat net zo
+goed met een eigen test-agent bewezen kan worden.
+
+**Getest, niet alleen gemockt:** 15 tests in `erc8004-reputation.test.ts`
+tegen een injecteerbare `ReputationContractFactory` (geen netwerk-
+afhankelijkheid in CI), inclusief een expliciete test dat `value` uitsluitend
+van `claim.delivered` afhangt, nooit van `assetType`/`promisedSpec`/
+`evidenceHash`.
+
+**Echt getest, niet alleen gemockt, ook live:** de koning leverde zelf gas
+(0,001 ETH, vanaf zijn eigen wallet naar een gloednieuw wegwerp-testadres,
+[transactie](https://basescan.org/tx/0x7d5278a4d839009cffcfa3bec2e2357a50965cc332860a50efe0fddf0af534d1)),
+waarna `erc8004-reputation-live-demo.ts` op 2026-09-10 echt gedraaid is
+tegen Base mainnet: een eigen, wegwerpbare test-agent geregistreerd
+(agentId 85888, `IdentityRegistry` `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432`),
+daarna echt `giveFeedback()` aangeroepen op de echte `ReputationRegistry`
+(`0x8004BAa17C55a88189AE136b182e5fdA19dE9b63`):
+[tx 0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0](https://basescan.org/tx/0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0).
+Onafhankelijk teruggecontroleerd (niet alleen op het script se eigen
+melding vertrouwd) via een losse `eth_getTransactionReceipt`-aanroep:
+`status=success`, `to`=de echte Reputation Registry, `topics[1]`=agentId
+85888, en de rauwe event-data bevat letterlijk `capacity-attest:delivered`
+(tag1) en `gpu-hours` (tag2, de assetType van de test-claim), met `value=10`
+(dus 1.0, want de test-claim had `delivered: "yes"`). Dit is dus aantoonbaar
+werkende interoperabiliteit met een echt, live, extern systeem, niet alleen
+een unit-test die niemand ooit tegen de echte chain hield — zelfde bar als
+D-007's eigen live-verificatie.
+
+**Status:** gebouwd (0.6.0, ongepubliceerd, dev-branch), unit-getest tegen de
+echte ABI, EN live geverifieerd tegen Base mainnet.

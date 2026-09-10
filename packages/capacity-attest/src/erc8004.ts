@@ -34,12 +34,14 @@ import { ethers } from "ethers";
 import * as z from "zod/v4";
 
 // The EIP's own compound reference format: "{namespace}:{chainId}:
-// {identityRegistry}", namespace fixed to "eip155" for EVM chains
+// {registryAddress}", namespace fixed to "eip155" for EVM chains
 // (CAIP-2/CAIP-10-style). Captures chainId and the registry contract
 // address separately; the address half accepts either case, normalized to
 // lower case in the result, same convention as sellerAddress/buyerAddress
-// in schema.ts.
-const AGENT_REGISTRY_REF_RE = /^eip155:(\d+):(0x[0-9a-fA-F]{40})$/;
+// in schema.ts. Exported: erc8004-reputation.ts reuses this exact format
+// for the Reputation Registry reference (a different contract/address than
+// the Identity Registry this file resolves, same reference shape).
+export const AGENT_REGISTRY_REF_RE = /^eip155:(\d+):(0x[0-9a-fA-F]{40})$/;
 
 // ERC-721's two standard read functions. This is the ENTIRE interface this
 // module depends on — see the file header for why nothing ERC-8004-specific

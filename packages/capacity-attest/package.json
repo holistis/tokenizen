@@ -1,6 +1,6 @@
 {
   "name": "capacity-attest",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "MCP server for capacity-delivery attestations: after an x402 payment for compute capacity (GPU-hours, storage, API credits, bandwidth), the paying agent leaves a signed, factual claim of what was actually delivered, so other agents can check a seller's delivery history before paying. No reputation score, no judgment, no financial instrument.",
   "keywords": [
     "mcp",
@@ -43,7 +43,8 @@
     "fixture": "tsx examples/completeness-fixture.ts",
     "completeness-fixture": "tsx examples/completeness-fixture.ts",
     "discovery-fixture": "tsx examples/discovery-fixture.ts",
-    "eas-demo": "tsx examples/eas-live-demo.ts"
+    "eas-demo": "tsx examples/eas-live-demo.ts",
+    "erc8004-reputation-demo": "tsx examples/erc8004-reputation-live-demo.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
