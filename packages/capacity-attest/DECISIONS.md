@@ -1016,11 +1016,26 @@ goed met een eigen test-agent bewezen kan worden.
 tegen een injecteerbare `ReputationContractFactory` (geen netwerk-
 afhankelijkheid in CI), inclusief een expliciete test dat `value` uitsluitend
 van `claim.delivered` afhangt, nooit van `assetType`/`promisedSpec`/
-`evidenceHash`. Echte, live verificatie tegen een testnet/mainnet-chain via
-`erc8004-reputation-live-demo.ts` is voorbereid maar nog niet uitgevoerd op
-het moment van dit schrijven — dat vereist een gefinancierde sleutel die de
-koning zelf aanlevert of goedkeurt, zelfde patroon als `eas-live-demo.ts`
-altijd al vereiste.
+`evidenceHash`.
+
+**Echt getest, niet alleen gemockt, ook live:** de koning leverde zelf gas
+(0,001 ETH, vanaf zijn eigen wallet naar een gloednieuw wegwerp-testadres,
+[transactie](https://basescan.org/tx/0x7d5278a4d839009cffcfa3bec2e2357a50965cc332860a50efe0fddf0af534d1)),
+waarna `erc8004-reputation-live-demo.ts` op 2026-09-10 echt gedraaid is
+tegen Base mainnet: een eigen, wegwerpbare test-agent geregistreerd
+(agentId 85888, `IdentityRegistry` `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432`),
+daarna echt `giveFeedback()` aangeroepen op de echte `ReputationRegistry`
+(`0x8004BAa17C55a88189AE136b182e5fdA19dE9b63`):
+[tx 0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0](https://basescan.org/tx/0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0).
+Onafhankelijk teruggecontroleerd (niet alleen op het script se eigen
+melding vertrouwd) via een losse `eth_getTransactionReceipt`-aanroep:
+`status=success`, `to`=de echte Reputation Registry, `topics[1]`=agentId
+85888, en de rauwe event-data bevat letterlijk `capacity-attest:delivered`
+(tag1) en `gpu-hours` (tag2, de assetType van de test-claim), met `value=10`
+(dus 1.0, want de test-claim had `delivered: "yes"`). Dit is dus aantoonbaar
+werkende interoperabiliteit met een echt, live, extern systeem, niet alleen
+een unit-test die niemand ooit tegen de echte chain hield — zelfde bar als
+D-007's eigen live-verificatie.
 
 **Status:** gebouwd (0.6.0, ongepubliceerd, dev-branch), unit-getest tegen de
-echte ABI, live-verificatie klaar om te draaien maar nog niet uitgevoerd.
+echte ABI, EN live geverifieerd tegen Base mainnet.

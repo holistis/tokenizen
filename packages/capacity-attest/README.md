@@ -14,6 +14,7 @@ Beweringen over dit project zijn hieronder allemaal aanklikbaar en zelf na te tr
 | BSV-rail-adapter op hetzelfde content-geadresseerde claim-formaat | [YE-YI7/asm-spec#19](https://github.com/YE-YI7/asm-spec/pull/19) (auteur EmbryoSpace) | Gemerged |
 | Onze grensuitspraken ("vindbaarheid ≠ volledigheid") zelf op de keten geverifieerd door een derde, geen woord aangenomen | [x402-foundation/x402#3379](https://github.com/x402-foundation/x402/issues/3379) | Publiek, doorlopend |
 | Live delivery-claims als on-chain attestaties op Base mainnet, door iedereen te decoderen | [delivered=yes](https://base.easscan.org/attestation/view/0x81a55d54452b2cf8bdda7918f63a27bf9ff79e5025b485f7316aae6259288ccc) · [delivered=no](https://base.easscan.org/attestation/view/0xe736b005cbcb54f8f196ac64ef09d75d939c8a18c0d5d9670b5c5025c07398c4) | Live |
+| Echte `giveFeedback()`-aanroep op de ERC-8004 Reputation Registry, Base mainnet | [tx 0x2217...efc0](https://basescan.org/tx/0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0) | Live |
 | Voorgesteld als koperszijde-aanvulling op een andermans agent-spec | [omworldprotocol/om-world#18](https://github.com/omworldprotocol/om-world/pull/18) | In review, nog niet gemerged |
 
 ## Waarom dit bestaat
@@ -106,7 +107,7 @@ Vereist van de aanroeper `reputationRegistryRef` (`"eip155:<chainId>:<registryAd
 
 **Bewust GEEN MCP-tool**, om dezelfde reden als EAS se `publishClaim`: dit is een schrijf-actie die een echte, gefinancierde signer en gas vereist, en deze server bundelt of bewaart bewust geen eigen private key. Beschikbaar als directe import (`src/erc8004-reputation.ts`) voor wie zelf een signer beheert.
 
-Getest tegen een injecteerbare `ReputationContractFactory` (`src/erc8004-reputation.test.ts`, 15 tests, geen netwerkafhankelijkheid, inclusief een expliciete test dat `value` uitsluitend van `delivered` afhangt). Live-voorbeeld tegen de echte, gedeployde registry: `npm run erc8004-reputation-demo` (vereist `RPC_URL`+`PRIVATE_KEY`; registreert eerst een eigen, wegwerpbare test-agent in plaats van feedback te publiceren over een echte vreemde se identiteit). Zie [DECISIONS.md](./DECISIONS.md) D-016 voor de volledige achtergrond, inclusief waarom dit ondanks D-005's eigen trigger-criterium toch vandaag gebouwd is.
+Getest tegen een injecteerbare `ReputationContractFactory` (`src/erc8004-reputation.test.ts`, 15 tests, geen netwerkafhankelijkheid, inclusief een expliciete test dat `value` uitsluitend van `delivered` afhangt) én live tegen de echte, gedeployde registry op Base mainnet (`examples/erc8004-reputation-live-demo.ts`, `npm run erc8004-reputation-demo`): op 2026-09-10 bevestigd via een eigen, wegwerpbare test-agent (agentId 85888) en een echte `giveFeedback()`-aanroep, [tx 0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0](https://basescan.org/tx/0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0), onafhankelijk teruggecontroleerd via een losse `eth_getTransactionReceipt`-aanroep. Zie [DECISIONS.md](./DECISIONS.md) D-016 voor de volledige achtergrond, inclusief waarom dit ondanks D-005's eigen trigger-criterium toch vandaag gebouwd is.
 
 ## Ondertekening
 

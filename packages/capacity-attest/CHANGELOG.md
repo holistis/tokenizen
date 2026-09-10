@@ -11,7 +11,7 @@ Alle noemenswaardige wijzigingen aan dit package worden hier bijgehouden.
 - Voorbeeld: `npm run erc8004-reputation-demo` — registreert eerst een eigen, wegwerpbare test-agent in plaats van feedback te publiceren over een echte vreemde se identiteit, want `giveFeedback()` vereist een geldig geregistreerde `agentId`.
 - 15 tests tegen een injecteerbare `ReputationContractFactory` (`src/erc8004-reputation.test.ts`, geen netwerkafhankelijkheid), inclusief een expliciete test dat `value` uitsluitend van `delivered` afhangt, nooit van `assetType`/`promisedSpec`/`evidenceHash`.
 
-Live-verificatie tegen een echte chain is voorbereid (`examples/erc8004-reputation-live-demo.ts`) maar nog niet uitgevoerd op het moment van deze release; vereist een gefinancierde sleutel, zelfde patroon als `eas-demo` altijd al had. Zie `DECISIONS.md` D-016.
+Live geverifieerd tegen Base mainnet (2026-09-10): een eigen, wegwerpbare test-agent geregistreerd (agentId 85888) en een echte `giveFeedback()`-aanroep gedaan op de echte Reputation Registry, [tx 0x2217...efc0](https://basescan.org/tx/0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0), onafhankelijk teruggecontroleerd via een losse `eth_getTransactionReceipt`-aanroep. Zie `DECISIONS.md` D-016.
 
 ## 0.5.0
 
