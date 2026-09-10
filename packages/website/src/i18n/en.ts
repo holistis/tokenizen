@@ -238,7 +238,7 @@ export const en: Dictionary = {
     },
     "limitation": {
       "title": "Known limit: the ledger is still local",
-      "body": "`npm install capacity-attest` starts a local, per-installation ledger by default (configurable via `CAPACITY_ATTEST_DATA_DIR`). Two independent installations don't automatically see each other's claims yet: a shared or discoverable ledger across installations doesn't exist yet. That's the next build step, not a hidden assumption. Where this touches ERC-8004: that protocol builds on-chain reputation registries, Capacity Attest records the raw, signed event without judgment. The two could complement each other; ERC-8004 could become a place these claims get referenced, that doesn't exist yet."
+      "body": "`npm install capacity-attest` starts a local, per-installation ledger by default (configurable via `CAPACITY_ATTEST_DATA_DIR`). Two independent installations don't automatically see each other's claims through that default; that's still the next build step. What already exists in the meantime, live-verified on Base mainnet: publishing and finding claims via the Ethereum Attestation Service, and a real `giveFeedback()` connection to the ERC-8004 Reputation Registry, so the delivery fact also becomes visible where hundreds of thousands of ERC-8004 agents already look. Both are proven, opt-in building blocks: ready to use, not yet automatically active across installations."
     }
   },
   "footer": {

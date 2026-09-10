@@ -220,7 +220,7 @@ export const nl: Dictionary = {
     },
     limitation: {
       title: "Bewuste grens: de ledger is nog lokaal",
-      body: "`npm install capacity-attest` start standaard een lokale ledger per installatie (in te stellen via `CAPACITY_ATTEST_DATA_DIR`). Twee onafhankelijke installaties zien elkaars claims nog niet automatisch: een gedeelde of vindbare ledger tussen installaties bestaat nog niet. Dat is de volgende bouwstap, geen verborgen aanname. Waar dit ERC-8004 raakt: dat protocol bouwt on-chain reputatie-registers, Capacity Attest legt de ruwe, ondertekende gebeurtenis vast zonder oordeel. Ze kunnen elkaar aanvullen; ERC-8004 zou een plek kunnen worden waar deze claims naar verwijzen, dat bestaat nu nog niet.",
+      body: "`npm install capacity-attest` start standaard een lokale ledger per installatie (in te stellen via `CAPACITY_ATTEST_DATA_DIR`). Twee onafhankelijke installaties zien elkaars claims nog niet automatisch via die standaardinstelling; dat blijft de volgende bouwstap. Wat er intussen wél is, en live geverifieerd op Base mainnet: claims publiceren en terugvinden via de Ethereum Attestation Service, én een echte `giveFeedback()`-koppeling met de ERC-8004 Reputation Registry, zodat het leveringsfeit ook zichtbaar wordt op de plek waar honderdduizenden ERC-8004-agents al kijken. Beide zijn bewezen, opt-in bouwstenen: klaar om te gebruiken, nog niet automatisch actief tussen installaties.",
     },
   },
   footer: {
