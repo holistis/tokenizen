@@ -188,3 +188,7 @@ examples/demo.ts   end-to-end lokaal voorbeeld met TEST-sleutels
 ## Relatie tot x402
 
 Dit project verifieert of settelt zelf géén x402-betalingen, dat gebeurt al bij de betaalstap zelf (zie bijvoorbeeld `mcp-paywall/src/x402.mjs` in dit ecosysteem voor een volledige EIP-3009-verify/settle-implementatie). `settlementRef` verwijst simpelweg naar die reeds-voltooide afwikkeling. Dat betekent ook dat de MVP-koppeling met een echte x402-facilitator eenvoudig kan blijven: `settlementRef` is vrije tekst, met als aanname dat de koper 'm eerlijk invult. Een latere versie kan dat veld optioneel verifiëren tegen een echte facilitator (TODO, niet in deze MVP).
+
+## Relatie tot AWS Bedrock AgentCore Payments
+
+Geen overlap, geen concurrentie: verschillende stap in de keten. Bedrock AgentCore Payments (Amazon, sinds 2026) regelt de betaalstap zelf, tot en met het moment dat "the merchant verifies the payment proof... [and] returns the requested content" ([officiële AWS-documentatie](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments-how-it-works.html)). Dat bewijs is een bewijs van **betaling**, niet van **levering**: er staat nergens vastgelegd of de agent na die stap ook echt kreeg wat beloofd was. Precies daar begint `capacity-attest`. Net als bij x402 hierboven: dit project settelt geen betalingen en concurreert niet met de betaalrail, het legt vast wat er ná de betaling wel of niet daadwerkelijk aankwam, ongeacht welke rail (x402 of anders) die betaling afhandelde.
