@@ -98,6 +98,16 @@ Read-only opzoeking tegen een ERC-8004 Identity Registry: wie bezit `agentId` (`
 
 Getest tegen een injecteerbare `ContractFactory` (`src/erc8004.test.ts`, geen netwerkafhankelijkheid) én live tegen de echte, gedeployde registry op Base mainnet (`examples/verify-erc8004-live.mjs`, `npm run build && node examples/verify-erc8004-live.mjs`). Zie [DECISIONS.md](./DECISIONS.md) D-007 voor de volledige achtergrond.
 
+### 4. `publishReputationFeedback` *(sinds 0.6.0, library-functie, geen MCP-tool)*
+
+Publiceert het `delivered`-feit van een al ondertekende claim naar een ERC-8004 Reputation Registry se `giveFeedback()` — dezelfde plek waar ~500k geregistreerde agents al naar reputatiesignalen kunnen kijken, in plaats van alleen naar deze installatie se eigen ledger of EAS. Het contract vereist een numeriek `value`+`valueDecimals`-veld; dit pakket verzint daar bewust geen eigen beoordelingsschaal voor. `value` is een letterlijke, mechanische spiegel van `delivered` (yes=1.0, partial=0.5, no=0.0), nooit een nieuw oordeel, en capacity-attest leest of toont dat getal zelf nergens terug. Herverifieert de claim se handtekening voordat er iets on-chain geschreven wordt.
+
+Vereist van de aanroeper `reputationRegistryRef` (`"eip155:<chainId>:<registryAddress>"`, de Reputation Registry, niet de Identity Registry) en een `rpcUrl`, zelfde caller-levert-alles-postuur als `resolve_agent_identity`. `agentId` (de verkoper se ERC-8004-agent) moet al een geldig geregistreerde Identity-Registry-agent zijn; het contract weigert zelf feedback van de agent se eigen eigenaar ("Self-feedback not allowed").
+
+**Bewust GEEN MCP-tool**, om dezelfde reden als EAS se `publishClaim`: dit is een schrijf-actie die een echte, gefinancierde signer en gas vereist, en deze server bundelt of bewaart bewust geen eigen private key. Beschikbaar als directe import (`src/erc8004-reputation.ts`) voor wie zelf een signer beheert.
+
+Getest tegen een injecteerbare `ReputationContractFactory` (`src/erc8004-reputation.test.ts`, 15 tests, geen netwerkafhankelijkheid, inclusief een expliciete test dat `value` uitsluitend van `delivered` afhangt). Live-voorbeeld tegen de echte, gedeployde registry: `npm run erc8004-reputation-demo` (vereist `RPC_URL`+`PRIVATE_KEY`; registreert eerst een eigen, wegwerpbare test-agent in plaats van feedback te publiceren over een echte vreemde se identiteit). Zie [DECISIONS.md](./DECISIONS.md) D-016 voor de volledige achtergrond, inclusief waarom dit ondanks D-005's eigen trigger-criterium toch vandaag gebouwd is.
+
 ## Ondertekening
 
 De claim wordt ondertekend door de **koper** (de partij die betaalde en dus weet wat er wel/niet aankwam), niet door de verkoper. Dit is bewust eenvoudige EIP-191 `personal_sign` over `claimId` (via `ethers.Signer#signMessage`), geen EIP-712 typed data. Dat houdt het crypto-oppervlak van deze MVP klein en makkelijk te controleren. Een latere upgrade naar EIP-712 (zoals in `mcp-paywall/src/x402.mjs`) is additief mogelijk zonder bestaande claims ongeldig te maken.
