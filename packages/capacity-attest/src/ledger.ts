@@ -7,7 +7,7 @@
 // attempt to re-record the exact same claim) is rejected rather than
 // silently duplicated.
 
-import { readFileSync, appendFileSync, openSync, closeSync, unlinkSync, statSync } from "node:fs";
+import { readFileSync, appendFileSync, openSync, closeSync, readSync, unlinkSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { dataDir, ensureDataDir } from "./config.js";
 import { DeliveryClaimSchema, type DeliveryClaim } from "./schema.js";
@@ -15,6 +15,36 @@ import { verifyClaim } from "./signing.js";
 
 function claimsFile(): string {
   return join(dataDir(), "claims.jsonl");
+}
+
+// Adversarial review (2026-09-11): appendFileSync() below writes the new claim's JSON straight
+// onto whatever byte currently sits at EOF, with no check that it's a newline. If the file's tail
+// is ever left without a trailing "\n" -- a process crash/SIGKILL/power-loss mid-write, ENOSPC
+// partway through a write, or a second writer bypassing this module's lockfile and leaving a
+// non-newline-terminated line -- the NEXT legitimate appendClaim() glues its JSON directly onto
+// that garbage with no separator. resyncFromDisk()'s line-splitting then treats [garbage][our new
+// claim] as one string that fails JSON.parse and is silently dropped, destroying a claim that was
+// never itself corrupt and that appendClaim() had already reported {ok:true} for. Reading just the
+// last byte on disk (never trusting the in-memory cache for this, since the whole threat here is a
+// writer the cache doesn't know about) and prepending our own separating newline when needed keeps
+// a torn/foreign tail from ever taking a good claim down with it -- the corrupt line stays corrupt
+// and stays isolated, exactly what the existing silent-drop-a-corrupt-line handling already assumes.
+function fileTailEndsWithNewlineOrEmpty(file: string): boolean {
+  let size: number;
+  try {
+    size = statSync(file).size;
+  } catch {
+    return true; // doesn't exist yet -- nothing to separate our first line from
+  }
+  if (size === 0) return true;
+  const fd = openSync(file, "r");
+  try {
+    const lastByte = Buffer.alloc(1);
+    readSync(fd, lastByte, 0, 1, size - 1);
+    return lastByte[0] === 0x0a; // "\n"
+  } finally {
+    closeSync(fd);
+  }
 }
 
 // A concurrency benchmark (bench/ledger-concurrency.mjs) found that
@@ -588,7 +618,11 @@ export async function appendClaim(claim: DeliveryClaim): Promise<DeliveryClaim> 
     // wrote — which by construction cannot be perturbed by anyone else's
     // write landing in that window, matching resyncFromDisk()'s own
     // Buffer.byteLength(content, "utf8") convention for what "size" means.
-    const serializedLine = JSON.stringify(claim) + "\n";
+    // Read the ACTUAL on-disk tail, not the in-memory cache: the whole point is to catch a torn
+    // or foreign write the cache has no idea happened. See fileTailEndsWithNewlineOrEmpty()'s
+    // comment above.
+    const leadingSeparator = fileTailEndsWithNewlineOrEmpty(file) ? "" : "\n";
+    const serializedLine = leadingSeparator + JSON.stringify(claim) + "\n";
     appendFileSync(file, serializedLine);
     // Update the cache in place to reflect our own write, synchronously and
     // with no `await` anywhere in this block — that's what guarantees no
