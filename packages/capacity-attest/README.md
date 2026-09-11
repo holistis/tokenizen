@@ -17,6 +17,8 @@ Beweringen over dit project zijn hieronder allemaal aanklikbaar en zelf na te tr
 | Echte `giveFeedback()`-aanroep op de ERC-8004 Reputation Registry, Base mainnet | [tx 0x2217...efc0](https://basescan.org/tx/0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0) | Live |
 | Voorgesteld als koperszijde-aanvulling op een andermans agent-spec | [omworldprotocol/om-world#18](https://github.com/omworldprotocol/om-world/pull/18) | In review, nog niet gemerged |
 
+**Eerlijk apart gehouden van bovenstaande tabel, want dit is geen derde-partij-controle:** voor 0.6.0 (de eerste keer dat dit pakket echt naar de blockchain schrijft) hebben we zelf een adversariële security review uitgevoerd. Tien bevindingen, allemaal gefixt met een eigen regressietest, geen onafhankelijke audit door een externe partij. Volledig, controleerbaar verslag: [docs/SECURITY-REVIEW-2026-09-11.md](./docs/SECURITY-REVIEW-2026-09-11.md).
+
 ## Waarom dit bestaat
 
 Wanneer een AI-agent via het [x402-protocol](https://www.x402.org/) betaalt voor capaciteit (GPU-uren, opslag, API/inference-credits, bandbreedte) bij een andere agent of dienst, is er na de betaling geen bewijs dat het beloofde ook echt geleverd is. De kopende agent weet het zelf (hij zag de output, of zag hem niet), maar die kennis gaat verloren zodra de sessie eindigt. De volgende agent die met dezelfde verkoper zaken wil doen, begint weer blind.
