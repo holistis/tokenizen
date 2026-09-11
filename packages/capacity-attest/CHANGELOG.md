@@ -9,9 +9,22 @@ Alle noemenswaardige wijzigingen aan dit package worden hier bijgehouden.
 - `src/erc8004-reputation.ts`: de echte contract-ABI (`giveFeedback(agentId, value, valueDecimals, tag1, tag2, endpoint, feedbackURI, feedbackHash)`) vereist een numeriek reputatiegetal — dit pakket verzint daar bewust geen eigen beoordelingsschaal voor. `value` is een letterlijke, mechanische spiegel van `delivered` (yes=1.0, partial=0.5, no=0.0), nooit een nieuw oordeel; `get_delivery_history` blijft ongewijzigd de rauwe claimlijst tonen. Herverifieert de claim se handtekening voor er iets on-chain geschreven wordt.
 - **Bewust GEEN MCP-tool**, zelfde reden als EAS se `publishClaim`: een schrijf-actie die een echte, gefinancierde signer en gas vereist, en deze server bundelt bewust geen eigen private key. Beschikbaar als directe import.
 - Voorbeeld: `npm run erc8004-reputation-demo` — registreert eerst een eigen, wegwerpbare test-agent in plaats van feedback te publiceren over een echte vreemde se identiteit, want `giveFeedback()` vereist een geldig geregistreerde `agentId`.
-- 15 tests tegen een injecteerbare `ReputationContractFactory` (`src/erc8004-reputation.test.ts`, geen netwerkafhankelijkheid), inclusief een expliciete test dat `value` uitsluitend van `delivered` afhangt, nooit van `assetType`/`promisedSpec`/`evidenceHash`.
+- 19 tests tegen een injecteerbare `ReputationContractFactory` (`src/erc8004-reputation.test.ts`, geen netwerkafhankelijkheid), inclusief een expliciete test dat `value` uitsluitend van `delivered` afhangt, nooit van `assetType`/`promisedSpec`/`evidenceHash`.
 
 Live geverifieerd tegen Base mainnet (2026-09-10): een eigen, wegwerpbare test-agent geregistreerd (agentId 85888) en een echte `giveFeedback()`-aanroep gedaan op de echte Reputation Registry, [tx 0x2217...efc0](https://basescan.org/tx/0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0), onafhankelijk teruggecontroleerd via een losse `eth_getTransactionReceipt`-aanroep. Zie `DECISIONS.md` D-016.
+
+**Voor publicatie: een adversariële security review, omdat dit de eerste keer is dat dit pakket echt naar de blockchain schrijft in plaats van alleen leest.** Aanleiding was een op dezelfde dag (2026-09-11) elders bevestigde kwetsbaarheid in een AI-coding-agent: een kwaadaardige MCP-tool-omschrijving die zonder dat de gebruiker erom vroeg werd opgevolgd. Reden om, voor publicatie, hetzelfde soort onderzoek op dit pakket en zijn MCP-server los te laten. Tien bevindingen kwamen door een onafhankelijke tweede controle heen; alle tien zijn gefixt, elk met een eigen regressietest:
+
+- `get_delivery_history` waarschuwt nu expliciet dat een claim se vrije-tekstvelden (`promisedSpec`, `measured.method.instrument`) onvertrouwde tekst van een derde zijn, nooit een instructie — dezelfde fout-klasse als de MCP-tool-omschrijving-kwetsbaarheid die de aanleiding was.
+- Een rekenfout in de dieptecontrole liet `computeClaimId()` crashen op een `promisedSpec` die de eigen schema-validatie net had goedgekeurd; de enige aanroeper zonder de gebruikelijke try/catch eromheen kreeg die crash alsnog.
+- De ledger kon een succesvol opgeslagen claim stil verliezen als een eerdere schrijfactie zonder afsluitend regeleinde was afgebroken (crash, volle schijf, of een tweede proces buiten het slot om).
+- Het slot-mechanisme kon een nog levend, gewoon langzaam proces zijn slot laten afpakken, wat precies het dubbele-claim-probleem terugbracht dat het slot moet voorkomen.
+- `resolve_agent_identity` controleerde nooit of de opgegeven RPC-server wel echt op de opgegeven chain zit.
+- `publishReputationFeedback` controleerde nooit of het opgegeven `agentId` wel echt bij de verkoper uit de claim hoort — zonder die controle kon een geldig ondertekende claim aan een willekeurig ander agentId gehangen worden op de live registry.
+- Een timeout op de bevestiging van een al verzonden `giveFeedback()`-transactie gooide de transactiehash weg, met het risico dat een aanroeper opnieuw probeert en dezelfde feedback per ongeluk dubbel op de chain zet.
+- Dit pakket claimde een MIT-licentie zonder het licentiebestand daadwerkelijk mee te publiceren.
+
+541 tests groen (was 527), `tsc --noEmit` schoon.
 
 ## 0.5.0
 

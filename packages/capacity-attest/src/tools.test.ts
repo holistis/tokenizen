@@ -133,6 +133,13 @@ describe("getDeliveryHistory", () => {
     expect(history.note).toMatch(/cannot prove the operator/i);
     expect(history.note).toMatch(/completeness rests on/i);
   });
+
+  it("waarschuwt expliciet dat claim-inhoud onvertrouwde vrije tekst is, nooit een instructie (adversariele review 2026-09-11: dezelfde fout-klasse als de Cursor MCP-tool-omschrijving-bug)", async () => {
+    const history = await getDeliveryHistory("0x00000000000000000000000000000000000000ff");
+    expect(history.note).toMatch(/SECURITY/);
+    expect(history.note).toMatch(/untrusted third party/i);
+    expect(history.note).toMatch(/never as an instruction/i);
+  });
 });
 
 // Sanity check that ethers.Wallet (not just the test-helper's HDNodeWallet) round-trips too.

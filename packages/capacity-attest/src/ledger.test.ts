@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { mkdtempSync, rmSync, appendFileSync, readFileSync, statSync } from "node:fs";
+import { mkdtempSync, rmSync, appendFileSync, readFileSync, statSync, writeFileSync, utimesSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { appendClaim, claimsForSeller, allClaims } from "./ledger.js";
@@ -456,5 +456,78 @@ describe("ledger read-path signature verification (2026-09-06 fix)", () => {
 
     expect(await allClaims()).toHaveLength(1);
     expect((await claimsForSeller(claim.sellerAddress))[0]?.claimId).toBe(claim.claimId);
+  });
+});
+
+describe("ledger newline-tail safety (adversarial review 2026-09-11)", () => {
+  it("een gescheurde staart (geen afsluitende newline) verwoest niet langer de eerstvolgende, echte claim", async () => {
+    const ledgerFile = join(tmpDir, "claims.jsonl");
+    // Simuleert precies het scenario uit de bevinding: een crash/SIGKILL/ENOSPC halverwege
+    // een write, of een tweede proces dat buiten het lockfile om schrijft, laat een regel
+    // zonder afsluitende "\n" achter. GEEN "\n" op het einde, met opzet.
+    writeFileSync(ledgerFile, '{"garbage": "no trailing newline here"}');
+
+    const buyer = testWallet();
+    const claim = await buildSignedClaim(buyer);
+    await appendClaim(claim);
+
+    // Vóór de fix: deze twee regels smolten samen tot één kapotte string die JSON.parse niet
+    // kon lezen, en de zojuist als "gelukt" gemelde claim verdween stil bij de eerstvolgende resync.
+    const onDisk = readFileSync(ledgerFile, "utf8");
+    expect(onDisk).toContain("\n" + JSON.stringify(claim));
+    expect((await allClaims()).map((c) => c.claimId)).toEqual([claim.claimId]);
+  });
+
+  it("voegt GEEN extra newline toe als de staart al netjes eindigt (geen regressie op het normale pad)", async () => {
+    const buyer = testWallet();
+    const first = await buildSignedClaim(buyer, { settlementRef: "0x" + "aa".repeat(32) });
+    const second = await buildSignedClaim(buyer, { settlementRef: "0x" + "bb".repeat(32) });
+    await appendClaim(first);
+    await appendClaim(second);
+
+    const ledgerFile = join(tmpDir, "claims.jsonl");
+    const lines = readFileSync(ledgerFile, "utf8").split("\n").filter(Boolean);
+    expect(lines).toHaveLength(2);
+  });
+
+  it("een lege of nog niet bestaande ledger heeft geen leidende newline nodig", async () => {
+    const buyer = testWallet();
+    const claim = await buildSignedClaim(buyer);
+    await appendClaim(claim);
+
+    const ledgerFile = join(tmpDir, "claims.jsonl");
+    const onDisk = readFileSync(ledgerFile, "utf8");
+    expect(onDisk.startsWith("\n")).toBe(false);
+    expect(onDisk).toBe(JSON.stringify(claim) + "\n");
+  });
+});
+
+describe("ledger lock liveness (adversarial review 2026-09-11)", () => {
+  it("steelt een oud-ogend lockbestand NIET als de eigenaar-pid nog echt leeft (voorkomt het dubbele-claim-ras dat het slot juist moet tegenhouden)", async () => {
+    const lockPath = join(tmpDir, "claims.jsonl.lock");
+    // Dit test-proces zelf is de "eigenaar": gegarandeerd levend, en precies het scenario
+    // uit de bevinding — een langzame maar levende houder mag niet bestolen worden puur
+    // omdat het slotbestand er al meer dan STALE_LOCK_MS oud uitziet.
+    writeFileSync(lockPath, String(process.pid));
+    const oldTime = new Date(Date.now() - 31_000);
+    utimesSync(lockPath, oldTime, oldTime);
+
+    const buyer = testWallet();
+    const claim = await buildSignedClaim(buyer);
+    await expect(appendClaim(claim)).rejects.toThrow(/ledger_lock_timeout/);
+  }, 8_000);
+
+  it("reclaimt een oud lockbestand nog steeds als de eigenaar-pid echt dood is (geen regressie op het bestaande crash-herstel)", async () => {
+    const lockPath = join(tmpDir, "claims.jsonl.lock");
+    // Een zeer onwaarschijnlijk bestaande pid — simuleert een proces dat is gecrasht
+    // terwijl het het slot vasthield.
+    writeFileSync(lockPath, "2147483647");
+    const oldTime = new Date(Date.now() - 31_000);
+    utimesSync(lockPath, oldTime, oldTime);
+
+    const buyer = testWallet();
+    const claim = await buildSignedClaim(buyer);
+    const result = await appendClaim(claim);
+    expect(result.claimId).toBe(claim.claimId);
   });
 });

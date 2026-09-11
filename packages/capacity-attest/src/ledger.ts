@@ -7,7 +7,7 @@
 // attempt to re-record the exact same claim) is rejected rather than
 // silently duplicated.
 
-import { readFileSync, appendFileSync, openSync, closeSync, unlinkSync, statSync } from "node:fs";
+import { readFileSync, appendFileSync, openSync, closeSync, readSync, writeSync, unlinkSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { dataDir, ensureDataDir } from "./config.js";
 import { DeliveryClaimSchema, type DeliveryClaim } from "./schema.js";
@@ -15,6 +15,36 @@ import { verifyClaim } from "./signing.js";
 
 function claimsFile(): string {
   return join(dataDir(), "claims.jsonl");
+}
+
+// Adversarial review (2026-09-11): appendFileSync() below writes the new claim's JSON straight
+// onto whatever byte currently sits at EOF, with no check that it's a newline. If the file's tail
+// is ever left without a trailing "\n" -- a process crash/SIGKILL/power-loss mid-write, ENOSPC
+// partway through a write, or a second writer bypassing this module's lockfile and leaving a
+// non-newline-terminated line -- the NEXT legitimate appendClaim() glues its JSON directly onto
+// that garbage with no separator. resyncFromDisk()'s line-splitting then treats [garbage][our new
+// claim] as one string that fails JSON.parse and is silently dropped, destroying a claim that was
+// never itself corrupt and that appendClaim() had already reported {ok:true} for. Reading just the
+// last byte on disk (never trusting the in-memory cache for this, since the whole threat here is a
+// writer the cache doesn't know about) and prepending our own separating newline when needed keeps
+// a torn/foreign tail from ever taking a good claim down with it -- the corrupt line stays corrupt
+// and stays isolated, exactly what the existing silent-drop-a-corrupt-line handling already assumes.
+function fileTailEndsWithNewlineOrEmpty(file: string): boolean {
+  let size: number;
+  try {
+    size = statSync(file).size;
+  } catch {
+    return true; // doesn't exist yet -- nothing to separate our first line from
+  }
+  if (size === 0) return true;
+  const fd = openSync(file, "r");
+  try {
+    const lastByte = Buffer.alloc(1);
+    readSync(fd, lastByte, 0, 1, size - 1);
+    return lastByte[0] === 0x0a; // "\n"
+  } finally {
+    closeSync(fd);
+  }
 }
 
 // A concurrency benchmark (bench/ledger-concurrency.mjs) found that
@@ -86,18 +116,67 @@ function isRetryableLockError(e: unknown): boolean {
   return code === "EEXIST" || code === "EPERM";
 }
 
+// Adversarial review (2026-09-11): STALE_LOCK_MS on its own only measures how long ago the lock
+// file was CREATED, never whether its holder is still doing real work. A holder can legitimately
+// still be alive and mid-operation past 30s (this ledger's own resync path now does per-line
+// ECDSA signature verification, which scales with ledger size), and a purely time-based reclaim
+// cannot tell that apart from an actually-crashed holder — stealing the lock out from under a
+// live process reintroduces exactly the duplicate-claim race this lock exists to prevent. This
+// package's own deployment model is "separate OS processes sharing one CAPACITY_ATTEST_DATA_DIR"
+// (ledger.ts's header comment) — i.e. always the same machine — so a PID-liveness check is both
+// correct and simple: only reclaim a stale-by-time lock if the PID that created it is confirmed
+// gone, not merely old.
+function isProcessAlive(pid: number): boolean {
+  try {
+    // Signal 0 sends nothing; it only tests whether the OS would let us signal that pid at all.
+    process.kill(pid, 0);
+    return true;
+  } catch (e) {
+    const code = (e as NodeJS.ErrnoException).code;
+    // ESRCH: no such process — genuinely gone. EPERM: it exists but we lack permission to signal
+    // it, which is still proof it's alive, so treat that as alive, not as license to steal.
+    return code === "EPERM";
+  }
+}
+
 async function acquireLock(path: string): Promise<void> {
   const deadline = Date.now() + LOCK_TIMEOUT_MS;
   for (;;) {
     try {
-      closeSync(openSync(path, "wx"));
+      // Content is the creator's own pid, read back by a contender deciding whether a stale-by-
+      // time lock's holder is actually dead. openSync(..., "wx") already fails atomically if the
+      // file exists, so this write is safe from the same TOCTOU class that "wx" itself defends
+      // against — no other writer can be mid-create at this point.
+      const fd = openSync(path, "wx");
+      try {
+        writeSync(fd, String(process.pid));
+      } finally {
+        closeSync(fd);
+      }
       return;
     } catch (e) {
       if (!isRetryableLockError(e)) throw e;
       try {
         if (Date.now() - statSync(path).mtimeMs > STALE_LOCK_MS) {
-          unlinkSync(path);
-          continue;
+          let holderPid: number | null = null;
+          try {
+            const content = readFileSync(path, "utf8").trim();
+            const parsed = Number(content);
+            if (Number.isInteger(parsed) && parsed > 0) holderPid = parsed;
+          } catch {
+            // Lock file vanished or unreadable between our stat and this read — treat as gone,
+            // same as the outer catch below does for the equivalent race on unlink.
+          }
+          // No parseable pid (a lock file from before this fix, or a corrupt one) is itself a
+          // sign the lock is not something a live process is actively renewing — reclaim, same
+          // as the pre-fix behavior. A parseable pid must be confirmed dead first — and if it's
+          // confirmed ALIVE, deliberately fall through to the normal deadline-check-and-delay
+          // below instead of an immediate no-delay retry, so a legitimately slow (but alive)
+          // holder doesn't turn every contender into a tight busy-loop until it finishes.
+          if (holderPid === null || !isProcessAlive(holderPid)) {
+            unlinkSync(path);
+            continue;
+          }
         }
       } catch {
         // Lock file vanished between our failed open() and this stat/unlink
@@ -588,7 +667,11 @@ export async function appendClaim(claim: DeliveryClaim): Promise<DeliveryClaim> 
     // wrote — which by construction cannot be perturbed by anyone else's
     // write landing in that window, matching resyncFromDisk()'s own
     // Buffer.byteLength(content, "utf8") convention for what "size" means.
-    const serializedLine = JSON.stringify(claim) + "\n";
+    // Read the ACTUAL on-disk tail, not the in-memory cache: the whole point is to catch a torn
+    // or foreign write the cache has no idea happened. See fileTailEndsWithNewlineOrEmpty()'s
+    // comment above.
+    const leadingSeparator = fileTailEndsWithNewlineOrEmpty(file) ? "" : "\n";
+    const serializedLine = leadingSeparator + JSON.stringify(claim) + "\n";
     appendFileSync(file, serializedLine);
     // Update the cache in place to reflect our own write, synchronously and
     // with no `await` anywhere in this block — that's what guarantees no

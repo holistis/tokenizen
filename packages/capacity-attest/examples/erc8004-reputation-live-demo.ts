@@ -95,7 +95,11 @@ async function main(): Promise<void> {
   await fundTx.wait();
 
   const claim = await sign(buyer as unknown as ethers.Wallet, {
-    sellerAddress: "0x" + agentId.toString(16).padStart(40, "0"), // no real seller wallet in this demo; content is illustrative, delivered is what matters
+    // Must be the agent's REAL registered owner (payer.address here — register() made payer the
+    // owner), not a synthetic placeholder: publishReputationFeedback() (adversarial review
+    // 2026-09-11) now verifies agentId's registered owner matches claim.sellerAddress before
+    // writing anything on-chain, so a made-up sellerAddress would correctly get refused.
+    sellerAddress: payer.address,
     buyerAddress: buyer.address,
     assetType: "gpu-hours",
     promisedSpec: "1x A100, 4h — live erc8004-reputation-live-demo run",
@@ -108,6 +112,7 @@ async function main(): Promise<void> {
   console.log(`3) Publishing feedback about agentId ${agentId} via giveFeedback()...`);
   const result = await publishReputationFeedback(buyer, {
     reputationRegistryRef: `eip155:${chainId}:${REPUTATION_REGISTRY}`,
+    agentRegistryRef: `eip155:${chainId}:${IDENTITY_REGISTRY}`,
     agentId: agentId.toString(),
     rpcUrl,
     claim,
