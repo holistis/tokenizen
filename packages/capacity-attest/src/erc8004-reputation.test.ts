@@ -265,7 +265,44 @@ describe("publishReputationFeedback", () => {
     );
     expect(result.ok).toBe(false);
     expect((result as { reason: string }).reason).toContain("timed out");
+    expect((result as { txHash?: string }).txHash).toBeUndefined();
   }, 20_000);
+
+  it("geeft de txHash terug bij een timeout op tx.wait(), i.p.v. hem stil te laten vallen (adversarial review 2026-09-11: giveFeedback zelf slaagde, alleen bevestiging hing, en zonder hash kon een aanroeper niet checken voor hij opnieuw probeerde)", async () => {
+    const wallet = testWallet();
+    const claim = await buildSignedClaim(wallet);
+    const factory = fakeFactory({
+      giveFeedback: async () => fakeTx({ wait: () => new Promise(() => {}) }) as never, // broadcast lukt, bevestiging hangt
+    });
+    const result = await publishReputationFeedback(
+      wallet,
+      { reputationRegistryRef: VALID_REF, agentRegistryRef: AGENT_REF, agentId: "1", rpcUrl: "https://rpc.example", claim },
+      factory,
+      fakeIdentityResolver(),
+    );
+    expect(result.ok).toBe(false);
+    expect((result as { reason: string }).reason).toContain(TX_HASH);
+    expect((result as { reason: string }).reason).toContain("double-count");
+    expect((result as { txHash?: string }).txHash).toBe(TX_HASH);
+  }, 20_000);
+
+  it("geeft geen txHash terug als giveFeedback zelf al mislukt (er is dan niks om op te checken)", async () => {
+    const wallet = testWallet();
+    const claim = await buildSignedClaim(wallet);
+    const factory = fakeFactory({
+      giveFeedback: vi.fn(async () => {
+        throw new Error("insufficient funds for gas");
+      }),
+    });
+    const result = await publishReputationFeedback(
+      wallet,
+      { reputationRegistryRef: VALID_REF, agentRegistryRef: AGENT_REF, agentId: "1", rpcUrl: "https://rpc.example", claim },
+      factory,
+      fakeIdentityResolver(),
+    );
+    expect(result.ok).toBe(false);
+    expect((result as { txHash?: string }).txHash).toBeUndefined();
+  });
 
   it("gooit nooit een onafgevangen exceptie, ook niet bij een synchroon gooiende contract-factory", async () => {
     const wallet = testWallet();

@@ -100,7 +100,12 @@ export type PublishReputationFeedbackInput = z.infer<typeof PublishReputationFee
 
 export type PublishReputationFeedbackResult =
   | { ok: true; chainId: string; registryAddress: string; agentId: string; txHash: string; value: number; valueDecimals: number }
-  | { ok: false; reason: string };
+  // txHash is present ONLY when giveFeedback() genuinely broadcast a transaction and the
+  // failure happened afterward (a confirmation timeout/RPC hiccup) — see the comment at the
+  // tx.wait() call site. Absent whenever nothing was ever broadcast, so its mere presence tells
+  // a caller whether there is a real, possibly-still-landing transaction worth checking before
+  // deciding to retry (adversarial review 2026-09-11).
+  | { ok: false; reason: string; txHash?: string };
 
 function isValidAgentId(v: string): boolean {
   return v.length <= MAX_AGENT_ID_DIGITS && /^(0|[1-9][0-9]*)$/.test(v);
@@ -229,9 +234,27 @@ export async function publishReputationFeedback(
       contract.giveFeedback(BigInt(input.agentId), BigInt(value), VALUE_DECIMALS, TAG1, tag2, "", feedbackURI, feedbackHash),
       CALL_TIMEOUT_MS,
     );
+  } catch (e) {
+    // Nothing was broadcast (or we can't tell) — safe to report a plain failure with no hash.
+    return { ok: false, reason: `on-chain giveFeedback failed: ${(e as Error).message}` };
+  }
+
+  // Adversarial review (2026-09-11): from here on tx.hash is a REAL, already-broadcast
+  // transaction — a separate try/catch specifically for the confirmation wait, so a timeout or
+  // RPC hiccup HERE (plausible under ordinary network congestion, not just a hang) doesn't
+  // silently discard tx.hash the way a single shared catch block used to. The tx can still land
+  // moments later even though confirmation timed out; a caller with no hash to check would
+  // reasonably retry and risk double-counting this feedback in the registry's own averaging.
+  try {
     await withTimeout(tx.wait(), CALL_TIMEOUT_MS);
   } catch (e) {
-    return { ok: false, reason: `on-chain giveFeedback failed: ${(e as Error).message}` };
+    return {
+      ok: false,
+      reason:
+        `giveFeedback was broadcast (tx ${tx.hash}) but confirmation failed or timed out: ${(e as Error).message}. ` +
+        "Check this transaction's status before retrying — it may still land, and retrying an already-landed tx would double-count this feedback.",
+      txHash: tx.hash,
+    };
   }
 
   return {
