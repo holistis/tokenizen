@@ -114,6 +114,21 @@ const defaultContractFactory: ContractFactory = (registryAddress, rpcUrl) => {
   return new ethers.Contract(registryAddress, ERC721_READ_ABI, provider) as unknown as Erc721ReadContract;
 };
 
+// Adversarial review (2026-09-11): chainId in the returned result came straight from the
+// CALLER-SUPPLIED agentRegistryRef string, never checked against what rpcUrl actually points to.
+// A caller (or a mismatched config) could pass agentRegistryRef "eip155:8453:0x..." (Base) with an
+// rpcUrl that actually points at a different chain entirely, and this function would happily
+// return chainId:"8453" paired with owner/tokenURI data that really came from querying that other
+// chain — the same contract address can exist independently on multiple chains with completely
+// different owners. Same DI-seam pattern as ContractFactory so tests can inject a fake without a
+// real network call.
+export type ChainIdFactory = (rpcUrl: string) => Promise<bigint>;
+
+const defaultChainIdFactory: ChainIdFactory = async (rpcUrl) => {
+  const network = await new ethers.JsonRpcProvider(rpcUrl).getNetwork();
+  return network.chainId;
+};
+
 /**
  * Read-only lookup against an ERC-8004 Identity Registry: who owns
  * `agentId` (`ownerOf`) and where its registration file lives (`tokenURI`).
@@ -124,6 +139,7 @@ const defaultContractFactory: ContractFactory = (registryAddress, rpcUrl) => {
 export async function resolveAgentIdentity(
   input: ResolveAgentIdentityInput,
   contractFactory: ContractFactory = defaultContractFactory,
+  chainIdFactory: ChainIdFactory = defaultChainIdFactory,
 ): Promise<ResolveAgentIdentityResult> {
   const match = AGENT_REGISTRY_REF_RE.exec(input.agentRegistryRef);
   if (!match) {
@@ -146,6 +162,16 @@ export async function resolveAgentIdentity(
   let owner: string;
   let tokenUri: string;
   try {
+    // Verify rpcUrl actually points at the chain agentRegistryRef claims, before trusting
+    // anything it returns: the same contract address can exist independently on multiple
+    // chains with completely different owners.
+    const actualChainId = await withTimeout(chainIdFactory(input.rpcUrl), CALL_TIMEOUT_MS);
+    if (actualChainId !== BigInt(chainId)) {
+      return {
+        ok: false,
+        reason: `rpcUrl is on chain ${actualChainId.toString()}, but agentRegistryRef names chain ${chainId} — refusing to mix results across chains`,
+      };
+    }
     const contract = contractFactory(registryAddress, input.rpcUrl);
     const agentIdBig = BigInt(input.agentId);
     [owner, tokenUri] = await withTimeout(Promise.all([contract.ownerOf(agentIdBig), contract.tokenURI(agentIdBig)]), CALL_TIMEOUT_MS);
