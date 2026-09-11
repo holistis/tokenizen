@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { mkdtempSync, rmSync, appendFileSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, appendFileSync, readFileSync, statSync, writeFileSync, utimesSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { appendClaim, claimsForSeller, allClaims } from "./ledger.js";
@@ -499,5 +499,35 @@ describe("ledger newline-tail safety (adversarial review 2026-09-11)", () => {
     const onDisk = readFileSync(ledgerFile, "utf8");
     expect(onDisk.startsWith("\n")).toBe(false);
     expect(onDisk).toBe(JSON.stringify(claim) + "\n");
+  });
+});
+
+describe("ledger lock liveness (adversarial review 2026-09-11)", () => {
+  it("steelt een oud-ogend lockbestand NIET als de eigenaar-pid nog echt leeft (voorkomt het dubbele-claim-ras dat het slot juist moet tegenhouden)", async () => {
+    const lockPath = join(tmpDir, "claims.jsonl.lock");
+    // Dit test-proces zelf is de "eigenaar": gegarandeerd levend, en precies het scenario
+    // uit de bevinding — een langzame maar levende houder mag niet bestolen worden puur
+    // omdat het slotbestand er al meer dan STALE_LOCK_MS oud uitziet.
+    writeFileSync(lockPath, String(process.pid));
+    const oldTime = new Date(Date.now() - 31_000);
+    utimesSync(lockPath, oldTime, oldTime);
+
+    const buyer = testWallet();
+    const claim = await buildSignedClaim(buyer);
+    await expect(appendClaim(claim)).rejects.toThrow(/ledger_lock_timeout/);
+  }, 8_000);
+
+  it("reclaimt een oud lockbestand nog steeds als de eigenaar-pid echt dood is (geen regressie op het bestaande crash-herstel)", async () => {
+    const lockPath = join(tmpDir, "claims.jsonl.lock");
+    // Een zeer onwaarschijnlijk bestaande pid — simuleert een proces dat is gecrasht
+    // terwijl het het slot vasthield.
+    writeFileSync(lockPath, "2147483647");
+    const oldTime = new Date(Date.now() - 31_000);
+    utimesSync(lockPath, oldTime, oldTime);
+
+    const buyer = testWallet();
+    const claim = await buildSignedClaim(buyer);
+    const result = await appendClaim(claim);
+    expect(result.claimId).toBe(claim.claimId);
   });
 });

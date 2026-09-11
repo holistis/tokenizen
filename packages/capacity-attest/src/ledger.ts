@@ -7,7 +7,7 @@
 // attempt to re-record the exact same claim) is rejected rather than
 // silently duplicated.
 
-import { readFileSync, appendFileSync, openSync, closeSync, readSync, unlinkSync, statSync } from "node:fs";
+import { readFileSync, appendFileSync, openSync, closeSync, readSync, writeSync, unlinkSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { dataDir, ensureDataDir } from "./config.js";
 import { DeliveryClaimSchema, type DeliveryClaim } from "./schema.js";
@@ -116,18 +116,67 @@ function isRetryableLockError(e: unknown): boolean {
   return code === "EEXIST" || code === "EPERM";
 }
 
+// Adversarial review (2026-09-11): STALE_LOCK_MS on its own only measures how long ago the lock
+// file was CREATED, never whether its holder is still doing real work. A holder can legitimately
+// still be alive and mid-operation past 30s (this ledger's own resync path now does per-line
+// ECDSA signature verification, which scales with ledger size), and a purely time-based reclaim
+// cannot tell that apart from an actually-crashed holder — stealing the lock out from under a
+// live process reintroduces exactly the duplicate-claim race this lock exists to prevent. This
+// package's own deployment model is "separate OS processes sharing one CAPACITY_ATTEST_DATA_DIR"
+// (ledger.ts's header comment) — i.e. always the same machine — so a PID-liveness check is both
+// correct and simple: only reclaim a stale-by-time lock if the PID that created it is confirmed
+// gone, not merely old.
+function isProcessAlive(pid: number): boolean {
+  try {
+    // Signal 0 sends nothing; it only tests whether the OS would let us signal that pid at all.
+    process.kill(pid, 0);
+    return true;
+  } catch (e) {
+    const code = (e as NodeJS.ErrnoException).code;
+    // ESRCH: no such process — genuinely gone. EPERM: it exists but we lack permission to signal
+    // it, which is still proof it's alive, so treat that as alive, not as license to steal.
+    return code === "EPERM";
+  }
+}
+
 async function acquireLock(path: string): Promise<void> {
   const deadline = Date.now() + LOCK_TIMEOUT_MS;
   for (;;) {
     try {
-      closeSync(openSync(path, "wx"));
+      // Content is the creator's own pid, read back by a contender deciding whether a stale-by-
+      // time lock's holder is actually dead. openSync(..., "wx") already fails atomically if the
+      // file exists, so this write is safe from the same TOCTOU class that "wx" itself defends
+      // against — no other writer can be mid-create at this point.
+      const fd = openSync(path, "wx");
+      try {
+        writeSync(fd, String(process.pid));
+      } finally {
+        closeSync(fd);
+      }
       return;
     } catch (e) {
       if (!isRetryableLockError(e)) throw e;
       try {
         if (Date.now() - statSync(path).mtimeMs > STALE_LOCK_MS) {
-          unlinkSync(path);
-          continue;
+          let holderPid: number | null = null;
+          try {
+            const content = readFileSync(path, "utf8").trim();
+            const parsed = Number(content);
+            if (Number.isInteger(parsed) && parsed > 0) holderPid = parsed;
+          } catch {
+            // Lock file vanished or unreadable between our stat and this read — treat as gone,
+            // same as the outer catch below does for the equivalent race on unlink.
+          }
+          // No parseable pid (a lock file from before this fix, or a corrupt one) is itself a
+          // sign the lock is not something a live process is actively renewing — reclaim, same
+          // as the pre-fix behavior. A parseable pid must be confirmed dead first — and if it's
+          // confirmed ALIVE, deliberately fall through to the normal deadline-check-and-delay
+          // below instead of an immediate no-delay retry, so a legitimately slow (but alive)
+          // holder doesn't turn every contender into a tight busy-loop until it finishes.
+          if (holderPid === null || !isProcessAlive(holderPid)) {
+            unlinkSync(path);
+            continue;
+          }
         }
       } catch {
         // Lock file vanished between our failed open() and this stat/unlink
