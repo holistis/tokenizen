@@ -645,7 +645,15 @@ export function canonicalize(value: unknown): string {
 // too as defense-in-depth in case computeClaimId is ever called on content
 // that bypassed schema validation.
 function sortKeysDeep(value: unknown, depth: number): unknown {
-  if (depth > MAX_DEPTH) {
+  // +1, not MAX_DEPTH itself (adversarial review 2026-09-11): this function is only ever
+  // reached via canonicalize(ClaimContentSchema.parse(content)), which always walks the WHOLE
+  // top-level ClaimContent object starting at depth 0 — so promisedSpec's own root value is
+  // always exactly one level down (depth 1), one deeper than exceedsMaxDepth() above counts it
+  // (it walks promisedSpec's root itself at depth 0). Without the +1, a promisedSpec nested to
+  // the schema's own accepted maximum (MAX_DEPTH) passed ClaimContentSchema.parse() as valid,
+  // then made this function throw one level too early, so signClaim()/verifyClaim() crashed on
+  // input their own validator had just certified as fine.
+  if (depth > MAX_DEPTH + 1) {
     throw new Error(`promisedSpec nesting exceeds max depth of ${MAX_DEPTH}`);
   }
   if (Array.isArray(value)) return value.map((v) => sortKeysDeep(v, depth + 1));

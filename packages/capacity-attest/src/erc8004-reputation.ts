@@ -174,7 +174,19 @@ export async function publishReputationFeedback(
     return { ok: false, reason: "rpcUrl must be an http:// or https:// URL" };
   }
 
-  const verdict = verifyClaim(input.claim);
+  let verdict: ReturnType<typeof verifyClaim>;
+  try {
+    verdict = verifyClaim(input.claim);
+  } catch (e) {
+    // Same reason every other real caller of verifyClaim() wraps it (tools.ts,
+    // discovery.ts, ledger.ts): computeClaimId() can throw on pathological
+    // content (e.g. promisedSpec nested past schema.ts's MAX_DEPTH). This
+    // function's whole job is to safely reject an adversarial/tampered claim
+    // before writing anything on-chain, so that must degrade to the normal
+    // {ok:false, reason} contract, never an uncaught exception (adversarial
+    // review 2026-09-11: this was the one caller missing the guard).
+    return { ok: false, reason: `refusing to publish an unverifiable claim: invalid_claim: ${(e as Error).message}` };
+  }
   if (!verdict.ok) {
     return { ok: false, reason: `refusing to publish an unverifiable claim: ${verdict.reason}` };
   }

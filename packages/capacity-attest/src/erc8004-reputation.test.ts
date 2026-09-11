@@ -143,6 +143,23 @@ describe("publishReputationFeedback", () => {
     expect(giveFeedback).not.toHaveBeenCalled();
   });
 
+  it("weigert netjes i.p.v. te crashen bij een claim met een pathologisch diep genest promisedSpec (adversarial review 2026-09-11: computeClaimId() kan gooien, en dit was de ene aanroeper zonder de try/catch die elke buur wel heeft)", async () => {
+    const wallet = testWallet();
+    const claim = await buildSignedClaim(wallet);
+    let nested: unknown = "leaf";
+    for (let i = 0; i < 40; i++) nested = { child: nested };
+    const pathological = { ...claim, promisedSpec: nested as unknown as string };
+    const giveFeedback = vi.fn(async () => fakeTx() as never);
+    const result = await publishReputationFeedback(
+      wallet,
+      { reputationRegistryRef: VALID_REF, agentId: "1", rpcUrl: "https://rpc.example", claim: pathological },
+      fakeFactory({ giveFeedback }),
+    );
+    expect(result.ok).toBe(false);
+    expect((result as { reason: string }).reason).toContain("refusing to publish an unverifiable claim");
+    expect(giveFeedback).not.toHaveBeenCalled();
+  });
+
   it("geeft een net foutresultaat terug als de on-chain call reverts (bv. Self-feedback not allowed)", async () => {
     const wallet = testWallet();
     const claim = await buildSignedClaim(wallet);
