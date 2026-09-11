@@ -50,7 +50,7 @@
 
 import { ethers } from "ethers";
 import * as z from "zod/v4";
-import { AGENT_REGISTRY_REF_RE } from "./erc8004.js";
+import { AGENT_REGISTRY_REF_RE, resolveAgentIdentity } from "./erc8004.js";
 import { DeliveryClaimSchema, type DeliveryClaim } from "./schema.js";
 import { verifyClaim } from "./signing.js";
 
@@ -81,6 +81,11 @@ export const PublishReputationFeedbackInputSchema = z.object({
   reputationRegistryRef: z
     .string()
     .describe('Compound ERC-8004 Reputation Registry reference: "eip155:<chainId>:<registryAddress>" — the Reputation Registry address, NOT the Identity Registry address'),
+  agentRegistryRef: z
+    .string()
+    .describe(
+      'Compound ERC-8004 Identity Registry reference: "eip155:<chainId>:<registryAddress>" — the SAME chain as reputationRegistryRef, used to verify agentId actually resolves to claim.sellerAddress before writing anything on-chain (adversarial review 2026-09-11: without this check, a caller could attach any real, validly-signed claim to an unrelated agentId)',
+    ),
   agentId: z.string().describe("The seller's ERC-721 tokenId / ERC-8004 agentId in the paired Identity Registry, as a decimal string"),
   rpcUrl: z.string().describe("JSON-RPC endpoint (http:// or https://) for the chain named in reputationRegistryRef — never assumed or defaulted"),
   claim: DeliveryClaimSchema.describe("The already-signed DeliveryClaim whose `delivered` field is mirrored on-chain"),
@@ -151,10 +156,14 @@ const defaultReputationContractFactory: ReputationContractFactory = (registryAdd
  * as if it were genuine. Requires a funded signer; this package never
  * bundles an RPC, a key, or gas.
  */
+/** Dependency-injection seam, same pattern as contractFactory — tests supply a fake resolver instead of a real network call. */
+export type IdentityResolver = typeof resolveAgentIdentity;
+
 export async function publishReputationFeedback(
   signer: ethers.Signer,
   input: PublishReputationFeedbackInput,
   contractFactory: ReputationContractFactory = defaultReputationContractFactory,
+  identityResolver: IdentityResolver = resolveAgentIdentity,
 ): Promise<PublishReputationFeedbackResult> {
   const match = AGENT_REGISTRY_REF_RE.exec(input.reputationRegistryRef);
   if (!match) {
@@ -189,6 +198,23 @@ export async function publishReputationFeedback(
   }
   if (!verdict.ok) {
     return { ok: false, reason: `refusing to publish an unverifiable claim: ${verdict.reason}` };
+  }
+
+  // Adversarial review (2026-09-11): a valid signature only proves who signed the CLAIM, never
+  // that agentId (a completely separate, caller-supplied field) is the seller the claim is
+  // actually about. Without this check, a caller could attach any real, honestly-signed claim's
+  // delivered/failed verdict to an unrelated agentId — borrowing a good record for an ally, or
+  // smearing a rival with someone else's negative claim — and it would look exactly as
+  // legitimate as a correctly-attributed entry to anyone reading the registry later.
+  const identity = await identityResolver({ agentRegistryRef: input.agentRegistryRef, agentId: input.agentId, rpcUrl: input.rpcUrl });
+  if (!identity.ok) {
+    return { ok: false, reason: `could not verify agentId's registered identity: ${identity.reason}` };
+  }
+  if (identity.owner.toLowerCase() !== input.claim.sellerAddress.toLowerCase()) {
+    return {
+      ok: false,
+      reason: `agentId ${input.agentId} is registered to ${identity.owner}, which does not match the claim's sellerAddress ${input.claim.sellerAddress} — refusing to attach this feedback to an unrelated agent`,
+    };
   }
 
   const value = DELIVERED_VALUE[input.claim.delivered];
