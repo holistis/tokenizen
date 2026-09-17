@@ -1039,3 +1039,62 @@ D-007's eigen live-verificatie.
 
 **Status:** gebouwd (0.6.0, ongepubliceerd, dev-branch), unit-getest tegen de
 echte ABI, EN live geverifieerd tegen Base mainnet.
+
+---
+
+### D-017: Dispute, wat gebeurt er als koper en verkoper het niet eens zijn over wat er gebeurde?
+
+**Herkomst:** een lezersvraag onder het artikel over dit project (Adam Lewis,
+2026-09-17): "Wat gebeurt er als de ene partij een claim betwist, staat er in
+de handtekening iets dat vastlegt wie gelijk heeft? En wat gebeurt er met de
+claim als beide partijen het oneens zijn of er uberhaupt geleverd is?"
+
+**Hypothese:** dit lijkt op het eerste gezicht D-013 (Liability) opnieuw,
+maar is bij nader onderzoek een preciezere, nog niet apart beantwoorde vraag.
+D-013 regelt WIE de gevolgen draagt bij een geschil (extern, via
+`disputeContext`). Adam se vraag zit een laag dieper: bestaat er uberhaupt
+een mechanisme waarmee de VERKOPER zijn kant van het verhaal net zo
+ondertekend kan vastleggen als de koper, zodat een lezer beide kanten kan
+zien?
+
+**Antwoord, geverifieerd tegen de echte code (`src/index.ts`,
+`src/ledger.ts`), niet aangenomen:** nee. `record_delivery` accepteert
+uitsluitend een claim van de **betalende** partij; `verifyClaim()` rekent
+`signature` uitsluitend terug naar `buyerAddress` (README regel 52-53, 139).
+Er bestaat geen `sellerAddress`-ondertekende tegen-claim, geen "verkoper
+reageert op deze claim"-veld, niets. Concreet betekent dit: als koper en
+verkoper het oneens zijn of er geleverd is, ziet `get_delivery_history` alleen
+de kant van de koper, altijd, structureel, niet als toevallige omissie. De
+handtekening (EIP-191) bewijst uitsluitend WIE dit specifieke bericht
+ondertekende (attributie, non-repudiatie); ze bewijst nergens WAT er
+werkelijk gebeurd is. Dat verschil (attributie versus waarheid) staat nergens
+in het README met zoveel woorden, terwijl het precies de vraag is die een
+buitenstaander als Adam stelt.
+
+**Waarom nu niet gebouwd (een eigen verkoper-tegen-claim):** dit is dezelfde
+afweging als D-013 en D-014 al maakten, nu toegepast op een net iets andere
+plek. Een verkoper-tegen-claim zonder een manier om te bepalen WELKE van de
+twee tegenstrijdige, allebei geldig-ondertekende claims "wint", is
+schijnzekerheid: het voelt eerlijker (beide kanten gehoord) maar lost het
+eigenlijke probleem niet op, en een eigen oordeel vellen over wie gelijk heeft
+is precies het "eigen arbitrage/eigen waarheid"-risico dat D-013 al
+uitdrukkelijk afwijst. De eerlijke, huidige stand is dat capacity-attest een
+koper-getuigenverklaring is, geen rechtbank, en dat ook zo moet blijven
+noemen zolang er geen tegen-claim-mechanisme is.
+
+**Wat dit WEL meteen oplevert, zonder nieuwe code:** een concrete, eerlijke
+aanvulling op D-013's `disputeContext`-uitleg en op het README, die er nu
+nog niet met zoveel woorden staat: dat de handtekening attributie bewijst,
+nooit waarheid, en dat vandaag alleen de koper een stem heeft in de ledger.
+Zie taak hieronder.
+
+**Trigger-criterium voor een eigen verkoper-tegen-claim:** een echte
+verkoper meldt zich met een concreet geval waarin hij het oneens is met een
+koper se `delivered: no`-claim over hem, en wil dat weerspreken. **Wat NIET
+telt als trigger:** de theoretische constatering dat dit "asymmetrisch" is
+zonder dat een echte partij hier last van heeft.
+
+**Status:** niet bouwen (verkoper-tegen-claim). Wel: README/D-013 verduidelijken
+dat de handtekening attributie bewijst, geen waarheid, en dat vandaag alleen
+de koper een ondertekende stem heeft. Wacht op trigger voor een tegen-claim-
+mechanisme.
