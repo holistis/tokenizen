@@ -1098,3 +1098,76 @@ zonder dat een echte partij hier last van heeft.
 dat de handtekening attributie bewijst, geen waarheid, en dat vandaag alleen
 de koper een ondertekende stem heeft. Wacht op trigger voor een tegen-claim-
 mechanisme.
+
+---
+
+## D-018: negen pogingen om D-014 waterdicht op te lossen, alle negen gedood, en waarom dat zelf de conclusie is
+
+**Herkomst:** goun7's publieke reactie (x402-foundation/x402#3379, 2026-09-17 21:43 UTC) noemde
+expliciet dat "buyer-signed post-hoc claims are only a signal to the degree the buyer has
+something to lose by lying. Without a cost to a false delivered=no, the signal is uncorrelated
+noise rather than weak evidence." Dat is D-014, scherper geformuleerd door een geloofwaardige
+externe partij met een eigen adversariële-audit-track-record (Tamga Protocol) — een gefired
+trigger volgens hetzelfde precedent als D-006.
+
+**Wat er is gedaan, twee rondes, negen onafhankelijke ontwerpen, elk apart adversarieel
+afgeschoten tegen de echte code:**
+
+Ronde 1 (vier hoeken): actieve on-chain settlementRef-verificatie, sybil/zelfhandel-detectie via
+geldstroom-herkomst, externe economische borg gekoppeld aan disputeContext, en isnad/hadith-
+stijl corroboratie tussen meerdere kopers (dit laatste een suggestie van de koning zelf, een
+directe analogie met isnad-kritiek in de hadithwetenschap: een keten is pas sterk als elke
+schakel apart betrouwbaar is en onafhankelijk bevestigd wordt). Alle vier gedood.
+
+Ronde 2 (vijf hoeken, na de vraag "hebben we echt alle hoeken gehad"): bewijs-van-uniek-mens
+citeren (World ID/Gitcoin Passport/BrightID), een verplichte, niet-optionele rekenkost per claim
+(proof-of-work), tijd als onomkoopbare kostenfactor (een claim telt pas mee na een wachtperiode
+op een onvervalsbare klok), echte juridische identiteit/aansprakelijkheid via het al aangehaalde
+Legal Context Protocol (D-013), en een derde partij die echt geld/kapitaal inzet tegen een
+specifieke claim (een optimistic-oracle-stijl mechanisme, UMA OOv3 als citeer-doel, geen eigen
+markt). Alle vijf gedood.
+
+**De herhaalde, echte doodsoorzaak, niet negen losse toevalstreffers:** elk mechanisme dat
+werkelijk een kost oplegde, botste op een van twee dingen. Ofwel was het OPTIONEEL, en koos een
+aanvaller simpelweg de kant zonder controle (exact hetzelfde patroon dat elke keer terugkwam: een
+vrijwillige check kost een aanvaller die 'm negeert nul). Ofwel vereiste het dat sommige claims
+meer vertrouwd worden dan andere — en dat IS een rangorde, ongeacht de naam die je eraan geeft,
+en botst frontaal met D-004 (nooit een reputatiescore of rangorde bouwen, hardcoded in
+schema.ts's eigen designcommentaar: "A DeliveryClaim is deliberately NOT a score, rating, or
+judgment"). Zolang D-004 geldt, kan een aanvaller altijd de kant zonder controle kiezen en daar
+gratis blijven zitten. Dit is geen gebrek aan creativiteit, het is een echte, structurele
+spanning tussen twee van onze eigen regels.
+
+**Twee eerlijk-gedeeltelijke bouwstenen die overleefden, geen van beide een oplossing:**
+
+1. **Onvervalsbare kalendertijd** (ronde 2, tijd-hoek): het enige dat een aanvaller niet kan
+   inkopen door meer wallets of een tweede scriptrun. Een rijpingsperiode is daarom structureel
+   gezonder dan borg/corroboratie. Maar de tel-functie waar dit op moet steunen bestaat nog niet
+   in de code (analyzeCompleteness() telt geen onafhankelijke kopers), en een vaste
+   spreidingsregel straft een eerlijke, drukke verkoper net zo hard als een geduldige oplichter.
+2. **Een derde partij met echt, verliesbaar kapitaal tegen één specifieke claim** (ronde 2,
+   optimistic-oracle-hoek): de enige van de negen die aantoonbaar echte, niet-omzeilbare kosten
+   oplegt zodra hij gebruikt wordt. Werkt alleen voor het smalle deel van claims waar de
+   onderliggende feitelijkheid goedkoop en objectief na te gaan is door een vreemde (klopt een
+   hash, is een bedrag overgemaakt), niet voor de subjectieve vraag of de levering goed was, en
+   het minimumbedrag om de moeite waard te maken (tientallen tot honderden dollars) past niet bij
+   de kleine, alledaagse betalingen die dit project dient.
+
+**Eerlijk antwoord aan goun7, publiekelijk gegeven (zie hieronder voor de exacte tekst):** D-014
+blijft open. Niet uit gebrek aan poging, negen serieuze, onafhankelijk bedachte ontwerpen zijn
+elk apart kapotgetoetst tegen de echte code, met steeds dezelfde onderliggende reden. Dat is een
+structurele grens van dit soort zelf-gerapporteerde-getuigenis-systemen zonder vertrouwde
+scheidsrechter, niet een gat dat we nog even moeten dichten.
+
+**Trigger-criterium voor heropening:** (a) een van de twee bouwstenen krijgt een concreet,
+uitgewerkt ontwerp dat zelf weer door een adversariële toets komt, met name een echte
+corroboratie-tel-functie voor de tijd-hoek, of een minimumbedrag/doelgroep-analyse die aantoont
+voor welk deel van de echte claims de optimistic-oracle-hoek wél economisch zin heeft; OF (b) de
+projecteigenaar besluit expliciet dat een specifieke, beperkte vorm van rangorde (bijvoorbeeld:
+een claim-eigenschap die een objectief feit weergeeft, zoals "een derde partij zette hier X
+kapitaal tegen in", nooit een verkopersscore) toch aanvaardbaar is binnen D-004's grenzen — dat
+is een bewuste productbeslissing voor de projecteigenaar, geen aanname die hier wordt gemaakt.
+
+**Status:** D-014 blijft NIET OPGELOST, bewust en met negen keer bewijs waarom. Geen van de negen
+ontwerpen wordt gebouwd. De twee bouwstenen staan hierboven gedocumenteerd als toekomstig
+onderzoek, niet als toegezegd werk.
