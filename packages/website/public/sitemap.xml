@@ -16,4 +16,9 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/en" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/" />
   </url>
+  <url>
+    <loc>https://tokenizen.nl/en/notes/nine-ways-to-fake-a-delivery-claim</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
 </urlset>

@@ -22,6 +22,7 @@ New. As of September 2026 there are no external users yet. It has been run end t
 - [npm package](https://www.npmjs.com/package/capacity-attest): `npm install capacity-attest`
 - [MCP registry entry](https://registry.modelcontextprotocol.io): registered as `io.github.holistis/capacity-attest`
 - [Technical write-up](https://dev.to/holistis/x402-payments-prove-money-moved-they-dont-prove-you-got-what-you-paid-for-2doo): why the gap exists and how this fills it
+- [Nine ways to fake a delivery claim](https://tokenizen.nl/en/notes/nine-ways-to-fake-a-delivery-claim): nine independent designs for making buyer-signed claims harder to fake, each built and broken against the real code, and the structural reason none of them fully worked
 
 ## How to use it
 

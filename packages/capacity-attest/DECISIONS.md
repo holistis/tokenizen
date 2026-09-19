@@ -1171,3 +1171,6 @@ is een bewuste productbeslissing voor de projecteigenaar, geen aanname die hier 
 **Status:** D-014 blijft NIET OPGELOST, bewust en met negen keer bewijs waarom. Geen van de negen
 ontwerpen wordt gebouwd. De twee bouwstenen staan hierboven gedocumenteerd als toekomstig
 onderzoek, niet als toegezegd werk.
+
+**Publieke versie:** deze hele redenering, herschreven voor een lezer buiten dit project, staat op
+[tokenizen.nl/en/notes/nine-ways-to-fake-a-delivery-claim](https://tokenizen.nl/en/notes/nine-ways-to-fake-a-delivery-claim).
