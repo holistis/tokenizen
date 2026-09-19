@@ -42,6 +42,8 @@ Dit is een bewuste, formeel getoetste ontwerpkeuze, niet een toevallige scope-be
 
 Bewust uitgestelde features (verankering, tussentijdse status, formele conformance-vectoren), inclusief de precieze voorwaarde waaronder we ze alsnog zouden bouwen: zie [DECISIONS.md](./DECISIONS.md).
 
+Verder lezen: [negen manieren om een leverings-claim te vervalsen, en waarom geen enkele volledig werkte](https://tokenizen.nl/en/notes/nine-ways-to-fake-a-delivery-claim), de publieke versie van D-014/D-018 hierboven.
+
 ## Hoe het werkt
 
 ### 1. `record_delivery`
