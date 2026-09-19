@@ -9,21 +9,32 @@ import { HowItWorks } from "@/components/sections/how-it-works";
 import { Boundaries } from "@/components/sections/boundaries";
 import { OpenSource } from "@/components/sections/open-source";
 import { Status } from "@/components/sections/status";
+import { NineWaysArticle } from "@/components/pages/nine-ways-article";
+
+const ARTICLE_PATH = "/en/notes/nine-ways-to-fake-a-delivery-claim";
 
 export default function App() {
+  const isArticle = window.location.pathname === ARTICLE_PATH;
+
   return (
     <ThemeProvider>
       <div className="min-h-screen bg-background text-foreground">
         <Header />
         <main>
-          <Hero />
-          <Problem />
-          <WhyNow />
-          <Product />
-          <HowItWorks />
-          <Boundaries />
-          <OpenSource />
-          <Status />
+          {isArticle ? (
+            <NineWaysArticle />
+          ) : (
+            <>
+              <Hero />
+              <Problem />
+              <WhyNow />
+              <Product />
+              <HowItWorks />
+              <Boundaries />
+              <OpenSource />
+              <Status />
+            </>
+          )}
         </main>
         <Footer />
       </div>
