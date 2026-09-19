@@ -11,10 +11,15 @@ import { OpenSource } from "@/components/sections/open-source";
 import { Status } from "@/components/sections/status";
 import { NineWaysArticle } from "@/components/pages/nine-ways-article";
 
-const ARTICLE_PATH = "/en/notes/nine-ways-to-fake-a-delivery-claim";
+const ARTICLE_SLUG = "/notes/nine-ways-to-fake-a-delivery-claim";
 
 export default function App() {
-  const isArticle = window.location.pathname === ARTICLE_PATH;
+  // Engelstalig-only stuk: geen NL-versie. De taalwissel-knop in de header
+  // bouwt zijn href door het /en-voorvoegsel te strippen (i18n/context.tsx),
+  // dus zonder deze tweede match valt die knop hier stil terug op de
+  // homepage in plaats van het artikel te tonen.
+  const path = window.location.pathname;
+  const isArticle = path === `/en${ARTICLE_SLUG}` || path === ARTICLE_SLUG;
 
   return (
     <ThemeProvider>
