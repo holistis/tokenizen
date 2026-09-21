@@ -14,7 +14,7 @@ Deliberately not included: no reputation score, no ranking, no trusted-seller ba
 
 ## Honest status
 
-New. As of September 2026 there are no external users yet. It has been run end to end once against a real live paid endpoint with a real USDC payment on Base, and that transaction and the resulting signed claim are public and reproducible. Treat that as a working proof, not as evidence of adoption.
+New, but no longer unused. It has been run end to end against a real live paid endpoint with a real USDC payment on Base, that transaction and the resulting signed claim are public and reproducible. Two independent, unrelated projects have integrated against it: a downstream test suite that pins it as a dependency and verifies real claim digests (YE-YI7/asm-spec#18, merged), and a from-scratch, stdlib-only Python reimplementation of the verifier by a separate project (Tamga Protocol) that matches 7/7 on the published fixtures and is now a permanent regression check in their own package. See the credibility table on the package README for links.
 
 ## Links
 
@@ -23,6 +23,7 @@ New. As of September 2026 there are no external users yet. It has been run end t
 - [MCP registry entry](https://registry.modelcontextprotocol.io): registered as `io.github.holistis/capacity-attest`
 - [Technical write-up](https://dev.to/holistis/x402-payments-prove-money-moved-they-dont-prove-you-got-what-you-paid-for-2doo): why the gap exists and how this fills it
 - [Nine ways to fake a delivery claim](https://tokenizen.nl/en/notes/nine-ways-to-fake-a-delivery-claim): nine independent designs for making buyer-signed claims harder to fake, each built and broken against the real code, and the structural reason none of them fully worked
+- [The Hierarchy of Agent Trust](https://tokenizen.nl/en/notes/the-hierarchy-of-agent-trust): a plain-language story explaining why capacity-attest stops at evidence and deliberately never becomes a score or a judge
 
 ## How to use it
 
