@@ -1174,3 +1174,42 @@ onderzoek, niet als toegezegd werk.
 
 **Publieke versie:** deze hele redenering, herschreven voor een lezer buiten dit project, staat op
 [tokenizen.nl/en/notes/nine-ways-to-fake-a-delivery-claim](https://tokenizen.nl/en/notes/nine-ways-to-fake-a-delivery-claim).
+
+
+---
+
+## D-019: Betaalde verificatie-/ankerdienst rond capacity-attest, op x402-rails
+
+**Hypothese:** het claimId-formaat van capacity-attest is inmiddels door minstens twee
+onafhankelijke partijen hergebruikt zonder dat wij erom vroegen (StelarDigital componeerde
+`metered-claim-testvector.json`'s claimId's ongewijzigd als bladeren in hun eigen RFC-6962
+Merkle-batch; NSPG13/agent-bounties neemt het evidence-vs-authority-argument uit
+[nine-ways-to-fake-a-delivery-claim](https://tokenizen.nl/en/notes/nine-ways-to-fake-a-delivery-claim)
+(D-014) over als vaste regel voor hun eigen bounty-evaluatie). Zie
+`x402-foundation/x402#2833`, comments `5798402436`, `5799314368`, `5805018629`, 2026-09-23/24.
+In diezelfde draad draait een andere partij (AmitabhainArunachala, "Cash Truth") een betaalde
+verificatie-endpoint (`POST /receipt/verify`, $0,05/call, x402-gated op Base/USDC) voor hun eigen,
+vergelijkbare receipt-formaat. Capacity-attest zelf heeft geen betaalde laag: het pakket, het
+claimId-formaat en de verifier zijn volledig gratis (MIT), en blijven dat ook. De hypothese is een
+betaalde SERVICE eromheen: een gehoste `/verify`-aanroep en/of een batch-ankerdienst voor
+capacity-attest-claims, betaald via x402 zelf, dezelfde rails als de rest van deze kring al
+gebruikt en vertrouwt.
+
+**Waarom nu niet:** dit is een productbeslissing die een eigen, aparte uitwerking verdient
+(prijs, scope, aankondiging binnen deze kring zonder opdringerig te zijn), niet iets dat als
+bijzaak naast een GitHub-antwoord wordt beslist. Nog niet uitgewerkt: wat de dienst precies doet
+naast wat de gratis, lokale verifier (`verify-metered-example.mjs`) al kan, wat een redelijke
+prijs is, en of een betaalde laag de reden ondermijnt dat externe partijen het gratis formaat nu
+juist zonder wrijving hergebruiken (StelarDigital en NSPG13 raakten nooit een betaalmuur, dat is
+precies waarom het frictieloos paste).
+
+**Trigger-criterium:** een uitgewerkt plan via wazir-al-mal/skill idee-naar-geld (scope, prijs,
+bouwkosten, aankondigingstekst), voorgelegd aan en goedgekeurd door de koning.
+
+**Wat NIET telt als trigger:** het enkele feit dat een andere partij in dezelfde draad een
+betaalde dienst draait voor een ANDER formaat. Dat is een signaal dat de rails werken en dat er
+vraag kan zijn, geen zelfstandige reden om zonder uitgewerkt plan te gaan bouwen.
+
+**Status:** niet gebouwd. Voorlopig plan, vastgelegd op verzoek van de koning na de vraag "zij
+gebruiken mijn tools en verdienen er aan en ik niet" (wazir-al-ghanima-sessie, 2026-09-24). Wacht
+op uitwerking via wazir-al-mal.
