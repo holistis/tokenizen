@@ -30,6 +30,7 @@
   "files": [
     "dist",
     "README.md",
+    "README.nl.md",
     "LICENSE"
   ],
   "engines": {
