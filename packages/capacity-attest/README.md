@@ -1,160 +1,162 @@
 # capacity-attest
 
-MCP-server voor leverings-attestaties bij x402-capaciteitshandel tussen AI-agents.
+*[Nederlandse versie / Dutch version: README.nl.md](README.nl.md)*
 
-> Status: MVP, gepubliceerd op npm (`npm install capacity-attest`) en in het officiële MCP-register (`io.github.holistis/capacity-attest`).
+MCP server for delivery attestations in x402 capacity trading between AI agents.
 
-## Onafhankelijk gecontroleerd, niet alleen beweerd
+> Status: MVP, published on npm (`npm install capacity-attest`) and in the official MCP registry (`io.github.holistis/capacity-attest`).
 
-Beweringen over dit project zijn hieronder allemaal aanklikbaar en zelf na te trekken, niet op ons woord te geloven.
+## Independently checked, not just claimed
 
-| Wat | Door wie | Status |
+Every claim about this project below is clickable and independently verifiable, not something you have to take our word for.
+
+| What | By whom | Status |
 |---|---|---|
-| Gebruikt `capacity-attest@0.2.0` als echte dependency, verifieert claim-digest/claimId/handtekening via onze eigen code | [YE-YI7/asm-spec#18](https://github.com/YE-YI7/asm-spec/pull/18) | Gemerged |
-| BSV-rail-adapter op hetzelfde content-geadresseerde claim-formaat | [YE-YI7/asm-spec#19](https://github.com/YE-YI7/asm-spec/pull/19) (auteur EmbryoSpace) | Gemerged |
-| Onze grensuitspraken ("vindbaarheid ≠ volledigheid") zelf op de keten geverifieerd door een derde, geen woord aangenomen | [x402-foundation/x402#3379](https://github.com/x402-foundation/x402/issues/3379) | Publiek, doorlopend |
-| Live delivery-claims als on-chain attestaties op Base mainnet, door iedereen te decoderen | [delivered=yes](https://base.easscan.org/attestation/view/0x81a55d54452b2cf8bdda7918f63a27bf9ff79e5025b485f7316aae6259288ccc) · [delivered=no](https://base.easscan.org/attestation/view/0xe736b005cbcb54f8f196ac64ef09d75d939c8a18c0d5d9670b5c5025c07398c4) | Live |
-| Echte `giveFeedback()`-aanroep op de ERC-8004 Reputation Registry, Base mainnet | [tx 0x2217...efc0](https://basescan.org/tx/0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0) | Live |
-| Voorgesteld als koperszijde-aanvulling op een andermans agent-spec | [omworldprotocol/om-world#18](https://github.com/omworldprotocol/om-world/pull/18) | In review, nog niet gemerged |
-| Zelfstandig herbouwde, stdlib-only Python-verifier (eigen secp256k1/EIP-191/canonical-JSON-implementatie, geen gedeelde code), 7/7 match op onze eigen testvectoren inclusief beide negatieve controles (vervalste handtekening, geknoeide claim), nu permanent als regressietest in een ander, apart gepubliceerd project | [x402-foundation/x402#2887 (comment)](https://github.com/x402-foundation/x402/issues/2887#issuecomment-5687398497), auteur goun7, geintegreerd in Tamga (`pip install tamga-protocol`) | Permanent geintegreerd in andermans project |
+| Uses `capacity-attest@0.2.0` as a real dependency, verifies claim digest/claimId/signature through our own code | [YE-YI7/asm-spec#18](https://github.com/YE-YI7/asm-spec/pull/18) | Merged |
+| BSV rail adapter on the same content-addressed claim format | [YE-YI7/asm-spec#19](https://github.com/YE-YI7/asm-spec/pull/19) (author EmbryoSpace) | Merged |
+| Our boundary claims ("discoverability ≠ completeness") independently verified on-chain by a third party, nothing taken on faith | [x402-foundation/x402#3379](https://github.com/x402-foundation/x402/issues/3379) | Public, ongoing |
+| Live delivery claims as on-chain attestations on Base mainnet, decodable by anyone | [delivered=yes](https://base.easscan.org/attestation/view/0x81a55d54452b2cf8bdda7918f63a27bf9ff79e5025b485f7316aae6259288ccc) · [delivered=no](https://base.easscan.org/attestation/view/0xe736b005cbcb54f8f196ac64ef09d75d939c8a18c0d5d9670b5c5025c07398c4) | Live |
+| A real `giveFeedback()` call on the ERC-8004 Reputation Registry, Base mainnet | [tx 0x2217...efc0](https://basescan.org/tx/0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0) | Live |
+| Proposed as a buyer-side addition to someone else's agent spec | [omworldprotocol/om-world#18](https://github.com/omworldprotocol/om-world/pull/18) | In review, not yet merged |
+| An independently rebuilt, stdlib-only Python verifier (its own secp256k1/EIP-191/canonical-JSON implementation, no shared code), 7/7 match against our own test vectors including both negative controls (forged signature, tampered claim), now a permanent regression test in a separate, independently published project | [x402-foundation/x402#2887 (comment)](https://github.com/x402-foundation/x402/issues/2887#issuecomment-5687398497), author goun7, integrated into Tamga (`pip install tamga-protocol`) | Permanently integrated into someone else's project |
 
-**Eerlijk apart gehouden van bovenstaande tabel, want dit is geen derde-partij-controle:** voor 0.6.0 (de eerste keer dat dit pakket echt naar de blockchain schrijft) hebben we zelf een adversariële security review uitgevoerd. Tien bevindingen, allemaal gefixt met een eigen regressietest, geen onafhankelijke audit door een externe partij. Volledig, controleerbaar verslag: [docs/SECURITY-REVIEW-2026-09-11.md](./docs/SECURITY-REVIEW-2026-09-11.md).
+**Kept honestly separate from the table above, because this is not third-party review:** before 0.6.0 (the first version that actually writes to the blockchain), we ran our own adversarial security review. Ten findings, all fixed with a dedicated regression test, not an independent audit by an outside party. Full, checkable report: [docs/SECURITY-REVIEW-2026-09-11.md](./docs/SECURITY-REVIEW-2026-09-11.md).
 
-## Waarom dit bestaat
+## Why this exists
 
-Wanneer een AI-agent via het [x402-protocol](https://www.x402.org/) betaalt voor capaciteit (GPU-uren, opslag, API/inference-credits, bandbreedte) bij een andere agent of dienst, is er na de betaling geen bewijs dat het beloofde ook echt geleverd is. De kopende agent weet het zelf (hij zag de output, of zag hem niet), maar die kennis gaat verloren zodra de sessie eindigt. De volgende agent die met dezelfde verkoper zaken wil doen, begint weer blind.
+When an AI agent pays via the [x402 protocol](https://www.x402.org/) for capacity (GPU hours, storage, API/inference credits, bandwidth) from another agent or service, there is no proof after payment that what was promised was actually delivered. The buying agent knows it firsthand (it saw the output, or didn't), but that knowledge is lost the moment the session ends. The next agent looking to do business with the same seller starts blind again.
 
-`capacity-attest` lost dat specifieke gat op: na afwikkeling laat de **betalende** agent een cryptografisch ondertekende, feitelijke claim achter (`delivered: yes/no/partial` + een hash van het bewijsmateriaal). Andere agents kunnen die geschiedenis opvragen **voordat** ze zelf met die verkoper in zee gaan.
+`capacity-attest` closes that specific gap: after settlement, the **paying** agent leaves behind a cryptographically signed, factual claim (`delivered: yes/no/partial` + a hash of the evidence). Other agents can pull that history **before** they do business with that same seller.
 
-Geen oordeel. Geen reputatiescore. Geen "vonnis", puur een ondertekende bon-plus-claim, net zoals een afleverbon bij een fysieke levering.
+No judgment. No reputation score. No "verdict" — just a signed receipt-plus-claim, the same way you'd get a delivery slip for a physical shipment.
 
-## Wat dit NIET is
+## What this deliberately is NOT
 
-Dit is bewust en hardcoded **niet**:
+This is deliberately and permanently **not**:
 
-- **Geen reputatiescore of rating.** `get_delivery_history` retourneert de ruwe, chronologische lijst van claims, geen gemiddelde, geen percentage, geen "trust score". Het samenvatten tot één getal is impliciet een oordeel, en dat is expliciet afgewezen tijdens de besluitvorming voor dit project.
-- **Geen financieel product.** Geen rente, geen tijd-disconto op betalingen, geen yield op het ledger-saldo (er ís geen saldo, dit is geen escrow), geen lening, geen onderpand, geen invoice-financing/factoring. `assetType` is een gesloten enum van capaciteitssoorten (`gpu-hours`, `storage`, `api-credits`, `bandwidth`) en bevat bewust niets dat op een financieel instrument lijkt.
-- **Geen eigen token of munt.** Betalingen lopen via x402/USDC zoals gebruikelijk; dit project registreert alleen de *bon* van een afwikkeling die al ergens anders heeft plaatsgevonden.
-- **Geen krediet-verlening.** Een claim wordt pas gemaakt **na** een voltooide betaling. Dit project financiert niets, het documenteert een reeds afgeronde ijara (verhuur/dienst)-transactie.
-- **Geen eigen identity-, autoriteits- of geschillenlaag.** `externalRefs` (zie hieronder) is puur een citaat naar een systeem van een ander (ERC-8004, AP2, Legal Context Protocol, ...). Dit project resolvet, verifieert of beoordeelt die verwijzing zelf nooit. Zie [DECISIONS.md](./DECISIONS.md) D-007 t/m D-013 voor waarom dit bewust geen eigen protocol is geworden.
+- **Not a reputation score or rating.** `get_delivery_history` returns the raw, chronological list of claims, no average, no percentage, no "trust score". Summarizing it into a single number is implicitly a judgment, and that was explicitly rejected during this project's design phase.
+- **Not a financial product.** No interest, no time-discounting on payments, no yield on a ledger balance (there is no balance, this is not an escrow), no lending, no collateral, no invoice financing/factoring. `assetType` is a closed enum of capacity kinds (`gpu-hours`, `storage`, `api-credits`, `bandwidth`) and deliberately contains nothing resembling a financial instrument.
+- **Not its own token or coin.** Payments run through x402/USDC as usual; this project only records the *receipt* of a settlement that already happened elsewhere.
+- **Not credit extension.** A claim is only created **after** a completed payment. This project finances nothing; it documents an already-completed ijara (rental/service) transaction.
+- **Not its own identity, authority, or dispute-resolution layer.** `externalRefs` (see below) is purely a citation to someone else's system (ERC-8004, AP2, Legal Context Protocol, ...). This project never resolves, verifies, or judges that reference itself. See [DECISIONS.md](./DECISIONS.md) D-007 through D-013 for why this deliberately did not become its own protocol.
 
-Dit is een bewuste, formeel getoetste ontwerpkeuze, niet een toevallige scope-beperking. Zie de guardrails-sectie in het project-brief als je overweegt hier iets aan toe te voegen: bij twijfel of een veld/functie hiertegenaan schuurt, laat het weg.
+This is a deliberate, formally reviewed design choice, not an incidental scope limit. See the guardrails section in the project brief if you're considering adding something here: when in doubt whether a field/function brushes against this line, leave it out.
 
-Bewust uitgestelde features (verankering, tussentijdse status, formele conformance-vectoren), inclusief de precieze voorwaarde waaronder we ze alsnog zouden bouwen: zie [DECISIONS.md](./DECISIONS.md).
+Deliberately deferred features (anchoring, interim status, formal conformance vectors), including the exact condition under which we'd build them anyway: see [DECISIONS.md](./DECISIONS.md).
 
-Verder lezen: [negen manieren om een leverings-claim te vervalsen, en waarom geen enkele volledig werkte](https://tokenizen.nl/en/notes/nine-ways-to-fake-a-delivery-claim), de publieke versie van D-014/D-018 hierboven.
+Further reading: [nine ways to fake a delivery claim, and why none of them fully worked](https://tokenizen.nl/en/notes/nine-ways-to-fake-a-delivery-claim), the public write-up of D-014/D-018 above.
 
-## Hoe het werkt
+## How it works
 
 ### 1. `record_delivery`
 
-De betalende agent (de koper) roept dit aan **na** een x402-afwikkeling, zodra bekend is of het beloofde is aangekomen. De claim bevat:
+The paying agent (the buyer) calls this **after** an x402 settlement, once it's known whether what was promised arrived. The claim contains:
 
-| Veld | Betekenis |
+| Field | Meaning |
 | --- | --- |
-| `sellerAddress` | 0x-adres van de partij die betaald werd |
-| `buyerAddress` | 0x-adres van de betalende agent, moet overeenkomen met het adres dat uit `signature` wordt teruggerekend |
+| `sellerAddress` | 0x address of the party that was paid |
+| `buyerAddress` | 0x address of the paying agent, must match the address recovered from `signature` |
 | `assetType` | `gpu-hours` \| `storage` \| `api-credits` \| `bandwidth` |
-| `promisedSpec` | Wat er beloofd was: vrije tekst of een gestructureerd object |
+| `promisedSpec` | What was promised: free text or a structured object |
 | `delivered` | `yes` \| `no` \| `partial` |
-| `evidenceHash` | sha256-hex van bewijsmateriaal (logs, response-payload, ...), het bewijs zelf wordt niet opgeslagen |
-| `settlementRef` | x402-payment-ref of on-chain tx-hash van de onderliggende betaling |
-| `timestamp` | ISO-8601 tijdstip |
-| `claimId` | content-addressed sha256-hash van alle velden hierboven, zie `computeClaimId()` in `src/schema.ts` |
-| `signature` | EIP-191 personal-sign handtekening van de koper over `claimId` |
-| `externalRefs` | *(optioneel, sinds 0.3.0)* ongeverifieerde verwijzingen naar andere agent-economie-infrastructuur: `sellerAgentRef`/`buyerAgentRef` (bv. een ERC-8004-agent-id of DID), `mandateRef`+`mandateIssuerDid` (een extern uitgegeven AP2/AAE-mandaat), `intentRef` (een extern AP2 IntentMandate), `disputeContext` (`protocol`+`termsHash`+optioneel `resolutionRef`, bv. een Legal Context Protocol-verwijzing). Zie [DECISIONS.md](./DECISIONS.md) D-007 t/m D-013 |
-| `priorClaimId` | *(optioneel, sinds 0.4.0)* de `claimId` van jouw vorige claim over dezelfde `sellerAddress`, zodat jouw claims over die verkoper een ketting vormen. Weggelaten bij je eerste claim over een verkoper. Zit in de ondertekende inhoud, dus een host kan het niet weghalen. Laat een lezer een host betrappen die een middelste claim verbergt. Zie [DECISIONS.md](./DECISIONS.md) D-006 |
+| `evidenceHash` | sha256 hex of the supporting evidence (logs, response payload, ...); the evidence itself is not stored |
+| `settlementRef` | x402 payment ref or on-chain tx hash of the underlying payment |
+| `timestamp` | ISO-8601 timestamp |
+| `claimId` | content-addressed sha256 hash of all the fields above, see `computeClaimId()` in `src/schema.ts` |
+| `signature` | EIP-191 personal-sign signature by the buyer over `claimId` |
+| `externalRefs` | *(optional, since 0.3.0)* unverified references to other agent-economy infrastructure: `sellerAgentRef`/`buyerAgentRef` (e.g. an ERC-8004 agent id or DID), `mandateRef`+`mandateIssuerDid` (an externally issued AP2/AAE mandate), `intentRef` (an external AP2 IntentMandate), `disputeContext` (`protocol`+`termsHash`+optional `resolutionRef`, e.g. a Legal Context Protocol reference). See [DECISIONS.md](./DECISIONS.md) D-007 through D-013 |
+| `priorClaimId` | *(optional, since 0.4.0)* the `claimId` of your previous claim about the same `sellerAddress`, so your claims about that seller form a chain. Omitted on your first claim about a seller. Part of the signed content, so a host can't strip it. Lets a reader catch a host hiding a middle claim. See [DECISIONS.md](./DECISIONS.md) D-006 |
 
-De server valideert eerst het schema, dan of `claimId` echt de hash van de inhoud is, en dan of `signature` echt terugrekent naar `buyerAddress`. Alleen dan wordt de claim toegevoegd aan de append-only ledger (`data/claims.jsonl`). Een ongeldige handtekening of een claim die al eerder is opgeslagen (zelfde `claimId`) wordt geweigerd.
+The server first validates the schema, then whether `claimId` really is the hash of the content, then whether `signature` really recovers to `buyerAddress`. Only then is the claim appended to the append-only ledger (`data/claims.jsonl`). An invalid signature or a claim that's already stored (same `claimId`) is rejected.
 
 ### 2. `get_delivery_history`
 
-Gegeven een `sellerAddress`, retourneert dit alle bekende claims tegen die verkoper op déze installatie, chronologisch (oudst eerst). Puur feitelijk, geen samengevat getal. Een kopende agent roept dit aan **vóórdat** hij betaalt, om de ruwe leveringsgeschiedenis van een potentiële verkoper te zien en zelf te beoordelen.
+Given a `sellerAddress`, this returns all known claims against that seller on **this** installation, chronologically (oldest first). Purely factual, no summarized number. A buying agent calls this **before** paying, to see the raw delivery history of a prospective seller and judge it themselves.
 
-Het antwoord bevat naast `sellerAddress`, `count` en `claims` ook `scope` (altijd `"local-ledger"`) en `note`: een vaste, feitelijke tekst die uitlegt dat dit resultaat alleen de lokale ledger van déze installatie weerspiegelt. Een lege of korte geschiedenis betekent niet dat de verkoper een schone staat van dienst heeft, het kan ook betekenen dat er hier simpelweg nog geen claims zijn vastgelegd. Zie [DECISIONS.md](./DECISIONS.md) (D-005) voor de bredere architectuurvraag hierachter: hoe vindt een koper claims die op een ándere installatie zijn vastgelegd.
+The response includes `sellerAddress`, `count` and `claims`, plus `scope` (always `"local-ledger"`) and `note`: a fixed, factual text explaining that this result only reflects the local ledger of **this** installation. An empty or short history doesn't mean the seller has a clean record — it can also mean no claims have been recorded here yet.
 
-Sinds 0.4.0 bevat het antwoord ook `completeness`: een analyse van de per-koper ketens (`priorClaimId`) in precies deze uitkomst. Als een getoonde claim terugverwijst naar een claim die NIET in de uitkomst zit, komt die in `possibleOmissions` te staan. Dat is een concreet, controleerbaar signaal dat de host mogelijk een middelste claim verbergt, in plaats van een vaag vermoeden.
+Since 0.4.0 the response also includes `completeness`: an analysis of the per-buyer chains (`priorClaimId`) within exactly this result set. If a claim shown here refers back to a claim that is NOT in the result set, that shows up in `possibleOmissions`. That's a concrete, checkable signal that the host might be hiding a middle claim, rather than a vague suspicion.
 
-Let op, dit is het belangrijkste punt: dat `completeness`-veld wordt berekend door dezelfde server die de claims teruggeeft. Vertrouw je die server niet, vertrouw dan ook het veld niet, want een oneerlijke host kan er gewoon "alles compleet" in zetten. De echte zekerheid zit in de ondertekende `priorClaimId` in de claims zelf, die een host niet kan vervalsen of weghalen. Reken de controle dus zelf opnieuw uit over de teruggekregen claims:
+Note, and this is the most important point: that `completeness` field is computed by the same server that returns the claims. If you don't trust that server, don't trust that field either — a dishonest host can just set "everything's complete" regardless. The real guarantee lives in the signed `priorClaimId` inside the claims themselves, which a host cannot forge or remove. So recompute the check yourself over the claims you got back:
 
 ```js
 // recompute-completeness.mjs
 import { verifyClaim } from "capacity-attest/dist/signing.js";
 import { analyzeCompleteness } from "capacity-attest/dist/completeness.js";
 
-// `claims` = de array uit het get_delivery_history-antwoord.
-const allSigned = claims.every((c) => verifyClaim(c).ok);   // elke claim echt?
-const report = analyzeCompleteness(claims);                  // zelf herrekenen, niet het host-veld geloven
+// `claims` = the array from the get_delivery_history response.
+const allSigned = claims.every((c) => verifyClaim(c).ok);   // is every claim genuine?
+const report = analyzeCompleteness(claims);                  // recompute yourself, don't trust the host field
 console.log({ allSigned, chainConsistent: report.chainConsistent, possibleOmissions: report.possibleOmissions });
 ```
 
-Eerlijke grens: ook zelf-herrekenen betrapt geen verborgen laatste claim en geen verborgen hele koper, want daar valt geen schakel over te struikelen. En een losse terugverwijzing hoeft geen bedrog te zijn: de eerdere claim kan ook gewoon op een andere installatie zijn vastgelegd (het D-005-geval). Voor echte zekerheid blijven de externe getuigen nodig: je eigen bewaarde kopie hierboven, en de betaling op de keten via `settlementRef`. Zie [DECISIONS.md](./DECISIONS.md) D-006.
+Honest limit: even recomputing yourself won't catch a hidden *last* claim, or a whole hidden buyer, because there's no link to trip over in either case. And a dangling back-reference isn't necessarily foul play either — the earlier claim might simply have been recorded on a different installation (the D-005 case). For real certainty you still need external witnesses: your own retained copy from above, and the on-chain payment via `settlementRef`. See [DECISIONS.md](./DECISIONS.md) D-006.
 
-Een openbaar, zelf-controleerbaar voorbeeld met een nagebootste verbergende host en expres-kapotte testgevallen staat in [docs/COMPLETENESS-FIXTURE.md](./docs/COMPLETENESS-FIXTURE.md). Draai het met `npm run fixture`; dezelfde controles draaien bij elke push als test. Zo kun je onze claim zelf natellen in plaats van ons op ons woord te geloven.
+A public, self-checkable example with a simulated hiding host and deliberately broken test cases is in [docs/COMPLETENESS-FIXTURE.md](./docs/COMPLETENESS-FIXTURE.md). Run it with `npm run fixture`; the same checks run on every push as a test. So you can verify our claim yourself instead of taking our word for it.
 
-## Claims van andere installaties vinden (D-005)
+## Finding claims from other installations (D-005)
 
-`get_delivery_history` is per definitie lokaal: koper B ziet niet wat koper A op een andere installatie vastlegde over dezelfde verkoper. Omdat elke claim zelf-verifieerbaar is, heeft vindbaarheid geen vertrouwde index nodig. `discoverDeliveryHistory(seller, sources)` (zie `src/discovery.ts`) leest een verkopers claims uit meerdere onafhankelijke, ONvertrouwde bronnen (je lokale ledger plus elk host-onafhankelijk substraat dat je wilt lezen), ontdubbelt, herverifieert elke claim, filtert andere verkopers eruit, en draait de completeness-check over het geheel. Een bron die nep injecteert wordt geweigerd; een bron die weglaat is het D-006-probleem, meegenomen maar niet magisch opgelost.
+`get_delivery_history` is local by definition: buyer B doesn't see what buyer A recorded about the same seller on a different installation. Because every claim is self-verifiable, discoverability doesn't need a trusted index. `discoverDeliveryHistory(seller, sources)` (see `src/discovery.ts`) reads a seller's claims from multiple independent, UNTRUSTED sources (your local ledger plus any host-independent substrate you want to read), deduplicates, re-verifies every claim, filters out other sellers, and runs the completeness check over the combined set. A source that injects fakes gets rejected; a source that omits things is the D-006 problem — accounted for, not magically solved.
 
-De productie-onderlaag (EAS op Base, ERC-8004) is bewust nog niet live gekoppeld: dat kost gas en wacht op een echte integrator. De naad staat klaar. Een openbaar, draaibaar voorbeeld met twee nagebootste installaties staat in [docs/DISCOVERY-FIXTURE.md](./docs/DISCOVERY-FIXTURE.md), draai het met `npm run discovery-fixture`. Zie [DECISIONS.md](./DECISIONS.md) D-005.
+The production substrate (EAS on Base, ERC-8004) is deliberately not yet wired in live: that costs gas and is waiting for a real integrator. The seam is ready. A public, runnable example with two simulated installations is in [docs/DISCOVERY-FIXTURE.md](./docs/DISCOVERY-FIXTURE.md), run it with `npm run discovery-fixture`. See [DECISIONS.md](./DECISIONS.md) D-005.
 
-### 3. `resolve_agent_identity` *(sinds 0.3.0)*
+### 3. `resolve_agent_identity` *(since 0.3.0)*
 
-Read-only opzoeking tegen een ERC-8004 Identity Registry: wie bezit `agentId` (`ownerOf`) en waar staat zijn registratiebestand (`tokenURI`). Alleen de standaard ERC-721-interface wordt aangeroepen, niets ERC-8004-specifieks. Vereist van de aanroeper zowel `agentRegistryRef` (`"eip155:<chainId>:<registryAddress>"`) als een `rpcUrl` voor die chain: dit project bundelt bewust geen eigen RPC-provider en geen canoniek registry-adres, want ERC-8004 heeft onafhankelijke deployments per chain en de EIP-tekst zelf noemt geen vast adres. Haalt bewust NOOIT op wat `tokenURI` aanwijst (dat blijft een pointer die de aanroeper zelf desgewenst opvraagt); dat zou een SSRF-vormig risico zijn op aanroeper-gecontroleerde on-chain data.
+Read-only lookup against an ERC-8004 Identity Registry: who owns `agentId` (`ownerOf`) and where is its registration file (`tokenURI`). Only the standard ERC-721 interface is called, nothing ERC-8004-specific. Requires the caller to supply both `agentRegistryRef` (`"eip155:<chainId>:<registryAddress>"`) and an `rpcUrl` for that chain: this project deliberately bundles no own RPC provider and no canonical registry address, since ERC-8004 has independent deployments per chain and the EIP text itself names no fixed address. Deliberately NEVER fetches what `tokenURI` points to (that stays a pointer the caller can retrieve themselves if they want); doing so would be an SSRF-shaped risk on caller-controlled on-chain data.
 
-Getest tegen een injecteerbare `ContractFactory` (`src/erc8004.test.ts`, geen netwerkafhankelijkheid) én live tegen de echte, gedeployde registry op Base mainnet (`examples/verify-erc8004-live.mjs`, `npm run build && node examples/verify-erc8004-live.mjs`). Zie [DECISIONS.md](./DECISIONS.md) D-007 voor de volledige achtergrond.
+Tested against an injectable `ContractFactory` (`src/erc8004.test.ts`, no network dependency) and live against the real, deployed registry on Base mainnet (`examples/verify-erc8004-live.mjs`, `npm run build && node examples/verify-erc8004-live.mjs`). See [DECISIONS.md](./DECISIONS.md) D-007 for the full background.
 
-### 4. `publishReputationFeedback` *(sinds 0.6.0, library-functie, geen MCP-tool)*
+### 4. `publishReputationFeedback` *(since 0.6.0, library function, not an MCP tool)*
 
-**Let op (adversariele review 2026-09-11): op het moment van schrijven staat op npm nog versie 0.5.0 gepubliceerd, zonder deze functie.** Wie via GitHub leest en meteen `npm install capacity-attest` doet zoals verderop in dit document beschreven, krijgt dus nog geen `publishReputationFeedback`, check `npm view capacity-attest version` voor de daadwerkelijk gepubliceerde versie voor je dit importeert. Alles hieronder beschrijft de code zoals hij op de `main`-branch staat.
+**Note (adversarial review 2026-09-11): at the time of writing, npm still has version 0.5.0 published, without this function.** Anyone reading via GitHub and immediately running `npm install capacity-attest` as described further below will not yet get `publishReputationFeedback` — check `npm view capacity-attest version` for the actually published version before importing this. Everything below describes the code as it stands on the `main` branch.
 
-Publiceert het `delivered`-feit van een al ondertekende claim naar een ERC-8004 Reputation Registry se `giveFeedback()`, dezelfde plek waar ~500k geregistreerde agents al naar reputatiesignalen kunnen kijken, in plaats van alleen naar deze installatie se eigen ledger of EAS. Het contract vereist een numeriek `value`+`valueDecimals`-veld; dit pakket verzint daar bewust geen eigen beoordelingsschaal voor. `value` is een letterlijke, mechanische spiegel van `delivered` (yes=1.0, partial=0.5, no=0.0), nooit een nieuw oordeel, en capacity-attest leest of toont dat getal zelf nergens terug. Herverifieert de claim se handtekening voordat er iets on-chain geschreven wordt.
+Publishes the `delivered` fact of an already-signed claim to an ERC-8004 Reputation Registry's `giveFeedback()`, the same place roughly 500k registered agents can already look for reputation signals, instead of only this installation's own ledger or EAS. The contract requires a numeric `value`+`valueDecimals` field; this package deliberately does not invent its own rating scale for that. `value` is a literal, mechanical mirror of `delivered` (yes=1.0, partial=0.5, no=0.0), never a new judgment, and capacity-attest never reads or displays that number back anywhere itself. Re-verifies the claim's signature before writing anything on-chain.
 
-Vereist van de aanroeper `reputationRegistryRef` (`"eip155:<chainId>:<registryAddress>"`, de Reputation Registry, niet de Identity Registry), `agentRegistryRef` (dezelfde chain, maar de Identity Registry) en een `rpcUrl`, zelfde caller-levert-alles-postuur als `resolve_agent_identity`. `agentId` (de verkoper se ERC-8004-agent) moet al een geldig geregistreerde Identity-Registry-agent zijn; het contract weigert zelf feedback van de agent se eigen eigenaar ("Self-feedback not allowed"). Sinds de adversariele review van 2026-09-11 wordt `agentId` se geregistreerde eigenaar (via `agentRegistryRef`) ook altijd tegen `claim.sellerAddress` gecontroleerd voor er iets on-chain geschreven wordt, zonder die controle kon een aanroeper een echte, geldig ondertekende claim aan een willekeurig ander agentId hangen.
+Requires the caller to supply `reputationRegistryRef` (`"eip155:<chainId>:<registryAddress>"`, the Reputation Registry, not the Identity Registry), `agentRegistryRef` (same chain, but the Identity Registry) and an `rpcUrl`, the same caller-supplies-everything stance as `resolve_agent_identity`. `agentId` (the seller's ERC-8004 agent) must already be a validly registered Identity Registry agent; the contract itself refuses feedback from the agent's own owner ("Self-feedback not allowed"). Since the 2026-09-11 adversarial review, `agentId`'s registered owner (via `agentRegistryRef`) is also always checked against `claim.sellerAddress` before anything is written on-chain — without that check, a caller could attach a genuine, validly signed claim to an arbitrary other agentId.
 
-**Bewust GEEN MCP-tool**, om dezelfde reden als EAS se `publishClaim`: dit is een schrijf-actie die een echte, gefinancierde signer en gas vereist, en deze server bundelt of bewaart bewust geen eigen private key. Beschikbaar als directe import (`src/erc8004-reputation.ts`) voor wie zelf een signer beheert.
+**Deliberately NOT an MCP tool**, for the same reason as EAS's `publishClaim`: this is a write action that requires a real, funded signer and gas, and this server deliberately bundles or stores no private key of its own. Available as a direct import (`src/erc8004-reputation.ts`) for anyone managing their own signer.
 
-Getest tegen een injecteerbare `ReputationContractFactory` (`src/erc8004-reputation.test.ts`, 19 tests, geen netwerkafhankelijkheid, inclusief een expliciete test dat `value` uitsluitend van `delivered` afhangt, en drie tests voor de agentId-eigenaarschapscontrole) én live tegen de echte, gedeployde registry op Base mainnet (`examples/erc8004-reputation-live-demo.ts`, `npm run erc8004-reputation-demo`): op 2026-09-10 bevestigd via een eigen, wegwerpbare test-agent (agentId 85888) en een echte `giveFeedback()`-aanroep, [tx 0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0](https://basescan.org/tx/0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0), onafhankelijk teruggecontroleerd via een losse `eth_getTransactionReceipt`-aanroep. Zie [DECISIONS.md](./DECISIONS.md) D-016 voor de volledige achtergrond, inclusief waarom dit ondanks D-005's eigen trigger-criterium toch vandaag gebouwd is.
+Tested against an injectable `ReputationContractFactory` (`src/erc8004-reputation.test.ts`, 19 tests, no network dependency, including an explicit test that `value` depends solely on `delivered`, and three tests for the agentId ownership check) and live against the real, deployed registry on Base mainnet (`examples/erc8004-reputation-live-demo.ts`, `npm run erc8004-reputation-demo`): confirmed on 2026-09-10 via our own, disposable test agent (agentId 85888) and a real `giveFeedback()` call, [tx 0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0](https://basescan.org/tx/0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0), independently double-checked via a separate `eth_getTransactionReceipt` call. See [DECISIONS.md](./DECISIONS.md) D-016 for the full background, including why this got built today despite D-005's own trigger criterion.
 
-## Ondertekening
+## Signing
 
-De claim wordt ondertekend door de **koper** (de partij die betaalde en dus weet wat er wel/niet aankwam), niet door de verkoper. Dit is bewust eenvoudige EIP-191 `personal_sign` over `claimId` (via `ethers.Signer#signMessage`), geen EIP-712 typed data. Dat houdt het crypto-oppervlak van deze MVP klein en makkelijk te controleren. Een latere upgrade naar EIP-712 (zoals in `mcp-paywall/src/x402.mjs`) is additief mogelijk zonder bestaande claims ongeldig te maken.
+The claim is signed by the **buyer** (the party that paid and therefore knows what did or didn't arrive), not by the seller. This is deliberately plain EIP-191 `personal_sign` over `claimId` (via `ethers.Signer#signMessage`), not EIP-712 typed data. That keeps this MVP's crypto surface small and easy to audit. A later upgrade to EIP-712 (like in `mcp-paywall/src/x402.mjs`) is possible additively, without invalidating existing claims.
 
-## Een claim onafhankelijk verifiëren
+## Independently verifying a claim
 
-Elke claim in de ledger is met alleen het npm-package en de rauwe claim-bytes na te rekenen, zonder toegang tot dit project of een netwerkoproep naar ons. Geen account, geen hosted call.
+Every claim in the ledger can be re-checked with only the npm package and the raw claim bytes, no access to this project or a network call to us needed. No account, no hosted call.
 
 ```bash
 npm install capacity-attest
 ```
 
 ```js
-// verify.mjs, als ES module draaien (top-level await)
+// verify.mjs, run as an ES module (top-level await)
 import { verifyClaim } from "capacity-attest/dist/signing.js";
 
-const claim = JSON.parse(await (await fetch("<url naar een claim.jsonl-regel>")).text());
+const claim = JSON.parse(await (await fetch("<url to a claim.jsonl line>")).text());
 console.log(verifyClaim(claim));
-// { ok: true } als claimId echt de hash van de inhoud is EN signature echt naar buyerAddress terugrekent
+// { ok: true } if claimId really is the hash of the content AND signature really recovers to buyerAddress
 ```
 
-Let op: importeer `capacity-attest/dist/signing.js` rechtstreeks, niet het package-root. De root (`dist/index.js`) start bij het importeren meteen de MCP-server over stdio, wat een los verificatie-script laat hangen.
+Note: import `capacity-attest/dist/signing.js` directly, not the package root. The root (`dist/index.js`) starts the MCP server over stdio the moment it's imported, which will hang a standalone verification script.
 
-`verifyClaim()` controleert precies twee dingen: dat `claimId` de content-addressed hash van de claim-velden is, en dat `signature` (EIP-191) terugrekent naar `buyerAddress`. Het controleert niet of de onderliggende afwikkeling (`settlementRef`) echt on-chain klopt, dat is een losse, aparte check tegen de betreffende chain, en het controleert niet of `delivered` waar is of of `evidenceHash` een echt bewijsstuk dekt, dat blijft de eigen verklaring van de kopende agent.
+`verifyClaim()` checks exactly two things: that `claimId` is the content-addressed hash of the claim fields, and that `signature` (EIP-191) recovers to `buyerAddress`. It does not check whether the underlying settlement (`settlementRef`) really checks out on-chain — that's a separate check against the relevant chain — and it does not check whether `delivered` is true or whether `evidenceHash` covers real evidence; that remains the paying agent's own statement.
 
-Een werkend, extern gereproduceerd voorbeeld van deze exacte stappen staat in [github.com/YE-YI7/asm-spec, PR #18](https://github.com/YE-YI7/asm-spec/pull/18): een onafhankelijk project dat dit tegen een echte, live geregistreerde claim heeft gedraaid.
+A working, externally reproduced example of these exact steps is in [github.com/YE-YI7/asm-spec, PR #18](https://github.com/YE-YI7/asm-spec/pull/18): an independent project that ran this against a real, live registered claim.
 
-## Je eigen ingediende claims delen, los van een host (D-006)
+## Sharing your own submitted claims, independent of a host (D-006)
 
-`get_delivery_history` vertrouwt op de eerlijkheid van wie de MCP-server bedient: zie de `note` in dat tool-antwoord en [DECISIONS.md](./DECISIONS.md) (D-006). Elke getoonde claim is wel degelijk echt (ondertekening wordt sinds 2026-09-06 ook bij het lezen opnieuw gecontroleerd, niet alleen bij het schrijven), maar niets bewijst dat de host de VOLLEDIGE set laat zien die hij daadwerkelijk heeft.
+`get_delivery_history` relies on the honesty of whoever operates the MCP server: see the `note` in that tool's response and [DECISIONS.md](./DECISIONS.md) (D-006). Every claim shown is genuinely real (the signature has also been re-checked on read since 2026-09-06, not only on write), but nothing proves the host is showing the FULL set it actually has.
 
-Als jij zelf de koper bent die een claim indiende, hoef je op die host niet te wachten: jij hebt die claim zelf al ondertekend, dus jij kan 'm rechtstreeks aan een wantrouwende tegenpartij laten zien, buiten elke host om.
+If you're the buyer who submitted a claim yourself, you don't need to wait on that host: you already signed that claim yourself, so you can show it directly to a skeptical counterparty, bypassing any host.
 
 ```js
 // export-my-claims.mjs
 import { claimsForSeller } from "capacity-attest/dist/ledger.js";
 
-const myAddress = "0x...";     // jouw buyerAddress
-const seller = "0x...";        // de verkoper waar het over gaat
+const myAddress = "0x...";     // your buyerAddress
+const seller = "0x...";        // the seller in question
 
 const mine = (await claimsForSeller(seller)).filter(
   (c) => c.buyerAddress.toLowerCase() === myAddress.toLowerCase(),
@@ -162,40 +164,40 @@ const mine = (await claimsForSeller(seller)).filter(
 console.log(JSON.stringify(mine, null, 2));
 ```
 
-Elke claim in die lijst is zelfstandig verifieerbaar met `verifyClaim()` (zie hierboven), zonder dat de ontvanger jouw installatie of enige host hoeft te vertrouwen. Dit lost geen vindbaarheid op (D-005: hoe vindt iemand anders jouw claim zonder dat jij 'm deelt) en geen volledigheid over ALLE kopers samen (D-006: dit bewijst alleen wat JIJ indiende, niet wat een host verder mogelijk verzwijgt van andere kopers), maar het geeft een concrete, kosteloze manier om één specifiek geschil te bewijzen zonder een host te hoeven vertrouwen.
+Every claim in that list is independently verifiable with `verifyClaim()` (see above), without the recipient having to trust your installation or any host. This doesn't solve discoverability (D-005: how does someone else find your claim if you don't share it) or completeness across ALL buyers together (D-006: this only proves what YOU submitted, not what a host might otherwise be withholding from other buyers), but it gives you a concrete, free way to prove one specific dispute without needing to trust a host.
 
-## Lokaal draaien
+## Running locally
 
 ```bash
 npm install
 npm run build      # tsc -> dist/
 npm run typecheck  # tsc --noEmit
 npm test           # vitest run
-npm run demo       # end-to-end lokale demo met TEST-sleutels, geen live infra
-npm start           # start de MCP-server over stdio (bijv. voor Claude Desktop/Code als lokale MCP-server)
+npm run demo       # end-to-end local demo with TEST keys, no live infrastructure
+npm start           # start the MCP server over stdio (e.g. for Claude Desktop/Code as a local MCP server)
 ```
 
-De ledger-locatie is instelbaar via `CAPACITY_ATTEST_DATA_DIR` (default: `./data` in dit package). Tests en de demo gebruiken altijd een eigen, wegwerpbare tijdelijke map, nooit de echte `data/` map.
+The ledger location is configurable via `CAPACITY_ATTEST_DATA_DIR` (default: `./data` in this package). Tests and the demo always use their own, disposable temp directory, never the real `data/` folder.
 
-## Architectuur
+## Architecture
 
 ```text
 src/
-  schema.ts        DeliveryClaim zod-schema + content-addressing (computeClaimId, canonicalize)
-  signing.ts        sign/verify van een claim (ethers, EIP-191 personal-sign)
-  ledger.ts          append-only JSONL-opslag (data/claims.jsonl), nooit muteerbaar
-  tools.ts           de daadwerkelijke logica achter beide MCP-tools, transport-onafhankelijk
-  config.ts          waar de ledger-map leeft, lazy zodat tests 'm kunnen overriden
-  index.ts            MCP-server wiring (registreert record_delivery + get_delivery_history)
-examples/demo.ts   end-to-end lokaal voorbeeld met TEST-sleutels
+  schema.ts        DeliveryClaim zod schema + content-addressing (computeClaimId, canonicalize)
+  signing.ts        sign/verify a claim (ethers, EIP-191 personal-sign)
+  ledger.ts          append-only JSONL storage (data/claims.jsonl), never mutated
+  tools.ts           the actual logic behind both MCP tools, transport-agnostic
+  config.ts          where the ledger directory lives, lazy so tests can override it
+  index.ts            MCP server wiring (registers record_delivery + get_delivery_history)
+examples/demo.ts   end-to-end local example with TEST keys
 ```
 
-`tools.ts` bevat de eigenlijke business-logica; `index.ts` vertaalt dat alleen naar MCP tool-calls. Zo kunnen tests en de demo dezelfde logica direct aanroepen zonder een stdio-transport op te tuigen.
+`tools.ts` holds the actual business logic; `index.ts` only translates that into MCP tool calls. That way tests and the demo can call the same logic directly without spinning up a stdio transport.
 
-## Relatie tot x402
+## Relation to x402
 
-Dit project verifieert of settelt zelf géén x402-betalingen, dat gebeurt al bij de betaalstap zelf (zie bijvoorbeeld `mcp-paywall/src/x402.mjs` in dit ecosysteem voor een volledige EIP-3009-verify/settle-implementatie). `settlementRef` verwijst simpelweg naar die reeds-voltooide afwikkeling. Dat betekent ook dat de MVP-koppeling met een echte x402-facilitator eenvoudig kan blijven: `settlementRef` is vrije tekst, met als aanname dat de koper 'm eerlijk invult. Een latere versie kan dat veld optioneel verifiëren tegen een echte facilitator (TODO, niet in deze MVP).
+This project itself verifies or settles no x402 payments — that already happens at the payment step (see e.g. `mcp-paywall/src/x402.mjs` in this ecosystem for a full EIP-3009 verify/settle implementation). `settlementRef` simply points at that already-completed settlement. That also means the MVP integration with a real x402 facilitator can stay simple: `settlementRef` is free text, on the assumption that the buyer fills it in honestly. A later version could optionally verify that field against a real facilitator (TODO, not in this MVP).
 
-## Relatie tot AWS Bedrock AgentCore Payments
+## Relation to AWS Bedrock AgentCore Payments
 
-Geen overlap, geen concurrentie: verschillende stap in de keten. Bedrock AgentCore Payments (Amazon, sinds 2026) regelt de betaalstap zelf, tot en met het moment dat "the merchant verifies the payment proof... [and] returns the requested content" ([officiële AWS-documentatie](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments-how-it-works.html)). Dat bewijs is een bewijs van **betaling**, niet van **levering**: er staat nergens vastgelegd of de agent na die stap ook echt kreeg wat beloofd was. Precies daar begint `capacity-attest`. Net als bij x402 hierboven: dit project settelt geen betalingen en concurreert niet met de betaalrail, het legt vast wat er ná de betaling wel of niet daadwerkelijk aankwam, ongeacht welke rail (x402 of anders) die betaling afhandelde.
+No overlap, no competition: different step in the chain. Bedrock AgentCore Payments (Amazon, since 2026) handles the payment step itself, up to and including the moment "the merchant verifies the payment proof... [and] returns the requested content" ([official AWS documentation](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments-how-it-works.html)). That proof is proof of **payment**, not of **delivery**: nowhere is it recorded whether the agent actually received what was promised after that step. That's exactly where `capacity-attest` picks up. Same as with x402 above: this project settles no payments and doesn't compete with the payment rail — it records what did or didn't actually arrive after payment, regardless of which rail (x402 or otherwise) handled that payment.

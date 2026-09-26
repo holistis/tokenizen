@@ -1,59 +1,61 @@
 # tokenizen
 
-Open-source infrastructuur voor agent-commerce: AI-agents leren rechten op economische assets begrijpen, verifiëren en afwikkelen.
+*[Nederlandse versie / Dutch version: README.nl.md](README.nl.md)*
 
-## Waarom dit bestaat
+Open-source infrastructure for agent commerce: AI agents learning to understand, verify, and settle rights to economic assets.
 
-De keten van een agent die iets koopt of verkoopt bestaat uit zes stappen: agent, identity, rights, asset, payment, settlement. De koperskant van die keten is al druk in ontwikkeling: wallets, betaalprotocollen zoals x402, agent-identity. Wat ontbreekt is de verkoperskant: hoe leg je vast wat je als agent claimt te hebben geleverd, wat je bezit, en wat de rechten daarop zijn, op een manier die een andere agent zonder mens ertussen kan controleren. Dat is een ondertekend spoor, geen onafhankelijk bewijs van de onderliggende werkelijkheid.
+## Why this exists
 
-Tokenizen bouwt aan dat object, niet aan de koperskant. Drie sporen zijn onafhankelijk van elkaar bij dezelfde conclusie uitgekomen: een formele interne toetsing van wat wel en niet toelaatbaar is in agent-tot-agent handel, marktonderzoek naar wat er in dit veld al bestaat en wat ontbreekt, en een inventaris van eigen code die al jaren op vergelijkbare problemen stuitte. Alle drie wezen naar hetzelfde gat: verificatie en afwikkeling aan de verkoperskant, zonder financiële constructies die niet toelaatbaar zijn.
+The chain of an agent buying or selling something has six links: agent, identity, rights, asset, payment, settlement. The buyer side of that chain is already under heavy development: wallets, payment protocols like x402, agent identity. What's missing is the seller side: how do you record what you, as an agent, claim to have delivered, what you own, and what the rights to it are, in a way another agent can verify without a human in the loop. That's a signed trail, not independent proof of the underlying reality.
 
-## De ontwerpgrens
+Tokenizen builds that object, not the buyer side. Three independent tracks converged on the same conclusion: a formal internal review of what is and isn't permissible in agent-to-agent commerce, market research into what already exists in this space and what's missing, and an inventory of our own code that had been running into similar problems for years. All three pointed at the same gap: verification and settlement on the seller side, without financial constructs that aren't permissible.
 
-Dit project heeft een permanente, bewuste grens, voortgekomen uit een formele interne toetsing. Die grens geldt voor het hele project, niet alleen voor een los package.
+## The design boundary
 
-**Groen (dit bouwen we):**
+This project has a permanent, deliberate boundary, the result of a formal internal review. That boundary applies to the whole project, not just one package.
 
-- Verificatie en audit-trails van geleverde diensten of assets
-- Policy- en scope-controle tussen agents
-- Echte capaciteitshandel (compute, opslag, API-credits, bandbreedte) die daadwerkelijk geleverd wordt
+**Green (we build this):**
 
-**Geel (met randvoorwaarden):**
+- Verification and audit trails for delivered services or assets
+- Policy and scope checks between agents
+- Real capacity trading (compute, storage, API credits, bandwidth) that is actually delivered
 
-- Settlement is spot-only: betaling tegen directe levering, geen uitgestelde afwikkeling
-- Credits zijn inwisselbare vouchers voor een dienst, geen verhandelbaar financieel instrument
+**Yellow (with conditions):**
 
-**Rood (nooit):**
+- Settlement is spot-only: payment against immediate delivery, no deferred settlement
+- Credits are redeemable vouchers for a service, not a tradeable financial instrument
 
-- Rente of tijd-disconto op betalingen
-- Leningen of kredietverlening
-- Een eigen token of munt
-- Factoring of invoice-financing
-- Yield-producten
+**Red (never):**
 
-Bij twijfel of iets tegen deze lijn aan schuurt: het blijft weg, ongeacht hoe interessant het technisch is.
+- Interest or time-discounting on payments
+- Loans or credit extension
+- A native token or coin
+- Factoring or invoice financing
+- Yield products
+
+If in doubt whether something brushes against this line: it stays out, no matter how technically interesting.
 
 ## Packages
 
 ### `packages/capacity-attest`
 
-Een MCP-server met twee tools: `record_delivery` en `get_delivery_history`. Na een x402-betaling voor capaciteit (GPU-uren, opslag, API-credits, bandbreedte) laat de betalende agent een cryptografisch ondertekende, feitelijke claim achter over wat er wel of niet geleverd is. Andere agents kunnen die geschiedenis van een verkoper opvragen voordat ze zelf betalen. Geen reputatiescore, geen oordeel, puur een feitelijke, append-only geschiedenis.
+An MCP server with two tools: `record_delivery` and `get_delivery_history`. After an x402 payment for capacity (GPU hours, storage, API credits, bandwidth), the paying agent leaves behind a cryptographically signed, factual claim about what was or wasn't delivered. Other agents can pull that history on a seller before paying themselves. No reputation score, no judgment, purely a factual, append-only history.
 
-Zie [`packages/capacity-attest/README.md`](packages/capacity-attest/README.md) voor de volledige werking, het schema, en hoe je het lokaal draait.
+See [`packages/capacity-attest/README.md`](packages/capacity-attest/README.md) for the full mechanics, the schema, and how to run it locally.
 
 ### `packages/website`
 
-De publieke site van tokenizen.nl, in dezelfde monorepo als de packages die hij beschrijft. Staat gelijktijdig in ontwikkeling met deze documentatie; zie de eigen README in die map voor de actuele status.
+The public site for tokenizen.nl, in the same monorepo as the packages it describes. Under development alongside this documentation; see that folder's own README for current status.
 
-## Lokaal draaien
+## Running locally
 
-Dit is een npm-workspaces monorepo. Vanuit de root:
+This is an npm-workspaces monorepo. From the root:
 
 ```bash
 npm install
 ```
 
-Dat installeert de dependencies van alle packages onder `packages/*` in één keer. Voor het draaien, testen en bouwen van een specifiek package: volg de instructies in de README van dat package, of gebruik de workspace-flag vanuit de root, bijvoorbeeld:
+That installs the dependencies for all packages under `packages/*` at once. To run, test, or build a specific package: follow that package's own README, or use the workspace flag from the root, e.g.:
 
 ```bash
 npm test --workspace=capacity-attest
@@ -62,11 +64,11 @@ npm run build --workspace=capacity-attest
 
 ## Status
 
-Vroeg-stadium open source. `packages/capacity-attest` staat gepubliceerd op npm (`npm install capacity-attest`).
+Early-stage open source. `packages/capacity-attest` is published on npm (`npm install capacity-attest`).
 
 ## Contributing
 
-Zie [`CONTRIBUTING.md`](CONTRIBUTING.md) voor hoe je een issue of pull request indient, hoe je lokaal test, en de harde contributie-regel rond de ontwerpgrens.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for how to file an issue or pull request, how to test locally, and the hard contribution rule around the design boundary.
 
 ## License
 
