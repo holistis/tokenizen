@@ -116,3 +116,9 @@ This project has been built in close, ongoing collaboration with Claude (Anthrop
 - Contactgegevens: welke naam/pseudoniem, welk e-mailadres.
 - Budget (€18.000, verdeeld over 4 werkpakketten): is dit een bedrag waar jij achter staat, of wil je het hoger/lager/anders verdeeld?
 - AI-disclosure-sectie: ik heb een eerlijk concept geschreven, wil dat je 'm leest voor het de deur uitgaat, dit is het gevoeligste onderdeel van de hele aanvraag.
+
+---
+
+## Aanvullingen ronde 2 (2026-09-27, /loop), niet in het NLnet-voorstel zelf, losse bevindingen voor de koning
+
+**Tinkerer Track-plan (Open Agent Hackathon, bouwvenster 15-20 okt):** gebruik Zetaris (een van de twee genoemde sponsortechnologieën). Zetaris is een gefedereerde data-queryplatform: "query distributed data sources in real-time without moving/centralizing them." Dat past vrijwel 1-op-1 op capacity-attest's eigen D-005-probleem (cross-installatie claim-discovery zonder centrale, vertrouwde index). Het "nieuwe werk tijdens het venster": een Zetaris-gebaseerde federatielaag bovenop `discoverDeliveryHistory()` die meerdere onafhankelijke claim-bronnen (verschillende lokale ledgers, EAS op meerdere chains) als één doorzoekbare, maar nooit gecentraliseerde, view ontsluit. Sterk verhaal voor een jury: "onze eigen architectuur weigerde al een centrale index te worden, Zetaris laat zien hoe je dat toch doorzoekbaar maakt." Nog niet gebouwd, mag ook pas vanaf 15 oktober.
