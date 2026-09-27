@@ -86,7 +86,16 @@ Real, verifiable third-party engagement to date: two merged pull requests in an 
 
 ### Your experience (max 2000 characters)
 
-[TE VOLLEN DOOR ABDELLAH — ik heb hier geen betrouwbare feiten over, wil niks verzinnen. Vraagt om: relevante achtergrond/ervaring die aantoont dat jij dit project kan afmaken. Denk aan: hoe lang doe je al softwareontwikkeling, andere open-source/technische projecten die je hebt gebouwd of onderhouden (bijvoorbeeld andere npm-packages in dit ecosysteem zoals mcp-paywall/al-yad-mcp-server/3ilm-mcp als die publiek zijn), en waarom jij de aangewezen persoon bent om dit specifieke werkpakket te doen. Zodra jij me dit geeft schrijf ik het in NLnet's toon uit.]
+I direct AI coding agents to do real engineering work: research a problem, build the fix, verify it actually holds, and get it through a real maintainer's review. I apply that same loop across several domains rather than one narrow specialty: security research, browser automation, agent-commerce infrastructure, and smart contract auditing.
+
+Concretely relevant to this proposal's work packages:
+
+- Open source track record: 215+ merged pull requests across dozens of external repositories, plus my own maintained tools (al-yad, a browser automation agent; muraqib, a self-healing QA tool).
+- AI-agent security research: 22+ vulnerabilities found across major open source AI tools this year, including a High-severity finding in GitHub's own infrastructure, so I am used to the kind of adversarial, fail-closed thinking work package 1 (aggregation hardening) and work package 3 (the external audit scope) require.
+- Smart contract security specifically: I maintain bug-bounty-intelligence-mcp and al-mizaan-judge, both built from real Sherlock and Immunefi audit work, directly relevant to scoping and evaluating the external EAS/ERC-8004 audit in work package 3.
+- Capacity Attest itself is the strongest evidence: it is not a proposal for something unbuilt. The core primitive (schema, signing, ledger, EAS write/discover, ERC-8004 read/write) is already live on Base mainnet, has 541 automated tests, and has already attracted unsolicited third-party adoption (see Ecosystem & engagement above). I am asking to fund hardening work on a system I have already carried from zero to a real, adopted, on-chain artifact.
+
+(Karakters: nog exact tellen bij indienen, huidige lengte circa 1550.)
 
 ### Other funding sources (max 1000 characters)
 
@@ -106,16 +115,21 @@ This project has been built in close, ongoing collaboration with Claude (Anthrop
 
 ## Contact information
 
-[TE VOLLEN DOOR ABDELLAH: naam/pseudoniem waaronder je wilt indienen, e-mailadres, land, applicant-type (waarschijnlijk "individual"/zelfstandige, NLnet's exacte 7 opties nog checken op het echte formulier).]
+- Name: Abdellah Ouadoudi (github.com/holistis)
+- Email: info@holistischadviseur.nl
+- Country: Netherlands
+- Applicant type: Individual / eenmanszaak (KVK 86816632) — controleer dit tegen NLnet's eigen 7 opties op het echte formulier voor indienen, welke exacte optie het beste past is nog niet 1-op-1 geverifieerd.
+- KVK: 86816632, BTW: NL004319767B61, adres: Lochemstraat 49, Eindhoven (alleen invullen als het formulier hierom vraagt, NLnet's propose-pagina vroeg dit niet expliciet bij het eerste onderzoek)
 
 ---
 
 ## Openstaande punten voor de koning, geen vraag nu, gewoon een lijst voor als je hierop terugkomt
 
-- "Your experience"-sectie: ik kan dit niet eerlijk invullen zonder jouw input, zie de placeholder hierboven.
-- Contactgegevens: welke naam/pseudoniem, welk e-mailadres.
+- "Your experience" en contactgegevens: INGEVULD (2026-09-27), met jouw eigen GitHub-bio-tekst en KVK-gegevens.
 - Budget (€18.000, verdeeld over 4 werkpakketten): is dit een bedrag waar jij achter staat, of wil je het hoger/lager/anders verdeeld?
 - AI-disclosure-sectie: ik heb een eerlijk concept geschreven, wil dat je 'm leest voor het de deur uitgaat, dit is het gevoeligste onderdeel van de hele aanvraag.
+- Naamverschil "Ahmed" (door jou doorgegeven bij de KVK-gegevens) versus "Abdellah" (overal elders gebruikt, ook in dit document): welke naam staat er echt op je KVK-uittreksel? Voor NLnet maakt dit weinig uit (ik gebruik hier gewoon "Abdellah Ouadoudi", je publieke GitHub-naam), maar voor WBSO (een overheidsformulier) moet de naam wel exact kloppen, dus dat wil ik één keer zeker weten voor het de deur uitgaat.
+- Nog steeds: jouw eindakkoord om dit daadwerkelijk in te dienen op nlnet.nl/propose/.
 
 ---
 
