@@ -15,6 +15,12 @@ Status: WP1/WP2 EXECUTION STARTED, first two pieces merged (PR #15) / pending ki
 
 Honest note for whoever reads this later, including any future NLnet update: the fast-path bug above was caught by this project's OWN existing test suite within the same work session it was introduced, before it ever reached a PR, let alone main. That is not a reason to gloss over it; it is exactly the kind of adversarial, fail-closed engineering discipline work package 3's external audit is meant to further stress-test at a level a single session's own tests cannot reach alone.
 
+**2026-09-28, same PR (#16), pushed after the above:** a third real gap, found while building the adversarial-source fuzz test plan itself (not assumed upfront): `discoverDeliveryHistory` awaited each source's `fetchForSeller` with no timeout at all. A slow, overloaded, or deliberately stalling source would block the entire call indefinitely, since sources are processed in order, one stuck source censors every source listed after it. Fixed with a configurable `sourceTimeoutMs` (default 30s, `Promise.race`-style, no cancellation contract needed since a late resolution is simply ignored).
+
+Added `discovery.fuzz.test.ts` (8 new tests, same precedent as `schema.fuzz.test.ts`): forged/garbage claims mixed into a real source's response (including a sparse array with a claimed length of 5 million, proving the per-entry loop is bounded by `maxClaimsPerSource` BEFORE it examines anything, not after), volume flooding across single and multiple sources, and the new timeout behavior including a source that resolves late, after its own timeout already fired (proven not to cause an unhandled rejection or corrupt the result).
+
+541 -> 558 tests total across this PR so far, all passing. WP1's three named adversarial-source scenarios (forged/garbage injection, volume flood, slow/flaky) now all have direct, dedicated test coverage, matching the plan's own Verifier bar above.
+
 Structured around the eleven-stage loop the king asked for. Each stage below is a real section, not a label.
 
 ---
