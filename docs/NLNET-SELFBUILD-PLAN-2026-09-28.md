@@ -1,6 +1,6 @@
 # Self-build plan: NLnet work packages 1, 2 and 4
 
-Status: WP1/WP2 EXECUTION STARTED, first two pieces merged (PR #15) / pending king confirmation (PR #16). Work package 3 (independent external security audit) is deliberately excluded from this plan: it must be done by someone who is not us, by definition, so it stays dependent on the NLnet grant (or another funding source), not something we self-build.
+Status: WP1 first slice DONE and merged (PR #15 + PR #16, both squash-merged to main). Work package 3 (independent external security audit) is deliberately excluded from this plan: it must be done by someone who is not us, by definition, so it stays dependent on the NLnet grant (or another funding source), not something we self-build.
 
 ## Progress log (GETEST, each entry backed by a real command, not a description alone)
 
@@ -20,6 +20,8 @@ Honest note for whoever reads this later, including any future NLnet update: the
 Added `discovery.fuzz.test.ts` (8 new tests, same precedent as `schema.fuzz.test.ts`): forged/garbage claims mixed into a real source's response (including a sparse array with a claimed length of 5 million, proving the per-entry loop is bounded by `maxClaimsPerSource` BEFORE it examines anything, not after), volume flooding across single and multiple sources, and the new timeout behavior including a source that resolves late, after its own timeout already fired (proven not to cause an unhandled rejection or corrupt the result).
 
 541 -> 558 tests total across this PR so far, all passing. WP1's three named adversarial-source scenarios (forged/garbage injection, volume flood, slow/flaky) now all have direct, dedicated test coverage, matching the plan's own Verifier bar above.
+
+**2026-09-28, PR #16 merged.** Before merging, found and fixed an unrelated pre-existing problem: `gh pr checks` showed the "Workers Builds: tokenizen" and "Workers Builds: tokenizen-website" checks failing on this PR, and (checked, honest finding) on the two prior PRs (#14, #15) already merged this same session too, without anyone having noticed since only `npm test` was checked at the time. Root cause was in Cloudflare's own dashboard configuration, not in any of this session's code: both Workers projects had "Root directory" set to `/` (repo root) instead of `packages/website`, and "Build command" left empty, so the site's `dist/` output never existed for wrangler to upload. Fixed both settings on both projects via the Cloudflare dashboard, triggered fresh retry builds on both, and confirmed via the real build logs (not just a green checkmark) that both now run `tsc -b && vite build && ...`, upload the built assets, and finish with "Success! Build completed." `gh pr checks 16` then showed all 4 checks green (2 Workers Builds + 2 GitHub Actions build-and-test runs). Squash-merged to main.
 
 Structured around the eleven-stage loop the king asked for. Each stage below is a real section, not a label.
 
