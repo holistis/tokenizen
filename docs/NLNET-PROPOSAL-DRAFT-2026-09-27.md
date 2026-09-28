@@ -118,8 +118,8 @@ This project has been built in close, ongoing collaboration with Claude (Anthrop
 - Name: Abdellah Ouadoudi (github.com/holistis)
 - Email: info@holistischadviseur.nl
 - Country: Netherlands
-- Applicant type: Individual / eenmanszaak (KVK 86816632) — controleer dit tegen NLnet's eigen 7 opties op het echte formulier voor indienen, welke exacte optie het beste past is nog niet 1-op-1 geverifieerd.
-- KVK: 86816632, BTW: NL004319767B61, adres: Lochemstraat 49, Eindhoven (alleen invullen als het formulier hierom vraagt, NLnet's propose-pagina vroeg dit niet expliciet bij het eerste onderzoek)
+- Applicant type: Individual / eenmanszaak — controleer dit tegen NLnet's eigen 7 opties op het echte formulier voor indienen, welke exacte optie het beste past is nog niet 1-op-1 geverifieerd.
+- KVK/BTW/adres: verwijderd uit dit publieke document op 2026-09-28 na een privacy-controle (dit bestand staat publiek in de repo). De echte gegevens staan in het prive-geheugenbestand `koning-bedrijfsgegevens-kvk-bank.md`, alleen invullen op het echte, niet-publieke formulier zelf.
 
 ---
 
