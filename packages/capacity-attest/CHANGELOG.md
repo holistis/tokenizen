@@ -18,7 +18,7 @@ Alle noemenswaardige wijzigingen aan dit package worden hier bijgehouden.
 **WP2, EAS voorbij Base:**
 - `EAS_DEPLOYMENTS`: geverifieerde adressen voor Base, Base Sepolia, Optimism én Ethereum mainnet, elk onafhankelijk gecontroleerd (EAS se eigen deployment-records + een live `eth_getCode`-aanroep tegen de echte chain).
 - `ensureSchema`/`publishClaim`/`rpcAttestationReader`/`easSourceFromRpc` accepteren nu een chain-adres als optie (standaard ongewijzigd Base), met een injecteerbare contract-factory zodat de multi-chain-targeting ook echt getest is, niet alleen aangenomen.
-- **Live bewezen op Optimism mainnet, niet alleen in code:** schema geregistreerd en een echte attestatie vastgelegd, [tx 0xa91b7bbb...c71b0](https://optimism.easscan.org/attestation/view/0x46148283cb005aa43387fb62b2e1ccd0b001ff82dc9310ea885237fd8dea8832), onafhankelijk teruggecontroleerd via een losse `eth_getTransactionReceipt`-aanroep, en teruggelezen via het echte productiepad (`discoverDeliveryHistory`). Kosten: 0,00000103 ETH.
+- **Live bewezen op Optimism mainnet, niet alleen in code:** schema geregistreerd en een echte attestatie vastgelegd, [tx 0xa91b7bbb...c71b0](https://optimism.easscan.org/attestation/view/0x46148283cb005aa43387fb62b2e1ccd0b001ff82dc9310ea885237fd8dea8832), onafhankelijk teruggecontroleerd via een losse `eth_getTransactionReceipt`-aanroep, en teruggelezen via het echte productiepad (`discoverDeliveryHistory`). Totale kosten (schemaregistratie + attestatie samen): 0,00000103 ETH.
 - Ethereum mainnet: adressen geverifieerd en getest, nog geen live attestatie (aanzienlijk hogere gaskosten dan Optimism, apart besluit).
 
 **WP4, documentatie + tweede praktijkvoorbeeld:**
