@@ -1,6 +1,6 @@
 # Self-build plan: NLnet work packages 1, 2 and 4
 
-Status: WP1 FULLY DONE. WP2 (second chain adapter): steps 1-4 of 5 DONE, Optimism proven live on real mainnet with a real, independently-verified attestation. Step 5 (Ethereum mainnet, real gas, materially higher cost than Optimism) is PAUSED pending a separate, explicit king go-ahead and a funded Ethereum-mainnet key. WP4 (documentation/second worked example): DONE -- integration guide written, second worked example satisfied by documenting two already-real, already-merged external integrations rather than building a new demo. Work package 3 (independent external security audit) is deliberately excluded from this plan: it must be done by someone who is not us, by definition, so it stays dependent on the NLnet grant (or another funding source), not something we self-build.
+Status: WP1 FULLY DONE. WP2 (second chain adapter): FULLY DONE, all 5 steps -- Optimism AND Ethereum mainnet both proven live with real, independently-verified attestations. WP4 (documentation/second worked example): DONE. The self-build plan (WP1, WP2, WP4) is now completely finished, code side. Only remaining, separate items: `npm publish` of 0.7.0 (blocked on the king's own npm 2FA, not something this session can complete alone), and work package 3 (independent external security audit), which stays dependent on external funding by definition, not something we self-build.
 
 ## Progress log (GETEST, each entry backed by a real command, not a description alone)
 
@@ -88,6 +88,21 @@ New file `packages/capacity-attest/docs/INTEGRATION-GUIDE.md`: all three source 
 Also independently, urgently checked before any of the above (given a real private key passed through this session's chat earlier for the Optimism proof): the full git history and current working tree of `packages/capacity-attest` for any trace of that key or its address. None found -- confirmed clean.
 
 `npm run typecheck`, `npm test` (595/595), and `npm run build` all clean after every fix. This is now genuinely ready for `npm publish`, pending the king's separate go-ahead on that specific, largely-irreversible action.
+
+**2026-09-28, WP2 step 5 done: Ethereum mainnet, king-approved and king-funded, the same disciplined way as Optimism.** The king re-sent the same private key used for the Optimism proof (a deliberate choice to keep one small designated test address rather than a fresh one each time) and funded it directly on Ethereum mainnet.
+
+**Honest correction recorded here, not glossed over:** the earlier estimate for `attest()`'s cost (roughly $0.55-0.80, based on a rough gas-range guess since the schema wasn't registered yet on Ethereum mainnet, so the real call couldn't be estimated) turned out to be wrong. Sequence of what actually happened:
+
+1. `ensureSchema()` run first (a real, measured `eth_estimateGas`, ~0.0001 ETH): succeeded, schema registered on Ethereum mainnet's SchemaRegistry (`0xA7b39296258348C78294F95B872b282326A97BDF`), schema UID confirmed matching. https://easscan.org/schema/view/0x1dd19408345dee43b432b89ccb68760265ecff506098b6efe8ba82ad0d52b195
+2. `publishClaim()` attempted next, with the balance remaining after step 1 (~0.00027 ETH, ~$0.72): failed with `INSUFFICIENT_FUNDS` before broadcasting (no funds lost). A real `eth_estimateGas` against the now-registered schema showed the actual cost: 732,073-747,771 gas units, roughly 4-5x the earlier rough guess, needing ~0.0009-0.001 ETH (~$2.40-2.80) at the gas price that day, not ~$0.55-0.80.
+3. Reported the real number back to the king rather than silently retrying or padding the original estimate after the fact. He funded the same address with more (confirmed independently via a fresh `eth_getBalance` call before spending anything: 0.00238 ETH, ~$6.36, comfortable margin).
+4. `publishClaim()` re-run, succeeded: tx `0xb8050d6b8ea1bfa49147f61813a3dab40976de2087389793b6a5dbcc7b351d28`, status `success` (independently re-checked via a separate `eth_getTransactionReceipt` call, real `gasUsed`: 747,771, real cost: 0.001041933 ETH), attestation https://easscan.org/attestation/view/0x40da382231eeb6186b7daf231a430488627769feb64039ae3ac671a14f7a8137, and read back through the real `discoverDeliveryHistory` + `easSourceFromRpc` production path: found, matched by claimId.
+
+Same security discipline as the Optimism proof: the key was used only in-memory via an environment variable across two short-lived scripts (one for `ensureSchema`, one for `publishClaim`), never written to any file, both scripts deleted immediately after use, and the working tree/git history re-checked afterward for any trace of the key -- none found.
+
+**This completes WP2 entirely.** All three chains this plan named (Base, Optimism, Ethereum mainnet) now have real, independently-verifiable, on-chain attestations, not just tested code.
+
+**Separately, `npm publish` for 0.7.0 was attempted and could not be completed by this session:** npm's own publish-time one-time-password flow requires opening a browser link tied to the account owner's own session/device (the same class of boundary as a MetaMask "Sign" click -- not something an agent can or should complete on someone else's behalf). The real authentication URL is deliberately not visible in this session's tool output or local logs (redacted as `***` in both), which is npm's/the environment's own security working as intended, not a bug to route around. This step is now the one remaining action, waiting on the king to either run `npm publish` himself from a terminal where he can see and open the real link, or find another way to complete that specific browser-based confirmation.
 
 Structured around the eleven-stage loop the king asked for. Each stage below is a real section, not a label.
 
