@@ -1,6 +1,6 @@
 # Self-build plan: NLnet work packages 1, 2 and 4
 
-Status: WP1 first slice DONE and merged (PR #15 + PR #16, both squash-merged to main). Work package 3 (independent external security audit) is deliberately excluded from this plan: it must be done by someone who is not us, by definition, so it stays dependent on the NLnet grant (or another funding source), not something we self-build.
+Status: WP1 executor steps 1-6 DONE and merged (PR #15, #16, #17, all squash-merged to main). Only remaining, unstarted WP1 item: a stress/property-based test for completeness.ts's analyzeCompleteness(). WP2 (second chain adapter) and WP4 (documentation/second worked example) not started. Work package 3 (independent external security audit) is deliberately excluded from this plan: it must be done by someone who is not us, by definition, so it stays dependent on the NLnet grant (or another funding source), not something we self-build.
 
 ## Progress log (GETEST, each entry backed by a real command, not a description alone)
 
