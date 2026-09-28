@@ -80,10 +80,44 @@ export interface SourceReport {
   error?: string;
 }
 
+// A source that never resolves (a hung connection, a slow/overloaded
+// endpoint, a hostile one deliberately stalling) would otherwise block
+// discoverDeliveryHistory indefinitely, since sources are awaited in order:
+// one stuck source censors every source after it, the same failure mode the
+// non-array guard above already exists to prevent for a different case. This
+// bounds how long a single source is allowed to take.
+const DEFAULT_SOURCE_TIMEOUT_MS = 30_000;
+
 /** Optional per-call limits, mainly so tests can exercise the caps cheaply; production uses the defaults above. */
 export interface DiscoverOptions {
   maxClaimsPerSource?: number;
   maxTotalClaims?: number;
+  /** Max time to wait on a single source's fetchForSeller before treating it as a per-source error and moving on. */
+  sourceTimeoutMs?: number;
+}
+
+class SourceTimeoutError extends Error {
+  constructor(ms: number) {
+    super(`source did not respond within ${ms}ms`);
+    this.name = "SourceTimeoutError";
+  }
+}
+
+/** Race a source's fetch against a timeout. The source's own promise is not cancelled (fetchForSeller has no cancellation contract); this only stops WAITING on it, so a late resolution after timeout is simply ignored. */
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new SourceTimeoutError(ms)), ms);
+    promise.then(
+      (v) => {
+        clearTimeout(timer);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(timer);
+        reject(e);
+      },
+    );
+  });
 }
 
 export interface AggregatedHistory {
@@ -137,13 +171,14 @@ export async function discoverDeliveryHistory(
 ): Promise<AggregatedHistory> {
   const maxPerSource = opts.maxClaimsPerSource ?? MAX_CLAIMS_PER_SOURCE;
   const maxTotal = opts.maxTotalClaims ?? MAX_TOTAL_CLAIMS;
+  const sourceTimeoutMs = opts.sourceTimeoutMs ?? DEFAULT_SOURCE_TIMEOUT_MS;
   const byId = new Map<string, DeliveryClaim>();
   const sourceReports: SourceReport[] = [];
 
   for (const source of sources) {
     let fetched: DeliveryClaim[];
     try {
-      fetched = await source.fetchForSeller(sellerAddress);
+      fetched = await withTimeout(source.fetchForSeller(sellerAddress), sourceTimeoutMs);
     } catch (e) {
       sourceReports.push({ name: source.name, fetched: 0, accepted: 0, rejected: 0, wrongSeller: 0, duplicates: 0, error: (e as Error).message });
       continue;
