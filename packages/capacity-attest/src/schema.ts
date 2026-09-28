@@ -20,7 +20,11 @@ export type AssetType = (typeof ASSET_TYPES)[number];
 export const DELIVERED_VALUES = ["yes", "no", "partial"] as const;
 export type Delivered = (typeof DELIVERED_VALUES)[number];
 
-const ETH_ADDRESS_RE = /^0x[0-9a-fA-F]{40}$/;
+// Exported: reused by anything that needs the same canonical shape check
+// outside a zod schema (e.g. http-source.ts's cheap pre-URL-build guard),
+// so there is exactly one definition of "what an address looks like" in
+// this package, not a second, independently-drifting copy.
+export const ETH_ADDRESS_RE = /^0x[0-9a-fA-F]{40}$/;
 const SHA256_HEX_RE = /^[0-9a-fA-F]{64}$/;
 // Lower-case-only sha256 hex. Used for readingsHash (new in 0.2.0, so it can
 // be strict from day one) and, at ingest only, for evidenceHash — see
