@@ -2,6 +2,31 @@
 
 Alle noemenswaardige wijzigingen aan dit package worden hier bijgehouden.
 
+## 0.7.0
+
+**WP1/WP2/WP4 van het NLnet-self-build-plan afgerond** (`docs/NLNET-SELFBUILD-PLAN-2026-09-28.md`), zelf gebouwd en getest vooruitlopend op een eventuele toekenning, niet erop wachtend.
+
+**WP1, discovery-verharding tegen kwaadwillende bronnen:**
+- Paginering van EAS-logquery's (`blockWindows()`) en begrensde concurrency voor `easSource.fetchForSeller` (was onbegrensd sequentieel) — ~10x sneller gemeten, bug gevonden bij het lezen van `eas.ts` voor dit plan, niet aangenomen.
+- Een snelle ontdubbel-controle in `discoverDeliveryHistory` die dezelfde claim van meerdere bronnen niet elke keer opnieuw duur (elliptic-curve) hoeft te verifiëren — een eerste, foute versie vertrouwde het eigen `claimId`-veld van een claim, ving de eigen bestaande tamper-test dat meteen op, gefixt door het echt te herberekenen.
+- Een timeout per bron (`sourceTimeoutMs`, standaard 30s): een trage of vastlopende bron blokkeerde voorheen de hele aggregatie voor elke bron erna.
+- `discovery.fuzz.test.ts` (8 tests): geforceerde/rommel-claims, volumeflooding, trage/haperende bronnen.
+- `completeness.fuzz.test.ts` (9 tests): echte property-based tests voor `analyzeCompleteness()`, geen nieuwe dependency (een kleine seeded PRNG), inclusief een stress-test met 50.000+ claims.
+- `src/http-source.ts`: een tweede, niet-EAS productieklare `ClaimSource` over een simpel HTTP-eindpunt, om te bewijzen dat de aggregatielaag met méér dan één brontype werkt.
+- `examples/reputation-lookup.mjs`: een draaibare CLI die de lokale ledger, EAS en de nieuwe HTTP-bron combineert in één echte opzoeking.
+
+**WP2, EAS voorbij Base:**
+- `EAS_DEPLOYMENTS`: geverifieerde adressen voor Base, Base Sepolia, Optimism én Ethereum mainnet, elk onafhankelijk gecontroleerd (EAS se eigen deployment-records + een live `eth_getCode`-aanroep tegen de echte chain).
+- `ensureSchema`/`publishClaim`/`rpcAttestationReader`/`easSourceFromRpc` accepteren nu een chain-adres als optie (standaard ongewijzigd Base), met een injecteerbare contract-factory zodat de multi-chain-targeting ook echt getest is, niet alleen aangenomen.
+- **Live bewezen op Optimism mainnet, niet alleen in code:** schema geregistreerd en een echte attestatie vastgelegd, [tx 0xa91b7bbb...c71b0](https://optimism.easscan.org/attestation/view/0x46148283cb005aa43387fb62b2e1ccd0b001ff82dc9310ea885237fd8dea8832), onafhankelijk teruggecontroleerd via een losse `eth_getTransactionReceipt`-aanroep, en teruggelezen via het echte productiepad (`discoverDeliveryHistory`). Kosten: 0,00000103 ETH.
+- Ethereum mainnet: adressen geverifieerd en getest, nog geen live attestatie (aanzienlijk hogere gaskosten dan Optimism, apart besluit).
+
+**WP4, documentatie + tweede praktijkvoorbeeld:**
+- `docs/INTEGRATION-GUIDE.md`: alle drie brontypen met echte code, plus twee echte, onafhankelijke externe integraties ([YE-YI7/asm-spec#18](https://github.com/YE-YI7/asm-spec/pull/18), [#19](https://github.com/YE-YI7/asm-spec/pull/19) door een derde partij EmbryoSpace) als het "tweede praktijkvoorbeeld" in plaats van zelf iets te bouwen, want die bestonden al echt.
+- README-regel gecorrigeerd die nog beweerde dat EAS "nog niet live gekoppeld" was, terwijl dat inmiddels op twee chains wél zo is.
+
+567 → 582 tests in WP1, 582 → 593 in WP2. `npm run typecheck` en `npm run build` schoon door de hele sessie heen.
+
 ## 0.6.0
 
 **Nieuw: `publishReputationFeedback`, publiceert het `delivered`-feit van een claim naar de ERC-8004 Reputation Registry se `giveFeedback()`.** Aanleiding: de koning wees erop dat ~500k al geregistreerde ERC-8004-agents een concreet, zakelijk publiceer-doel zijn, los van D-005's eigen (nog niet afgegane) interoperabiliteit-trigger — zelfde categorie besluit als het eerdere expliciete order achter `resolve_agent_identity` in 0.3.0. Bouwt niets eigen: het plugt in op bestaande infrastructuur, exact de "citeer, herbouw nooit"-postuur van de rest van dit pakket.
