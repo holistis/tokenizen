@@ -4,8 +4,10 @@ A record of an adversarial security review run against this package and its
 MCP server before 0.6.0 (`publishReputationFeedback`, this package's first
 real on-chain write path) was published. The goal is the same as every other
 document in `docs/`: you should not have to take this on trust. Every finding
-below points at a real fix and a real, runnable regression test that proves
-the specific gap is closed.
+below points at a real fix. Seven of the nine are proven by a real, runnable
+regression test; finding 8 is proven by a packaging check instead
+(`npm pack --dry-run`, not a unit test), and finding 9 was a documentation-only
+fix with no test to write. The table says exactly which is which.
 
 ## Why this review happened
 
