@@ -1,31 +1,73 @@
 // eas.ts — publish a delivery claim to, and discover it from, the Ethereum
-// Attestation Service (EAS) on Base. This is the concrete, host-independent
+// Attestation Service (EAS). This is the concrete, host-independent
 // substrate D-005/D-012 pointed at: a public chain anyone can read, so a buyer
 // on one installation can find a claim another buyer published, and verify it
 // locally (discovery.ts re-verifies every claim, so EAS is just an untrusted
 // ClaimSource like any other).
 //
-// Plain ethers only, no eas-sdk dependency. EAS is an OP-Stack predeploy, so
-// the contract addresses are identical on Base mainnet (8453) and Base Sepolia
-// (84532). Everything here is caller-parameterised (rpcUrl, signer): this
+// Originally wired to Base only. Generalized here (WP2, see
+// docs/NLNET-SELFBUILD-PLAN-2026-09-28.md) to support any EAS deployment:
+// discovery.ts's own header comment always described the substrate as "EAS
+// on Base", not "EAS, forever only Base". Optimism and Ethereum mainnet are
+// equally real EAS deployments, just with different contract addresses:
+// Optimism, being an OP-Stack chain like Base, happens to share Base's exact
+// predeploy addresses; Ethereum mainnet does not, since it is the underlying
+// L1, not an OP-Stack chain. That distinction was verified, not assumed --
+// see EAS_DEPLOYMENTS below.
+//
+// Plain ethers only, no eas-sdk dependency. Everything here is
+// caller-parameterised (rpcUrl, signer, and now chain addresses too): this
 // package never bundles an RPC, a key, or gas, and never becomes the index.
 //
-// Verified against the EAS contract sources (IEAS.sol, Common.sol,
-// SchemaRegistry.sol) and the base / base-sepolia deployment artifacts, 2026-09-06.
+// Base's addresses verified against the EAS contract sources (IEAS.sol,
+// Common.sol, SchemaRegistry.sol) and the base / base-sepolia deployment
+// artifacts, 2026-09-06. Optimism and Ethereum mainnet addresses verified
+// 2026-09-28 against EAS's own official deployment records
+// (github.com/ethereum-attestation-service/eas-contracts, the
+// deployments/optimism and deployments/mainnet JSON files, cross-checked
+// against docs.attest.org's own contracts table) AND independently
+// re-confirmed with a direct eth_getCode call against each chain's real,
+// live RPC: real bytecode present at every address below, not just "found
+// in a document".
 
 import { ethers } from "ethers";
 import { DeliveryClaimSchema, type DeliveryClaim } from "./schema.js";
 import { verifyClaim } from "./signing.js";
 import type { ClaimSource } from "./discovery.js";
 
-// OP-Stack predeploys: same on every Base network.
+// OP-Stack predeploys: identical on every OP-Stack chain (Base, Optimism).
+// Kept as the module-level default for every function below, so a caller who
+// passes nothing still gets exactly today's, unchanged, Base behavior.
 export const EAS_ADDRESS = "0x4200000000000000000000000000000000000021";
 export const SCHEMA_REGISTRY_ADDRESS = "0x4200000000000000000000000000000000000020";
 
-export const EAS_EXPLORER = {
-  8453: "https://base.easscan.org",
-  84532: "https://base-sepolia.easscan.org",
-} as const;
+/** One chain's EAS deployment: both contract addresses, plus a human-facing explorer base URL. */
+export interface EasDeployment {
+  chainId: number;
+  name: string;
+  easAddress: string;
+  schemaRegistryAddress: string;
+  explorer: string;
+}
+
+/**
+ * Known EAS deployments, keyed by chainId. Every address was independently
+ * verified (EAS's own deployment records AND a live eth_getCode call)
+ * before being added here -- the OP-Stack-predeploy pattern is CONFIRMED
+ * true for Optimism specifically below, never applied to a new chain just
+ * because it sounds plausible.
+ */
+export const EAS_DEPLOYMENTS: Record<number, EasDeployment> = {
+  8453: { chainId: 8453, name: "Base", easAddress: EAS_ADDRESS, schemaRegistryAddress: SCHEMA_REGISTRY_ADDRESS, explorer: "https://base.easscan.org" },
+  84532: { chainId: 84532, name: "Base Sepolia", easAddress: EAS_ADDRESS, schemaRegistryAddress: SCHEMA_REGISTRY_ADDRESS, explorer: "https://base-sepolia.easscan.org" },
+  10: { chainId: 10, name: "Optimism", easAddress: EAS_ADDRESS, schemaRegistryAddress: SCHEMA_REGISTRY_ADDRESS, explorer: "https://optimism.easscan.org" },
+  1: { chainId: 1, name: "Ethereum", easAddress: "0xA1207F3BBa224E2c9c3c6D5aF63D0eb1582Ce587", schemaRegistryAddress: "0xA7b39296258348C78294F95B872b282326A97BDF", explorer: "https://easscan.org" },
+};
+
+/** Backward-compatible: existing callers (examples/eas-live-demo.ts) look up an explorer URL by chainId this way. Derived FROM EAS_DEPLOYMENTS so there is exactly one source of truth, not two tables that could quietly drift apart. */
+export const EAS_EXPLORER: Record<number, string> = Object.fromEntries(
+  Object.entries(EAS_DEPLOYMENTS).map(([chainId, d]) => [chainId, d.explorer]),
+);
 
 const EAS_ABI = [
   "function attest((bytes32 schema,(address recipient,uint64 expirationTime,bool revocable,bytes32 refUID,bytes data,uint256 value) data) request) payable returns (bytes32)",
@@ -105,13 +147,34 @@ export function decodeClaimData(data: string): DeliveryClaim | null {
 }
 
 /**
+ * Builds the SchemaRegistry write contract. Split out as an injection seam
+ * (same DI pattern as erc8004.ts's ContractFactory and this file's own
+ * AttestationReader below) so ensureSchema's CHAIN-TARGETING logic --
+ * "does it use the address I told it to, for a chain that is not Base" --
+ * is unit-testable without a live signer or network, not just assumed.
+ */
+export type SchemaRegistryContractFactory = (schemaRegistryAddress: string, signer: ethers.Signer) => SchemaRegistryContract;
+const defaultSchemaRegistryContractFactory: SchemaRegistryContractFactory = (schemaRegistryAddress, signer) =>
+  new ethers.Contract(schemaRegistryAddress, SCHEMA_REGISTRY_ABI, signer) as unknown as SchemaRegistryContract;
+
+/**
  * Register our schema if it does not already exist on this chain. The schema
  * UID is deterministic, so a duplicate register() reverts with AlreadyExists;
  * we check first via getSchema and only register when absent. Requires a
  * funded signer. Returns the schema UID.
+ *
+ * `opts.schemaRegistryAddress` defaults to SCHEMA_REGISTRY_ADDRESS (Base's,
+ * unchanged from before this function took an opts argument at all): pass
+ * `EAS_DEPLOYMENTS[1].schemaRegistryAddress` for Ethereum mainnet, or any
+ * other chain's own address, to target that chain instead.
  */
-export async function ensureSchema(signer: ethers.Signer): Promise<string> {
-  const registry = new ethers.Contract(SCHEMA_REGISTRY_ADDRESS, SCHEMA_REGISTRY_ABI, signer) as unknown as SchemaRegistryContract;
+export async function ensureSchema(
+  signer: ethers.Signer,
+  opts: { schemaRegistryAddress?: string; contractFactory?: SchemaRegistryContractFactory } = {},
+): Promise<string> {
+  const schemaRegistryAddress = opts.schemaRegistryAddress ?? SCHEMA_REGISTRY_ADDRESS;
+  const contractFactory = opts.contractFactory ?? defaultSchemaRegistryContractFactory;
+  const registry = contractFactory(schemaRegistryAddress, signer);
   const existing = await registry.getSchema(SCHEMA_UID);
   // getSchema returns a zero-uid struct when the schema is not registered.
   if (existing && existing.uid && existing.uid.toLowerCase() === SCHEMA_UID.toLowerCase()) {
@@ -128,6 +191,11 @@ export interface PublishResult {
   recipient: string;
 }
 
+/** Same injection-seam purpose as SchemaRegistryContractFactory above, for the EAS write contract itself. */
+export type EasWriteContractFactory = (easAddress: string, signer: ethers.Signer) => EasWriteContract;
+const defaultEasWriteContractFactory: EasWriteContractFactory = (easAddress, signer) =>
+  new ethers.Contract(easAddress, EAS_ABI, signer) as unknown as EasWriteContract;
+
 /**
  * Publish one claim to EAS as an attestation with recipient = sellerAddress, so
  * it is discoverable by that seller. `signer` only pays gas and writes the
@@ -137,9 +205,20 @@ export interface PublishResult {
  * (easSource, discoverDeliveryHistory) ever looks at who published the
  * attestation, only at what the claim itself proves. Requires a funded signer.
  * Returns the new attestation UID and tx hash.
+ *
+ * `opts.easAddress` defaults to EAS_ADDRESS (Base's, unchanged from before
+ * this function took an opts argument at all): pass
+ * `EAS_DEPLOYMENTS[1].easAddress` for Ethereum mainnet, or any other
+ * chain's own address, to target that chain instead.
  */
-export async function publishClaim(signer: ethers.Signer, claim: DeliveryClaim): Promise<PublishResult> {
-  const eas = new ethers.Contract(EAS_ADDRESS, EAS_ABI, signer) as unknown as EasWriteContract;
+export async function publishClaim(
+  signer: ethers.Signer,
+  claim: DeliveryClaim,
+  opts: { easAddress?: string; contractFactory?: EasWriteContractFactory } = {},
+): Promise<PublishResult> {
+  const easAddress = opts.easAddress ?? EAS_ADDRESS;
+  const contractFactory = opts.contractFactory ?? defaultEasWriteContractFactory;
+  const eas = contractFactory(easAddress, signer);
   const tx = await eas.attest({
     schema: SCHEMA_UID,
     data: {
@@ -220,13 +299,21 @@ export function blockWindows(fromBlock: number, latest: number, blockRange: numb
   return windows;
 }
 
-/** Build a real AttestationReader over a JSON-RPC endpoint (getLogs + getAttestation). */
+/**
+ * Build a real AttestationReader over a JSON-RPC endpoint (getLogs +
+ * getAttestation). `opts.easAddress` defaults to EAS_ADDRESS (Base's,
+ * unchanged from before WP2): pass `EAS_DEPLOYMENTS[1].easAddress` for
+ * Ethereum mainnet, or any other chain's own address, to read that chain
+ * instead. rpcUrl itself already told this function which CHAIN to talk to;
+ * easAddress tells it WHERE on that chain the EAS contract lives.
+ */
 export function rpcAttestationReader(
   rpcUrl: string,
-  opts: { fromBlock?: number; schemaUID?: string; blockRange?: number; concurrency?: number } = {},
+  opts: { fromBlock?: number; schemaUID?: string; blockRange?: number; concurrency?: number; easAddress?: string } = {},
 ): AttestationReader {
   const provider = new ethers.JsonRpcProvider(rpcUrl);
-  const eas = new ethers.Contract(EAS_ADDRESS, EAS_ABI, provider) as unknown as EasReadContract;
+  const easAddress = opts.easAddress ?? EAS_ADDRESS;
+  const eas = new ethers.Contract(easAddress, EAS_ABI, provider) as unknown as EasReadContract;
   const schemaUID = opts.schemaUID ?? SCHEMA_UID;
   const attestedTopic0 = ethers.id("Attested(address,address,bytes32,bytes32)");
   const blockRange = opts.blockRange ?? DEFAULT_BLOCK_RANGE;
@@ -244,7 +331,7 @@ export function rpcAttestationReader(
       // partial result.
       for (const [from, to] of windows) {
         const logs = await provider.getLogs({
-          address: EAS_ADDRESS,
+          address: easAddress,
           topics: [attestedTopic0, ethers.zeroPadValue(sellerAddress, 32), null, schemaUID],
           fromBlock: from,
           toBlock: to,
@@ -310,7 +397,7 @@ export function easSource(reader: AttestationReader, name = "eas"): ClaimSource 
 /** Convenience: an EAS-backed source directly from an RPC URL. */
 export function easSourceFromRpc(
   rpcUrl: string,
-  opts: { fromBlock?: number; schemaUID?: string; name?: string; blockRange?: number; concurrency?: number } = {},
+  opts: { fromBlock?: number; schemaUID?: string; name?: string; blockRange?: number; concurrency?: number; easAddress?: string } = {},
 ): ClaimSource {
   return easSource(rpcAttestationReader(rpcUrl, opts), opts.name ?? "eas");
 }

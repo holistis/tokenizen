@@ -1,4 +1,5 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
+import { ethers } from "ethers";
 import {
   encodeClaimData,
   decodeClaimData,
@@ -6,7 +7,16 @@ import {
   SCHEMA_UID,
   easSource,
   blockWindows,
+  rpcAttestationReader,
+  ensureSchema,
+  publishClaim,
+  EAS_ADDRESS,
+  SCHEMA_REGISTRY_ADDRESS,
+  EAS_DEPLOYMENTS,
+  EAS_EXPLORER,
   type AttestationReader,
+  type EasWriteContractFactory,
+  type SchemaRegistryContractFactory,
 } from "./eas.js";
 import { discoverDeliveryHistory } from "./discovery.js";
 import { verifyClaim } from "./signing.js";
@@ -172,5 +182,158 @@ describe("easSource concurrency (bounded fan-out over dataForUid)", () => {
     const result = await easSource(reader).fetchForSeller(SELLER);
     expect(result.length).toBe(1);
     expect(result[0]?.claimId).toBe(claim.claimId);
+  });
+});
+
+describe("EAS_DEPLOYMENTS (WP2: multi-chain addresses, each independently verified 2026-09-28)", () => {
+  it("Base and Base Sepolia use the pre-existing EAS_ADDRESS/SCHEMA_REGISTRY_ADDRESS constants, unchanged", () => {
+    expect(EAS_DEPLOYMENTS[8453]?.easAddress).toBe(EAS_ADDRESS);
+    expect(EAS_DEPLOYMENTS[8453]?.schemaRegistryAddress).toBe(SCHEMA_REGISTRY_ADDRESS);
+    expect(EAS_DEPLOYMENTS[84532]?.easAddress).toBe(EAS_ADDRESS);
+    expect(EAS_DEPLOYMENTS[84532]?.schemaRegistryAddress).toBe(SCHEMA_REGISTRY_ADDRESS);
+  });
+
+  it("Optimism shares Base's exact OP-Stack predeploy addresses (confirmed true, not assumed from the general OP-Stack pattern)", () => {
+    expect(EAS_DEPLOYMENTS[10]?.easAddress).toBe(EAS_ADDRESS);
+    expect(EAS_DEPLOYMENTS[10]?.schemaRegistryAddress).toBe(SCHEMA_REGISTRY_ADDRESS);
+  });
+
+  it("Ethereum mainnet uses its own, distinct addresses, NOT the OP-Stack predeploy pattern (it is not an OP-Stack chain)", () => {
+    const eth = EAS_DEPLOYMENTS[1];
+    expect(eth?.easAddress).toBe("0xA1207F3BBa224E2c9c3c6D5aF63D0eb1582Ce587");
+    expect(eth?.schemaRegistryAddress).toBe("0xA7b39296258348C78294F95B872b282326A97BDF");
+    expect(eth?.easAddress).not.toBe(EAS_ADDRESS);
+    expect(eth?.schemaRegistryAddress).not.toBe(SCHEMA_REGISTRY_ADDRESS);
+  });
+
+  it("every known deployment's addresses are well-formed 0x + 40 hex addresses (catches a copy-paste truncation/typo)", () => {
+    const ADDR = /^0x[0-9a-fA-F]{40}$/;
+    for (const d of Object.values(EAS_DEPLOYMENTS)) {
+      expect(d.easAddress).toMatch(ADDR);
+      expect(d.schemaRegistryAddress).toMatch(ADDR);
+    }
+  });
+
+  it("EAS_EXPLORER stays derived from EAS_DEPLOYMENTS (one source of truth, cannot silently drift apart)", () => {
+    for (const [chainId, d] of Object.entries(EAS_DEPLOYMENTS)) {
+      expect(EAS_EXPLORER[Number(chainId)]).toBe(d.explorer);
+    }
+  });
+});
+
+describe("ensureSchema / publishClaim target the chain they are told to, not always Base (WP2, injected contract factory, no live network key needed)", () => {
+  function fakeAccount(): ethers.Signer {
+    return {} as ethers.Signer; // never actually used: the injected contractFactory ignores it and returns a fake contract
+  }
+
+  it("ensureSchema calls the SchemaRegistry contract at the ADDRESS PASSED IN, not the Base default, when the schema is already registered", async () => {
+    const seenAddresses: string[] = [];
+    const targetAddress = EAS_DEPLOYMENTS[1]!.schemaRegistryAddress; // Ethereum mainnet's, deliberately different from Base's
+    const factory: SchemaRegistryContractFactory = (schemaRegistryAddress) => {
+      seenAddresses.push(schemaRegistryAddress);
+      return {
+        getSchema: async () => ({ uid: SCHEMA_UID }), // already registered: register() must NOT be called
+        register: async () => {
+          throw new Error("should not be called: schema already registered");
+        },
+      };
+    };
+
+    const uid = await ensureSchema(fakeAccount(), { schemaRegistryAddress: targetAddress, contractFactory: factory });
+
+    expect(uid).toBe(SCHEMA_UID);
+    expect(seenAddresses).toEqual([targetAddress]);
+    expect(seenAddresses[0]).not.toBe(SCHEMA_REGISTRY_ADDRESS); // proves it did NOT silently fall back to Base
+  });
+
+  it("ensureSchema defaults to SCHEMA_REGISTRY_ADDRESS (Base) when no address is passed, unchanged from before this option existed", async () => {
+    const seenAddresses: string[] = [];
+    const factory: SchemaRegistryContractFactory = (schemaRegistryAddress) => {
+      seenAddresses.push(schemaRegistryAddress);
+      return { getSchema: async () => ({ uid: SCHEMA_UID }), register: async () => { throw new Error("unreachable"); } };
+    };
+    await ensureSchema(fakeAccount(), { contractFactory: factory });
+    expect(seenAddresses).toEqual([SCHEMA_REGISTRY_ADDRESS]);
+  });
+
+  it("publishClaim attests via the EAS ADDRESS PASSED IN, not the Base default", async () => {
+    const buyer = testWallet();
+    const claim = await buildSignedClaim(buyer, { sellerAddress: SELLER, settlementRef: "0x" + "20".repeat(32) });
+    const seenAddresses: string[] = [];
+    const targetAddress = EAS_DEPLOYMENTS[1]!.easAddress; // Ethereum mainnet's, deliberately different from Base's
+
+    const iface = new ethers.Interface(["event Attested(address indexed recipient, address indexed attester, bytes32 uid, bytes32 indexed schemaUID)"]);
+    const fakeUid = "0x" + "cd".repeat(32);
+    const fakeLog = iface.encodeEventLog("Attested", [claim.sellerAddress, "0x0000000000000000000000000000000000000001", fakeUid, SCHEMA_UID]);
+
+    const factory: EasWriteContractFactory = (easAddress) => {
+      seenAddresses.push(easAddress);
+      return {
+        attest: async () => ({
+          wait: async () => ({
+            hash: "0x" + "ab".repeat(32),
+            logs: [{ topics: fakeLog.topics, data: fakeLog.data }],
+          }),
+        }),
+      } as unknown as ReturnType<EasWriteContractFactory>;
+    };
+
+    const result = await publishClaim(fakeAccount(), claim, { easAddress: targetAddress, contractFactory: factory });
+
+    expect(seenAddresses).toEqual([targetAddress]);
+    expect(seenAddresses[0]).not.toBe(EAS_ADDRESS); // proves it did NOT silently fall back to Base
+    expect(result.uid).toBe(fakeUid);
+    expect(result.recipient).toBe(claim.sellerAddress);
+  });
+
+  it("publishClaim defaults to EAS_ADDRESS (Base) when no address is passed, unchanged from before this option existed", async () => {
+    const buyer = testWallet();
+    const claim = await buildSignedClaim(buyer, { sellerAddress: SELLER, settlementRef: "0x" + "21".repeat(32) });
+    const seenAddresses: string[] = [];
+    const factory: EasWriteContractFactory = (easAddress) => {
+      seenAddresses.push(easAddress);
+      return { attest: async () => ({ wait: async () => ({ hash: "0x" + "ab".repeat(32), logs: [] }) }) } as unknown as ReturnType<EasWriteContractFactory>;
+    };
+    await publishClaim(fakeAccount(), claim, { contractFactory: factory });
+    expect(seenAddresses).toEqual([EAS_ADDRESS]);
+  });
+});
+
+describe("rpcAttestationReader targets the EAS address it is told to (WP2), via a spied-on provider, no live network call made", () => {
+  it("reads Attested logs at the PASSED-IN easAddress, not the Base default", async () => {
+    const getLogsSpy = vi.spyOn(ethers.JsonRpcProvider.prototype, "getLogs").mockResolvedValue([]);
+    const getBlockNumberSpy = vi.spyOn(ethers.JsonRpcProvider.prototype, "getBlockNumber").mockResolvedValue(100);
+
+    const targetAddress = EAS_DEPLOYMENTS[1]!.easAddress; // Ethereum mainnet's
+    const reader = rpcAttestationReader("https://example.invalid/rpc", { easAddress: targetAddress, blockRange: 1000 });
+    await reader.uidsForSeller(SELLER);
+
+    expect(getLogsSpy).toHaveBeenCalled();
+    const calls = getLogsSpy.mock.calls;
+    expect(calls.length).toBeGreaterThan(0);
+    for (const [filter] of calls) {
+      expect((filter as { address?: string }).address).toBe(targetAddress);
+      expect((filter as { address?: string }).address).not.toBe(EAS_ADDRESS); // proves it did NOT silently read Base's contract
+    }
+
+    getLogsSpy.mockRestore();
+    getBlockNumberSpy.mockRestore();
+  });
+
+  it("defaults to reading EAS_ADDRESS (Base) when no easAddress is passed, unchanged from before this option existed", async () => {
+    const getLogsSpy = vi.spyOn(ethers.JsonRpcProvider.prototype, "getLogs").mockResolvedValue([]);
+    const getBlockNumberSpy = vi.spyOn(ethers.JsonRpcProvider.prototype, "getBlockNumber").mockResolvedValue(100);
+
+    const reader = rpcAttestationReader("https://example.invalid/rpc", { blockRange: 1000 });
+    await reader.uidsForSeller(SELLER);
+
+    const calls = getLogsSpy.mock.calls;
+    expect(calls.length).toBeGreaterThan(0);
+    for (const [filter] of calls) {
+      expect((filter as { address?: string }).address).toBe(EAS_ADDRESS);
+    }
+
+    getLogsSpy.mockRestore();
+    getBlockNumberSpy.mockRestore();
   });
 });
