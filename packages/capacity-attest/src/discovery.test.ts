@@ -48,6 +48,27 @@ describe("discoverDeliveryHistory (pure)", () => {
     expect(r.sources[1]?.duplicates).toBe(1);
   });
 
+  it("does NOT treat a stale claimId reused on tampered content as a duplicate (the fast-dedup path must not skip verification for mismatched content)", async () => {
+    // Regression test for the recomputed-hash fast path added alongside PR
+    // #15's concurrency work: it must key on computeClaimId(content), never
+    // on the raw, self-reported claim.claimId field, or exactly this attack
+    // (reuse a real claimId, mutate the content) would be silently miscounted
+    // as a harmless duplicate instead of rejected.
+    const buyer = testWallet();
+    const genuine = await buildSignedClaim(buyer, { sellerAddress: SELLER, settlementRef: "0x" + "0a".repeat(32) });
+    // Same claimId and signature as genuine (copied, not recomputed), but the
+    // actual content field differs — a claimId that lies about its own content.
+    const tampered: DeliveryClaim = { ...genuine, delivered: genuine.delivered === "yes" ? "no" : "yes" };
+
+    const r = await discoverDeliveryHistory(SELLER, [staticSource("a", [genuine]), staticSource("b", [tampered])]);
+    expect(r.count).toBe(1);
+    expect(r.claims[0]?.delivered).toBe(genuine.delivered); // the tampered value never entered the result
+    expect(r.sources[0]?.accepted).toBe(1);
+    expect(r.sources[1]?.accepted).toBe(0);
+    expect(r.sources[1]?.duplicates).toBe(0); // must NOT be silently counted as a duplicate
+    expect(r.sources[1]?.rejected).toBe(1); // must be caught as a real verification failure
+  });
+
   it("filters out a valid claim about a different seller (discovery's own filter, not the source's)", async () => {
     const buyer = testWallet();
     const forX = await buildSignedClaim(buyer, { sellerAddress: SELLER, settlementRef: "0x" + "04".repeat(32) });
