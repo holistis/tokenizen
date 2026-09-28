@@ -8,6 +8,7 @@ import {
   easSource,
   blockWindows,
   rpcAttestationReader,
+  easSourceFromRpc,
   ensureSchema,
   publishClaim,
   EAS_ADDRESS,
@@ -326,6 +327,48 @@ describe("rpcAttestationReader targets the EAS address it is told to (WP2), via 
 
     const reader = rpcAttestationReader("https://example.invalid/rpc", { blockRange: 1000 });
     await reader.uidsForSeller(SELLER);
+
+    const calls = getLogsSpy.mock.calls;
+    expect(calls.length).toBeGreaterThan(0);
+    for (const [filter] of calls) {
+      expect((filter as { address?: string }).address).toBe(EAS_ADDRESS);
+    }
+
+    getLogsSpy.mockRestore();
+    getBlockNumberSpy.mockRestore();
+  });
+});
+
+describe("easSourceFromRpc (the actual public entry point real callers use, per docs/INTEGRATION-GUIDE.md and examples/reputation-lookup.mjs)", () => {
+  it("targets the passed-in easAddress, not the Base default, end to end through the returned ClaimSource", async () => {
+    const getLogsSpy = vi.spyOn(ethers.JsonRpcProvider.prototype, "getLogs").mockResolvedValue([]);
+    const getBlockNumberSpy = vi.spyOn(ethers.JsonRpcProvider.prototype, "getBlockNumber").mockResolvedValue(100);
+
+    const targetAddress = EAS_DEPLOYMENTS[1]!.easAddress; // Ethereum mainnet's
+    const source = easSourceFromRpc("https://example.invalid/rpc", { easAddress: targetAddress, blockRange: 1000, name: "eas-ethereum" });
+    expect(source.name).toBe("eas-ethereum");
+
+    const claims = await source.fetchForSeller(SELLER);
+    expect(claims).toEqual([]); // no logs mocked, so nothing to decode; the point is which address was queried
+
+    const calls = getLogsSpy.mock.calls;
+    expect(calls.length).toBeGreaterThan(0);
+    for (const [filter] of calls) {
+      expect((filter as { address?: string }).address).toBe(targetAddress);
+      expect((filter as { address?: string }).address).not.toBe(EAS_ADDRESS);
+    }
+
+    getLogsSpy.mockRestore();
+    getBlockNumberSpy.mockRestore();
+  });
+
+  it("defaults to EAS_ADDRESS (Base) and the name 'eas' when nothing is passed, unchanged from before WP2", async () => {
+    const getLogsSpy = vi.spyOn(ethers.JsonRpcProvider.prototype, "getLogs").mockResolvedValue([]);
+    const getBlockNumberSpy = vi.spyOn(ethers.JsonRpcProvider.prototype, "getBlockNumber").mockResolvedValue(100);
+
+    const source = easSourceFromRpc("https://example.invalid/rpc", { blockRange: 1000 });
+    expect(source.name).toBe("eas");
+    await source.fetchForSeller(SELLER);
 
     const calls = getLogsSpy.mock.calls;
     expect(calls.length).toBeGreaterThan(0);

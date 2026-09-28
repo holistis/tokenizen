@@ -62,8 +62,19 @@ async function main() {
   const rpcUrl = process.env["RPC_URL"];
   if (rpcUrl) {
     let fromBlock;
-    if (process.env["EAS_FROM_BLOCK"] !== undefined) {
-      fromBlock = Number(process.env["EAS_FROM_BLOCK"]);
+    const rawFromBlock = process.env["EAS_FROM_BLOCK"];
+    if (rawFromBlock !== undefined && rawFromBlock !== "") {
+      fromBlock = Number(rawFromBlock);
+      // A malformed value (e.g. a typo) must not silently degrade into an
+      // empty, all-windows-skipped scan that looks identical to "this
+      // seller genuinely has zero EAS history" -- fail loud instead, since
+      // this script's whole point is honest completeness reporting, never
+      // a skipped source dressed up as a checked, empty one.
+      if (!Number.isInteger(fromBlock) || fromBlock < 0) {
+        console.error(`EAS_FROM_BLOCK must be a non-negative integer, got ${JSON.stringify(rawFromBlock)}`);
+        process.exitCode = 1;
+        return;
+      }
     } else {
       // Default to a recent window, not 0: see this file's header comment
       // for why a from-genesis scan is impractical against a real chain.
@@ -128,6 +139,15 @@ async function main() {
   // handle open in the background after this function returns. Exit
   // explicitly so the script's own visible run always terminates promptly
   // rather than leaving the terminal hanging on a lingering handle.
+  //
+  // console.log's writes to stdout can be asynchronous (e.g. when stdout is
+  // piped to another process on POSIX), so exiting immediately after the
+  // last console.log above risks silently truncating exactly the
+  // trust-context lines (per-source accounting, completeness, the note)
+  // this script exists to print. Waiting for one more write's callback
+  // proves everything queued before it has already flushed, since stream
+  // writes are processed in order.
+  await new Promise((resolve) => process.stdout.write("", resolve));
   process.exit(0);
 }
 
