@@ -1,5 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { encodeClaimData, decodeClaimData, computeSchemaUID, SCHEMA_UID, easSource, type AttestationReader } from "./eas.js";
+import {
+  encodeClaimData,
+  decodeClaimData,
+  computeSchemaUID,
+  SCHEMA_UID,
+  easSource,
+  blockWindows,
+  type AttestationReader,
+} from "./eas.js";
 import { discoverDeliveryHistory } from "./discovery.js";
 import { verifyClaim } from "./signing.js";
 import { buildSignedClaim, testWallet } from "./test-helpers.js";
@@ -81,5 +89,88 @@ describe("easSource + discovery (offline, injected reader)", () => {
     const result = await discoverDeliveryHistory(SELLER, [easSource(reader)]);
     expect(result.count).toBe(1);
     expect(result.claims[0]?.claimId).toBe(good.claimId);
+  });
+});
+
+describe("blockWindows (pure block-range chunking, no RPC needed)", () => {
+  it("returns a single window when the range fits inside blockRange", () => {
+    expect(blockWindows(100, 150, 2_000)).toEqual([[100, 150]]);
+  });
+
+  it("chunks a range wider than blockRange into consecutive, non-overlapping windows", () => {
+    // 0..4999 at blockRange=2000: [0,1999] [2000,3999] [4000,4999], gap-free and non-overlapping.
+    expect(blockWindows(0, 4_999, 2_000)).toEqual([
+      [0, 1_999],
+      [2_000, 3_999],
+      [4_000, 4_999],
+    ]);
+  });
+
+  it("handles a range that divides evenly with no short trailing window", () => {
+    expect(blockWindows(0, 3_999, 2_000)).toEqual([
+      [0, 1_999],
+      [2_000, 3_999],
+    ]);
+  });
+
+  it("returns a single-block window when fromBlock === latest", () => {
+    expect(blockWindows(500, 500, 2_000)).toEqual([[500, 500]]);
+  });
+
+  it("returns no windows when fromBlock is already past latest", () => {
+    expect(blockWindows(600, 500, 2_000)).toEqual([]);
+  });
+
+  it("rejects a non-positive blockRange instead of looping forever", () => {
+    expect(() => blockWindows(0, 100, 0)).toThrow(/blockRange/);
+    expect(() => blockWindows(0, 100, -1)).toThrow(/blockRange/);
+  });
+});
+
+describe("easSource concurrency (bounded fan-out over dataForUid)", () => {
+  it("never has more than the configured concurrency in flight, and still returns every claim", async () => {
+    const buyer = testWallet();
+    const claims = await Promise.all(
+      Array.from({ length: 25 }, (_, i) =>
+        buildSignedClaim(buyer, { sellerAddress: SELLER, settlementRef: "0x" + String(i + 10).padStart(2, "0").repeat(32).slice(0, 64) }),
+      ),
+    );
+    const store = new Map(claims.map((c, i) => [`0xuid-${i}`, encodeClaimData(c)]));
+    const uids = [...store.keys()];
+
+    let inFlight = 0;
+    let maxInFlight = 0;
+    const CONCURRENCY = 4;
+    const reader: AttestationReader = {
+      uidsForSeller: async () => uids,
+      concurrency: CONCURRENCY,
+      dataForUid: async (uid) => {
+        inFlight++;
+        maxInFlight = Math.max(maxInFlight, inFlight);
+        // Yield control so overlapping calls actually interleave instead of
+        // resolving synchronously one after another.
+        await new Promise((resolve) => setTimeout(resolve, 1));
+        inFlight--;
+        return store.get(uid)!;
+      },
+    };
+
+    const result = await easSource(reader).fetchForSeller(SELLER);
+    expect(result.length).toBe(25);
+    expect(new Set(result.map((c) => c.claimId)).size).toBe(25); // every claim present, no duplicates or drops
+    expect(maxInFlight).toBeLessThanOrEqual(CONCURRENCY);
+    expect(maxInFlight).toBeGreaterThan(1); // proves this genuinely ran concurrently, not accidentally serial
+  });
+
+  it("falls back to DEFAULT_CONCURRENCY when the reader does not set one", async () => {
+    const buyer = testWallet();
+    const claim = await buildSignedClaim(buyer, { sellerAddress: SELLER, settlementRef: "0x" + "07".repeat(32) });
+    const reader: AttestationReader = {
+      uidsForSeller: async () => ["0xonly"],
+      dataForUid: async () => encodeClaimData(claim),
+    };
+    const result = await easSource(reader).fetchForSeller(SELLER);
+    expect(result.length).toBe(1);
+    expect(result[0]?.claimId).toBe(claim.claimId);
   });
 });

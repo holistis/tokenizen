@@ -184,29 +184,83 @@ export interface AttestationReader {
   uidsForSeller(sellerAddress: string): Promise<string[]>;
   /** The raw ABI-encoded `data` field of one attestation. */
   dataForUid(uid: string): Promise<string>;
+  /** Max concurrent dataForUid calls easSource should keep in flight. Readers that do not set this get DEFAULT_CONCURRENCY. */
+  concurrency?: number;
+}
+
+// Most public RPC providers cap a single eth_getLogs call to a bounded block
+// range (2,000-10,000 blocks is typical; some reject an unbounded fromBlock=0
+// outright). A single call from genesis to "latest" therefore either errors
+// out or silently degrades depending on the provider, and degrades further as
+// the chain ages and the range grows. Default window chosen conservatively
+// below the tightest commonly-seen provider limit; callers on a more
+// permissive RPC can raise it via opts.blockRange.
+const DEFAULT_BLOCK_RANGE = 2_000;
+
+// Bound how many attestation bodies rpcAttestationReader fetches CONCURRENTLY
+// per uidsForSeller/dataForUid fan-out. discoverDeliveryHistory's own
+// MAX_CLAIMS_PER_SOURCE bounds how many claims are ultimately ACCEPTED from a
+// source; this bounds how many in-flight RPC requests a single source's read
+// can open at once, so a seller with many attestations does not open
+// thousands of simultaneous connections against the RPC endpoint.
+const DEFAULT_CONCURRENCY = 10;
+
+/**
+ * Pure block-range windowing, split out so the chunking math is unit-testable
+ * without a real or mocked RPC provider. [fromBlock, latest] inclusive,
+ * chunked into <= blockRange-wide, non-overlapping, gap-free windows in
+ * ascending order. Returns [] when fromBlock > latest (nothing to scan).
+ */
+export function blockWindows(fromBlock: number, latest: number, blockRange: number): Array<[number, number]> {
+  if (blockRange < 1) throw new Error(`blockRange must be >= 1, got ${blockRange}`);
+  const windows: Array<[number, number]> = [];
+  for (let from = fromBlock; from <= latest; from += blockRange) {
+    windows.push([from, Math.min(from + blockRange - 1, latest)]);
+  }
+  return windows;
 }
 
 /** Build a real AttestationReader over a JSON-RPC endpoint (getLogs + getAttestation). */
-export function rpcAttestationReader(rpcUrl: string, opts: { fromBlock?: number; schemaUID?: string } = {}): AttestationReader {
+export function rpcAttestationReader(
+  rpcUrl: string,
+  opts: { fromBlock?: number; schemaUID?: string; blockRange?: number; concurrency?: number } = {},
+): AttestationReader {
   const provider = new ethers.JsonRpcProvider(rpcUrl);
   const eas = new ethers.Contract(EAS_ADDRESS, EAS_ABI, provider) as unknown as EasReadContract;
   const schemaUID = opts.schemaUID ?? SCHEMA_UID;
   const attestedTopic0 = ethers.id("Attested(address,address,bytes32,bytes32)");
+  const blockRange = opts.blockRange ?? DEFAULT_BLOCK_RANGE;
+  const concurrency = opts.concurrency ?? DEFAULT_CONCURRENCY;
   return {
     uidsForSeller: async (sellerAddress) => {
-      const logs = await provider.getLogs({
-        address: EAS_ADDRESS,
-        topics: [attestedTopic0, ethers.zeroPadValue(sellerAddress, 32), null, schemaUID],
-        fromBlock: opts.fromBlock ?? 0,
-        toBlock: "latest",
-      });
-      // uid is the only non-indexed value: it sits in log.data.
-      return logs.map((l) => l.data);
+      const latest = await provider.getBlockNumber();
+      const windows = blockWindows(opts.fromBlock ?? 0, latest, blockRange);
+      const uids: string[] = [];
+      // Walk the chain in bounded windows instead of one fromBlock=0..latest
+      // call. A window that itself errors (provider-side limit stricter than
+      // blockRange) is not swallowed here: it propagates, same as today's
+      // single-call behaviour, so a caller who needs resilience against a
+      // flaky/stricter provider passes a smaller blockRange, not a silent
+      // partial result.
+      for (const [from, to] of windows) {
+        const logs = await provider.getLogs({
+          address: EAS_ADDRESS,
+          topics: [attestedTopic0, ethers.zeroPadValue(sellerAddress, 32), null, schemaUID],
+          fromBlock: from,
+          toBlock: to,
+        });
+        // uid is the only non-indexed value: it sits in log.data.
+        for (const l of logs) uids.push(l.data);
+      }
+      return uids;
     },
     dataForUid: async (uid) => {
       const att = await eas.getAttestation(uid);
       return att.data as string;
     },
+    // Exposed so easSource's fan-out can bound concurrency without
+    // hardcoding a number that belongs to the reader's own configuration.
+    concurrency,
   };
 }
 
@@ -223,24 +277,41 @@ export function easSource(reader: AttestationReader, name = "eas"): ClaimSource 
     name,
     fetchForSeller: async (sellerAddress) => {
       const uids = await reader.uidsForSeller(sellerAddress);
+      const concurrency = Math.max(1, reader.concurrency ?? DEFAULT_CONCURRENCY);
       const claims: DeliveryClaim[] = [];
-      for (const uid of uids) {
-        let data: string;
-        try {
-          data = await reader.dataForUid(uid);
-        } catch {
-          continue; // unreadable attestation, skip
+      // Bounded-concurrency fan-out: at most `concurrency` dataForUid calls
+      // in flight at once, instead of either one-at-a-time (slow for a
+      // seller with many attestations) or fully unbounded (many simultaneous
+      // requests against one RPC endpoint). Order of `claims` does not need
+      // to match `uids`; discoverDeliveryHistory sorts the final aggregate by
+      // timestamp regardless of source order.
+      let next = 0;
+      async function worker(): Promise<void> {
+        for (;;) {
+          const i = next++;
+          if (i >= uids.length) return;
+          const uid = uids[i]!;
+          let data: string;
+          try {
+            data = await reader.dataForUid(uid);
+          } catch {
+            continue; // unreadable attestation, skip
+          }
+          const claim = decodeClaimData(data);
+          if (claim) claims.push(claim);
         }
-        const claim = decodeClaimData(data);
-        if (claim) claims.push(claim);
       }
+      await Promise.all(Array.from({ length: Math.min(concurrency, uids.length) }, worker));
       return claims;
     },
   };
 }
 
 /** Convenience: an EAS-backed source directly from an RPC URL. */
-export function easSourceFromRpc(rpcUrl: string, opts: { fromBlock?: number; schemaUID?: string; name?: string } = {}): ClaimSource {
+export function easSourceFromRpc(
+  rpcUrl: string,
+  opts: { fromBlock?: number; schemaUID?: string; name?: string; blockRange?: number; concurrency?: number } = {},
+): ClaimSource {
   return easSource(rpcAttestationReader(rpcUrl, opts), opts.name ?? "eas");
 }
 
