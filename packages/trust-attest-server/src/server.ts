@@ -16,6 +16,15 @@
 // 0 and price request_trust_attestation above 0. This package itself knows
 // nothing about payment; that boundary is deliberately left to mcp-paywall.
 //
+// RATE-LIMITING, DELIBERATELY NOT HERE: get_ownership_challenge is cheap
+// (pure local HMAC, no network) but this package has no rate-limit of its
+// own on it. That is an intentional gap, not an oversight — mcp-paywall
+// already rate-limits at the gateway layer (see its src/rate-limit.mjs),
+// and duplicating that here would just be two limits to keep in sync. Flagged
+// explicitly (2026-09-28 review, wazir-al-ghanima-a6) so this stays a stated
+// assumption rather than a silent one: whoever wires this behind a gateway
+// other than mcp-paywall needs to add rate-limiting there.
+//
 // WHY THE LOGIC IS SEPARATE FUNCTIONS, NOT INLINE IN registerTool CALLBACKS:
 // getOwnershipChallenge() and requestTrustAttestation() below return plain,
 // structured results (not MCP content blocks), and take `deps` for
