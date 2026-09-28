@@ -35,7 +35,7 @@
 //     DECISIONS.md D-005/D-012. This module is the substrate-agnostic seam
 //     plus a reference in-memory/static source for simulation and tests.
 
-import { DeliveryClaimSchema, type DeliveryClaim } from "./schema.js";
+import { DeliveryClaimSchema, computeClaimId, type DeliveryClaim } from "./schema.js";
 import { verifyClaim } from "./signing.js";
 import { claimsForSeller } from "./ledger.js";
 import { analyzeCompleteness, type CompletenessReport } from "./completeness.js";
@@ -80,10 +80,44 @@ export interface SourceReport {
   error?: string;
 }
 
+// A source that never resolves (a hung connection, a slow/overloaded
+// endpoint, a hostile one deliberately stalling) would otherwise block
+// discoverDeliveryHistory indefinitely, since sources are awaited in order:
+// one stuck source censors every source after it, the same failure mode the
+// non-array guard above already exists to prevent for a different case. This
+// bounds how long a single source is allowed to take.
+const DEFAULT_SOURCE_TIMEOUT_MS = 30_000;
+
 /** Optional per-call limits, mainly so tests can exercise the caps cheaply; production uses the defaults above. */
 export interface DiscoverOptions {
   maxClaimsPerSource?: number;
   maxTotalClaims?: number;
+  /** Max time to wait on a single source's fetchForSeller before treating it as a per-source error and moving on. */
+  sourceTimeoutMs?: number;
+}
+
+class SourceTimeoutError extends Error {
+  constructor(ms: number) {
+    super(`source did not respond within ${ms}ms`);
+    this.name = "SourceTimeoutError";
+  }
+}
+
+/** Race a source's fetch against a timeout. The source's own promise is not cancelled (fetchForSeller has no cancellation contract); this only stops WAITING on it, so a late resolution after timeout is simply ignored. */
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new SourceTimeoutError(ms)), ms);
+    promise.then(
+      (v) => {
+        clearTimeout(timer);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(timer);
+        reject(e);
+      },
+    );
+  });
 }
 
 export interface AggregatedHistory {
@@ -137,13 +171,14 @@ export async function discoverDeliveryHistory(
 ): Promise<AggregatedHistory> {
   const maxPerSource = opts.maxClaimsPerSource ?? MAX_CLAIMS_PER_SOURCE;
   const maxTotal = opts.maxTotalClaims ?? MAX_TOTAL_CLAIMS;
+  const sourceTimeoutMs = opts.sourceTimeoutMs ?? DEFAULT_SOURCE_TIMEOUT_MS;
   const byId = new Map<string, DeliveryClaim>();
   const sourceReports: SourceReport[] = [];
 
   for (const source of sources) {
     let fetched: DeliveryClaim[];
     try {
-      fetched = await source.fetchForSeller(sellerAddress);
+      fetched = await withTimeout(source.fetchForSeller(sellerAddress), sourceTimeoutMs);
     } catch (e) {
       sourceReports.push({ name: source.name, fetched: 0, accepted: 0, rejected: 0, wrongSeller: 0, duplicates: 0, error: (e as Error).message });
       continue;
@@ -173,6 +208,33 @@ export async function discoverDeliveryHistory(
     for (let i = 0; i < limit; i++) {
       if (byId.size >= maxTotal) break;
       const claim = fetched[i]!;
+      // Cheap pre-check BEFORE paying for a full cryptographic verification.
+      // Deliberately does NOT trust the raw, self-reported claim.claimId
+      // field for this (an earlier version of this optimization did, and a
+      // test caught why that is wrong: a tampered claim can carry a stale,
+      // untouched claimId copied from the genuine one it was mutated from).
+      // Instead this RECOMPUTES claimId from the claim's own content fields
+      // via computeClaimId(), the same pure sha256-over-canonical-JSON hash
+      // verifyClaim itself uses first (see signing.ts). That recomputation is
+      // cheap: no elliptic-curve math, unlike the signature RECOVERY
+      // (ethers.verifyMessage) verifyClaim also does, which is the actually
+      // expensive step this skips. If the recomputed hash matches an id
+      // already in byId, the content is proven identical (a hash match IS a
+      // content match) to something already fully verified, so signature
+      // recovery is redundant and safely skipped. If computeClaimId itself
+      // throws (pathological/malformed content), that is not this branch's
+      // problem to handle: fall through to the normal path below, which
+      // already has its own try/catch around verifyClaim for exactly that.
+      try {
+        const recomputed = lower(computeClaimId(claim));
+        if (byId.has(recomputed)) {
+          duplicates++;
+          continue;
+        }
+      } catch {
+        // Malformed content: let the normal verifyClaim path below handle
+        // and count it, do not duplicate that error handling here.
+      }
       // Re-verify EVERY claim, from EVERY source, no exceptions: this is the
       // entire trust model. A source is just bytes until verifyClaim passes.
       let verdict: ReturnType<typeof verifyClaim>;

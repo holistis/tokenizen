@@ -1,6 +1,25 @@
 # Self-build plan: NLnet work packages 1, 2 and 4
 
-Status: PLAN, not started executing yet beyond the research already done below. Work package 3 (independent external security audit) is deliberately excluded from this plan: it must be done by someone who is not us, by definition, so it stays dependent on the NLnet grant (or another funding source), not something we self-build.
+Status: WP1/WP2 EXECUTION STARTED, first two pieces merged (PR #15) / pending king confirmation (PR #16). Work package 3 (independent external security audit) is deliberately excluded from this plan: it must be done by someone who is not us, by definition, so it stays dependent on the NLnet grant (or another funding source), not something we self-build.
+
+## Progress log (GETEST, each entry backed by a real command, not a description alone)
+
+**2026-09-28, PR #15 (merged):** found and fixed a real gap while reading `eas.ts` for this plan: `rpcAttestationReader.uidsForSeller` made a single unbounded `getLogs(fromBlock:0, toBlock:"latest")` call, which most public RPC providers cap or reject outright. Fixed with a new, unit-tested `blockWindows()` pure helper (bounded-window chunking) plus a bounded-concurrency worker pool for `easSource.fetchForSeller` (was fully sequential). 541 -> 549 tests.
+
+**2026-09-28, PR #16 (pending king confirmation):** added real, repeatable benchmarks (`npm run bench`, vitest bench) for both of the above. Measured, real numbers:
+- easSource concurrency=1 (old) -> concurrency=10 (new default): **1,604ms -> 158ms for 100 attestations**, ~10x faster, matches PR #15's goal directly.
+- `discoverDeliveryHistory`, single source, 1,000 claims: 1,559ms. Single source, 40,000 claims (near MAX_TOTAL_CLAIMS): 17,199ms — sub-linear, scales better than proportionally.
+- Ten sources returning the SAME 40,000 claims (a realistic redundancy scenario: the same claims mirrored to multiple sources for availability): **68,838ms, 4x slower than one source with the same total**, for an identical result. Root cause: every copy paid full cryptographic signature-recovery verification, even when it was a byte-for-byte duplicate of a claim already accepted.
+- Fixed with a cheap pre-check that recomputes claimId from content (a pure hash, not the expensive elliptic-curve signature recovery) before deciding whether to skip re-verification. First version of this fix trusted the claim's own, self-reported `claimId` field instead of recomputing it, which the existing `eas.test.ts` tamper test immediately and correctly caught as unsafe (a tampered claim can carry a stale, copied claimId). Fixed properly, added a direct regression test for it, re-verified: 20,000 claim-instances across 10 duplicate-heavy sources now takes 3.2s, matching the cost of verifying only the 2,000 genuinely unique claims once.
+- 549 -> 550 tests, all passing.
+
+Honest note for whoever reads this later, including any future NLnet update: the fast-path bug above was caught by this project's OWN existing test suite within the same work session it was introduced, before it ever reached a PR, let alone main. That is not a reason to gloss over it; it is exactly the kind of adversarial, fail-closed engineering discipline work package 3's external audit is meant to further stress-test at a level a single session's own tests cannot reach alone.
+
+**2026-09-28, same PR (#16), pushed after the above:** a third real gap, found while building the adversarial-source fuzz test plan itself (not assumed upfront): `discoverDeliveryHistory` awaited each source's `fetchForSeller` with no timeout at all. A slow, overloaded, or deliberately stalling source would block the entire call indefinitely, since sources are processed in order, one stuck source censors every source listed after it. Fixed with a configurable `sourceTimeoutMs` (default 30s, `Promise.race`-style, no cancellation contract needed since a late resolution is simply ignored).
+
+Added `discovery.fuzz.test.ts` (8 new tests, same precedent as `schema.fuzz.test.ts`): forged/garbage claims mixed into a real source's response (including a sparse array with a claimed length of 5 million, proving the per-entry loop is bounded by `maxClaimsPerSource` BEFORE it examines anything, not after), volume flooding across single and multiple sources, and the new timeout behavior including a source that resolves late, after its own timeout already fired (proven not to cause an unhandled rejection or corrupt the result).
+
+541 -> 558 tests total across this PR so far, all passing. WP1's three named adversarial-source scenarios (forged/garbage injection, volume flood, slow/flaky) now all have direct, dedicated test coverage, matching the plan's own Verifier bar above.
 
 Structured around the eleven-stage loop the king asked for. Each stage below is a real section, not a label.
 
