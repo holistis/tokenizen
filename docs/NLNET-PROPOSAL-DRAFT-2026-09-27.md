@@ -1,6 +1,6 @@
 # NLnet CodeSupply: concept-aanvraag voor Capacity Attest
 
-Status: CONCEPT, nog niet ingediend. Wacht op koning-akkoord op de exacte tekst voor indiening op nlnet.nl/propose/ (fonds: CodeSupply, deadline eerstvolgende ronde 3 november 2026, 12:00 CET).
+Status: INGEDIEND op 2026-09-28, bevestigd door de koning. NLnet-aanvraagcode: 2026-11-1af. Bevestigingsmail komt van NLnet zelf, "Thanks for your application, we look forward to learning more about your proposed project." Fonds: CodeSupply, gevraagd bedrag 18.000 euro. Uitslag nog niet bekend.
 
 Elk veld hieronder komt 1-op-1 overeen met een veld op het echte formulier. Tekens zijn geteld op het Engelse concept (dit gaat in het Engels in, NLnet is internationaal).
 
