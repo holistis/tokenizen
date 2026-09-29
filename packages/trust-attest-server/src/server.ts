@@ -198,10 +198,10 @@ function errorResult(message: string): { content: Array<{ type: "text"; text: st
   return { content: [{ type: "text", text: `Error: ${message}` }], isError: true };
 }
 
-// Created once per process, held for the server's lifetime. See
-// attester-identity.ts for why this is deliberately ephemeral/test-only, and
-// for the practical consequence: a challenge token issued before a restart
-// will not match after one.
+// Created once per process, held for the server's lifetime. Persistent
+// across restarts when TRUST_ATTEST_PRIVATE_KEY and TRUST_ATTEST_OWNERSHIP_SECRET
+// are set; falls back to an ephemeral identity with a loud stderr warning
+// otherwise. See attester-identity.ts.
 const identity = createAttesterIdentity();
 
 const server = new McpServer({

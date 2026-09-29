@@ -13,9 +13,18 @@ endpoint-attest handles ownership proof, content-addressing, and signing, but de
 
 `checks.ts` performs exactly one plain HTTP GET to the endpoint — the same request a browser would make. It never sends a POST, never attempts an MCP `initialize`/`tools/call` handshake, never logs in, never writes anything. A `401`/`403` challenge on that bare GET is read as a good signal (the server is demonstrating enforcement); an explicit, literal "no authentication required"-style admission in the body is read as a bad signal. Anything else is reported `inconclusive` rather than guessed either way.
 
-## Identity is a test wallet, on purpose
+## Identity: set two environment variables before deploying this for real use
 
-`attester-identity.ts` generates a fresh, in-memory `ethers.Wallet.createRandom()` and a fresh random ownership secret every time the process starts. There is no persistent signing key or persistent shared secret yet — that is a separate, later decision (real key custody, rotation, persistence across restarts) that has not been made. See the comments in that file for the practical consequences of that choice.
+`attester-identity.ts` reads `TRUST_ATTEST_PRIVATE_KEY` and `TRUST_ATTEST_OWNERSHIP_SECRET` from the environment. Set both and the identity is stable across restarts: every attestation this process signs keeps the same `attesterAddress` forever, and an ownership challenge token issued before a restart still matches after one.
+
+Leave either unset and this falls back to a fresh, random wallet and secret every process start, and prints a loud warning to stderr rather than pretending to be production-ready. That fallback is fine for `npm test` and the demo, and it is NOT fine for anyone who actually installs this package expecting attestations to mean something: a different signer after every restart means no continuous trust history is possible.
+
+```bash
+export TRUST_ATTEST_PRIVATE_KEY=0x...      # the attester's own signing key, kept secret
+export TRUST_ATTEST_OWNERSHIP_SECRET=...   # at least 32 characters, kept secret
+```
+
+This is the documented minimum bar, not the final word on key custody. Real, safely custodied key management (hardware-backed signing, rotation, backup) is a separate, later decision.
 
 ## Usage
 
@@ -29,4 +38,4 @@ Full worked example, including the "ownership not yet proven" failure path and a
 
 ## Status
 
-New. Built on endpoint-attest (43 tests passing, not yet published to npm — see its own README). This package is not published to npm either. No independent, external review of this code has been done.
+Built on endpoint-attest (43 tests passing — see its own README). 27 tests in this package. No independent, external review of this code has been done.

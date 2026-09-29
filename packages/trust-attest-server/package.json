@@ -1,7 +1,6 @@
 {
   "name": "trust-attest-server",
   "version": "0.1.0",
-  "private": true,
   "description": "MCP server for the tokenizen.nl trust layer: an AI agent proves it controls an endpoint (ACME-style, via endpoint-attest), a passive check reads what that endpoint's own response says about authentication, and the outcome is returned as a signed, content-addressed, expiring EndpointAttestation. Ownership proof is required before any check runs or any attestation is issued.",
   "keywords": [
     "mcp",
