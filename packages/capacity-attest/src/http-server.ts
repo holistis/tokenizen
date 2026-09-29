@@ -43,7 +43,6 @@
 
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { randomUUID } from "node:crypto";
-import { pathToFileURL } from "node:url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { ClaimContentSchema } from "./schema.js";
@@ -233,20 +232,26 @@ export function createApp() {
   };
 }
 
-async function main(): Promise<void> {
+/**
+ * Starts the actual server listening on PORT. Exported, NOT auto-run at
+ * module load: this file is a pure library with no import-time side
+ * effects. The real entrypoint is http-server-bin.ts, a separate, tiny
+ * file that does nothing but call this.
+ *
+ * Found 2026-09-29, deploying this for real: the earlier version tried to
+ * detect "am I the entrypoint" by comparing import.meta.url against
+ * pathToFileURL(process.argv[1]) so the file could safely both start a
+ * server AND be imported by tests. That comparison silently evaluated to
+ * false under PM2 (fork mode, interpreter=node) even though the exact same
+ * command run directly with `node dist/http-server.js` worked correctly —
+ * main() was simply never called, so the process sat there "online" in PM2
+ * with an empty log and nothing listening, no crash to even signal the
+ * problem. Splitting the entrypoint into its own file removes the guess
+ * entirely: this module has zero ambiguity about when it runs.
+ */
+export function startServer(): void {
   const httpServer = createServer(createApp());
   httpServer.listen(PORT, () => {
     console.log(`capacity-attest-http listening on :${PORT}, POST /mcp (read-only tools: get_delivery_history, resolve_agent_identity)`);
-  });
-}
-
-// Only auto-start when this file is actually run as the server process, not
-// when imported by a test (same guard shape as trust-attest-server's
-// server.ts, chosen there specifically because a raw entrypoint string
-// compare mis-handles Windows paths — see that file's own comment).
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch((e) => {
-    console.error("capacity-attest-http failed to start:", e);
-    process.exit(1);
   });
 }
