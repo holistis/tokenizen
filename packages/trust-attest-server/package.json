@@ -1,0 +1,54 @@
+{
+  "name": "trust-attest-server",
+  "version": "0.1.0",
+  "description": "MCP server for the tokenizen.nl trust layer: an AI agent proves it controls an endpoint (ACME-style, via endpoint-attest), a passive check reads what that endpoint's own response says about authentication, and the outcome is returned as a signed, content-addressed, expiring EndpointAttestation. Ownership proof is required before any check runs or any attestation is issued.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "attestation",
+    "endpoint",
+    "trust",
+    "x402",
+    "agent-commerce"
+  ],
+  "author": "holistis",
+  "license": "MIT",
+  "homepage": "https://tokenizen.nl",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/holistis/tokenizen.git",
+    "directory": "packages/trust-attest-server"
+  },
+  "type": "module",
+  "main": "./dist/server.js",
+  "bin": {
+    "trust-attest-server": "dist/server.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node -e \"require('fs').chmodSync('dist/server.js', 0o755)\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "start": "node dist/server.js",
+    "demo": "tsx examples/demo.ts"
+  },
+  "dependencies": {
+    "endpoint-attest": "^0.1.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "ethers": "^6.13.0",
+    "zod": "^4.5.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsx": "^4.23.15",
+    "typescript": "^5.7.3",
+    "vitest": "^4.1.11"
+  }
+}

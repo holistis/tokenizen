@@ -1,0 +1,59 @@
+name: Publish trust-attest-server
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "publish" to confirm publishing the current version in packages/trust-attest-server/package.json to npm'
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    if: github.event.inputs.confirm == 'publish'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/trust-attest-server
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Update npm (trusted publishing + provenance need npm >= 11.5.1)
+        run: npm install -g npm@latest
+
+      - name: Install dependencies (workspace root)
+        working-directory: .
+        run: npm ci
+
+      - name: Build capacity-attest (workspace dependency)
+        working-directory: packages/capacity-attest
+        run: npm run build
+
+      - name: Build endpoint-attest (workspace dependency)
+        working-directory: packages/endpoint-attest
+        run: npm run build
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # Tests run with no TRUST_ATTEST_* env vars set on purpose: this proves
+      # the documented ephemeral-fallback path still works (loud warning, not
+      # a crash) even in the CI environment that publishes the package.
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish to npm with provenance
+        run: npm publish --provenance --access public
