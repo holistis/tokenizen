@@ -20,11 +20,24 @@ jobs:
       - name: Install dependencies (root + all workspaces)
         run: npm ci
 
-      # Runs "build" in every workspace that defines it, skips the rest.
-      # No package path is hardcoded here, so a future packages/website
-      # with its own build script is picked up automatically.
-      - name: Build workspaces
-        run: npm run build --workspaces --if-present
+      # `npm run build --workspaces` builds packages in filesystem/glob order
+      # (alphabetical), NOT dependency order. self-check-server imports directly from
+      # trust-attest-server's dist output, but "s" < "t" alphabetically, so the blanket
+      # command alone built self-check-server before trust-attest-server existed,
+      # breaking CI since 2026-09-29 09:44 UTC. Confirmed locally: rm -rf the dist
+      # folders and rebuild in blanket order reproduces the exact "Cannot find module
+      # 'trust-attest-server/dist/server.js'" error.
+      # Fix: build the known cross-workspace dependency chain explicitly, in order,
+      # first. The blanket call after still covers every other/future workspace
+      # (self-check-server's second build is a fast, harmless no-op since it's already
+      # built) -- add any NEW package with a cross-workspace dist import to the
+      # explicit list above the blanket call, in dependency order.
+      - name: Build workspaces (dependency order first, then the rest)
+        run: |
+          npm run build -w capacity-attest --if-present
+          npm run build -w endpoint-attest --if-present
+          npm run build -w trust-attest-server --if-present
+          npm run build --workspaces --if-present
 
       # Same pattern for "test": only capacity-attest has one today,
       # any future package with a test script is picked up automatically.
