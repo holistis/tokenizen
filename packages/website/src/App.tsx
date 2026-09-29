@@ -11,6 +11,7 @@ import { OpenSource } from "@/components/sections/open-source";
 import { Status } from "@/components/sections/status";
 import { NineWaysArticle } from "@/components/pages/nine-ways-article";
 import { HierarchyOfAgentTrustArticle } from "@/components/pages/hierarchy-of-agent-trust-article";
+import { TrustRadarPage } from "@/components/pages/trust-radar-page";
 import { SelfCheckPage } from "@/components/pages/self-check-page";
 
 // Engelstalig-only stukken: geen NL-versie. De taalwissel-knop in de header
@@ -20,6 +21,7 @@ import { SelfCheckPage } from "@/components/pages/self-check-page";
 const ARTICLES: Record<string, () => JSX.Element> = {
   "/notes/nine-ways-to-fake-a-delivery-claim": NineWaysArticle,
   "/notes/the-hierarchy-of-agent-trust": HierarchyOfAgentTrustArticle,
+  "/trust-radar": TrustRadarPage,
   "/check": SelfCheckPage,
 };
 
