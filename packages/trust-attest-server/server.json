@@ -1,0 +1,38 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.holistis/trust-attest-server",
+  "description": "Owner-requested endpoint trust attestations: prove control of an endpoint, get a passive check run, receive a signed, expiring EndpointAttestation.",
+  "repository": {
+    "url": "https://github.com/holistis/tokenizen",
+    "source": "github",
+    "subfolder": "packages/trust-attest-server"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "trust-attest-server",
+      "version": "0.1.0",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "description": "The attester's own EIP-191 signing key (0x-prefixed private key). Required for a persistent identity across restarts; if unset, the server falls back to a fresh random key every start (loud warning, not fit for real use).",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": true,
+          "name": "TRUST_ATTEST_PRIVATE_KEY"
+        },
+        {
+          "description": "HMAC secret behind the ownership-challenge token, at least 32 characters. Required alongside TRUST_ATTEST_PRIVATE_KEY for a persistent identity.",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": true,
+          "name": "TRUST_ATTEST_OWNERSHIP_SECRET"
+        }
+      ]
+    }
+  ]
+}

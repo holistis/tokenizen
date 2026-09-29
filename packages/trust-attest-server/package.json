@@ -14,6 +14,7 @@
   "author": "holistis",
   "license": "MIT",
   "homepage": "https://tokenizen.nl",
+  "mcpName": "io.github.holistis/trust-attest-server",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/holistis/tokenizen.git",
