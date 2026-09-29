@@ -25,7 +25,8 @@
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
-    "capacity-attest": "dist/index.js"
+    "capacity-attest": "dist/index.js",
+    "capacity-attest-http": "dist/http-server-bin.js"
   },
   "files": [
     "dist",
@@ -37,11 +38,12 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && node -e \"require('fs').chmodSync('dist/index.js', 0o755)\"",
+    "build": "tsc -p tsconfig.json && node -e \"require('fs').chmodSync('dist/index.js', 0o755); require('fs').chmodSync('dist/http-server-bin.js', 0o755)\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "bench": "vitest bench --run",
     "start": "node dist/index.js",
+    "start:http": "node dist/http-server-bin.js",
     "demo": "tsx examples/demo.ts",
     "fixture": "tsx examples/completeness-fixture.ts",
     "completeness-fixture": "tsx examples/completeness-fixture.ts",

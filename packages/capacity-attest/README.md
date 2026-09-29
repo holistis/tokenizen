@@ -184,6 +184,22 @@ npm start           # start the MCP server over stdio (e.g. for Claude Desktop/C
 
 The ledger location is configurable via `CAPACITY_ATTEST_DATA_DIR` (default: `./data` in this package). Tests and the demo always use their own, disposable temp directory, never the real `data/` folder.
 
+## HTTP-reachable variant, for deployments that need a network endpoint
+
+Some MCP registries and directories require an accessible HTTPS endpoint before they will list a server. `capacity-attest-http` (`src/http-server.ts`) is that variant: a plain Node HTTP server speaking the MCP Streamable HTTP transport at `POST /mcp`.
+
+It is deliberately narrower than the stdio server above: only the two read-only, side-effect-free tools are exposed (`get_delivery_history`, `resolve_agent_identity`). `record_delivery` is not, on purpose. The stdio server's ledger is a local, single-installation design; putting writes behind a public, unauthenticated HTTP endpoint raises a real question (whose ledger does an anonymous caller write into) that this file does not answer for you. See the comment at the top of `http-server.ts` for the full reasoning, and for how the 4 mandatory checks (auth, data validation, exposure, rate limiting) are applied.
+
+```bash
+npm run start:http     # listens on :8402 by default, override with PORT=
+```
+
+```bash
+curl -X POST http://localhost:8402/mcp \
+  -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}'
+```
+
 ## Architecture
 
 ```text
