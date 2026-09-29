@@ -17,7 +17,7 @@ describe("TrustRadarPage", () => {
 
   it("renders the not-a-security-audit disclaimer", () => {
     const html = renderToStaticMarkup(<TrustRadarPage />);
-    expect(html).toContain("not a security audit");
+    expect(html).toContain("not a general security audit");
   });
 
   it("offers a badge snippet only for confirmed-safe entries", () => {
@@ -29,6 +29,17 @@ describe("TrustRadarPage", () => {
     // attributes, so counting that string would double-count each button.
     const badgeOccurrences = html.split("/trust-radar#").length - 1;
     expect(badgeOccurrences).toBe(safeCount);
-    expect(safeCount).toBeGreaterThan(0);
+  });
+
+  it("renders the empty state and no fabricated example when there are no real attestations", () => {
+    // The real data source (ATTESTED_ENDPOINTS) is empty until the
+    // attestation system is live — this is the correct, current state, not
+    // a bug. The page must show an honest empty state, never a fictional
+    // example that could read as a real, judged company.
+    expect(TRUST_RADAR_ENTRIES).toHaveLength(0);
+
+    const html = renderToStaticMarkup(<TrustRadarPage />);
+    expect(html).toContain("No confirmed endpoints yet");
+    expect(html).toContain("Be the first");
   });
 });
