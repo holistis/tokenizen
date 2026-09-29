@@ -1,0 +1,48 @@
+{
+  "name": "endpoint-attest",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Time-bounded, owner-requested security attestations for a network endpoint: the operator proves control of the endpoint, a check is run, and the outcome is recorded as a signed, content-addressed, expiring attestation. Reuses capacity-attest's canonical hashing and EIP-191 signing rather than reimplementing them. Never a security score, never a claim about a party that did not ask.",
+  "keywords": [
+    "attestation",
+    "mcp",
+    "endpoint",
+    "domain-control",
+    "x402",
+    "agent-commerce"
+  ],
+  "author": "holistis",
+  "license": "MIT",
+  "homepage": "https://tokenizen.nl",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/holistis/tokenizen.git",
+    "directory": "packages/endpoint-attest"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "capacity-attest": "^0.7.0",
+    "ethers": "^6.13.0",
+    "zod": "^4.5.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsx": "^4.23.15",
+    "typescript": "^5.7.3",
+    "vitest": "^4.1.11"
+  }
+}
