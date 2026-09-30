@@ -1,7 +1,6 @@
 {
   "name": "endpoint-attest",
   "version": "0.1.0",
-  "private": true,
   "description": "Time-bounded, owner-requested security attestations for a network endpoint: the operator proves control of the endpoint, a check is run, and the outcome is recorded as a signed, content-addressed, expiring attestation. Reuses capacity-attest's canonical hashing and EIP-191 signing rather than reimplementing them. Never a security score, never a claim about a party that did not ask.",
   "keywords": [
     "attestation",
