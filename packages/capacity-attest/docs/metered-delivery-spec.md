@@ -6,6 +6,16 @@ storage over a period, bandwidth over a window) instead of a single-shot
 payload. The optional `measured` block closes that gap without changing
 anything about how an unmeasured claim hashes or verifies.
 
+**Stability:** every rule below (the field shapes, CDEC, CINST, the unit table,
+and the hashing/signing rules) is frozen as of 0.2.0 and protected by
+regression tests that hard-code the expected `claimId` for a fixed input
+(`src/measured.test.ts`, "frozen regression anchors"). A future change adds a
+new, additively-versioned field; it never silently redefines a rule already
+written here. Safe to pin a specific commit or npm version of this package
+for cross-implementation test vectors, the way
+[erc-8004/erc-8004-contracts#99](https://github.com/erc-8004/erc-8004-contracts/issues/99)
+already does.
+
 This document describes the rules the schema already enforces
 (`packages/capacity-attest/src/schema.ts`, `MeasuredSchema`). A worked,
 self-contained, independently verifiable example is in
