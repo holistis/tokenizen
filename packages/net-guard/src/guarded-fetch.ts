@@ -18,6 +18,7 @@ import { Agent, fetch as undiciFetch, buildConnector } from "undici";
 import { lookup as dnsLookupCb, type LookupAddress } from "node:dns";
 import { isIP } from "node:net";
 import { UnsafeHostError, isBlockedAddress, assertHostnameLiteralSafe } from "./ip-rules.js";
+import { withTimeout, DEFAULT_DNS_TIMEOUT_MS } from "./dns.js";
 
 /** Promisified node:dns lookup with all addresses. The production resolver. */
 function defaultDnsLookupAll(hostname: string): Promise<LookupAddress[]> {
@@ -37,6 +38,12 @@ export interface GuardedFetchDeps {
   connectTimeoutMs?: number;
   headersTimeoutMs?: number;
   bodyTimeoutMs?: number;
+  /** Hard deadline on the connector's DNS resolution. A malicious hostname can be made to resolve
+   *  slowly or never; undici's connect timeout starts at the socket, AFTER the lookup returns, so
+   *  without this the lookup itself could hang. Bounds the default AND an injected resolver.
+   *  Default 5s, matching dns.ts. (getaddrinfo is uncancellable, so the promise rejects while the
+   *  underlying OS query is abandoned, same honest caveat as dns.ts.) */
+  dnsTimeoutMs?: number;
 }
 
 const DEFAULT_CONNECT_TIMEOUT_MS = 10_000;
@@ -54,6 +61,7 @@ const DEFAULT_BODY_TIMEOUT_MS = 15_000;
  */
 export function createGuardedLookup(
   dnsLookupAll: (hostname: string) => Promise<LookupAddress[]> = defaultDnsLookupAll,
+  timeoutMs: number = DEFAULT_DNS_TIMEOUT_MS,
 ) {
   return function guardedLookup(hostname: string, _options: unknown, callback: NetLookupCallback): void {
     try {
@@ -67,7 +75,7 @@ export function createGuardedLookup(
       callback(null, [{ address: hostname, family: literalFamily }]);
       return;
     }
-    dnsLookupAll(hostname)
+    withTimeout(dnsLookupAll(hostname), timeoutMs, `DNS lookup of "${hostname}"`)
       .then((addresses) => {
         if (!addresses || addresses.length === 0) {
           callback(new UnsafeHostError(`"${hostname}" did not resolve to any address`, hostname), []);
@@ -120,7 +128,7 @@ function assertSafeRequestUrl(input: string | URL): void {
  * compliant fetch bound to a guarded connector.
  */
 export function makeGuardedFetch(deps: GuardedFetchDeps = {}): typeof fetch {
-  const lookup = createGuardedLookup(deps.dnsLookupAll);
+  const lookup = createGuardedLookup(deps.dnsLookupAll, deps.dnsTimeoutMs);
   // autoSelectFamily:true pins the Happy-Eyeballs behaviour our lookup depends
   // on (it is called with {all:true} and answers with an address array), so
   // correctness never rides on a mutable Node global. buildConnector forwards

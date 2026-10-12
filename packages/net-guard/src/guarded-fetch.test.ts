@@ -19,6 +19,17 @@ describe("createGuardedLookup", () => {
     expect(err!.message).toContain("10.0.0.5");
   });
 
+  it("bounds a hanging DNS resolution with a timeout instead of hanging forever", async () => {
+    // A malicious hostname can be made to resolve slowly or never. undici's
+    // connect timeout starts at the socket, after the lookup returns, so the
+    // lookup itself must carry its own deadline. 50ms keeps the test fast.
+    const neverResolves = () => new Promise<never>(() => {});
+    const lookup = createGuardedLookup(neverResolves, 50);
+    const { err } = await runLookup(lookup, "sinkhole.example");
+    expect(err).toBeInstanceOf(UnsafeHostError);
+    expect(err!.message).toMatch(/timed out/i);
+  });
+
   it("refuses when ANY of several resolved addresses is blocked (rebind spread)", async () => {
     const lookup = createGuardedLookup(async () => [
       { address: "93.184.216.34", family: 4 },

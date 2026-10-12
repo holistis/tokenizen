@@ -17,9 +17,9 @@ import { UnsafeHostError, isBlockedAddress, assertHostnameLiteralSafe } from "./
 // rather than cancelled, but the promise rejects so the attester never hangs on
 // a chosen host. Only the DEFAULT resolvers are bounded; an injected test stub
 // is left alone.
-const DEFAULT_DNS_TIMEOUT_MS = 5_000;
+export const DEFAULT_DNS_TIMEOUT_MS = 5_000;
 
-function withTimeout<T>(p: Promise<T>, ms: number, what: string): Promise<T> {
+export function withTimeout<T>(p: Promise<T>, ms: number, what: string): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error(`${what} timed out after ${ms}ms`)), ms);
     p.then(
