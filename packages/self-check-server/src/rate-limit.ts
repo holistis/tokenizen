@@ -110,12 +110,24 @@ export function createRateLimiter(options: RateLimitOptions) {
   const keyFn = options.keyFn ?? ((req: Request) => ipKey(req.ip ?? "unknown"));
   const maxTrackedKeys = options.maxTrackedKeys ?? DEFAULT_MAX_TRACKED_KEYS;
   const buckets = new Map<string, Bucket>();
+  let lastSweep = 0;
 
-  /** Bound the map before inserting a genuinely new key: drop expired buckets first (cheap, the common case), then, only if still at the cap, evict oldest-inserted until under it. */
+  /**
+   * Bound the map before inserting a genuinely new key. The full expired-sweep
+   * is AMORTIZED — run at most once per window, not on every insert — so a
+   * key-rotation flood sitting at the cap cannot force an O(n) scan per request
+   * (new keys are not rate-limited, so without this each flood request paid an
+   * O(maxTrackedKeys) scan). Between sweeps, if still at the cap, evict a
+   * single oldest-inserted bucket, which is O(1). Eviction only resets a key's
+   * counter, so it can forgive but never punish a specific victim.
+   */
   function boundBeforeInsert(t: number): void {
     if (buckets.size < maxTrackedKeys) return;
-    for (const [k, b] of buckets) {
-      if (t - b.windowStart >= windowMs) buckets.delete(k);
+    if (t - lastSweep >= windowMs) {
+      for (const [k, b] of buckets) {
+        if (t - b.windowStart >= windowMs) buckets.delete(k);
+      }
+      lastSweep = t;
     }
     if (buckets.size >= maxTrackedKeys) {
       let toDrop = buckets.size - maxTrackedKeys + 1;
