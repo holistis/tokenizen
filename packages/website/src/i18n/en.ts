@@ -28,6 +28,10 @@ export const en: Dictionary = {
         "label": "Product"
       },
       {
+        "href": "#controle",
+        "label": "Inspection"
+      },
+      {
         "href": "#hoe-het-werkt",
         "label": "How it works"
       },
