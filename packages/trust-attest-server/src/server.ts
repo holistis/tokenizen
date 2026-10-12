@@ -54,7 +54,7 @@ import {
   type AttestationContent,
   type EndpointAttestation,
 } from "endpoint-attest";
-import { guardedFetch, resolveTxtGuarded } from "net-guard";
+import { guardedFetch, resolveTxtGuarded } from "tokenizen-net-guard";
 import { runChecks, type CheckDeps, type CheckFinding, type CheckResult } from "./checks.js";
 import { runActiveToolChainCheck, type ToolFetchDeps } from "./fetch-tools.js";
 import { createAttesterIdentity, type AttesterIdentity, type OwnershipContext } from "./attester-identity.js";

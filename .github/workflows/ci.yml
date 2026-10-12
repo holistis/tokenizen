@@ -41,7 +41,7 @@ jobs:
       # gave the identical two TS2307 errors CI reported.
       - name: Build workspaces (dependency order first, then the rest)
         run: |
-          npm run build -w net-guard --if-present
+          npm run build -w tokenizen-net-guard --if-present
           npm run build -w capacity-attest --if-present
           npm run build -w endpoint-attest --if-present
           npm run build -w trust-attest-server --if-present

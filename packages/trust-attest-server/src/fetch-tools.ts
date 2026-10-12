@@ -17,7 +17,7 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
-import { guardedFetch } from "net-guard";
+import { guardedFetch } from "tokenizen-net-guard";
 import type { CheckResult } from "./checks.js";
 import { analyzeToolChains, TOOL_CHAIN_CHECK_NAME, MAX_TOOLS, MAX_DESC_CHARS, type McpTool } from "./tool-chain-check.js";
 
