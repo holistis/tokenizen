@@ -216,3 +216,79 @@ describe("requestTrustAttestation: attesterAddress is NEVER ownerAddress (regres
     expect(verifyAttestation(attestation)).toMatchObject({ ok: false, reason: "attester_is_owner" });
   });
 });
+
+describe("requestTrustAttestation: consent-gated active testing", () => {
+  const ownershipPasses = (identity: AttesterIdentity): OwnershipCheckDeps => ({
+    fetchImpl: (async () =>
+      new Response(challengeToken(ENDPOINT, OWNER, identity.ownershipSecret), { status: 200 })) as typeof fetch,
+  });
+
+  it("does NOT run the active check and never calls the tool lister when consent is absent", async () => {
+    const identity = freshIdentity();
+    let listerCalled = false;
+    const result = await requestTrustAttestation(
+      { endpoint: ENDPOINT, ownerAddress: OWNER, method: "well-known-file" },
+      identity,
+      {
+        ownershipDeps: ownershipPasses(identity),
+        checkDeps: { fetchImpl: AUTH_ENFORCED_CHECK_FETCH },
+        toolFetchDeps: {
+          listTools: async () => {
+            listerCalled = true;
+            return [];
+          },
+        },
+      },
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(listerCalled).toBe(false); // the real proof the active path is gated on consent, not just worded
+    expect(result.attestation.checksPerformed).not.toContain("mcp-tool-capability-chains");
+  });
+
+  it("runs the active check on consent, records it in checksPerformed, and a failing chain drives the outcome to failed", async () => {
+    const identity = freshIdentity();
+    const result = await requestTrustAttestation(
+      { endpoint: ENDPOINT, ownerAddress: OWNER, method: "well-known-file", consentToActiveTesting: true },
+      identity,
+      {
+        ownershipDeps: ownershipPasses(identity),
+        checkDeps: { fetchImpl: AUTH_ENFORCED_CHECK_FETCH }, // auth-signal check -> passed
+        toolFetchDeps: {
+          listTools: async () => [
+            { name: "fetch_url", description: "Fetch and read a webpage." },
+            { name: "send_payment", description: "Transfer USDC to an address." },
+          ],
+        },
+      },
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.attestation.checksPerformed).toContain("auth-signal-on-plain-get");
+    expect(result.attestation.checksPerformed).toContain("mcp-tool-capability-chains");
+    expect(result.attestation.outcome).toBe("failed"); // passed auth + failed chain -> failed
+    expect(verifyAttestation(result.attestation)).toEqual({ ok: true }); // still independently verifiable
+  });
+
+  it("still issues an attestation when the consented active check cannot connect (degrades to inconclusive)", async () => {
+    const identity = freshIdentity();
+    const result = await requestTrustAttestation(
+      { endpoint: ENDPOINT, ownerAddress: OWNER, method: "well-known-file", consentToActiveTesting: true },
+      identity,
+      {
+        ownershipDeps: ownershipPasses(identity),
+        checkDeps: { fetchImpl: AUTH_ENFORCED_CHECK_FETCH }, // auth -> passed
+        toolFetchDeps: {
+          listTools: async () => {
+            throw new Error("connection refused");
+          },
+        },
+      },
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.attestation.checksPerformed).toContain("mcp-tool-capability-chains");
+    expect(result.attestation.outcome).toBe("inconclusive"); // passed auth + inconclusive active -> inconclusive
+    expect(verifyAttestation(result.attestation)).toEqual({ ok: true });
+  });
+});

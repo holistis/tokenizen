@@ -50,7 +50,8 @@ import {
   type AttestationContent,
   type EndpointAttestation,
 } from "endpoint-attest";
-import { runChecks, type CheckDeps, type CheckFinding } from "./checks.js";
+import { runChecks, type CheckDeps, type CheckFinding, type CheckResult } from "./checks.js";
+import { runActiveToolChainCheck, type ToolFetchDeps } from "./fetch-tools.js";
 import { createAttesterIdentity, type AttesterIdentity } from "./attester-identity.js";
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
@@ -99,6 +100,14 @@ export interface RequestTrustAttestationInput {
   endpoint: string;
   ownerAddress: string;
   method: OwnershipMethod;
+  /**
+   * When true, the owner authorizes active testing: after ownership is proven,
+   * the attester connects to the endpoint as an MCP client, reads its
+   * advertised tools, and classifies risky capability chains. Only set this
+   * for an endpoint you control and consent to have actively tested. Omitted
+   * or false keeps the attester on the passive path only.
+   */
+  consentToActiveTesting?: boolean;
 }
 
 export interface RequestTrustAttestationDeps {
@@ -106,6 +115,8 @@ export interface RequestTrustAttestationDeps {
   ownershipDeps?: OwnershipCheckDeps;
   /** Injected into runChecks — lets tests supply a fake fetch for the auth-signal check. */
   checkDeps?: CheckDeps;
+  /** Injected into the consent-gated active check: lets tests supply a fake tool lister instead of a real MCP connection. */
+  toolFetchDeps?: ToolFetchDeps;
   /** "Now", injectable so expiry math is deterministic in tests. */
   now?: () => Date;
 }
@@ -149,7 +160,15 @@ export async function requestTrustAttestation(
     }
 
     const token = challengeToken(endpoint, ownerAddress, identity.ownershipSecret);
-    const checkResult = await runChecks(endpoint, deps.checkDeps);
+    let checkResult = await runChecks(endpoint, deps.checkDeps);
+    if (input.consentToActiveTesting) {
+      // Consent-gated active path: only reached because the caller explicitly
+      // authorized it AND ownership was already proven above. The active
+      // check's name lands in checksPerformed, so the signed attestation
+      // itself records that an active test was run with consent.
+      const active = await runActiveToolChainCheck(endpoint, deps.toolFetchDeps);
+      checkResult = mergeCheckResults(checkResult, active);
+    }
     const findingsHash = createHash("sha256").update(JSON.stringify(checkResult.findings), "utf-8").digest("hex");
     const checkedAt = now();
     const expiresAt = new Date(checkedAt.getTime() + THIRTY_DAYS_MS);
@@ -177,6 +196,23 @@ export async function requestTrustAttestation(
   } catch (e) {
     return { ok: false, error: (e as Error).message };
   }
+}
+
+/**
+ * Combine the passive and active check results into one. checksPerformed and
+ * findings concatenate; the outcome is the worst of the two (failed beats
+ * inconclusive beats passed), so a single failing check anywhere drives the
+ * whole attestation's outcome, matching the schema's "failed = at least one
+ * check did not pass".
+ */
+function mergeCheckResults(a: CheckResult, b: CheckResult): CheckResult {
+  const rank: Record<string, number> = { failed: 2, inconclusive: 1, passed: 0 };
+  const outcome = rank[a.outcome]! >= rank[b.outcome]! ? a.outcome : b.outcome;
+  return {
+    checksPerformed: [...a.checksPerformed, ...b.checksPerformed],
+    outcome,
+    findings: [...a.findings, ...b.findings],
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -249,6 +285,12 @@ server.registerTool(
       endpoint: EndpointField,
       ownerAddress: OwnerAddressField,
       method: z.enum(OWNERSHIP_METHODS).describe("Which ownership-proof method you published: dns-txt or well-known-file."),
+      consentToActiveTesting: z
+        .boolean()
+        .optional()
+        .describe(
+          "Set true to authorize active testing: after ownership is verified, the attester connects to your endpoint as an MCP client and reads its advertised tools to classify risky capability chains. Only for an endpoint you control and consent to have tested. Omitted or false runs the passive check only.",
+        ),
     },
   },
   async (input) => {
