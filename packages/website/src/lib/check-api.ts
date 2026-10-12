@@ -5,14 +5,12 @@
 // through. No business logic lives here — both routes just forward to the
 // already-tested functions in endpoint-attest/trust-attest-server.
 //
-// API_BASE, HONESTLY STATED: self-check-server is not yet deployed anywhere
-// public. In dev this points at the local server (`npm run dev` in
-// packages/self-check-server, default port 8787). In a production build it
-// falls back to an api.tokenizen.nl subdomain that does not exist yet — that
-// is a deliberate, visible placeholder for a deployment decision that has
-// not been made (where this small Node service actually runs), not a
-// silently broken default. Override with VITE_CHECK_API_URL at build time
-// once that decision is made.
+// API_BASE: in dev this points at the local server (`npm run dev` in
+// packages/self-check-server, default port 8787). A production build uses
+// https://api.tokenizen.nl, which is live: self-check-server runs there under
+// its own unprivileged user behind Caddy (Let's Encrypt), with the Node port
+// reachable only from localhost. Override with VITE_CHECK_API_URL at build
+// time to point a build somewhere else.
 const API_BASE: string =
   (import.meta.env.VITE_CHECK_API_URL as string | undefined) ??
   (import.meta.env.PROD ? "https://api.tokenizen.nl" : "http://localhost:8787");

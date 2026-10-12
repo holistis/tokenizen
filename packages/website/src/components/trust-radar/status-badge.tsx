@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import type { TrustRadarStatus } from "@/data/trust-radar-entries";
 
 const STATUS_CONFIG: Record<TrustRadarStatus, { label: string; variant: "green" | "yellow" | "red"; Icon: LucideIcon }> = {
-  "confirmed-safe": { label: "Confirmed safe", variant: "green", Icon: ShieldCheck },
+  "confirmed-safe": { label: "Checks passed", variant: "green", Icon: ShieldCheck },
   "open-unclear": { label: "Open, unclear", variant: "yellow", Icon: ShieldQuestion },
   "self-declared-unsafe": { label: "Self-declared unsafe", variant: "red", Icon: ShieldAlert },
 };
