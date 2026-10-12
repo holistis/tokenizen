@@ -1,7 +1,7 @@
 {
-  "name": "net-guard",
+  "name": "tokenizen-net-guard",
   "version": "0.1.0",
-  "description": "A single enforced egress choke-point for tokenizen's public-facing servers: resolves and validates every outbound host against private/loopback/link-local/metadata ranges, pins the validated IP into the connection (defeating DNS rebinding), and re-validates every redirect hop. The one place an outbound connection is allowed to be made, so no request path can forget the guard.",
+  "description": "The single enforced egress choke-point for the tokenizen trust layer: an IP-validating, IP-pinning fetch and DNS resolver that refuses private, loopback, link-local and cloud-metadata addresses on every hop, including redirects. Published as tokenizen-net-guard because npm rejects the name net-guard as too similar to the existing netguard package.",
   "keywords": [
     "ssrf",
     "egress",

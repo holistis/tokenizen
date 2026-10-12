@@ -49,7 +49,7 @@ import {
   guardedFetch,
   resolveTxtGuarded,
   type RoutableHostDeps,
-} from "net-guard";
+} from "tokenizen-net-guard";
 import { createRateLimiter } from "./rate-limit.js";
 
 const DEFAULT_ALLOWED_ORIGINS = ["http://localhost:5173", "https://tokenizen.nl", "https://www.tokenizen.nl"];

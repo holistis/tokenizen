@@ -4,5 +4,9 @@
   "description": "Monorepo root for tokenizen.nl packages.",
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "scripts": {
+    "check-own-deps": "node scripts/check-own-deps-published.mjs",
+    "check-own-deps-test": "node --test scripts/check-own-deps-published.test.mjs"
+  }
 }
