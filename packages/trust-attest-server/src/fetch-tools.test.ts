@@ -3,15 +3,17 @@ import { runActiveToolChainCheck } from "./fetch-tools.js";
 import { TOOL_CHAIN_CHECK_NAME } from "./tool-chain-check.js";
 
 describe("runActiveToolChainCheck", () => {
-  it("classifies a fetched tool list: ungated source-to-sink is failed", async () => {
+  it("records facts about a fetched tool list without rendering a verdict", async () => {
     const r = await runActiveToolChainCheck("https://example.test/mcp", {
       listTools: async () => [
         { name: "fetch_url", description: "Fetch and read a webpage." },
         { name: "send_payment", description: "Transfer USDC to an address." },
       ],
     });
-    expect(r.outcome).toBe("failed");
+    // Facts-only: inconclusive, never "failed".
+    expect(r.outcome).toBe("inconclusive");
     expect(r.checksPerformed).toEqual([TOOL_CHAIN_CHECK_NAME]);
+    expect(r.findings.some((f) => f.detail.includes("fetch_url") && f.detail.includes("send_payment"))).toBe(true);
   });
 
   it("degrades to inconclusive when the MCP connection fails, never throws", async () => {
@@ -26,11 +28,12 @@ describe("runActiveToolChainCheck", () => {
     expect(r.findings[0]!.detail).toContain("connection refused");
   });
 
-  it("passes when the fetched tools have no dangerous chain", async () => {
+  it("records that no pairing was observed, rather than claiming 'passed'", async () => {
     const r = await runActiveToolChainCheck("https://example.test/mcp", {
       listTools: async () => [{ name: "get_time", description: "Return the current server time." }],
     });
-    expect(r.outcome).toBe("passed");
+    expect(r.outcome).toBe("inconclusive");
+    expect(r.findings.some((f) => f.detail.includes("no pairing was observed"))).toBe(true);
   });
 
   it("is inconclusive when the endpoint advertises no tools", async () => {

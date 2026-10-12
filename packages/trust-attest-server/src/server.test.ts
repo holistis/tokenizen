@@ -254,7 +254,7 @@ describe("requestTrustAttestation: consent-gated active testing", () => {
     expect(result.attestation.checksPerformed).not.toContain("mcp-tool-capability-chains");
   });
 
-  it("runs the active check on consent, records it in checksPerformed, and a failing chain drives the outcome to failed", async () => {
+  it("on consent, records the active check in checksPerformed and its facts in findings WITHOUT changing the signed outcome", async () => {
     const identity = freshIdentity();
     const result = await requestTrustAttestation(
       { endpoint: ENDPOINT, ownerAddress: OWNER, method: "well-known-file", consentToActiveTesting: true },
@@ -274,11 +274,15 @@ describe("requestTrustAttestation: consent-gated active testing", () => {
     if (!result.ok) return;
     expect(result.attestation.checksPerformed).toContain("auth-signal-on-plain-get");
     expect(result.attestation.checksPerformed).toContain("mcp-tool-capability-chains");
-    expect(result.attestation.outcome).toBe("failed"); // passed auth + failed chain -> failed
+    // FACTS-ONLY: the active check records facts but renders no verdict, so the
+    // signed outcome stays exactly what the passive check determined. Consenting
+    // to the active test must never be able to worsen the outcome.
+    expect(result.attestation.outcome).toBe("passed");
+    expect(result.findings.some((f) => f.detail.includes("fetch_url") && f.detail.includes("send_payment"))).toBe(true);
     expect(verifyAttestation(result.attestation)).toEqual({ ok: true }); // still independently verifiable
   });
 
-  it("still issues an attestation when the consented active check cannot connect (degrades to inconclusive)", async () => {
+  it("still issues an attestation when the consented active check cannot connect, recording the failure as a fact and leaving the outcome unchanged", async () => {
     const identity = freshIdentity();
     const result = await requestTrustAttestation(
       { endpoint: ENDPOINT, ownerAddress: OWNER, method: "well-known-file", consentToActiveTesting: true },
@@ -296,7 +300,10 @@ describe("requestTrustAttestation: consent-gated active testing", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.attestation.checksPerformed).toContain("mcp-tool-capability-chains");
-    expect(result.attestation.outcome).toBe("inconclusive"); // passed auth + inconclusive active -> inconclusive
+    // A connection failure is recorded as a fact; it does not drag the signed
+    // outcome, which stays what the passive check determined.
+    expect(result.attestation.outcome).toBe("passed");
+    expect(result.findings.some((f) => f.detail.includes("could not obtain"))).toBe(true);
     expect(verifyAttestation(result.attestation)).toEqual({ ok: true });
   });
 });

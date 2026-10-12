@@ -104,9 +104,11 @@ export interface RequestTrustAttestationInput {
   /**
    * When true, the owner authorizes active testing: after ownership is proven,
    * the attester connects to the endpoint as an MCP client, reads its
-   * advertised tools, and classifies risky capability chains. Only set this
-   * for an endpoint you control and consent to have actively tested. Omitted
-   * or false keeps the attester on the passive path only.
+   * advertised tools, and RECORDS capability-chain facts (facts-only; it
+   * renders no safe/unsafe verdict and never changes the signed outcome — see
+   * tool-chain-check.ts). Only set this for an endpoint you control and consent
+   * to have actively tested. Omitted or false keeps the attester on the passive
+   * path only.
    */
   consentToActiveTesting?: boolean;
 }
@@ -174,8 +176,16 @@ export async function requestTrustAttestation(
       // authorized it AND ownership was already proven above. The active
       // check's name lands in checksPerformed, so the signed attestation
       // itself records that an active test was run with consent.
+      //
+      // FACTS-ONLY: the active tool-chain check records observed facts and
+      // renders no verdict (see tool-chain-check.ts). It therefore contributes
+      // its check name and findings, but NEVER its outcome — consenting to the
+      // active test can only ADD recorded facts, it can never worsen the signed
+      // outcome. Were it fed into the worst-of merge, a passing passive check
+      // would be dragged to "inconclusive" merely by consenting, which would be
+      // both a perverse incentive and a signed opinion dressed as a fact.
       const active = await runActiveToolChainCheck(endpoint, deps.toolFetchDeps);
-      checkResult = mergeCheckResults(checkResult, active);
+      checkResult = appendInformationalResult(checkResult, active);
     }
     const findingsHash = createHash("sha256").update(JSON.stringify(checkResult.findings), "utf-8").digest("hex");
     const checkedAt = now();
@@ -207,19 +217,22 @@ export async function requestTrustAttestation(
 }
 
 /**
- * Combine the passive and active check results into one. checksPerformed and
- * findings concatenate; the outcome is the worst of the two (failed beats
- * inconclusive beats passed), so a single failing check anywhere drives the
- * whole attestation's outcome, matching the schema's "failed = at least one
- * check did not pass".
+ * Fold an INFORMATIONAL check result into the running result: its check name
+ * and findings are recorded, but it does NOT change the signed outcome. Used
+ * for facts-only checks (the consent-gated active tool-chain check), which
+ * observe and record but render no pass/fail verdict.
+ *
+ * Contrast with a verdict-bearing check (the passive auth-signal check in
+ * checks.ts), whose outcome legitimately IS the attestation outcome. If a
+ * second verdict-bearing check is ever added, it should be combined with a
+ * worst-of merge; a facts-only check must never be, or consenting to it could
+ * only ever lower the outcome — see the consent-gated block above.
  */
-function mergeCheckResults(a: CheckResult, b: CheckResult): CheckResult {
-  const rank: Record<string, number> = { failed: 2, inconclusive: 1, passed: 0 };
-  const outcome = rank[a.outcome]! >= rank[b.outcome]! ? a.outcome : b.outcome;
+function appendInformationalResult(base: CheckResult, info: CheckResult): CheckResult {
   return {
-    checksPerformed: [...a.checksPerformed, ...b.checksPerformed],
-    outcome,
-    findings: [...a.findings, ...b.findings],
+    checksPerformed: [...base.checksPerformed, ...info.checksPerformed],
+    outcome: base.outcome,
+    findings: [...base.findings, ...info.findings],
   };
 }
 
