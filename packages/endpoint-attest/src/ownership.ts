@@ -278,7 +278,12 @@ async function verifyTokenPublished(
 
   let response: Response;
   try {
-    response = await fetchImpl(location, { signal: AbortSignal.timeout(timeoutMs) });
+    // redirect:"error" — a control proof must be served DIRECTLY at the exact
+    // well-known URL. Following redirects would let an open redirect (or a
+    // scheme downgrade) at that path turn some OTHER server's body into a
+    // "valid" proof, so a third party could forge ownership of a host that
+    // merely has an open redirect at /.well-known/endpoint-attest.txt.
+    response = await fetchImpl(location, { signal: AbortSignal.timeout(timeoutMs), redirect: "error" });
   } catch (e) {
     return { ok: false, method, location, reason: `fetch failed: ${(e as Error).message}` };
   }

@@ -220,6 +220,17 @@ describe("verifyOwnership, well-known-file", () => {
     });
     expect(r).toMatchObject({ ok: false, reason: expect.stringContaining("fetch failed") });
   });
+
+  it("does not follow redirects on the proof fetch (passes redirect:error)", async () => {
+    let seenInit: RequestInit | undefined;
+    await verify("well-known-file", ENDPOINT, OWNER, SECRET, {
+      fetchImpl: (async (_url: unknown, init: RequestInit) => {
+        seenInit = init;
+        return new Response("x", { status: 200 });
+      }) as unknown as typeof fetch,
+    });
+    expect(seenInit?.redirect).toBe("error");
+  });
 });
 
 describe("normalizeEndpoint", () => {
