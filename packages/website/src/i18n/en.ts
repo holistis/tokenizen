@@ -261,6 +261,26 @@ export const en: Dictionary = {
       }
     ]
   },
+  "trustRadar": {
+    "metaTitle": "Trust Radar | tokenizen",
+    "metaDescription": "A free, public list of MCP servers whose owners requested and passed an ownership-verified check. Not a security audit, and never a listing an owner did not ask for.",
+    "eyebrow": "Free & public",
+    "h1": "Trust Radar",
+    "intro": "A public list of MCP servers whose owners requested a check, proved they control the endpoint, and let the signed result be published here.",
+    "disclaimer": "This is not a general security audit, and it is never a listing an owner did not ask for. Every entry below is a self-requested, ownership-verified check: the owner proved control of the domain (DNS TXT or a well-known file) before the signed result was published. “Checks passed” means the signed checks ran and none of them failed. It is not a guarantee that the server is safe.",
+    "checkedLabel": "Checked",
+    "mailSubject": "Trust Radar: request a check",
+    "empty": {
+      "title": "No confirmed endpoints yet.",
+      "body": "Nothing is listed here until an owner requests a check, proves they control the endpoint, and lets the signed result be published. We never list an endpoint whose owner did not ask.",
+      "cta": "Be the first, request a free attestation",
+    },
+    "badges": {
+      "checksPassed": "Checks passed",
+      "openUnclear": "Open, unclear",
+      "selfDeclaredUnsafe": "Self-declared unsafe",
+    },
+  },
   "noscript": {
     "h1": "Tokenizen: proof of delivery for the AI agent economy",
     "body": "Tokenizen builds open-source infrastructure for the seller side of the AI agent economy: verifiable proof that a seller genuinely holds a right, and that what was delivered matches what was promised.",
