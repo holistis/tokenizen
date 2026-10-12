@@ -21,6 +21,7 @@ export const nl: Dictionary = {
       { href: "#probleem", label: "Probleem" },
       { href: "#waarom-nu", label: "Waarom nu" },
       { href: "#product", label: "Product" },
+      { href: "#controle", label: "Controle" },
       { href: "#hoe-het-werkt", label: "Hoe het werkt" },
       { href: "#ontwerpgrenzen", label: "Grenzen" },
       { href: "#open-source", label: "Open source" },
