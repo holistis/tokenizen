@@ -130,6 +130,28 @@ export const en: Dictionary = {
       }
     ]
   },
+  "secondPillar": {
+    "eyebrow": "Pillar 2",
+    "h2": "Proof of inspection, not proof of safety.",
+    "body": "A company letting a stranger's AI agent in has nothing but the vendor's own brochure. Pillar 2 turns that into a receipt anyone can check: the owner first proves the endpoint is theirs, gives permission, and we record what we actually found. Signed, dated, and readable by anyone.",
+    "cards": [
+      {
+        "title": "The owner proves it is theirs",
+        "body": "They publish a token in their DNS or as a file on their own server. That proves they control the endpoint, the same way a note in your letterbox proves the house is yours.",
+      },
+      {
+        "title": "They give permission",
+        "body": "We never touch an endpoint without explicit consent, and we never list one whose owner did not ask for it.",
+      },
+      {
+        "title": "We write down what we saw",
+        "body": "No score and no verdict. Whatever we could not establish is called inconclusive, and it says so.",
+      },
+    ],
+    "honestNote": "We never stamp something safe. A test can show that something is wrong, but it can never prove that nothing is.",
+    "ctaLabel": "Try it, free",
+    "ctaNote": "Free, no account needed. The paid attestation is deliberately still switched off.",
+  },
   "howItWorks": {
     "eyebrow": "How it works",
     "h2": "Four steps, no intermediary.",

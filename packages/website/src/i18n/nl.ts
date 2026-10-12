@@ -112,6 +112,28 @@ export const nl: Dictionary = {
       },
     ],
   },
+  secondPillar: {
+    eyebrow: "Pijler 2",
+    h2: "Bewijs van controle, niet van veiligheid.",
+    body: "Een bedrijf dat een vreemde AI-agent binnenlaat heeft alleen de folder van de maker. Pijler 2 maakt daar een bonnetje van dat iedereen kan nakijken: de eigenaar bewijst eerst dat de endpoint van hem is, geeft toestemming, en wij leggen vast wat wij werkelijk aantroffen. Ondertekend, met een datum, en door iedereen na te lezen.",
+    cards: [
+      {
+        title: "De eigenaar bewijst dat het van hem is",
+        body: "Hij zet een code in zijn DNS of als bestand op zijn eigen server. Daarmee toont hij aan dat hij de endpoint beheert, zoals een briefje in je brievenbus aantoont dat het jouw huis is.",
+      },
+      {
+        title: "Hij geeft toestemming",
+        body: "Zonder uitdrukkelijke toestemming raken wij een endpoint niet aan, en wij zetten nooit iemand op een lijst die er niet om gevraagd heeft.",
+      },
+      {
+        title: "Wij schrijven op wat we zagen",
+        body: "Geen cijfer en geen oordeel. Wat wij niet konden vaststellen heet onvaststelbaar, en dat staat er dan ook gewoon.",
+      },
+    ],
+    honestNote: "Wij zetten nooit het stempel veilig. Een test kan laten zien dat er iets mis is, maar nooit bewijzen dat er niets mis is.",
+    ctaLabel: "Probeer het gratis",
+    ctaNote: "Gratis en zonder account. De betaalde stempel staat bewust nog uit.",
+  },
   howItWorks: {
     eyebrow: "Hoe het werkt",
     h2: "Vier stappen, geen tussenpersoon.",
