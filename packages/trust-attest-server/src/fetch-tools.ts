@@ -19,7 +19,52 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 import { guardedFetch } from "net-guard";
 import type { CheckResult } from "./checks.js";
-import { analyzeToolChains, TOOL_CHAIN_CHECK_NAME, type McpTool } from "./tool-chain-check.js";
+import { analyzeToolChains, TOOL_CHAIN_CHECK_NAME, MAX_TOOLS, MAX_DESC_CHARS, type McpTool } from "./tool-chain-check.js";
+
+// The tools/list body is attacker-controlled (the endpoint owner serves it).
+// Bound how many bytes the MCP SDK will ever buffer while parsing it, so a
+// malicious endpoint cannot OOM the shared attester by streaming an enormous
+// response: analyzeToolChains' own caps only apply AFTER the SDK has already
+// materialized the whole body, which is too late. 4 MiB is far larger than any
+// honest tool list and the interaction is connect-list-close, so the cap is on
+// a short-lived stream, not a long-running subscription.
+const MAX_TOOL_LIST_BYTES = 4 * 1024 * 1024;
+
+/**
+ * Wrap a fetch so the Response body it returns errors once it exceeds maxBytes,
+ * instead of buffering without limit. The SDK transports read the body via
+ * response.json() / an SSE parser with no size cap of their own, so this is the
+ * only place the bound can be imposed before memory is spent. Mirrors the
+ * readBounded posture in checks.ts and endpoint-attest/ownership.ts.
+ */
+export function byteCappedFetch(base: typeof fetch, maxBytes: number): typeof fetch {
+  return (async (input: Parameters<typeof fetch>[0], init?: Parameters<typeof fetch>[1]) => {
+    const res = await base(input, init);
+    if (!res.body) return res;
+    const reader = res.body.getReader();
+    let total = 0;
+    const capped = new ReadableStream<Uint8Array>({
+      async pull(controller) {
+        const { done, value } = await reader.read();
+        if (done) {
+          controller.close();
+          return;
+        }
+        total += value.byteLength;
+        if (total > maxBytes) {
+          await reader.cancel().catch(() => {});
+          controller.error(new Error(`response body exceeded ${maxBytes} bytes, refused before buffering further`));
+          return;
+        }
+        controller.enqueue(value);
+      },
+      cancel(reason) {
+        reader.cancel(reason).catch(() => {});
+      },
+    });
+    return new Response(capped, { status: res.status, statusText: res.statusText, headers: res.headers });
+  }) as typeof fetch;
+}
 
 export interface ToolFetchDeps {
   /** Injected in tests. Default connects a real MCP client (Streamable HTTP, then SSE). */
@@ -75,23 +120,30 @@ async function defaultListTools(endpoint: string, timeoutMs: number): Promise<Mc
   const url = new URL(endpoint);
   const client = new Client({ name: "tokenizen-trust-attester", version: "0.1.0" });
 
-  // Both transports fetch through net-guard's guardedFetch, so the active
-  // MCP handshake to an attacker-supplied endpoint is IP-validated and pinned
-  // on every connection and redirect, exactly like the passive GET in checks.ts.
+  // Both transports fetch through net-guard's guardedFetch, so the active MCP
+  // handshake to an attacker-supplied endpoint is IP-validated and pinned on
+  // every connection and redirect, exactly like the passive GET in checks.ts —
+  // and wrapped in byteCappedFetch so a malicious endpoint cannot OOM the
+  // attester by streaming an unbounded tools/list.
+  const fetchImpl = byteCappedFetch(guardedFetch, MAX_TOOL_LIST_BYTES);
   let connected = false;
   try {
-    await client.connect(new StreamableHTTPClientTransport(url, { fetch: guardedFetch }), { timeout: timeoutMs });
+    await client.connect(new StreamableHTTPClientTransport(url, { fetch: fetchImpl }), { timeout: timeoutMs });
     connected = true;
   } catch {
-    await client.connect(new SSEClientTransport(url, { fetch: guardedFetch }), { timeout: timeoutMs });
+    await client.connect(new SSEClientTransport(url, { fetch: fetchImpl }), { timeout: timeoutMs });
     connected = true;
   }
 
   try {
     const res = await client.listTools({}, { timeout: timeoutMs });
-    return (res.tools ?? []).map((t) => ({
-      name: String(t.name),
-      description: typeof t.description === "string" ? t.description : undefined,
+    // Cap count and per-field length at the boundary too (defense in depth
+    // alongside the byte cap and analyzeToolChains' own bounds): never build an
+    // intermediate array larger than MAX_TOOLS, nor carry a description longer
+    // than MAX_DESC_CHARS out of this function.
+    return (res.tools ?? []).slice(0, MAX_TOOLS).map((t) => ({
+      name: String(t.name).slice(0, MAX_DESC_CHARS),
+      description: typeof t.description === "string" ? t.description.slice(0, MAX_DESC_CHARS) : undefined,
     }));
   } finally {
     if (connected) {

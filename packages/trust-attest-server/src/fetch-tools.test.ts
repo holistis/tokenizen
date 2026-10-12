@@ -1,6 +1,20 @@
 import { describe, it, expect } from "vitest";
-import { runActiveToolChainCheck } from "./fetch-tools.js";
+import { runActiveToolChainCheck, byteCappedFetch } from "./fetch-tools.js";
 import { TOOL_CHAIN_CHECK_NAME } from "./tool-chain-check.js";
+
+describe("byteCappedFetch (bounds an attacker-controlled tools/list body)", () => {
+  it("passes a body under the cap through unchanged", async () => {
+    const base = (async () => new Response("hello", { status: 200 })) as typeof fetch;
+    const res = await byteCappedFetch(base, 1000)("https://x.test");
+    expect(await res.text()).toBe("hello");
+  });
+
+  it("errors while reading a body that exceeds the cap, instead of buffering it all", async () => {
+    const base = (async () => new Response("x".repeat(10_000), { status: 200 })) as typeof fetch;
+    const res = await byteCappedFetch(base, 100)("https://x.test");
+    await expect(res.text()).rejects.toThrow(/exceeded 100 bytes/);
+  });
+});
 
 describe("runActiveToolChainCheck", () => {
   it("records facts about a fetched tool list without rendering a verdict", async () => {

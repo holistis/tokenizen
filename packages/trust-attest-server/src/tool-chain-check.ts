@@ -57,8 +57,8 @@ const CONFIRMATION_RE =
 // regex runs, and emit at most MAX_PAIR_FINDINGS capability-pair findings
 // (source×sink is quadratic in the worst case). Hitting a bound is itself
 // recorded as a fact rather than silently truncated.
-const MAX_TOOLS = 500;
-const MAX_DESC_CHARS = 2_000;
+export const MAX_TOOLS = 500;
+export const MAX_DESC_CHARS = 2_000;
 const MAX_PAIR_FINDINGS = 100;
 
 function firstMatch(re: RegExp, text: string): string | null {
