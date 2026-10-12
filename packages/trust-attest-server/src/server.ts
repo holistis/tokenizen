@@ -276,20 +276,29 @@ export async function requestTrustAttestation(
 }
 
 /**
- * Fold an INFORMATIONAL check result into the running result: its check name
- * and findings are recorded, but it does NOT change the signed outcome. Used
- * for facts-only checks (the consent-gated active tool-chain check), which
- * observe and record but render no pass/fail verdict.
+ * Fold an INFORMATIONAL check result into the running result: only its FINDINGS
+ * are recorded. It changes neither the signed outcome NOR the signed
+ * checksPerformed list.
+ *
+ * Why not checksPerformed: the schema binds that list to the outcome —
+ * `outcome: "passed"` means "every check in checksPerformed passed"
+ * (schema.ts constraint 2). A facts-only check has no pass/fail state, so its
+ * name in that list would make a "passed" attestation internally contradictory
+ * (and, for the consent check when consent was NOT verified, would read as a
+ * pass of something that explicitly did not happen). The facts-only result is
+ * still fully signed: every finding carries its own `check` name and factual
+ * detail, and findings are bound by findingsHash. So a reader re-deriving the
+ * hash sees exactly which facts-only checks ran and what they observed, without
+ * the checksPerformed list ever overstating.
  *
  * Contrast with a verdict-bearing check (the passive auth-signal check in
- * checks.ts), whose outcome legitimately IS the attestation outcome. If a
- * second verdict-bearing check is ever added, it should be combined with a
- * worst-of merge; a facts-only check must never be, or consenting to it could
- * only ever lower the outcome — see the consent-gated block above.
+ * checks.ts), whose name DOES belong in checksPerformed and whose outcome IS
+ * the attestation outcome. If a second verdict-bearing check is ever added it
+ * should be combined with a worst-of merge; a facts-only check never is.
  */
 function appendInformationalResult(base: CheckResult, info: CheckResult): CheckResult {
   return {
-    checksPerformed: [...base.checksPerformed, ...info.checksPerformed],
+    checksPerformed: base.checksPerformed,
     outcome: base.outcome,
     findings: [...base.findings, ...info.findings],
   };

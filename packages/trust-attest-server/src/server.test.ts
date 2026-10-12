@@ -313,13 +313,15 @@ describe("requestTrustAttestation: consent-gated active testing", () => {
     );
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    // The consent check was performed and recorded, but the active tool-chain
-    // check was NOT: no verifiable consent token, so no connection is made.
-    expect(result.attestation.checksPerformed).toContain("mcp-active-test-consent");
-    expect(result.attestation.checksPerformed).not.toContain("mcp-tool-capability-chains");
+    // Facts-only checks never enter the signed checksPerformed (schema: passed
+    // = every listed check passed). The signed list stays the verdict-bearing
+    // passive check ONLY; the consent result is recorded as a signed FINDING.
+    expect(result.attestation.checksPerformed).toEqual(["auth-signal-on-plain-get"]);
     expect(listerCalled).toBe(false); // the real proof: a request flag alone never connects
     expect(result.attestation.outcome).toBe("passed"); // passive result stands, unchanged
-    expect(result.findings.some((f) => f.detail.includes("owner consent could NOT be verified"))).toBe(true);
+    expect(result.findings.some((f) => f.check === "mcp-active-test-consent" && f.detail.includes("owner consent could NOT be verified"))).toBe(true);
+    // No tool-chain finding at all, because the active check never ran.
+    expect(result.findings.some((f) => f.check === "mcp-tool-capability-chains")).toBe(false);
     expect(verifyAttestation(result.attestation)).toEqual({ ok: true });
   });
 
@@ -341,15 +343,15 @@ describe("requestTrustAttestation: consent-gated active testing", () => {
     );
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.attestation.checksPerformed).toContain("auth-signal-on-plain-get");
-    expect(result.attestation.checksPerformed).toContain("mcp-active-test-consent");
-    expect(result.attestation.checksPerformed).toContain("mcp-tool-capability-chains");
+    // Signed checksPerformed stays verdict-bearing-only; the consent + tool-chain
+    // facts are recorded as signed findings, never as checksPerformed entries.
+    expect(result.attestation.checksPerformed).toEqual(["auth-signal-on-plain-get"]);
     // FACTS-ONLY: the active check records facts but renders no verdict, so the
     // signed outcome stays exactly what the passive check determined. Consenting
     // to the active test must never be able to worsen the outcome.
     expect(result.attestation.outcome).toBe("passed");
-    expect(result.findings.some((f) => f.detail.includes("owner consent for active testing was verified"))).toBe(true);
-    expect(result.findings.some((f) => f.detail.includes("fetch_url") && f.detail.includes("send_payment"))).toBe(true);
+    expect(result.findings.some((f) => f.check === "mcp-active-test-consent" && f.detail.includes("owner consent for active testing was verified"))).toBe(true);
+    expect(result.findings.some((f) => f.check === "mcp-tool-capability-chains" && f.detail.includes("fetch_url") && f.detail.includes("send_payment"))).toBe(true);
     expect(verifyAttestation(result.attestation)).toEqual({ ok: true }); // still independently verifiable
   });
 
@@ -370,11 +372,13 @@ describe("requestTrustAttestation: consent-gated active testing", () => {
     );
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.attestation.checksPerformed).toContain("mcp-tool-capability-chains");
+    // The tool-chain check ran (consent verified) but could not connect; that
+    // is a signed FINDING, not a checksPerformed entry. Signed list unchanged.
+    expect(result.attestation.checksPerformed).toEqual(["auth-signal-on-plain-get"]);
     // A connection failure is recorded as a fact; it does not drag the signed
     // outcome, which stays what the passive check determined.
     expect(result.attestation.outcome).toBe("passed");
-    expect(result.findings.some((f) => f.detail.includes("could not obtain"))).toBe(true);
+    expect(result.findings.some((f) => f.check === "mcp-tool-capability-chains" && f.detail.includes("could not obtain"))).toBe(true);
     expect(verifyAttestation(result.attestation)).toEqual({ ok: true });
   });
 });
