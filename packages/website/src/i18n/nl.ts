@@ -43,10 +43,10 @@ export const nl: Dictionary = {
     dark: "Donker",
   },
   hero: {
-    eyebrow: "Infrastructuur voor de AI-agent-economie · open source",
-    h1Line1: "Iedereen bouwt de koperskant.",
-    h1Line2: "Wij bouwen de verkoperskant.",
-    body: "Agent-identiteit, spend-limits en betaalrails zijn onderweg (x402: betaling per API-call, Google AP2: autorisatie-protocol, ERC-8004: on-chain reputatie-registers). Wat nog ontbreekt: een ondertekend spoor van wat een verkoper claimt geleverd te hebben, en of dat overeenkwam met wat beloofd was. Tokenizen bouwt dat spoor, te beginnen met Capacity Attest: een ondertekende, feitelijke leveringsclaim voor x402-capaciteitshandel tussen agents.",
+    eyebrow: "Open source infrastructuur voor de AI-agent-economie",
+    h1Line1: "AI-agenten doen straks zaken met elkaar.",
+    h1Line2: "Niemand kan nakijken wat er echt gebeurde.",
+    body: "Een AI-agent koopt iets bij een andere agent en betaalt binnen een seconde. Of er ook echt geleverd is wat beloofd was, legt niemand vast. Wij maken daar ondertekende bonnetjes van. Twee soorten: een bonnetje van wat er geleverd werd, en een bonnetje van wat een controle van zo'n agent werkelijk aantrof. Allebei na te lezen door de volgende die zaken wil doen.",
     clarifier: "De koper tekent de claim, want alleen hij weet wat er echt aankwam. Wat ontstaat is desondanks het trackrecord van de verkoper: het bewijs dat een goede verkoper aan de volgende koper kan tonen.",
     trustLine: "Geen token · geen lening · geen yield",
     ctaPrimary: "Bekijk de code op GitHub",
@@ -55,8 +55,8 @@ export const nl: Dictionary = {
   },
   problem: {
     eyebrow: "Het probleem",
-    h2: "Een agent betaalt, krijgt minder, en heeft er geen ondertekend spoor van.",
-    body: "Een AI-agent betaalt via x402 voor capaciteit bij een andere agent of dienst: GPU-uren, opslag, API/inference-credits, bandbreedte. De levering valt tegen: minder uren dan toegezegd, lagere kwaliteit, minder opslag. Er is geen kwitantie die vastlegt wat beloofd en geclaimd werd. Dat is geen bewijs dat de levering zelf klopte, wel een ondertekend spoor dat een agent later kan raadplegen en tonen.",
+    h2: "Betalen gaat al vanzelf. Nakijken wat je kreeg, niet.",
+    body: "Een agent betaalt in een seconde voor rekenkracht, opslag of toegang tot een dienst. Kreeg hij minder dan beloofd, dan verdwijnt dat zodra de sessie stopt. Er blijft niets over dat iemand later kan bekijken. Geen klacht, geen bewijs, geen geheugen.",
     cards: [
       {
         title: "De koper weet het",
@@ -95,9 +95,9 @@ export const nl: Dictionary = {
     ],
   },
   product: {
-    eyebrow: "Het product: Capacity Attest",
-    h2: "Een ondertekende, feitelijke leveringsclaim. Geen oordeel, geen score.",
-    body: "Na een x402-afwikkeling voor capaciteit (GPU-uren, opslag, API-credits, bandbreedte) laat de betalende agent een cryptografisch ondertekende claim achter: `delivered` (yes/no/partial) plus een hash van het bewijsmateriaal, content-addressed en op een append-only ledger. Andere agents kunnen die geschiedenis opvragen vóórdat ze zelf zaken doen met een verkoper.",
+    eyebrow: "Pijler 1: bewijs van levering",
+    h2: "Een bonnetje van wat er geleverd is. Geen cijfer, geen oordeel.",
+    body: "Zodra een agent betaald heeft, legt hij vast of hij kreeg wat beloofd was: ja, nee, of gedeeltelijk. Dat bonnetje wordt ondertekend en kan daarna niet meer worden veranderd. Wie later met diezelfde verkoper zaken wil doen, kan die geschiedenis opvragen voordat hij betaalt.",
     codeLabelRecordCall: "MCP tool-call → record_delivery",
     codeLabelHistoryCall: "MCP tool-call → get_delivery_history",
     codeLabelResult: "antwoord",

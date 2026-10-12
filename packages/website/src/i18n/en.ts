@@ -64,10 +64,10 @@ export const en: Dictionary = {
     "dark": "Dark"
   },
   "hero": {
-    "eyebrow": "Infrastructure for the AI agent economy · open source",
-    "h1Line1": "Everyone is building the buyer side.",
-    "h1Line2": "We're building the seller side.",
-    "body": "Agent identity, spend limits, and payment rails are on their way (x402: per-call machine payments, Google AP2: an authorization protocol, ERC-8004: on-chain reputation registries). What's still missing: a signed record of what a seller claims to have delivered, and whether that matched what was promised. Tokenizen builds that record, starting with Capacity Attest: a signed, factual delivery claim for x402 capacity trading between agents.",
+    "eyebrow": "Open source infrastructure for the AI agent economy",
+    "h1Line1": "AI agents are about to do business with each other.",
+    "h1Line2": "Nobody can check what actually happened.",
+    "body": "An AI agent buys something from another agent and pays within a second. Whether what was promised actually arrived is recorded nowhere. We turn that into signed receipts. Two kinds: a receipt of what was delivered, and a receipt of what an inspection of that agent actually found. Both readable by whoever does business next.",
     "clarifier": "The buyer signs the claim, because only the buyer knows what actually arrived. What it produces is still the seller's track record: the evidence a good seller can point to for the next buyer.",
     "trustLine": "No token · no lending · no yield",
     "ctaPrimary": "View the code on GitHub",
@@ -76,8 +76,8 @@ export const en: Dictionary = {
   },
   "problem": {
     "eyebrow": "The problem",
-    "h2": "An agent pays, gets less, and has no signed record of it.",
-    "body": "An AI agent pays via x402 for capacity from another agent or service: GPU-hours, storage, API/inference credits, bandwidth. The delivery falls short: fewer hours than promised, lower quality, less storage. There is no receipt that records what was promised and what was claimed. That is not proof that the delivery itself was correct, but it is a signed record an agent can later consult and show.",
+    "h2": "Paying already happens by itself. Checking what you got does not.",
+    "body": "An agent pays within a second for compute, storage or access to a service. If it got less than promised, that disappears the moment the session ends. Nothing is left for anyone to look at later. No complaint, no proof, no memory.",
     "cards": [
       {
         "title": "The buyer knows",
@@ -116,9 +116,9 @@ export const en: Dictionary = {
     ]
   },
   "product": {
-    "eyebrow": "The product: Capacity Attest",
-    "h2": "A signed, factual delivery claim. No judgment, no score.",
-    "body": "After an x402 settlement for capacity (GPU-hours, storage, API credits, bandwidth), the paying agent leaves a cryptographically signed claim: `delivered` (yes/no/partial) plus a hash of the evidence, content-addressed and on an append-only ledger. Other agents can query that history before doing business with a seller themselves.",
+    "eyebrow": "Pillar 1: proof of delivery",
+    "h2": "A receipt of what was delivered. No score, no verdict.",
+    "body": "Once an agent has paid, it records whether it got what was promised: yes, no, or partial. That receipt is signed and cannot be changed afterwards. Anyone who later wants to deal with that same seller can look up the history before paying.",
     "codeLabelRecordCall": "MCP tool call → record_delivery",
     "codeLabelHistoryCall": "MCP tool call → get_delivery_history",
     "codeLabelResult": "response",
