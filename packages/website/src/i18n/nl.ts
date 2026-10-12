@@ -234,6 +234,26 @@ export const nl: Dictionary = {
       { dot: "bg-rule-red", label: "nooit, hardcoded uitgesloten" },
     ],
   },
+  trustRadar: {
+    metaTitle: "Trust Radar | tokenizen",
+    metaDescription: "Een gratis, openbare lijst van MCP-servers waarvan de eigenaar zelf om een controle vroeg en aantoonde dat hij de endpoint beheert. Geen beveiligingsaudit, en nooit een vermelding waar de eigenaar niet om gevraagd heeft.",
+    eyebrow: "Gratis en openbaar",
+    h1: "Trust Radar",
+    intro: "Een openbare lijst van MCP-servers waarvan de eigenaar zelf om een controle vroeg, aantoonde dat hij de endpoint beheert, en toestemming gaf om het ondertekende resultaat hier te tonen.",
+    disclaimer: "Dit is geen algemene beveiligingsaudit, en wij zetten hier nooit iemand neer die er niet om gevraagd heeft. Elke regel hieronder is een zelf aangevraagde controle met bewezen eigendom: de eigenaar toonde eerst aan dat hij het domein beheert, via een DNS TXT-record of een bestand op zijn eigen server, voordat het ondertekende resultaat werd gepubliceerd. “Controles doorstaan” betekent dat de ondertekende controles zijn uitgevoerd en dat er geen enkele faalde. Het is geen garantie dat de server veilig is.",
+    checkedLabel: "Gecontroleerd",
+    mailSubject: "Trust Radar: controle aanvragen",
+    empty: {
+      title: "Nog geen bevestigde endpoints.",
+      body: "Hier staat niets totdat een eigenaar zelf om een controle vraagt, aantoont dat hij de endpoint beheert, en het ondertekende resultaat laat publiceren. Wij zetten nooit een endpoint op deze lijst zonder dat de eigenaar erom vroeg.",
+      cta: "Wees de eerste, vraag een gratis stempel aan",
+    },
+    badges: {
+      checksPassed: "Controles doorstaan",
+      openUnclear: "Open, onduidelijk",
+      selfDeclaredUnsafe: "Zelf onveilig genoemd",
+    },
+  },
   noscript: {
     h1: "Tokenizen: bewijs van levering voor de AI-agent-economie",
     body: "Tokenizen bouwt open-source infrastructuur voor de verkoperskant van de AI-agent-economie: een verifieerbaar bewijs dat een verkoper een recht echt heeft, en dat wat geleverd is overeenkomt met wat beloofd was.",

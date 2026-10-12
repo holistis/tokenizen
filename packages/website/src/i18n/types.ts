@@ -123,6 +123,26 @@ export interface Dictionary {
     copyright: string;
     legend: Array<{ dot: string; label: string }>;
   };
+  trustRadar: {
+    metaTitle: string;
+    metaDescription: string;
+    eyebrow: string;
+    h1: string;
+    intro: string;
+    disclaimer: string;
+    checkedLabel: string;
+    mailSubject: string;
+    empty: {
+      title: string;
+      body: string;
+      cta: string;
+    };
+    badges: {
+      checksPassed: string;
+      openUnclear: string;
+      selfDeclaredUnsafe: string;
+    };
+  };
   noscript: {
     h1: string;
     body: string;
