@@ -157,3 +157,40 @@ self-check-server/app.ts. Every other outbound path in the system is unguarded.
 Re-run the full Majlis after remediation. No merge, no live, no public mention until the
 SSRF cluster (egress guard everywhere + redirect re-validation + proof-endpoint binding)
 and the fail-closed classification are resolved and re-reviewed.
+
+---
+
+# Elite / proactive remediation architecture (prevent the class, not just the 16)
+
+Goal set by the king: act as a cybersecurity elite, as if this product were mine, so this
+CLASS of bug cannot recur. The root cause of the SSRF cluster is NOT "a missing check" but
+"the check exists (network-guard.ts) and is not on the only road out". So the fix is
+structural, not a set of patches.
+
+1. One enforced egress choke-point. A shared package (packages/net-guard) generalises the
+   existing self-check-server/network-guard.ts and exposes the ONLY sanctioned way to make
+   an outbound request: a guardedFetch and a guarded transport/RPC factory. Every outbound
+   call in every package routes through it. It:
+   - resolves the host, rejects private/loopback/link-local/ULA/metadata ranges (v4+v6),
+   - PINS the resolved IP into the actual connection (closes the DNS-rebinding gap the
+     existing guard documents but does not fix),
+   - RE-VALIDATES every redirect hop against the same ranges (closes #7/#16), or refuses
+     redirects,
+   - carries a hard DNS + connect + overall timeout (closes #10) and a response byte cap.
+2. Fail-closed by default: ambiguity resolves to "refuse"/"inconclusive", never a guessed
+   "passed" (classification and the 403 inference, #14).
+3. Proof that it stays closed: regression tests asserting internal IPs, redirects and
+   rebinding are all blocked, plus the fail-closed classification cases.
+4. A guard on the build road: a test (and, if feasible, an ESLint rule) that FAILS if any
+   package introduces a raw fetch / new JsonRpcProvider / new MCP transport outside the
+   net-guard choke-point. This is what stops the class from silently returning: a future
+   change cannot add an unguarded outbound path and still pass.
+5. Limits baked into the shared layer as defaults (timeouts, byte caps, result caps), so a
+   caller gets them without having to remember.
+
+This turns "we fixed 16 findings" into "an unguarded outbound call is now structurally
+impossible to ship", which is the cybersecurity-elite bar, not a patch bar.
+
+Execution note: this is security-critical code; it is built carefully and tested, not
+rushed. Done on the branch, behind a PR, re-audited by a fresh full Majlis before any
+merge or deploy. Nothing live or public until then.
