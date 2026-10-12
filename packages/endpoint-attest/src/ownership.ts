@@ -74,9 +74,9 @@ export function challengeToken(endpoint: string, ownerAddress: string, attesterS
   if (attesterSecret.length < 32) {
     throw new OwnershipError("attesterSecret must be at least 32 characters: a short secret makes every token guessable");
   }
-  const host = endpointHost(endpoint);
+  const bound = normalizeEndpoint(endpoint);
   const mac = createHmac("sha256", attesterSecret)
-    .update(`${host}\n${ownerAddress.toLowerCase()}`, "utf-8")
+    .update(`${bound}\n${ownerAddress.toLowerCase()}`, "utf-8")
     .digest("hex");
   return `tok_${mac}`;
 }
@@ -97,15 +97,50 @@ export function activeTestConsentToken(endpoint: string, ownerAddress: string, a
   if (attesterSecret.length < 32) {
     throw new OwnershipError("attesterSecret must be at least 32 characters: a short secret makes every token guessable");
   }
-  const host = endpointHost(endpoint);
+  const bound = normalizeEndpoint(endpoint);
   const mac = createHmac("sha256", attesterSecret)
-    .update(`active-test-consent\n${host}\n${ownerAddress.toLowerCase()}`, "utf-8")
+    .update(`active-test-consent\n${bound}\n${ownerAddress.toLowerCase()}`, "utf-8")
     .digest("hex");
   return `consent_${mac}`;
 }
 
 /** The exact host an endpoint's proof must be published under. Rejects anything that is not a plain http(s) URL, so a file:// or credential-bearing URL can never reach a DNS query or a fetch. */
 export function endpointHost(endpoint: string): string {
+  return parseEndpoint(endpoint).hostname;
+}
+
+/**
+ * The canonical form a token binds to and an attestation records: scheme +
+ * host + port + path, with credentials, query and fragment stripped and a
+ * single trailing slash removed (but the root "/" kept). Computed from a
+ * parsed URL, so a raw string can never smuggle a newline into the HMAC
+ * message (new URL rejects/strips control characters).
+ *
+ * WHY THE FULL ENDPOINT, NOT JUST THE HOST: the challenge/consent tokens used
+ * to bind only to the hostname, so one published proof (a single host-wide TXT
+ * record, or a host-root well-known file) authorized an attestation — and the
+ * consent-gated active probe — for EVERY scheme/port/path on that host. An
+ * attacker who could read a victim's published proof could then point the
+ * attester at http://victim:6379/anything and both mint a signed attestation
+ * the owner never requested and use the attester as a non-blind port/path
+ * probe. Binding the token to the normalized endpoint makes the token for
+ * one endpoint useless for any other, so only the exact endpoints the owner
+ * actually published a token for can be attested. The publish LOCATION stays
+ * host/origin-based (a DNS name cannot carry a path); distinctness comes from
+ * the token value, and verifyTokenPublished scans every record/finds the exact
+ * match, so one host can carry many endpoints' tokens side by side.
+ */
+export function normalizeEndpoint(endpoint: string): string {
+  const url = parseEndpoint(endpoint);
+  let path = url.pathname;
+  if (path.length > 1 && path.endsWith("/")) path = path.slice(0, -1);
+  // url.host includes the port (unlike url.hostname) — the port is part of the
+  // identity we bind to, so a different port is a different endpoint.
+  return `${url.protocol}//${url.host}${path}`;
+}
+
+/** Parse + validate an endpoint as a plain, credential-free http(s) URL. Shared by endpointHost and normalizeEndpoint so both reject the same inputs identically. */
+function parseEndpoint(endpoint: string): URL {
   let url: URL;
   try {
     url = new URL(endpoint);
@@ -121,7 +156,7 @@ export function endpointHost(endpoint: string): string {
   if (url.hostname === "") {
     throw new OwnershipError("endpoint has no host");
   }
-  return url.hostname;
+  return url;
 }
 
 /** Where a reader can re-check the proof themselves, per method. Recorded verbatim in the attestation's ownershipProof.location. */

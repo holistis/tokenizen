@@ -34,6 +34,7 @@ export {
   challengeToken,
   activeTestConsentToken,
   endpointHost,
+  normalizeEndpoint,
   proofLocation,
   consentProofLocation,
   verifyOwnership,

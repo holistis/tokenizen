@@ -3,6 +3,7 @@ import {
   challengeToken,
   activeTestConsentToken,
   endpointHost,
+  normalizeEndpoint,
   proofLocation,
   consentProofLocation,
   verifyOwnership,
@@ -56,8 +57,17 @@ describe("challengeToken", () => {
     expect(challengeToken("https://other.example.com/sse", OWNER, SECRET)).not.toBe(challengeToken(ENDPOINT, OWNER, SECRET));
   });
 
-  it("ignores the path, because control is proven at host level, not per route", () => {
-    expect(challengeToken("https://mcp.example.com/a", OWNER, SECRET)).toBe(challengeToken("https://mcp.example.com/b", OWNER, SECRET));
+  it("differs per path, so a proof for one endpoint cannot be replayed for another route/port on the same host", () => {
+    expect(challengeToken("https://mcp.example.com/a", OWNER, SECRET)).not.toBe(challengeToken("https://mcp.example.com/b", OWNER, SECRET));
+    // ...and per port, which is the core of the confused-deputy probe fix.
+    expect(challengeToken("https://mcp.example.com/a", OWNER, SECRET)).not.toBe(challengeToken("https://mcp.example.com:6379/a", OWNER, SECRET));
+  });
+
+  it("is stable across the spellings normalizeEndpoint folds together (trailing slash, query, fragment, credentials)", () => {
+    const base = challengeToken("https://mcp.example.com/sse", OWNER, SECRET);
+    expect(challengeToken("https://mcp.example.com/sse/", OWNER, SECRET)).toBe(base); // trailing slash stripped
+    expect(challengeToken("https://mcp.example.com/sse?x=1", OWNER, SECRET)).toBe(base); // query ignored
+    expect(challengeToken("https://mcp.example.com/sse#f", OWNER, SECRET)).toBe(base); // fragment ignored
   });
 
   it("refuses a short secret instead of silently producing guessable tokens", () => {
@@ -209,6 +219,30 @@ describe("verifyOwnership, well-known-file", () => {
       },
     });
     expect(r).toMatchObject({ ok: false, reason: expect.stringContaining("fetch failed") });
+  });
+});
+
+describe("normalizeEndpoint", () => {
+  it("keeps scheme, host, port and path", () => {
+    expect(normalizeEndpoint("https://mcp.example.com:8443/sse")).toBe("https://mcp.example.com:8443/sse");
+  });
+  it("strips query and fragment", () => {
+    expect(normalizeEndpoint("https://mcp.example.com/sse?x=1#frag")).toBe("https://mcp.example.com/sse");
+  });
+  it("rejects embedded credentials outright rather than silently stripping them", () => {
+    expect(() => normalizeEndpoint("https://u:p@mcp.example.com/sse")).toThrow(OwnershipError);
+  });
+  it("strips a single trailing slash but keeps the root path", () => {
+    expect(normalizeEndpoint("https://mcp.example.com/sse/")).toBe("https://mcp.example.com/sse");
+    expect(normalizeEndpoint("https://mcp.example.com")).toBe("https://mcp.example.com/");
+    expect(normalizeEndpoint("https://mcp.example.com/")).toBe("https://mcp.example.com/");
+  });
+  it("is case-sensitive on the path (paths are) but lower-cases the host (URLs do)", () => {
+    expect(normalizeEndpoint("https://MCP.Example.COM/SSE")).toBe("https://mcp.example.com/SSE");
+  });
+  it("rejects non-http(s) and credential-only-host junk", () => {
+    expect(() => normalizeEndpoint("ftp://mcp.example.com/x")).toThrow(OwnershipError);
+    expect(() => normalizeEndpoint("not a url")).toThrow(OwnershipError);
   });
 });
 

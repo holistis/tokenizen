@@ -43,6 +43,7 @@ import {
   OWNERSHIP_METHODS,
   challengeToken,
   activeTestConsentToken,
+  normalizeEndpoint,
   proofLocation,
   consentProofLocation,
   verifyOwnership,
@@ -97,7 +98,11 @@ export type GetOwnershipChallengeResult =
  */
 export function getOwnershipChallenge(input: GetOwnershipChallengeInput, identity: OwnershipContext): GetOwnershipChallengeResult {
   try {
-    const { endpoint, ownerAddress } = input;
+    const { ownerAddress } = input;
+    // Normalize up front so the token, the reported locations, and the
+    // canonical endpoint the owner should request with are all derived from
+    // one string (the same one request_trust_attestation will bind to).
+    const endpoint = normalizeEndpoint(input.endpoint);
     const token = challengeToken(endpoint, ownerAddress, identity.ownershipSecret);
     const dnsLocation = proofLocation("dns-txt", endpoint);
     const fileLocation = proofLocation("well-known-file", endpoint);
@@ -113,6 +118,8 @@ export function getOwnershipChallenge(input: GetOwnershipChallengeInput, identit
         wellKnownFile: { location: consentFileLocation, token: consentToken },
       },
       instructions:
+        `This challenge is bound to the canonical endpoint "${endpoint}" (scheme, host, port and path; ` +
+        `credentials, query and fragment are ignored). Request the attestation for that same endpoint. ` +
         `STEP 1 (required): prove control. Publish EXACTLY ONE of these two, then call request_trust_attestation ` +
         `with the same endpoint, ownerAddress and the method you chose. ` +
         `dns-txt: create a TXT record at "${dnsLocation}" with the exact value "${token}". ` +
@@ -174,7 +181,7 @@ export async function requestTrustAttestation(
   identity: AttesterIdentity,
   deps: RequestTrustAttestationDeps = {},
 ): Promise<RequestTrustAttestationResult> {
-  const { endpoint, ownerAddress, method } = input;
+  const { ownerAddress, method } = input;
   const now = deps.now ?? (() => new Date());
   // Production egress goes through net-guard. These defaults are the ONLY
   // reason the required fetchImpl/resolveTxtRecords seams below are satisfied
@@ -184,6 +191,15 @@ export async function requestTrustAttestation(
     deps.ownershipDeps ?? { fetchImpl: guardedFetch, resolveTxtRecords: (name) => resolveTxtGuarded(name) };
   const checkDeps: CheckDeps = deps.checkDeps ?? { fetchImpl: guardedFetch };
   try {
+    // Normalize ONCE at the entry, then use this value everywhere below
+    // (ownership + consent verification, the checks, and the stored
+    // content.endpoint). normalizeEndpoint strips credentials/query/fragment
+    // and binds to scheme+host+port+path, so the token the attestation records
+    // is derived from, and reports, the exact same string — no divergence
+    // between what is hashed and what is signed. It throws on a non-http(s) or
+    // malformed URL, caught by this try as a clean {ok:false} error.
+    const endpoint = normalizeEndpoint(input.endpoint);
+
     // Defense in depth, checked BEFORE any network call: verifyAttestation
     // (endpoint-attest/src/signing.ts) rejects attester===owner as
     // "attester_is_owner" regardless, but refusing here means this server
