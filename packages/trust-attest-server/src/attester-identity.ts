@@ -34,10 +34,48 @@ export interface AttesterIdentity {
 }
 
 /**
+ * The ownership-challenge secret ALONE, without the attestation signing key.
+ * A process that issues/verifies ownership challenges but never signs an
+ * attestation (the public self-check edge at tokenizen.nl/check) only needs
+ * this — loading the signing wallet there is pure, unnecessary attack surface
+ * on the one component any anonymous visitor can reach.
+ */
+export interface OwnershipContext {
+  ownershipSecret: string;
+  /** False when TRUST_ATTEST_OWNERSHIP_SECRET was missing and this fell back to an ephemeral secret. */
+  persistent: boolean;
+}
+
+/**
+ * Load ONLY the ownership-challenge secret, never the attestation signing key.
+ * Reads TRUST_ATTEST_OWNERSHIP_SECRET; if absent, falls back to a fresh random
+ * secret with a loud warning (same honesty posture as createAttesterIdentity),
+ * but NEVER reads TRUST_ATTEST_PRIVATE_KEY and never constructs a wallet. In
+ * production this must be set to the SAME value the signing MCP server uses, or
+ * tokens issued by the edge will not match the ones the signer expects.
+ */
+export function loadOwnershipSecret(): OwnershipContext {
+  const secretFromEnv = process.env.TRUST_ATTEST_OWNERSHIP_SECRET;
+  if (secretFromEnv) {
+    if (secretFromEnv.length < 32) {
+      throw new Error("TRUST_ATTEST_OWNERSHIP_SECRET must be at least 32 characters (see endpoint-attest's challengeToken)");
+    }
+    return { ownershipSecret: secretFromEnv, persistent: true };
+  }
+  process.stderr.write(
+    "self-check ownership context: TRUST_ATTEST_OWNERSHIP_SECRET is not set. Falling back to a fresh, random " +
+      "ownership secret for this process only. Any challenge token issued now stops matching after a restart and " +
+      "will NOT match the signing server's identity. Fine for local testing, not for real use. Set " +
+      "TRUST_ATTEST_OWNERSHIP_SECRET (to the SAME value the signing server uses) before deploying.\n",
+  );
+  return { ownershipSecret: randomBytes(32).toString("hex"), persistent: false };
+}
+
+/**
  * Create the attester identity for this process. Exported as a function (not
  * a module-level singleton) so tests and the demo can each get their own
- * isolated identity; server.ts calls this once and holds the result for its
- * process lifetime.
+ * isolated identity; server.ts creates it lazily, on first actual use, and
+ * holds the result for its process lifetime.
  */
 export function createAttesterIdentity(): AttesterIdentity {
   const keyFromEnv = process.env.TRUST_ATTEST_PRIVATE_KEY;

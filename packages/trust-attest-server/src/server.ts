@@ -56,7 +56,7 @@ import {
 import { guardedFetch, resolveTxtGuarded } from "net-guard";
 import { runChecks, type CheckDeps, type CheckFinding, type CheckResult } from "./checks.js";
 import { runActiveToolChainCheck, type ToolFetchDeps } from "./fetch-tools.js";
-import { createAttesterIdentity, type AttesterIdentity } from "./attester-identity.js";
+import { createAttesterIdentity, type AttesterIdentity, type OwnershipContext } from "./attester-identity.js";
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -88,8 +88,14 @@ export type GetOwnershipChallengeResult =
     }
   | { ok: false; error: string };
 
-/** FREE: derives the challenge token an owner must publish (and, separately, the active-test consent token). Never touches the network, never issues an attestation. */
-export function getOwnershipChallenge(input: GetOwnershipChallengeInput, identity: AttesterIdentity): GetOwnershipChallengeResult {
+/**
+ * FREE: derives the challenge token an owner must publish (and, separately, the
+ * active-test consent token). Never touches the network, never issues an
+ * attestation. Takes only an OwnershipContext (the HMAC secret), not the full
+ * signing identity, so the public /check edge can call it without ever holding
+ * the attestation signing key — a full AttesterIdentity also satisfies this.
+ */
+export function getOwnershipChallenge(input: GetOwnershipChallengeInput, identity: OwnershipContext): GetOwnershipChallengeResult {
   try {
     const { endpoint, ownerAddress } = input;
     const token = challengeToken(endpoint, ownerAddress, identity.ownershipSecret);
@@ -310,11 +316,20 @@ function errorResult(message: string): { content: Array<{ type: "text"; text: st
   return { content: [{ type: "text", text: `Error: ${message}` }], isError: true };
 }
 
-// Created once per process, held for the server's lifetime. Persistent
-// across restarts when TRUST_ATTEST_PRIVATE_KEY and TRUST_ATTEST_OWNERSHIP_SECRET
-// are set; falls back to an ephemeral identity with a loud stderr warning
-// otherwise. See attester-identity.ts.
-const identity = createAttesterIdentity();
+// The signing identity is created LAZILY, on first actual use, not at module
+// load. This matters because another package imports a function from this
+// module (self-check-server imports getOwnershipChallenge): an eager
+// module-level createAttesterIdentity() would mint an attestation SIGNING key
+// inside that anonymous-facing /check process, which never signs anything and
+// must not hold the signing key. The lazy getter means importing this module
+// has no key-minting side effect; the key exists only in a process that
+// actually invokes a signing tool. Persistent across restarts when
+// TRUST_ATTEST_PRIVATE_KEY + TRUST_ATTEST_OWNERSHIP_SECRET are set; ephemeral
+// with a loud warning otherwise (see attester-identity.ts).
+let cachedIdentity: AttesterIdentity | undefined;
+function identity(): AttesterIdentity {
+  return (cachedIdentity ??= createAttesterIdentity());
+}
 
 const server = new McpServer({
   name: "trust-attest-server",
@@ -338,7 +353,7 @@ server.registerTool(
     },
   },
   async (input) => {
-    const result = getOwnershipChallenge(input, identity);
+    const result = getOwnershipChallenge(input, identity());
     if (!result.ok) return errorResult(result.error);
     const { dnsTxt, wellKnownFile, activeTestConsent, instructions } = result;
     return textResult({ dnsTxt, wellKnownFile, activeTestConsent, instructions });
@@ -370,7 +385,7 @@ server.registerTool(
     },
   },
   async (input) => {
-    const result = await requestTrustAttestation(input, identity);
+    const result = await requestTrustAttestation(input, identity());
     if (!result.ok) return errorResult(result.error);
     return textResult({ attestation: result.attestation, findings: result.findings });
   },
@@ -394,4 +409,4 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   });
 }
 
-export { server, identity };
+export { server };

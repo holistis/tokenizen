@@ -40,8 +40,8 @@ import {
   type OwnershipCheckDeps,
   type OwnershipMethod,
 } from "endpoint-attest";
-import { getOwnershipChallenge, identity as defaultIdentity, type GetOwnershipChallengeResult } from "trust-attest-server/dist/server.js";
-import type { AttesterIdentity } from "trust-attest-server/dist/attester-identity.js";
+import { getOwnershipChallenge, type GetOwnershipChallengeResult } from "trust-attest-server/dist/server.js";
+import { loadOwnershipSecret, type OwnershipContext } from "trust-attest-server/dist/attester-identity.js";
 import {
   assertPubliclyRoutableHost,
   UnsafeHostError,
@@ -54,8 +54,17 @@ import { createRateLimiter } from "./rate-limit.js";
 const DEFAULT_ALLOWED_ORIGINS = ["http://localhost:5173", "https://tokenizen.nl", "https://www.tokenizen.nl"];
 
 export interface CreateAppOptions {
-  /** Signing/HMAC identity to use. Defaults to trust-attest-server's module-level identity so a challenge issued via this server matches what verify-ownership expects, within one process lifetime — same constraint attester-identity.ts documents for the MCP server itself. */
-  identity?: AttesterIdentity;
+  /**
+   * The ownership-challenge secret (HMAC) to use — NOT a full signing identity.
+   * This edge issues and verifies ownership challenges but never signs an
+   * attestation, so it deliberately holds only the secret, never the
+   * attestation signing key (that key would be pure attack surface on the one
+   * component any anonymous visitor can reach). Defaults to loadOwnershipSecret(),
+   * which reads TRUST_ATTEST_OWNERSHIP_SECRET — set it to the SAME value the
+   * signing server uses, so challenges issued here match what that server
+   * expects. A full AttesterIdentity also satisfies this type (tests pass one).
+   */
+  identity?: OwnershipContext;
   /** Injected into verifyOwnership — lets tests supply a fake DNS/fetch instead of touching the network. In production this defaults to net-guard's guardedFetch + resolveTxtGuarded, so the real ownership fetch is IP-validated and pinned, not just pre-checked. */
   ownershipDeps?: OwnershipCheckDeps;
   /** Injected into the early host pre-check — lets tests supply a fake DNS lookup instead of touching the network. */
@@ -105,7 +114,7 @@ async function guardEndpointHost(endpoint: string, res: Response, deps?: Routabl
 }
 
 export function createApp(options: CreateAppOptions = {}): Express {
-  const identity = options.identity ?? defaultIdentity;
+  const identity = options.identity ?? loadOwnershipSecret();
   const allowedOrigins = options.allowedOrigins ?? DEFAULT_ALLOWED_ORIGINS;
   // Production egress for the one real network call this server makes goes
   // through net-guard: the fetch is IP-validated and pinned, closing the gap

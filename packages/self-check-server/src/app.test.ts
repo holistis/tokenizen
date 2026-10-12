@@ -7,7 +7,7 @@
 import { createServer, type Server } from "node:http";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createApp, type CreateAppOptions } from "./app.js";
-import { createAttesterIdentity } from "trust-attest-server/dist/attester-identity.js";
+import { createAttesterIdentity, loadOwnershipSecret } from "trust-attest-server/dist/attester-identity.js";
 
 const OWNER_ADDRESS = "0x111111111111111111111111111111111111111a";
 const PUBLIC_IP_LOOKUP = async () => [{ address: "93.184.216.34", family: 4 as const }];
@@ -48,6 +48,33 @@ describe("GET /api/health", () => {
     const res = await fetch(`${baseUrl}/api/health`);
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
+  });
+});
+
+describe("the /check edge holds no attestation signing key", () => {
+  // The whole point of lock (i): this anonymous-facing edge issues ownership
+  // challenges from an ownership-only context (the HMAC secret), never a full
+  // signing identity. loadOwnershipSecret() returns exactly that — no wallet.
+  beforeEach(() => startApp({ identity: loadOwnershipSecret() }));
+
+  it("loadOwnershipSecret() returns a secret with no signing wallet attached", () => {
+    const ctx = loadOwnershipSecret();
+    expect(typeof ctx.ownershipSecret).toBe("string");
+    expect(ctx.ownershipSecret.length).toBeGreaterThanOrEqual(32);
+    expect("wallet" in ctx).toBe(false);
+  });
+
+  it("still derives a valid challenge from an ownership-only context (no signing key needed)", async () => {
+    const res = await fetch(`${baseUrl}/api/challenge`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ endpoint: "https://mcp.example.com/sse", ownerAddress: OWNER_ADDRESS }),
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(typeof body.wellKnownFile.token).toBe("string");
+    expect(body.activeTestConsent.wellKnownFile.token).not.toBe(body.wellKnownFile.token);
   });
 });
 
