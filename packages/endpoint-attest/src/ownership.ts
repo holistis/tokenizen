@@ -37,6 +37,17 @@ export const DNS_LABEL = "_endpoint-attest";
 /** The path the token is published at for the file method. Standard well-known location per RFC 8615. */
 export const WELL_KNOWN_PATH = "/.well-known/endpoint-attest.txt";
 
+/**
+ * A SECOND, distinct proof the owner publishes to opt IN to active testing.
+ * Separate from the ownership proof on purpose: proving control of an endpoint
+ * is not the same as consenting to have it actively connected-to and probed
+ * (an MCP client handshake and tools/list), so each is its own published
+ * token at its own location. Published at a distinct DNS label / well-known
+ * path so it never collides with the ownership proof (a file holds one value).
+ */
+export const ACTIVE_CONSENT_DNS_LABEL = "_endpoint-attest-active-consent";
+export const ACTIVE_CONSENT_WELL_KNOWN_PATH = "/.well-known/endpoint-attest-active-consent.txt";
+
 const DEFAULT_TIMEOUT_MS = 10_000;
 // A well-known file only ever needs to hold one short token. Anything larger
 // is either a misconfiguration or an attempt to make the verifier chew
@@ -70,6 +81,29 @@ export function challengeToken(endpoint: string, ownerAddress: string, attesterS
   return `tok_${mac}`;
 }
 
+/**
+ * Derive the ACTIVE-TEST consent token for one (endpoint, owner) pair — the
+ * token the owner publishes to authorize active testing (an MCP client
+ * handshake and tools/list), distinct from the ownership challenge token.
+ *
+ * Domain-separated from challengeToken: the HMAC message is prefixed with
+ * "active-test-consent\n", so a consent token can never equal an ownership
+ * token for the same pair, and neither can be replayed as the other. Because a
+ * hostname cannot contain a newline and an owner address cannot either, the two
+ * messages ("host\nowner" vs "active-test-consent\nhost\nowner") can never
+ * collide. Same unguessable-without-the-secret property as the ownership token.
+ */
+export function activeTestConsentToken(endpoint: string, ownerAddress: string, attesterSecret: string): string {
+  if (attesterSecret.length < 32) {
+    throw new OwnershipError("attesterSecret must be at least 32 characters: a short secret makes every token guessable");
+  }
+  const host = endpointHost(endpoint);
+  const mac = createHmac("sha256", attesterSecret)
+    .update(`active-test-consent\n${host}\n${ownerAddress.toLowerCase()}`, "utf-8")
+    .digest("hex");
+  return `consent_${mac}`;
+}
+
 /** The exact host an endpoint's proof must be published under. Rejects anything that is not a plain http(s) URL, so a file:// or credential-bearing URL can never reach a DNS query or a fetch. */
 export function endpointHost(endpoint: string): string {
   let url: URL;
@@ -96,6 +130,14 @@ export function proofLocation(method: OwnershipMethod, endpoint: string): string
   if (method === "dns-txt") return `${DNS_LABEL}.${host}`;
   const url = new URL(endpoint);
   return `${url.protocol}//${url.host}${WELL_KNOWN_PATH}`;
+}
+
+/** Where the owner publishes the active-test consent token, per method. Distinct from proofLocation so the two proofs never share a file or DNS name. */
+export function consentProofLocation(method: OwnershipMethod, endpoint: string): string {
+  const host = endpointHost(endpoint);
+  if (method === "dns-txt") return `${ACTIVE_CONSENT_DNS_LABEL}.${host}`;
+  const url = new URL(endpoint);
+  return `${url.protocol}//${url.host}${ACTIVE_CONSENT_WELL_KNOWN_PATH}`;
 }
 
 /**
@@ -137,6 +179,44 @@ export async function verifyOwnership(
   }
   const expected = challengeToken(endpoint, ownerAddress, attesterSecret);
   const location = proofLocation(method, endpoint);
+  return verifyTokenPublished(method, expected, location, deps);
+}
+
+/**
+ * Verify the owner has published the ACTIVE-TEST consent token (opting in to
+ * being actively connected-to and probed), using the same channel they used
+ * for the ownership proof. Read-only, same posture as verifyOwnership. This is
+ * a SEPARATE gate: proving control of an endpoint does not by itself authorize
+ * active testing of it, so the attester runs the active path only when this
+ * returns ok.
+ */
+export async function verifyActiveTestConsent(
+  method: OwnershipMethod,
+  endpoint: string,
+  ownerAddress: string,
+  attesterSecret: string,
+  deps: OwnershipCheckDeps,
+): Promise<OwnershipResult> {
+  if (!OWNERSHIP_METHODS.includes(method)) {
+    throw new OwnershipError(`unknown ownership method: ${JSON.stringify(method)}`);
+  }
+  const expected = activeTestConsentToken(endpoint, ownerAddress, attesterSecret);
+  const location = consentProofLocation(method, endpoint);
+  return verifyTokenPublished(method, expected, location, deps);
+}
+
+/**
+ * The shared read-only check behind both verifyOwnership and
+ * verifyActiveTestConsent: confirm that `expected` is exactly what is published
+ * at `location` via `method`. Factored out so the two gates can never drift
+ * apart in how they fetch, bound, and exact-match a published token.
+ */
+async function verifyTokenPublished(
+  method: OwnershipMethod,
+  expected: string,
+  location: string,
+  deps: OwnershipCheckDeps,
+): Promise<OwnershipResult> {
   const now = () => new Date().toISOString();
 
   if (method === "dns-txt") {

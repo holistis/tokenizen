@@ -1,12 +1,17 @@
 import { describe, it, expect } from "vitest";
 import {
   challengeToken,
+  activeTestConsentToken,
   endpointHost,
   proofLocation,
+  consentProofLocation,
   verifyOwnership,
+  verifyActiveTestConsent,
   OwnershipError,
   DNS_LABEL,
   WELL_KNOWN_PATH,
+  ACTIVE_CONSENT_DNS_LABEL,
+  ACTIVE_CONSENT_WELL_KNOWN_PATH,
 } from "./ownership.js";
 
 const SECRET = "s".repeat(48);
@@ -204,5 +209,77 @@ describe("verifyOwnership, well-known-file", () => {
       },
     });
     expect(r).toMatchObject({ ok: false, reason: expect.stringContaining("fetch failed") });
+  });
+});
+
+describe("activeTestConsentToken", () => {
+  it("is deterministic and case-insensitive on the owner, like the ownership token", () => {
+    expect(activeTestConsentToken(ENDPOINT, OWNER, SECRET)).toBe(activeTestConsentToken(ENDPOINT, OWNER, SECRET));
+    const upper = "0x" + OWNER.slice(2).toUpperCase();
+    expect(activeTestConsentToken(ENDPOINT, upper, SECRET)).toBe(activeTestConsentToken(ENDPOINT, OWNER, SECRET));
+  });
+
+  it("is DOMAIN-SEPARATED from the ownership token: the two never collide for the same pair", () => {
+    expect(activeTestConsentToken(ENDPOINT, OWNER, SECRET)).not.toBe(challengeToken(ENDPOINT, OWNER, SECRET));
+  });
+
+  it("differs per owner and per host, so one owner's consent never authorizes another's endpoint", () => {
+    expect(activeTestConsentToken(ENDPOINT, OTHER_OWNER, SECRET)).not.toBe(activeTestConsentToken(ENDPOINT, OWNER, SECRET));
+    expect(activeTestConsentToken("https://other.example.com/sse", OWNER, SECRET)).not.toBe(
+      activeTestConsentToken(ENDPOINT, OWNER, SECRET),
+    );
+  });
+
+  it("refuses a short secret instead of silently producing guessable tokens", () => {
+    expect(() => activeTestConsentToken(ENDPOINT, OWNER, "tooshort")).toThrow(OwnershipError);
+  });
+});
+
+describe("consentProofLocation", () => {
+  it("is published at a DISTINCT location from the ownership proof, per method", () => {
+    expect(consentProofLocation("dns-txt", ENDPOINT)).toContain(ACTIVE_CONSENT_DNS_LABEL);
+    expect(consentProofLocation("well-known-file", ENDPOINT)).toContain(ACTIVE_CONSENT_WELL_KNOWN_PATH);
+    expect(consentProofLocation("dns-txt", ENDPOINT)).not.toBe(proofLocation("dns-txt", ENDPOINT));
+    expect(consentProofLocation("well-known-file", ENDPOINT)).not.toBe(proofLocation("well-known-file", ENDPOINT));
+  });
+});
+
+describe("verifyActiveTestConsent", () => {
+  const consentTok = (endpoint: string, owner: string, secret: string) => activeTestConsentToken(endpoint, owner, secret);
+
+  it("passes when the consent token is published at the consent well-known file", async () => {
+    const r = await verifyActiveTestConsent("well-known-file", ENDPOINT, OWNER, SECRET, {
+      fetchImpl: (async () => new Response(consentTok(ENDPOINT, OWNER, SECRET), { status: 200 })) as typeof fetch,
+      resolveTxtRecords: STUB_RESOLVE,
+    });
+    expect(r).toMatchObject({ ok: true, method: "well-known-file" });
+    if (r.ok) expect(r.location).toBe(consentProofLocation("well-known-file", ENDPOINT));
+  });
+
+  it("does NOT accept the ownership token in place of the consent token (the separation is real)", async () => {
+    const r = await verifyActiveTestConsent("well-known-file", ENDPOINT, OWNER, SECRET, {
+      fetchImpl: (async () => new Response(challengeToken(ENDPOINT, OWNER, SECRET), { status: 200 })) as typeof fetch,
+      resolveTxtRecords: STUB_RESOLVE,
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it("passes via dns-txt when the consent TXT record matches", async () => {
+    const r = await verifyActiveTestConsent("dns-txt", ENDPOINT, OWNER, SECRET, {
+      fetchImpl: STUB_FETCH,
+      resolveTxtRecords: async (name) => {
+        expect(name).toBe(consentProofLocation("dns-txt", ENDPOINT));
+        return [[consentTok(ENDPOINT, OWNER, SECRET)]];
+      },
+    });
+    expect(r.ok).toBe(true);
+  });
+
+  it("fails when nothing is published at the consent location", async () => {
+    const r = await verifyActiveTestConsent("well-known-file", ENDPOINT, OWNER, SECRET, {
+      fetchImpl: (async () => new Response("", { status: 404, statusText: "Not Found" })) as typeof fetch,
+      resolveTxtRecords: STUB_RESOLVE,
+    });
+    expect(r).toMatchObject({ ok: false, reason: expect.stringContaining("404") });
   });
 });

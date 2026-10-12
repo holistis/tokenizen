@@ -1,6 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { ethers } from "ethers";
-import { verifyAttestation, challengeToken, proofLocation, type OwnershipCheckDeps } from "endpoint-attest";
+import {
+  verifyAttestation,
+  challengeToken,
+  activeTestConsentToken,
+  proofLocation,
+  consentProofLocation,
+  type OwnershipCheckDeps,
+} from "endpoint-attest";
 import { getOwnershipChallenge, requestTrustAttestation } from "./server.js";
 import { createAttesterIdentity, type AttesterIdentity } from "./attester-identity.js";
 
@@ -28,6 +35,22 @@ describe("getOwnershipChallenge", () => {
     expect(result.wellKnownFile.token).toBe(expectedToken);
     expect(result.dnsTxt.location).toBe(proofLocation("dns-txt", ENDPOINT));
     expect(result.wellKnownFile.location).toBe(proofLocation("well-known-file", ENDPOINT));
+  });
+
+  it("also derives the separate active-test consent token at its own distinct locations", () => {
+    const identity = freshIdentity();
+    const result = getOwnershipChallenge({ endpoint: ENDPOINT, ownerAddress: OWNER }, identity);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const expectedConsent = activeTestConsentToken(ENDPOINT, OWNER, identity.ownershipSecret);
+    expect(result.activeTestConsent.dnsTxt.token).toBe(expectedConsent);
+    expect(result.activeTestConsent.wellKnownFile.token).toBe(expectedConsent);
+    expect(result.activeTestConsent.dnsTxt.location).toBe(consentProofLocation("dns-txt", ENDPOINT));
+    expect(result.activeTestConsent.wellKnownFile.location).toBe(consentProofLocation("well-known-file", ENDPOINT));
+    // The consent token must never equal the ownership token for the same pair.
+    expect(result.activeTestConsent.wellKnownFile.token).not.toBe(result.wellKnownFile.token);
+    // And it must be published somewhere distinct, or a single file could not hold both.
+    expect(result.activeTestConsent.wellKnownFile.location).not.toBe(result.wellKnownFile.location);
   });
 
   it("never runs a check or touches the network — it is pure token derivation", () => {
@@ -225,9 +248,26 @@ describe("requestTrustAttestation: attesterAddress is NEVER ownerAddress (regres
 });
 
 describe("requestTrustAttestation: consent-gated active testing", () => {
+  // Ownership proof published, but NOT the active-test consent token: the
+  // consent location is fetched and returns the ownership token, which does not
+  // match the expected consent token, so consent verification fails.
   const ownershipPasses = (identity: AttesterIdentity): OwnershipCheckDeps => ({
     fetchImpl: (async () =>
       new Response(challengeToken(ENDPOINT, OWNER, identity.ownershipSecret), { status: 200 })) as typeof fetch,
+    resolveTxtRecords: STUB_RESOLVE,
+  });
+
+  // BOTH proofs published: the well-known-file fetch returns the ownership
+  // token at the ownership path and the consent token at the consent path, so
+  // ownership AND active-test consent both verify.
+  const bothProofsPublished = (identity: AttesterIdentity): OwnershipCheckDeps => ({
+    fetchImpl: (async (url: Parameters<typeof fetch>[0]) => {
+      const u = String(url);
+      const body = u.includes("active-consent")
+        ? activeTestConsentToken(ENDPOINT, OWNER, identity.ownershipSecret)
+        : challengeToken(ENDPOINT, OWNER, identity.ownershipSecret);
+      return new Response(body, { status: 200 });
+    }) as typeof fetch,
     resolveTxtRecords: STUB_RESOLVE,
   });
 
@@ -254,13 +294,42 @@ describe("requestTrustAttestation: consent-gated active testing", () => {
     expect(result.attestation.checksPerformed).not.toContain("mcp-tool-capability-chains");
   });
 
-  it("on consent, records the active check in checksPerformed and its facts in findings WITHOUT changing the signed outcome", async () => {
+  it("does NOT run the active check when consent is requested but the owner has not published the consent token", async () => {
+    const identity = freshIdentity();
+    let listerCalled = false;
+    const result = await requestTrustAttestation(
+      { endpoint: ENDPOINT, ownerAddress: OWNER, method: "well-known-file", consentToActiveTesting: true },
+      identity,
+      {
+        ownershipDeps: ownershipPasses(identity), // ownership ok, but consent token NOT published
+        checkDeps: { fetchImpl: AUTH_ENFORCED_CHECK_FETCH },
+        toolFetchDeps: {
+          listTools: async () => {
+            listerCalled = true;
+            return [];
+          },
+        },
+      },
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    // The consent check was performed and recorded, but the active tool-chain
+    // check was NOT: no verifiable consent token, so no connection is made.
+    expect(result.attestation.checksPerformed).toContain("mcp-active-test-consent");
+    expect(result.attestation.checksPerformed).not.toContain("mcp-tool-capability-chains");
+    expect(listerCalled).toBe(false); // the real proof: a request flag alone never connects
+    expect(result.attestation.outcome).toBe("passed"); // passive result stands, unchanged
+    expect(result.findings.some((f) => f.detail.includes("owner consent could NOT be verified"))).toBe(true);
+    expect(verifyAttestation(result.attestation)).toEqual({ ok: true });
+  });
+
+  it("runs the active check only when BOTH ownership and consent tokens are published, recording facts WITHOUT changing the signed outcome", async () => {
     const identity = freshIdentity();
     const result = await requestTrustAttestation(
       { endpoint: ENDPOINT, ownerAddress: OWNER, method: "well-known-file", consentToActiveTesting: true },
       identity,
       {
-        ownershipDeps: ownershipPasses(identity),
+        ownershipDeps: bothProofsPublished(identity),
         checkDeps: { fetchImpl: AUTH_ENFORCED_CHECK_FETCH }, // auth-signal check -> passed
         toolFetchDeps: {
           listTools: async () => [
@@ -273,11 +342,13 @@ describe("requestTrustAttestation: consent-gated active testing", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.attestation.checksPerformed).toContain("auth-signal-on-plain-get");
+    expect(result.attestation.checksPerformed).toContain("mcp-active-test-consent");
     expect(result.attestation.checksPerformed).toContain("mcp-tool-capability-chains");
     // FACTS-ONLY: the active check records facts but renders no verdict, so the
     // signed outcome stays exactly what the passive check determined. Consenting
     // to the active test must never be able to worsen the outcome.
     expect(result.attestation.outcome).toBe("passed");
+    expect(result.findings.some((f) => f.detail.includes("owner consent for active testing was verified"))).toBe(true);
     expect(result.findings.some((f) => f.detail.includes("fetch_url") && f.detail.includes("send_payment"))).toBe(true);
     expect(verifyAttestation(result.attestation)).toEqual({ ok: true }); // still independently verifiable
   });
@@ -288,7 +359,7 @@ describe("requestTrustAttestation: consent-gated active testing", () => {
       { endpoint: ENDPOINT, ownerAddress: OWNER, method: "well-known-file", consentToActiveTesting: true },
       identity,
       {
-        ownershipDeps: ownershipPasses(identity),
+        ownershipDeps: bothProofsPublished(identity), // ownership + consent both verify
         checkDeps: { fetchImpl: AUTH_ENFORCED_CHECK_FETCH }, // auth -> passed
         toolFetchDeps: {
           listTools: async () => {
