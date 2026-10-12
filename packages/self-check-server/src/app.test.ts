@@ -107,7 +107,9 @@ describe("POST /api/challenge", () => {
     expect(body.ok).toBe(false);
   });
 
-  it("rejects an endpoint whose host is an SSRF-relevant loopback IP literal, before any DNS resolution", async () => {
+  it("rejects an endpoint whose host is an SSRF-relevant loopback IP LITERAL, without resolving", async () => {
+    // The literal-only guard catches this cheaply, with no DNS query (so no
+    // recon oracle) and a generic message (so no resolved-IP leak).
     const res = await fetch(`${baseUrl}/api/challenge`, {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -116,18 +118,44 @@ describe("POST /api/challenge", () => {
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.ok).toBe(false);
-    expect(body.error).toMatch(/not publicly routable|loopback/i);
+    expect(body.error).toMatch(/not permitted/i);
   });
 
-  it("rejects an endpoint that resolves to the cloud metadata address", async () => {
-    await startApp({ routableHostDeps: { dnsLookupAll: async () => [{ address: "169.254.169.254", family: 4 }] } });
+  it("does NOT resolve on the challenge route: a public-looking name that resolves to metadata still gets a token", async () => {
+    // Challenge opens no connection — it is pure local HMAC — so it must not run
+    // a DNS lookup (that was a gratuitous internal-DNS recon oracle). Deriving a
+    // token for a name that happens to resolve internally is harmless; the real
+    // block happens at verify-ownership, which actually connects (next test).
+    let resolverCalled = false;
+    await startApp({
+      routableHostDeps: {
+        dnsLookupAll: async () => {
+          resolverCalled = true;
+          return [{ address: "169.254.169.254", family: 4 }];
+        },
+      },
+    });
     const res = await fetch(`${baseUrl}/api/challenge`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ endpoint: "https://looks-public.example/mcp", ownerAddress: OWNER_ADDRESS }),
     });
+    expect(res.status).toBe(200);
+    expect((await res.json()).ok).toBe(true);
+    expect(resolverCalled).toBe(false); // the proof it did not resolve
+  });
+
+  it("verify-ownership (which DOES connect) still rejects a host resolving to metadata, with a generic message", async () => {
+    await startApp({ routableHostDeps: { dnsLookupAll: async () => [{ address: "169.254.169.254", family: 4 }] } });
+    const res = await fetch(`${baseUrl}/api/verify-ownership`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ endpoint: "https://looks-public.example/mcp", ownerAddress: OWNER_ADDRESS, method: "well-known-file" }),
+    });
     expect(res.status).toBe(400);
-    expect((await res.json()).ok).toBe(false);
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(body.error).toBe("endpoint host is not publicly routable"); // generic: no resolved IP echoed
   });
 });
 

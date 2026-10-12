@@ -44,6 +44,7 @@ import { getOwnershipChallenge, type GetOwnershipChallengeResult } from "trust-a
 import { loadOwnershipSecret, type OwnershipContext } from "trust-attest-server/dist/attester-identity.js";
 import {
   assertPubliclyRoutableHost,
+  assertHostnameLiteralSafe,
   UnsafeHostError,
   guardedFetch,
   resolveTxtGuarded,
@@ -116,7 +117,39 @@ async function guardEndpointHost(endpoint: string, res: Response, deps?: Routabl
     await assertPubliclyRoutableHost(host, deps);
   } catch (e) {
     if (e instanceof UnsafeHostError) {
-      badRequest(res, e.message);
+      // Do NOT echo e.message: it embeds the RESOLVED address (e.g. "resolves
+      // to 10.1.2.3, a private address"), which would turn this endpoint into
+      // an internal-DNS recon oracle for an anonymous caller. A generic
+      // rejection is enough for the legitimate user.
+      badRequest(res, "endpoint host is not publicly routable");
+      return false;
+    }
+    throw e;
+  }
+  return true;
+}
+
+/**
+ * A NON-RESOLVING host guard for the challenge route: rejects an obviously
+ * internal host LITERAL (loopback/private/metadata/.internal) cheaply, without
+ * any DNS query. The challenge route opens no connection, so there is nothing
+ * to SSRF-pre-filter by resolution — running a lookup there would be a
+ * gratuitous internal-DNS recon oracle (and would leak the resolved IP). The
+ * literal is caller-supplied, so refusing it leaks nothing.
+ */
+function guardEndpointLiteralOnly(endpoint: string, res: Response): boolean {
+  let host: string;
+  try {
+    host = endpointHost(endpoint);
+  } catch (e) {
+    badRequest(res, (e as Error).message);
+    return false;
+  }
+  try {
+    assertHostnameLiteralSafe(host);
+  } catch (e) {
+    if (e instanceof UnsafeHostError) {
+      badRequest(res, "endpoint host is not permitted");
       return false;
     }
     throw e;
@@ -169,7 +202,13 @@ export function createApp(options: CreateAppOptions = {}): Express {
       return;
     }
     const { endpoint, ownerAddress } = parsed.data;
-    if (!(await guardEndpointHost(endpoint, res, options.routableHostDeps))) return;
+    // Literal-only guard: reject an obviously-internal host LITERAL cheaply, but
+    // do NOT resolve. This route opens no connection (pure local HMAC), so the
+    // old resolving check was a gratuitous internal-DNS recon oracle on the
+    // loose-limit tier; a name that merely RESOLVES to an internal address is
+    // harmless to derive a token for and is blocked for real at verify time by
+    // guardedFetch. getOwnershipChallenge also validates the URL shape.
+    if (!guardEndpointLiteralOnly(endpoint, res)) return;
 
     const result: GetOwnershipChallengeResult = getOwnershipChallenge({ endpoint, ownerAddress }, identity);
     if (!result.ok) {

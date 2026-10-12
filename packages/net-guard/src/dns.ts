@@ -12,18 +12,45 @@ import { resolveTxt as resolveTxtCb, lookup as dnsLookupCb, type LookupAddress }
 import { isIP } from "node:net";
 import { UnsafeHostError, isBlockedAddress, assertHostnameLiteralSafe } from "./ip-rules.js";
 
+// The hostname is attacker-chosen, so its DNS can be made to resolve slowly or
+// never. Bound the default resolvers: the underlying OS query is abandoned
+// rather than cancelled, but the promise rejects so the attester never hangs on
+// a chosen host. Only the DEFAULT resolvers are bounded; an injected test stub
+// is left alone.
+const DEFAULT_DNS_TIMEOUT_MS = 5_000;
+
+function withTimeout<T>(p: Promise<T>, ms: number, what: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`${what} timed out after ${ms}ms`)), ms);
+    p.then(
+      (v) => {
+        clearTimeout(timer);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(timer);
+        reject(e);
+      },
+    );
+  });
+}
+
 export interface ResolveTxtDeps {
   /** Injectable for tests. Defaults to node:dns resolveTxt. */
   resolveTxtImpl?: (name: string) => Promise<string[][]>;
 }
 
 function defaultResolveTxt(name: string): Promise<string[][]> {
-  return new Promise((resolve, reject) => {
-    resolveTxtCb(name, (err, records) => {
-      if (err) reject(err);
-      else resolve(records);
-    });
-  });
+  return withTimeout(
+    new Promise<string[][]>((resolve, reject) => {
+      resolveTxtCb(name, (err, records) => {
+        if (err) reject(err);
+        else resolve(records);
+      });
+    }),
+    DEFAULT_DNS_TIMEOUT_MS,
+    `TXT lookup of "${name}"`,
+  );
 }
 
 /**
@@ -45,12 +72,16 @@ export interface RoutableHostDeps {
 }
 
 function defaultDnsLookupAll(hostname: string): Promise<LookupAddress[]> {
-  return new Promise((resolve, reject) => {
-    dnsLookupCb(hostname, { all: true }, (err, addresses) => {
-      if (err) reject(err);
-      else resolve(addresses);
-    });
-  });
+  return withTimeout(
+    new Promise<LookupAddress[]>((resolve, reject) => {
+      dnsLookupCb(hostname, { all: true }, (err, addresses) => {
+        if (err) reject(err);
+        else resolve(addresses);
+      });
+    }),
+    DEFAULT_DNS_TIMEOUT_MS,
+    `DNS lookup of "${hostname}"`,
+  );
 }
 
 /**
