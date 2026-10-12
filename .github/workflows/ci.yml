@@ -32,8 +32,16 @@ jobs:
       # (self-check-server's second build is a fast, harmless no-op since it's already
       # built) -- add any NEW package with a cross-workspace dist import to the
       # explicit list above the blanket call, in dependency order.
+      #
+      # That instruction was then missed exactly as written: net-guard landed as a new
+      # shared package without being added here, so trust-attest-server failed on
+      # "Cannot find module 'net-guard'" from the moment it was merged. net-guard goes
+      # FIRST because it depends on no other workspace and the other three import it.
+      # Reproduced locally by deleting every dist/ and replaying the old order, which
+      # gave the identical two TS2307 errors CI reported.
       - name: Build workspaces (dependency order first, then the rest)
         run: |
+          npm run build -w net-guard --if-present
           npm run build -w capacity-attest --if-present
           npm run build -w endpoint-attest --if-present
           npm run build -w trust-attest-server --if-present
