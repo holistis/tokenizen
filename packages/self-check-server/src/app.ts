@@ -71,6 +71,17 @@ export interface CreateAppOptions {
   routableHostDeps?: RoutableHostDeps;
   /** Origins allowed to call this API. Defaults to the production domains + the local Vite dev server. */
   allowedOrigins?: string[];
+  /**
+   * Express `trust proxy` setting, which decides how req.ip is resolved and
+   * therefore what the per-IP rate limiter keys on. Default false (req.ip is
+   * the direct socket address). Behind a proxy/CDN this MUST be set to the
+   * exact number of trusted proxy hops (e.g. 1), NEVER `true`: `true` trusts a
+   * client-supplied X-Forwarded-For end to end, so a caller could spoof it to
+   * get a fresh rate-limit bucket per request. Left false, a proxied
+   * deployment keys everyone on the proxy's IP (over-limiting, not bypass) —
+   * fail-safe, but set the hop count for correct per-client limits.
+   */
+  trustProxy?: boolean | number | string;
   /** Rate limit for the (real network I/O) verify-ownership route. Defaults to 10 requests / 5 minutes per IP. */
   verifyRateLimit?: { windowMs: number; max: number };
   /** Rate limit for the (no network I/O) challenge route. Defaults to 30 requests / 5 minutes per IP — looser, since it is pure local HMAC, same posture trust-attest-server's own comments describe for get_ownership_challenge. */
@@ -133,6 +144,10 @@ export function createApp(options: CreateAppOptions = {}): Express {
 
   const app = express();
   app.disable("x-powered-by");
+  // Decides how req.ip (the rate-limit key) is resolved. Default false; behind
+  // a proxy set options.trustProxy to the exact hop count, never true (see the
+  // option's doc — true lets a client spoof X-Forwarded-For past the limiter).
+  app.set("trust proxy", options.trustProxy ?? false);
   app.use(
     cors({
       origin: allowedOrigins,
