@@ -40,7 +40,7 @@ function EmptyState() {
         href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Trust Radar: request a check")}`}
         className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 font-mono text-xs font-medium text-primary-foreground hover:bg-primary/90"
       >
-        Be the first — request a free attestation
+        Be the first, request a free attestation
       </a>
     </div>
   );
@@ -70,8 +70,8 @@ export function TrustRadarPage() {
         <div className="mt-6 rounded-lg border border-rule-yellow/30 bg-rule-yellow-soft p-4 text-sm leading-relaxed text-foreground/80">
           This is not a general security audit, and it is never a listing an owner did not ask for. Every entry
           below is a self-requested, ownership-verified check: the owner proved control of the domain (DNS TXT or
-          a well-known file) before the signed result was published. &ldquo;Confirmed safe&rdquo; means that
-          signed check passed.
+          a well-known file) before the signed result was published. &ldquo;Checks passed&rdquo; means the
+          signed checks ran and none of them failed. It is not a guarantee that the server is safe.
         </div>
 
         {TRUST_RADAR_ENTRIES.length === 0 ? (
