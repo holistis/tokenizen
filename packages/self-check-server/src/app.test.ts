@@ -121,6 +121,22 @@ describe("POST /api/challenge", () => {
     expect(body.error).toMatch(/not permitted/i);
   });
 
+  it("rejects a BRACKETED IPv6 loopback LITERAL (the first Majlis's HIGH), without resolving", async () => {
+    // [::1] is the URL spelling of IPv6 loopback: new URL keeps the brackets on
+    // .hostname, and isIP("[::1]") === 0, so the literal guard must strip them
+    // before the range check — otherwise every IPv6 literal would skip it. This
+    // exact spelling was the first Majlis's HIGH, so it stays a regression test.
+    const res = await fetch(`${baseUrl}/api/challenge`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ endpoint: "http://[::1]:9999/mcp", ownerAddress: OWNER_ADDRESS }),
+    });
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(body.error).toMatch(/not permitted/i);
+  });
+
   it("does NOT resolve on the challenge route: a public-looking name that resolves to metadata still gets a token", async () => {
     // Challenge opens no connection — it is pure local HMAC — so it must not run
     // a DNS lookup (that was a gratuitous internal-DNS recon oracle). Deriving a
