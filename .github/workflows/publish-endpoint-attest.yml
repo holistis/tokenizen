@@ -48,5 +48,15 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Auth comes from NPM_TOKEN, not from trusted publishing. Trusted publishing
+      # can only authenticate a package that is ALREADY on npm with a configured
+      # repo+workflow link, so it cannot create a brand new package name: npm
+      # answers E404 on the PUT, which reads like "does not exist" but actually
+      # means "not authenticated" (npm masks auth failures as 404). The same trap
+      # fires if a package is ever removed from npm, because the trusted-publisher
+      # link goes with it. --provenance is unaffected: it signs via GitHub's OIDC
+      # (id-token: write), independent of how the publish authenticates.
       - name: Publish to npm with provenance
         run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
