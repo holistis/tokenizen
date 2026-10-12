@@ -42,18 +42,29 @@ import {
   ETH_ADDRESS_RE,
   OWNERSHIP_METHODS,
   challengeToken,
+  activeTestConsentToken,
+  normalizeEndpoint,
   proofLocation,
+  consentProofLocation,
   verifyOwnership,
+  verifyActiveTestConsent,
   signAttestation,
   type OwnershipMethod,
   type OwnershipCheckDeps,
   type AttestationContent,
   type EndpointAttestation,
 } from "endpoint-attest";
-import { runChecks, type CheckDeps, type CheckFinding } from "./checks.js";
-import { createAttesterIdentity, type AttesterIdentity } from "./attester-identity.js";
+import { guardedFetch, resolveTxtGuarded } from "net-guard";
+import { runChecks, type CheckDeps, type CheckFinding, type CheckResult } from "./checks.js";
+import { runActiveToolChainCheck, type ToolFetchDeps } from "./fetch-tools.js";
+import { createAttesterIdentity, type AttesterIdentity, type OwnershipContext } from "./attester-identity.js";
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
+// The name recorded in checksPerformed when active testing was requested: the
+// attester always performs the consent check (it looks for the owner's
+// published consent token), whether or not the active tool-chain check then runs.
+const ACTIVE_CONSENT_CHECK_NAME = "mcp-active-test-consent";
 
 // ---------------------------------------------------------------------------
 // Tool logic (testable independently of MCP wiring)
@@ -69,26 +80,55 @@ export type GetOwnershipChallengeResult =
       ok: true;
       dnsTxt: { location: string; token: string };
       wellKnownFile: { location: string; token: string };
+      /** OPTIONAL extra proof, only needed to opt in to active testing. Published separately from the ownership proof. */
+      activeTestConsent: {
+        dnsTxt: { location: string; token: string };
+        wellKnownFile: { location: string; token: string };
+      };
       instructions: string;
     }
   | { ok: false; error: string };
 
-/** FREE: derives the challenge token an owner must publish. Never touches the network, never issues an attestation. */
-export function getOwnershipChallenge(input: GetOwnershipChallengeInput, identity: AttesterIdentity): GetOwnershipChallengeResult {
+/**
+ * FREE: derives the challenge token an owner must publish (and, separately, the
+ * active-test consent token). Never touches the network, never issues an
+ * attestation. Takes only an OwnershipContext (the HMAC secret), not the full
+ * signing identity, so the public /check edge can call it without ever holding
+ * the attestation signing key — a full AttesterIdentity also satisfies this.
+ */
+export function getOwnershipChallenge(input: GetOwnershipChallengeInput, identity: OwnershipContext): GetOwnershipChallengeResult {
   try {
-    const { endpoint, ownerAddress } = input;
+    const { ownerAddress } = input;
+    // Normalize up front so the token, the reported locations, and the
+    // canonical endpoint the owner should request with are all derived from
+    // one string (the same one request_trust_attestation will bind to).
+    const endpoint = normalizeEndpoint(input.endpoint);
     const token = challengeToken(endpoint, ownerAddress, identity.ownershipSecret);
     const dnsLocation = proofLocation("dns-txt", endpoint);
     const fileLocation = proofLocation("well-known-file", endpoint);
+    const consentToken = activeTestConsentToken(endpoint, ownerAddress, identity.ownershipSecret);
+    const consentDnsLocation = consentProofLocation("dns-txt", endpoint);
+    const consentFileLocation = consentProofLocation("well-known-file", endpoint);
     return {
       ok: true,
       dnsTxt: { location: dnsLocation, token },
       wellKnownFile: { location: fileLocation, token },
+      activeTestConsent: {
+        dnsTxt: { location: consentDnsLocation, token: consentToken },
+        wellKnownFile: { location: consentFileLocation, token: consentToken },
+      },
       instructions:
-        `Publish EXACTLY ONE of these two, then call request_trust_attestation with the same endpoint, ` +
-        `ownerAddress and the method you chose. ` +
+        `This challenge is bound to the canonical endpoint "${endpoint}" (scheme, host, port and path; ` +
+        `credentials, query and fragment are ignored). Request the attestation for that same endpoint. ` +
+        `STEP 1 (required): prove control. Publish EXACTLY ONE of these two, then call request_trust_attestation ` +
+        `with the same endpoint, ownerAddress and the method you chose. ` +
         `dns-txt: create a TXT record at "${dnsLocation}" with the exact value "${token}". ` +
-        `well-known-file: serve the exact bytes "${token}" (no surrounding content) at "${fileLocation}".`,
+        `well-known-file: serve the exact bytes "${token}" (no surrounding content) at "${fileLocation}". ` +
+        `STEP 2 (optional, only to authorize active testing): ALSO publish the consent token, via the SAME method, ` +
+        `and set consentToActiveTesting:true. ` +
+        `dns-txt: TXT record at "${consentDnsLocation}" with value "${consentToken}". ` +
+        `well-known-file: serve "${consentToken}" at "${consentFileLocation}". ` +
+        `Without this second proof, active testing is not performed even if you set the flag.`,
     };
   } catch (e) {
     return { ok: false, error: (e as Error).message };
@@ -99,6 +139,20 @@ export interface RequestTrustAttestationInput {
   endpoint: string;
   ownerAddress: string;
   method: OwnershipMethod;
+  /**
+   * When true, REQUESTS active testing: after ownership is proven, the attester
+   * connects to the endpoint as an MCP client, reads its advertised tools, and
+   * RECORDS capability-chain facts (facts-only; it renders no safe/unsafe
+   * verdict and never changes the signed outcome — see tool-chain-check.ts).
+   *
+   * This flag is a request, NOT consent. Active testing runs only if the owner
+   * has ALSO published the separate active-test consent token
+   * (verifyActiveTestConsent), via the same method used for ownership. The flag
+   * alone cannot authorize active testing, so a third party who can read the
+   * public ownership proof cannot trigger it. Omitted or false keeps the
+   * attester on the passive path only.
+   */
+  consentToActiveTesting?: boolean;
 }
 
 export interface RequestTrustAttestationDeps {
@@ -106,6 +160,8 @@ export interface RequestTrustAttestationDeps {
   ownershipDeps?: OwnershipCheckDeps;
   /** Injected into runChecks — lets tests supply a fake fetch for the auth-signal check. */
   checkDeps?: CheckDeps;
+  /** Injected into the consent-gated active check: lets tests supply a fake tool lister instead of a real MCP connection. */
+  toolFetchDeps?: ToolFetchDeps;
   /** "Now", injectable so expiry math is deterministic in tests. */
   now?: () => Date;
 }
@@ -125,9 +181,25 @@ export async function requestTrustAttestation(
   identity: AttesterIdentity,
   deps: RequestTrustAttestationDeps = {},
 ): Promise<RequestTrustAttestationResult> {
-  const { endpoint, ownerAddress, method } = input;
+  const { ownerAddress, method } = input;
   const now = deps.now ?? (() => new Date());
+  // Production egress goes through net-guard. These defaults are the ONLY
+  // reason the required fetchImpl/resolveTxtRecords seams below are satisfied
+  // when no test stub is injected, so the real server can never reach an
+  // attacker-supplied endpoint with an unguarded fetch.
+  const ownershipDeps: OwnershipCheckDeps =
+    deps.ownershipDeps ?? { fetchImpl: guardedFetch, resolveTxtRecords: (name) => resolveTxtGuarded(name) };
+  const checkDeps: CheckDeps = deps.checkDeps ?? { fetchImpl: guardedFetch };
   try {
+    // Normalize ONCE at the entry, then use this value everywhere below
+    // (ownership + consent verification, the checks, and the stored
+    // content.endpoint). normalizeEndpoint strips credentials/query/fragment
+    // and binds to scheme+host+port+path, so the token the attestation records
+    // is derived from, and reports, the exact same string — no divergence
+    // between what is hashed and what is signed. It throws on a non-http(s) or
+    // malformed URL, caught by this try as a clean {ok:false} error.
+    const endpoint = normalizeEndpoint(input.endpoint);
+
     // Defense in depth, checked BEFORE any network call: verifyAttestation
     // (endpoint-attest/src/signing.ts) rejects attester===owner as
     // "attester_is_owner" regardless, but refusing here means this server
@@ -138,7 +210,7 @@ export async function requestTrustAttestation(
       return { ok: false, error: "ownerAddress must not equal this attester's own address — an attestation where the attester is also the owner is a self-declaration, not an attestation" };
     }
 
-    const proof = await verifyOwnership(method, endpoint, ownerAddress, identity.ownershipSecret, deps.ownershipDeps);
+    const proof = await verifyOwnership(method, endpoint, ownerAddress, identity.ownershipSecret, ownershipDeps);
     if (!proof.ok) {
       return {
         ok: false,
@@ -149,7 +221,31 @@ export async function requestTrustAttestation(
     }
 
     const token = challengeToken(endpoint, ownerAddress, identity.ownershipSecret);
-    const checkResult = await runChecks(endpoint, deps.checkDeps);
+    let checkResult = await runChecks(endpoint, checkDeps);
+    if (input.consentToActiveTesting) {
+      // Consent-gated active path. Proving ownership (above) is NOT by itself
+      // authorization to actively connect to and probe the endpoint: the
+      // ownership token sits at a public location, so a third party who can
+      // read it could otherwise request active testing of someone else's
+      // endpoint. The real gate is a SEPARATE token the owner publishes to opt
+      // in (verifyActiveTestConsent), via the same channel they used for
+      // ownership. The request flag only asks for the active path; this
+      // verification decides whether it runs.
+      const consent = await verifyActiveTestConsent(method, endpoint, ownerAddress, identity.ownershipSecret, ownershipDeps);
+      checkResult = appendInformationalResult(checkResult, consentCheckResult(consent));
+      if (consent.ok) {
+        // FACTS-ONLY: the active tool-chain check records observed facts and
+        // renders no verdict (see tool-chain-check.ts). It contributes its
+        // check name and findings, but NEVER its outcome — consenting to the
+        // active test can only ADD recorded facts, it can never worsen the
+        // signed outcome. Were it fed into the worst-of merge, a passing
+        // passive check would be dragged to "inconclusive" merely by
+        // consenting, a perverse incentive and a signed opinion dressed up as
+        // a fact.
+        const active = await runActiveToolChainCheck(endpoint, deps.toolFetchDeps);
+        checkResult = appendInformationalResult(checkResult, active);
+      }
+    }
     const findingsHash = createHash("sha256").update(JSON.stringify(checkResult.findings), "utf-8").digest("hex");
     const checkedAt = now();
     const expiresAt = new Date(checkedAt.getTime() + THIRTY_DAYS_MS);
@@ -179,6 +275,53 @@ export async function requestTrustAttestation(
   }
 }
 
+/**
+ * Fold an INFORMATIONAL check result into the running result: only its FINDINGS
+ * are recorded. It changes neither the signed outcome NOR the signed
+ * checksPerformed list.
+ *
+ * Why not checksPerformed: the schema binds that list to the outcome —
+ * `outcome: "passed"` means "every check in checksPerformed passed"
+ * (schema.ts constraint 2). A facts-only check has no pass/fail state, so its
+ * name in that list would make a "passed" attestation internally contradictory
+ * (and, for the consent check when consent was NOT verified, would read as a
+ * pass of something that explicitly did not happen). The facts-only result is
+ * still fully signed: every finding carries its own `check` name and factual
+ * detail, and findings are bound by findingsHash. So a reader re-deriving the
+ * hash sees exactly which facts-only checks ran and what they observed, without
+ * the checksPerformed list ever overstating.
+ *
+ * Contrast with a verdict-bearing check (the passive auth-signal check in
+ * checks.ts), whose name DOES belong in checksPerformed and whose outcome IS
+ * the attestation outcome. If a second verdict-bearing check is ever added it
+ * should be combined with a worst-of merge; a facts-only check never is.
+ */
+function appendInformationalResult(base: CheckResult, info: CheckResult): CheckResult {
+  return {
+    checksPerformed: base.checksPerformed,
+    outcome: base.outcome,
+    findings: [...base.findings, ...info.findings],
+  };
+}
+
+/**
+ * Record the active-test consent check as an informational result (facts-only:
+ * it states whether the owner's consent token was found, never a verdict, and
+ * never changes the signed outcome — see appendInformationalResult). The check
+ * name always lands in checksPerformed so the attestation records that consent
+ * was looked for, regardless of the answer.
+ */
+function consentCheckResult(consent: { ok: true; location: string } | { ok: false; location: string; reason: string }): CheckResult {
+  const detail = consent.ok
+    ? `owner consent for active testing was verified: the expected consent token was published at ${consent.location}. The active tool-chain check that follows was performed with that consent.`
+    : `active testing was requested but owner consent could NOT be verified at ${consent.location}: ${consent.reason}. No active test was performed; this attestation reflects the passive check only.`;
+  return {
+    checksPerformed: [ACTIVE_CONSENT_CHECK_NAME],
+    outcome: "inconclusive",
+    findings: [{ check: ACTIVE_CONSENT_CHECK_NAME, outcome: "inconclusive", detail }],
+  };
+}
+
 // ---------------------------------------------------------------------------
 // MCP wiring
 // ---------------------------------------------------------------------------
@@ -198,11 +341,20 @@ function errorResult(message: string): { content: Array<{ type: "text"; text: st
   return { content: [{ type: "text", text: `Error: ${message}` }], isError: true };
 }
 
-// Created once per process, held for the server's lifetime. Persistent
-// across restarts when TRUST_ATTEST_PRIVATE_KEY and TRUST_ATTEST_OWNERSHIP_SECRET
-// are set; falls back to an ephemeral identity with a loud stderr warning
-// otherwise. See attester-identity.ts.
-const identity = createAttesterIdentity();
+// The signing identity is created LAZILY, on first actual use, not at module
+// load. This matters because another package imports a function from this
+// module (self-check-server imports getOwnershipChallenge): an eager
+// module-level createAttesterIdentity() would mint an attestation SIGNING key
+// inside that anonymous-facing /check process, which never signs anything and
+// must not hold the signing key. The lazy getter means importing this module
+// has no key-minting side effect; the key exists only in a process that
+// actually invokes a signing tool. Persistent across restarts when
+// TRUST_ATTEST_PRIVATE_KEY + TRUST_ATTEST_OWNERSHIP_SECRET are set; ephemeral
+// with a loud warning otherwise (see attester-identity.ts).
+let cachedIdentity: AttesterIdentity | undefined;
+function identity(): AttesterIdentity {
+  return (cachedIdentity ??= createAttesterIdentity());
+}
 
 const server = new McpServer({
   name: "trust-attest-server",
@@ -226,10 +378,10 @@ server.registerTool(
     },
   },
   async (input) => {
-    const result = getOwnershipChallenge(input, identity);
+    const result = getOwnershipChallenge(input, identity());
     if (!result.ok) return errorResult(result.error);
-    const { dnsTxt, wellKnownFile, instructions } = result;
-    return textResult({ dnsTxt, wellKnownFile, instructions });
+    const { dnsTxt, wellKnownFile, activeTestConsent, instructions } = result;
+    return textResult({ dnsTxt, wellKnownFile, activeTestConsent, instructions });
   },
 );
 
@@ -249,10 +401,16 @@ server.registerTool(
       endpoint: EndpointField,
       ownerAddress: OwnerAddressField,
       method: z.enum(OWNERSHIP_METHODS).describe("Which ownership-proof method you published: dns-txt or well-known-file."),
+      consentToActiveTesting: z
+        .boolean()
+        .optional()
+        .describe(
+          "Set true to REQUEST active testing: after ownership is verified, the attester connects to your endpoint as an MCP client, reads its advertised tools, and records capability-chain FACTS (it signs no safe/unsafe verdict). This runs ONLY if you have ALSO published the separate active-test consent token (see get_ownership_challenge, step 2) via the same method; the flag alone is not consent. Omitted or false runs the passive check only.",
+        ),
     },
   },
   async (input) => {
-    const result = await requestTrustAttestation(input, identity);
+    const result = await requestTrustAttestation(input, identity());
     if (!result.ok) return errorResult(result.error);
     return textResult({ attestation: result.attestation, findings: result.findings });
   },
@@ -276,4 +434,4 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   });
 }
 
-export { server, identity };
+export { server };

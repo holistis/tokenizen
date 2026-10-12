@@ -7,10 +7,14 @@
 import { createServer, type Server } from "node:http";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createApp, type CreateAppOptions } from "./app.js";
-import { createAttesterIdentity } from "trust-attest-server/dist/attester-identity.js";
+import { createAttesterIdentity, loadOwnershipSecret } from "trust-attest-server/dist/attester-identity.js";
 
 const OWNER_ADDRESS = "0x111111111111111111111111111111111111111a";
 const PUBLIC_IP_LOOKUP = async () => [{ address: "93.184.216.34", family: 4 as const }];
+// OwnershipCheckDeps requires both fetchImpl and resolveTxtRecords; each test
+// supplies the seam it exercises and leans on these stubs for the other.
+const STUB_FETCH = (async () => new Response("", { status: 404 })) as typeof fetch;
+const STUB_RESOLVE = async (): Promise<string[][]> => [];
 
 let server: Server;
 let baseUrl: string;
@@ -18,7 +22,7 @@ let baseUrl: string;
 function startApp(options: CreateAppOptions = {}) {
   const app = createApp({
     identity: createAttesterIdentity(),
-    networkGuardDeps: { dnsLookup: PUBLIC_IP_LOOKUP },
+    routableHostDeps: { dnsLookupAll: PUBLIC_IP_LOOKUP },
     ...options,
   });
   server = createServer(app);
@@ -44,6 +48,33 @@ describe("GET /api/health", () => {
     const res = await fetch(`${baseUrl}/api/health`);
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
+  });
+});
+
+describe("the /check edge holds no attestation signing key", () => {
+  // The whole point of lock (i): this anonymous-facing edge issues ownership
+  // challenges from an ownership-only context (the HMAC secret), never a full
+  // signing identity. loadOwnershipSecret() returns exactly that — no wallet.
+  beforeEach(() => startApp({ identity: loadOwnershipSecret() }));
+
+  it("loadOwnershipSecret() returns a secret with no signing wallet attached", () => {
+    const ctx = loadOwnershipSecret();
+    expect(typeof ctx.ownershipSecret).toBe("string");
+    expect(ctx.ownershipSecret.length).toBeGreaterThanOrEqual(32);
+    expect("wallet" in ctx).toBe(false);
+  });
+
+  it("still derives a valid challenge from an ownership-only context (no signing key needed)", async () => {
+    const res = await fetch(`${baseUrl}/api/challenge`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ endpoint: "https://mcp.example.com/sse", ownerAddress: OWNER_ADDRESS }),
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(typeof body.wellKnownFile.token).toBe("string");
+    expect(body.activeTestConsent.wellKnownFile.token).not.toBe(body.wellKnownFile.token);
   });
 });
 
@@ -76,7 +107,9 @@ describe("POST /api/challenge", () => {
     expect(body.ok).toBe(false);
   });
 
-  it("rejects an endpoint whose host is an SSRF-relevant loopback IP literal, before any DNS resolution", async () => {
+  it("rejects an endpoint whose host is an SSRF-relevant loopback IP LITERAL, without resolving", async () => {
+    // The literal-only guard catches this cheaply, with no DNS query (so no
+    // recon oracle) and a generic message (so no resolved-IP leak).
     const res = await fetch(`${baseUrl}/api/challenge`, {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -85,18 +118,60 @@ describe("POST /api/challenge", () => {
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.ok).toBe(false);
-    expect(body.error).toMatch(/not publicly routable|loopback/i);
+    expect(body.error).toMatch(/not permitted/i);
   });
 
-  it("rejects an endpoint that resolves to the cloud metadata address", async () => {
-    await startApp({ networkGuardDeps: { dnsLookup: async () => [{ address: "169.254.169.254", family: 4 }] } });
+  it("rejects a BRACKETED IPv6 loopback LITERAL (the first Majlis's HIGH), without resolving", async () => {
+    // [::1] is the URL spelling of IPv6 loopback: new URL keeps the brackets on
+    // .hostname, and isIP("[::1]") === 0, so the literal guard must strip them
+    // before the range check — otherwise every IPv6 literal would skip it. This
+    // exact spelling was the first Majlis's HIGH, so it stays a regression test.
+    const res = await fetch(`${baseUrl}/api/challenge`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ endpoint: "http://[::1]:9999/mcp", ownerAddress: OWNER_ADDRESS }),
+    });
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(body.error).toMatch(/not permitted/i);
+  });
+
+  it("does NOT resolve on the challenge route: a public-looking name that resolves to metadata still gets a token", async () => {
+    // Challenge opens no connection — it is pure local HMAC — so it must not run
+    // a DNS lookup (that was a gratuitous internal-DNS recon oracle). Deriving a
+    // token for a name that happens to resolve internally is harmless; the real
+    // block happens at verify-ownership, which actually connects (next test).
+    let resolverCalled = false;
+    await startApp({
+      routableHostDeps: {
+        dnsLookupAll: async () => {
+          resolverCalled = true;
+          return [{ address: "169.254.169.254", family: 4 }];
+        },
+      },
+    });
     const res = await fetch(`${baseUrl}/api/challenge`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ endpoint: "https://looks-public.example/mcp", ownerAddress: OWNER_ADDRESS }),
     });
+    expect(res.status).toBe(200);
+    expect((await res.json()).ok).toBe(true);
+    expect(resolverCalled).toBe(false); // the proof it did not resolve
+  });
+
+  it("verify-ownership (which DOES connect) still rejects a host resolving to metadata, with a generic message", async () => {
+    await startApp({ routableHostDeps: { dnsLookupAll: async () => [{ address: "169.254.169.254", family: 4 }] } });
+    const res = await fetch(`${baseUrl}/api/verify-ownership`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ endpoint: "https://looks-public.example/mcp", ownerAddress: OWNER_ADDRESS, method: "well-known-file" }),
+    });
     expect(res.status).toBe(400);
-    expect((await res.json()).ok).toBe(false);
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(body.error).toBe("endpoint host is not publicly routable"); // generic: no resolved IP echoed
   });
 });
 
@@ -107,6 +182,7 @@ describe("POST /api/verify-ownership", () => {
     await startApp({
       identity,
       ownershipDeps: {
+        fetchImpl: STUB_FETCH,
         resolveTxtRecords: async (name: string) => {
           requestedName = name;
           // Compute what the server itself will have derived as the expected
@@ -136,7 +212,7 @@ describe("POST /api/verify-ownership", () => {
 
   it("returns ok:false with a reason when the mocked resolver returns a non-matching value", async () => {
     await startApp({
-      ownershipDeps: { resolveTxtRecords: async () => [["tok_wrong"]] },
+      ownershipDeps: { fetchImpl: STUB_FETCH, resolveTxtRecords: async () => [["tok_wrong"]] },
     });
     const res = await fetch(`${baseUrl}/api/verify-ownership`, {
       method: "POST",
@@ -165,6 +241,7 @@ describe("POST /api/verify-ownership", () => {
           const { wellKnownFile } = await res.json();
           return new Response(wellKnownFile.token, { status: 200 });
         }) as typeof fetch,
+        resolveTxtRecords: STUB_RESOLVE,
       },
     });
 
@@ -191,8 +268,9 @@ describe("POST /api/verify-ownership", () => {
   it("rejects an SSRF-relevant endpoint before calling verifyOwnership at all", async () => {
     let called = false;
     await startApp({
-      networkGuardDeps: { dnsLookup: PUBLIC_IP_LOOKUP },
+      routableHostDeps: { dnsLookupAll: PUBLIC_IP_LOOKUP },
       ownershipDeps: {
+        fetchImpl: STUB_FETCH,
         resolveTxtRecords: async () => {
           called = true;
           return [];

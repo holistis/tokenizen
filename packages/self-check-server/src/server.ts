@@ -11,12 +11,36 @@ function parsePort(raw: string | undefined, fallback: number): number {
   return Number.isInteger(n) && n > 0 && n < 65536 ? n : fallback;
 }
 
+/**
+ * Parse TRUST_PROXY into the value Express's "trust proxy" wants. Without this
+ * the per-IP rate limiter keys every request on the reverse proxy's address
+ * behind a CDN (one global bucket any single client can exhaust), which is the
+ * whole defect the IPv6-/64 + trust-proxy hardening exists to avoid. A bare
+ * "true" is deliberately refused: it trusts a client-supplied X-Forwarded-For
+ * end to end, letting a caller spoof a fresh rate-limit bucket per request.
+ * Accepts a non-negative integer hop count (the normal case, e.g. 1) or an
+ * Express named preset (e.g. "loopback"); anything else falls back to the safe
+ * default (false).
+ */
+function parseTrustProxy(raw: string | undefined): boolean | number | string {
+  if (raw === undefined || raw.trim() === "") return false;
+  const v = raw.trim();
+  const n = Number(v);
+  if (Number.isInteger(n) && n >= 0) return n;
+  if (v.toLowerCase() === "true") {
+    console.warn('self-check-server: TRUST_PROXY="true" is refused (spoofable); set the exact proxy hop count instead. Falling back to false.');
+    return false;
+  }
+  return v; // a named preset like "loopback" / "loopback, uniquelocal"
+}
+
 async function main(): Promise<void> {
   const port = parsePort(process.env.PORT, 8787);
   const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",").map((s) => s.trim()).filter(Boolean);
-  const app = createApp(allowedOrigins ? { allowedOrigins } : {});
+  const trustProxy = parseTrustProxy(process.env.TRUST_PROXY);
+  const app = createApp({ trustProxy, ...(allowedOrigins ? { allowedOrigins } : {}) });
   app.listen(port, () => {
-    console.log(`self-check-server listening on http://localhost:${port}`);
+    console.log(`self-check-server listening on http://localhost:${port} (trust proxy: ${JSON.stringify(trustProxy)})`);
   });
 }
 
