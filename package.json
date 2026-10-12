@@ -7,6 +7,8 @@
   ],
   "scripts": {
     "check-own-deps": "node scripts/check-own-deps-published.mjs",
-    "check-own-deps-test": "node --test scripts/check-own-deps-published.test.mjs"
+    "check-own-deps-test": "node --test scripts/check-own-deps-published.test.mjs",
+    "publish-order": "node scripts/publish-order.mjs",
+    "publish-order-dry": "node scripts/publish-order.mjs --dry-run"
   }
 }
