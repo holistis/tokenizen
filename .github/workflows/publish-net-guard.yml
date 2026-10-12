@@ -63,6 +63,13 @@ jobs:
       # fires if a package is ever removed from npm, because the trusted-publisher
       # link goes with it. --provenance is unaffected: it signs via GitHub's OIDC
       # (id-token: write), independent of how the publish authenticates.
+      # Refuse to ship a package whose own dependencies are not resolvable on
+      # npm. Inside this workspace they always resolve, because npm symlinks
+      # them, so a green build proves nothing about the person installing it.
+      - name: Refuse to publish if our own dependencies are missing from npm
+        working-directory: .
+        run: node scripts/check-own-deps-published.mjs --package=tokenizen-net-guard
+
       - name: Publish to npm with provenance
         run: npm publish --provenance --access public
         env:
