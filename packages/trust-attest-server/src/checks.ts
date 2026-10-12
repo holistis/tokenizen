@@ -22,7 +22,11 @@
 // unit-testable without a real socket.
 
 export interface CheckDeps {
-  fetchImpl?: typeof fetch;
+  /** REQUIRED: the caller must inject a fetch. server.ts injects net-guard's
+   * guardedFetch so the endpoint URL (attacker-supplied) cannot be turned into
+   * an SSRF probe; removing the old `?? fetch` default makes "forgot to guard"
+   * a type error rather than a silent hole. Tests inject a stub. */
+  fetchImpl: typeof fetch;
   timeoutMs?: number;
 }
 
@@ -75,8 +79,8 @@ const NO_AUTH_PHRASES = [
  * endpoint-attest's own posture of degrading untrusted-input/network
  * failures to a normal result instead of propagating them.
  */
-export async function runChecks(endpoint: string, deps: CheckDeps = {}): Promise<CheckResult> {
-  const fetchImpl = deps.fetchImpl ?? fetch;
+export async function runChecks(endpoint: string, deps: CheckDeps): Promise<CheckResult> {
+  const fetchImpl = deps.fetchImpl;
   const timeoutMs = deps.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 
   let response: Response;

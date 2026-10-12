@@ -1,8 +1,9 @@
 // rate-limit.ts — a minimal, in-memory per-IP fixed-window limiter.
 //
 // WHY THIS EXISTS: both routes behind this server trigger a real outbound
-// DNS query and/or HTTP fetch to an attacker-chosen host (guarded by
-// network-guard.ts, but still real network I/O against a public endpoint).
+// DNS query and/or HTTP fetch to an attacker-chosen host (routed through the
+// net-guard egress choke-point, but still real network I/O against a public
+// endpoint).
 // wazir-al-ghanima's "rate-check" (4 veiligheidschecks) requires a limit per
 // caller on anything that does real work per request, and this route is
 // unauthenticated by design (the whole point of /check is that a stranger

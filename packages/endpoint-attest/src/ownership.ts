@@ -30,7 +30,6 @@
 // life of one attestation, not indefinitely.
 
 import { createHmac } from "node:crypto";
-import { resolveTxt } from "node:dns/promises";
 import { OWNERSHIP_METHODS, type OwnershipMethod } from "./schema.js";
 
 /** The DNS label the token is published under, prefixed to the endpoint's host. Mirrors ACME's _acme-challenge convention. */
@@ -99,10 +98,20 @@ export function proofLocation(method: OwnershipMethod, endpoint: string): string
   return `${url.protocol}//${url.host}${WELL_KNOWN_PATH}`;
 }
 
-/** Injection seams so verification is unit-testable without real DNS or a real network, the same DI pattern capacity-attest uses for its chain reads. */
+/**
+ * The network operations this verifier performs, supplied by the CALLER
+ * rather than defaulted here. endpoint-attest deliberately does not ship the
+ * process that runs the check (see README "What this does not do"), and that
+ * now extends to the network primitives: a public server must inject a guarded
+ * fetch/resolver (net-guard) so an anonymous visitor cannot turn ownership
+ * verification into an SSRF or DNS-rebinding probe. Both are REQUIRED, so a
+ * caller physically cannot reach the network unguarded by forgetting to pass
+ * one — the previous global-fetch/node:dns defaults were exactly how one road
+ * stayed unguarded. Tests inject stubs, so this stays unit-testable offline.
+ */
 export interface OwnershipCheckDeps {
-  resolveTxtRecords?: (name: string) => Promise<string[][]>;
-  fetchImpl?: typeof fetch;
+  resolveTxtRecords: (name: string) => Promise<string[][]>;
+  fetchImpl: typeof fetch;
   timeoutMs?: number;
   maxFileBytes?: number;
 }
@@ -121,7 +130,7 @@ export async function verifyOwnership(
   endpoint: string,
   ownerAddress: string,
   attesterSecret: string,
-  deps: OwnershipCheckDeps = {},
+  deps: OwnershipCheckDeps,
 ): Promise<OwnershipResult> {
   if (!OWNERSHIP_METHODS.includes(method)) {
     throw new OwnershipError(`unknown ownership method: ${JSON.stringify(method)}`);
@@ -131,7 +140,7 @@ export async function verifyOwnership(
   const now = () => new Date().toISOString();
 
   if (method === "dns-txt") {
-    const resolver = deps.resolveTxtRecords ?? resolveTxt;
+    const resolver = deps.resolveTxtRecords;
     let records: string[][];
     try {
       records = await resolver(location);
@@ -148,7 +157,7 @@ export async function verifyOwnership(
     return { ok: true, method, location, verifiedAt: now() };
   }
 
-  const fetchImpl = deps.fetchImpl ?? fetch;
+  const fetchImpl = deps.fetchImpl;
   const timeoutMs = deps.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const maxFileBytes = deps.maxFileBytes ?? MAX_FILE_BYTES;
 

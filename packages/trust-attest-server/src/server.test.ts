@@ -14,6 +14,9 @@ function freshIdentity(): AttesterIdentity {
 /** A fetchImpl for runChecks' auth-signal check that always reports "enforced" (401), so tests focused on ownership/signing don't also have to think about the check outcome. */
 const AUTH_ENFORCED_CHECK_FETCH = (async () => new Response("unauthorized", { status: 401 })) as typeof fetch;
 
+/** OwnershipCheckDeps now requires resolveTxtRecords too (the caller owns all egress); these ownership tests use the well-known-file method, so this stub stands in for the unused DNS seam. */
+const STUB_RESOLVE = async (): Promise<string[][]> => [];
+
 describe("getOwnershipChallenge", () => {
   it("returns the same token for dns-txt and well-known-file (host-bound, not method-bound), matching challengeToken directly", () => {
     const identity = freshIdentity();
@@ -50,6 +53,7 @@ describe("requestTrustAttestation: ownership gate", () => {
     let checkFetchWasCalled = false;
     const ownershipDeps: OwnershipCheckDeps = {
       fetchImpl: (async () => new Response("wrong content", { status: 200 })) as typeof fetch,
+      resolveTxtRecords: STUB_RESOLVE,
     };
     const checkDeps = {
       fetchImpl: (async () => {
@@ -76,7 +80,7 @@ describe("requestTrustAttestation: ownership gate", () => {
     const result = await requestTrustAttestation(
       { endpoint: ENDPOINT, ownerAddress: OWNER, method: "well-known-file" },
       identity,
-      { ownershipDeps: { fetchImpl: (async () => { throw new Error("network down"); }) as typeof fetch } },
+      { ownershipDeps: { fetchImpl: (async () => { throw new Error("network down"); }) as typeof fetch, resolveTxtRecords: STUB_RESOLVE } },
     );
     expect(result.ok).toBe(false);
     if (result.ok) return;
@@ -90,6 +94,7 @@ describe("requestTrustAttestation: full success path", () => {
     const expectedToken = challengeToken(ENDPOINT, OWNER, identity.ownershipSecret);
     const ownershipDeps: OwnershipCheckDeps = {
       fetchImpl: (async () => new Response(expectedToken, { status: 200 })) as typeof fetch,
+      resolveTxtRecords: STUB_RESOLVE,
     };
     // Deliberately NOT injecting `now` here: verifyOwnership (endpoint-attest)
     // stamps ownershipProof.verifiedAt with the REAL wall clock internally
@@ -131,6 +136,7 @@ describe("requestTrustAttestation: full success path", () => {
     const expectedToken = challengeToken(ENDPOINT, OWNER, identity.ownershipSecret);
     const ownershipDeps: OwnershipCheckDeps = {
       fetchImpl: (async () => new Response(expectedToken, { status: 200 })) as typeof fetch,
+      resolveTxtRecords: STUB_RESOLVE,
     };
 
     const result = await requestTrustAttestation(
@@ -154,6 +160,7 @@ describe("requestTrustAttestation: full success path", () => {
     const expectedToken = challengeToken(ENDPOINT, OWNER, identity.ownershipSecret);
     const ownershipDeps: OwnershipCheckDeps = {
       fetchImpl: (async () => new Response(expectedToken, { status: 200 })) as typeof fetch,
+      resolveTxtRecords: STUB_RESOLVE,
     };
     const checkDeps = {
       fetchImpl: (async () => new Response("No authentication required for this endpoint.", { status: 200 })) as typeof fetch,
@@ -179,7 +186,7 @@ describe("requestTrustAttestation: attesterAddress is NEVER ownerAddress (regres
       { endpoint: ENDPOINT, ownerAddress: identity.wallet.address, method: "well-known-file" },
       identity,
       {
-        ownershipDeps: { fetchImpl: (async () => { anyNetworkCallHappened = true; return new Response("x", { status: 200 }); }) as typeof fetch },
+        ownershipDeps: { fetchImpl: (async () => { anyNetworkCallHappened = true; return new Response("x", { status: 200 }); }) as typeof fetch, resolveTxtRecords: STUB_RESOLVE },
         checkDeps: { fetchImpl: (async () => { anyNetworkCallHappened = true; return new Response("x", { status: 200 }); }) as typeof fetch },
       },
     );
@@ -221,6 +228,7 @@ describe("requestTrustAttestation: consent-gated active testing", () => {
   const ownershipPasses = (identity: AttesterIdentity): OwnershipCheckDeps => ({
     fetchImpl: (async () =>
       new Response(challengeToken(ENDPOINT, OWNER, identity.ownershipSecret), { status: 200 })) as typeof fetch,
+    resolveTxtRecords: STUB_RESOLVE,
   });
 
   it("does NOT run the active check and never calls the tool lister when consent is absent", async () => {

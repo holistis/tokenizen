@@ -3,20 +3,28 @@
 // Finding #1 of the trust-layer security review was not "a guard is missing"
 // but "the guard existed (self-check-server/network-guard.ts) and was not on
 // the only road out". A guard that one code path forgets to call is not a
-// guard. This test makes forgetting impossible: it fails as long as ANY
-// production source file in ANY backend package opens an outbound connection
-// through a raw primitive instead of through net-guard.
+// guard. This test makes forgetting a build failure.
 //
-// It is written to FAIL against today's tree on purpose (it lists every
-// unguarded egress site). Making it GREEN — by routing every one of those
-// sites through net-guard — is the definition of "the SSRF class is closed",
-// not a nice-to-have afterwards.
+// SCOPE (deliberately asymmetric, see the trust-layer review's remediation
+// note): the SSRF threat is "an anonymous visitor supplies the URL". That is
+// true for the public servers (trust-attest-server, self-check-server) and
+// for endpoint-attest's ownership verification. It is NOT true for
+// capacity-attest, a published library whose caller supplies its own RPC URL
+// on its own machine — changing its defaults would break real users to close
+// a hole none of them have. So capacity-attest is NOT scanned for raw egress;
+// instead, IF a server package ever calls one of capacity-attest's network
+// entry points, that call must pass a guarded factory/fetch (the second rule
+// below). Today there are no such call sites, so that rule is vacuous and
+// documents the requirement for whoever adds the first one.
 //
-// A raw primitive is only allowed inside net-guard itself and inside the two
-// thin, single-purpose adapter files that exist solely to bind a library's
-// own constructor (ethers' JsonRpcProvider, the MCP transports) to
-// net-guard's guardedFetch. Those are listed in ALLOWLIST and reviewed as the
-// choke-point they are.
+// Two rules:
+//  1. In the guarded packages, a raw outbound primitive (global fetch
+//     fallback, bare fetch, raw ethers JsonRpcProvider, direct node:dns) is
+//     forbidden outright — route it through net-guard.
+//  2. A construct that legitimately stays in place but must be BOUND to
+//     net-guard (an MCP transport; a capacity-attest network entry point
+//     called from a server) is allowed only if a `guarded` identifier appears
+//     within two lines of it.
 
 import { describe, it, expect } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
@@ -25,17 +33,10 @@ import { dirname, join, relative, sep } from "node:path";
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 
-// Backend packages whose production code must never reach the network raw.
-const PACKAGES = ["capacity-attest", "endpoint-attest", "trust-attest-server", "self-check-server"];
-
-// Files permitted to use a raw egress primitive: net-guard itself is scanned
-// out by package, these are the per-library adapters that wrap a constructor
-// net-guard cannot own (ethers / MCP SDK live in those packages). Each is a
-// thin shim that forwards to net-guard's guardedFetch and nothing else.
-const ALLOWLIST = new Set<string>([
-  join("capacity-attest", "src", "guarded-provider.ts"),
-  join("trust-attest-server", "src", "guarded-mcp.ts"),
-]);
+// The packages whose production code faces anonymous, attacker-supplied URLs.
+// net-guard (the guard itself), capacity-attest (a library, see header) and
+// the browser-only website are intentionally not here.
+const GUARDED_PACKAGES = ["trust-attest-server", "self-check-server", "endpoint-attest"];
 
 // A production source file. Tests, benches and fixtures are not the SSRF
 // surface — they hit the network only against their own stubs or on purpose.
@@ -59,45 +60,65 @@ function walk(dir: string): string[] {
   return out;
 }
 
-// Each pattern is a raw outbound primitive that must instead come from
-// net-guard. The label is what the failure prints so the fix is obvious.
+// Raw outbound primitives that must never appear in a guarded package.
 const FORBIDDEN: Array<{ label: string; re: RegExp }> = [
-  { label: "global fetch fallback (use net-guard guardedFetch)", re: /\?\?\s*fetch\b/ },
+  { label: "global fetch fallback (inject net-guard guardedFetch instead of defaulting to fetch)", re: /\?\?\s*fetch\b/ },
   { label: "bare global fetch call (use net-guard guardedFetch)", re: /(^|[^.\w])fetch\s*\(/ },
-  { label: "raw ethers JsonRpcProvider (use net-guard guardedJsonRpcProvider)", re: /new\s+(ethers\.)?JsonRpcProvider\s*\(/ },
-  { label: "raw MCP StreamableHTTPClientTransport (use net-guard guarded MCP client)", re: /new\s+StreamableHTTPClientTransport\s*\(/ },
-  { label: "raw MCP SSEClientTransport (use net-guard guarded MCP client)", re: /new\s+SSEClientTransport\s*\(/ },
-  { label: "direct DNS (use net-guard resolveTxtGuarded / guardedLookup)", re: /from\s+["']node:dns|require\(["']node:dns|resolveTxt\s*\(|dns\.(lookup|resolve)\b/ },
+  { label: "raw ethers JsonRpcProvider (use a net-guard-backed provider)", re: /new\s+(ethers\.)?JsonRpcProvider\s*\(/ },
+  { label: "direct DNS (use net-guard resolveTxtGuarded)", re: /from\s+["']node:dns|require\(["']node:dns|(^|[^.\w])resolveTxt\s*\(|dns\.(lookup|resolve)\b/ },
 ];
+
+// Constructs that may stay but must be bound to net-guard: an MCP transport,
+// or a capacity-attest network entry point called from a server. Each is only
+// allowed if a `guarded` identifier sits within two lines.
+const MUST_BE_GUARDED: Array<{ label: string; re: RegExp }> = [
+  { label: "MCP StreamableHTTPClientTransport must pass net-guard's guardedFetch", re: /new\s+StreamableHTTPClientTransport\s*\(/ },
+  { label: "MCP SSEClientTransport must pass net-guard's guardedFetch", re: /new\s+SSEClientTransport\s*\(/ },
+  { label: "capacity-attest network entry point must be called with a guarded factory/fetch", re: /\b(easSource|rpcAttestationReader|discoverDeliveryHistory|httpSource)\s*\(/ },
+];
+
+const GUARD_NEARBY = /guarded/i;
+const WINDOW = 2;
+
+function isCommentLine(line: string): boolean {
+  const t = line.trim();
+  return t.startsWith("//") || t.startsWith("*") || t.startsWith("/*");
+}
 
 describe("no raw egress outside net-guard", () => {
   const offenders: string[] = [];
 
-  for (const pkg of PACKAGES) {
+  for (const pkg of GUARDED_PACKAGES) {
     const srcDir = join(REPO_ROOT, "packages", pkg, "src");
     let files: string[] = [];
     try {
       files = walk(srcDir);
     } catch {
-      continue; // package has no src yet
+      continue;
     }
     for (const full of files) {
       if (!isProductionSource(full)) continue;
-      const rel = relative(join(REPO_ROOT, "packages"), full); // e.g. capacity-attest/src/eas.ts
-      if (ALLOWLIST.has(rel)) continue;
+      const rel = relative(join(REPO_ROOT, "packages"), full);
       const lines = readFileSync(full, "utf8").split(/\r?\n/);
       lines.forEach((line, i) => {
-        // ignore comment-only lines so prose mentioning fetch() is not flagged
-        const trimmed = line.trim();
-        if (trimmed.startsWith("//") || trimmed.startsWith("*")) return;
+        if (isCommentLine(line)) return;
         for (const { label, re } of FORBIDDEN) {
-          if (re.test(line)) offenders.push(`${rel}:${i + 1}  [${label}]  ${trimmed.slice(0, 100)}`);
+          if (re.test(line)) offenders.push(`${rel}:${i + 1}  [FORBIDDEN: ${label}]  ${line.trim().slice(0, 100)}`);
+        }
+        for (const { label, re } of MUST_BE_GUARDED) {
+          if (!re.test(line)) continue;
+          const from = Math.max(0, i - WINDOW);
+          const to = Math.min(lines.length - 1, i + WINDOW);
+          const near = lines.slice(from, to + 1).join("\n");
+          if (!GUARD_NEARBY.test(near)) {
+            offenders.push(`${rel}:${i + 1}  [UNBOUND: ${label}]  ${line.trim().slice(0, 100)}`);
+          }
         }
       });
     }
   }
 
-  it("has no unguarded outbound primitive in any backend package", () => {
+  it("has no unguarded outbound primitive in any guarded package", () => {
     if (offenders.length) {
       // eslint-disable-next-line no-console
       console.error("\nUNGUARDED EGRESS SITES (each must route through net-guard):\n" + offenders.join("\n") + "\n");

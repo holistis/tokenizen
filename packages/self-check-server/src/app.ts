@@ -6,9 +6,10 @@
 // cannot run. This is the thin, real (non-mock) backend a browser page can
 // call instead — it does not reimplement any of that logic, only wires it up
 // over HTTP, plus the two protections that logic never needed when its only
-// caller was an MCP client: an SSRF guard (network-guard.ts) and a per-IP
-// rate limit (rate-limit.ts), because this is now reachable by any
-// anonymous visitor.
+// caller was an MCP client: the net-guard egress choke-point (every real
+// DNS/HTTP call goes through net-guard's IP-validating, IP-pinning guarded
+// fetch/resolver) and a per-IP rate limit (rate-limit.ts), because this is
+// now reachable by any anonymous visitor.
 //
 // TWO ROUTES ONLY, MATCHING THE FREE/PAID SPLIT IN trust-attest-server:
 //   POST /api/challenge        — free, no network call, derives the token.
@@ -41,7 +42,13 @@ import {
 } from "endpoint-attest";
 import { getOwnershipChallenge, identity as defaultIdentity, type GetOwnershipChallengeResult } from "trust-attest-server/dist/server.js";
 import type { AttesterIdentity } from "trust-attest-server/dist/attester-identity.js";
-import { assertPubliclyRoutableHost, UnsafeHostError, type NetworkGuardDeps } from "./network-guard.js";
+import {
+  assertPubliclyRoutableHost,
+  UnsafeHostError,
+  guardedFetch,
+  resolveTxtGuarded,
+  type RoutableHostDeps,
+} from "net-guard";
 import { createRateLimiter } from "./rate-limit.js";
 
 const DEFAULT_ALLOWED_ORIGINS = ["http://localhost:5173", "https://tokenizen.nl", "https://www.tokenizen.nl"];
@@ -49,10 +56,10 @@ const DEFAULT_ALLOWED_ORIGINS = ["http://localhost:5173", "https://tokenizen.nl"
 export interface CreateAppOptions {
   /** Signing/HMAC identity to use. Defaults to trust-attest-server's module-level identity so a challenge issued via this server matches what verify-ownership expects, within one process lifetime — same constraint attester-identity.ts documents for the MCP server itself. */
   identity?: AttesterIdentity;
-  /** Injected into verifyOwnership — lets tests supply a fake DNS/fetch instead of touching the network. */
+  /** Injected into verifyOwnership — lets tests supply a fake DNS/fetch instead of touching the network. In production this defaults to net-guard's guardedFetch + resolveTxtGuarded, so the real ownership fetch is IP-validated and pinned, not just pre-checked. */
   ownershipDeps?: OwnershipCheckDeps;
-  /** Injected into the SSRF guard — lets tests supply a fake DNS lookup instead of touching the network. */
-  networkGuardDeps?: NetworkGuardDeps;
+  /** Injected into the early host pre-check — lets tests supply a fake DNS lookup instead of touching the network. */
+  routableHostDeps?: RoutableHostDeps;
   /** Origins allowed to call this API. Defaults to the production domains + the local Vite dev server. */
   allowedOrigins?: string[];
   /** Rate limit for the (real network I/O) verify-ownership route. Defaults to 10 requests / 5 minutes per IP. */
@@ -77,7 +84,7 @@ function badRequest(res: Response, message: string): void {
 }
 
 /** Resolves the host out of `endpoint` and rejects it if it is not publicly routable. Returns null (and has already responded) on failure, so callers can `if (!(await guard(...))) return;`. */
-async function guardEndpointHost(endpoint: string, res: Response, deps?: NetworkGuardDeps): Promise<boolean> {
+async function guardEndpointHost(endpoint: string, res: Response, deps?: RoutableHostDeps): Promise<boolean> {
   let host: string;
   try {
     host = endpointHost(endpoint);
@@ -100,6 +107,12 @@ async function guardEndpointHost(endpoint: string, res: Response, deps?: Network
 export function createApp(options: CreateAppOptions = {}): Express {
   const identity = options.identity ?? defaultIdentity;
   const allowedOrigins = options.allowedOrigins ?? DEFAULT_ALLOWED_ORIGINS;
+  // Production egress for the one real network call this server makes goes
+  // through net-guard: the fetch is IP-validated and pinned, closing the gap
+  // where the old code pre-checked the host but then fetched with a raw,
+  // re-resolving global fetch. Tests inject their own stubs.
+  const ownershipDeps: OwnershipCheckDeps =
+    options.ownershipDeps ?? { fetchImpl: guardedFetch, resolveTxtRecords: (name) => resolveTxtGuarded(name) };
   const challengeLimiter = createRateLimiter({
     windowMs: options.challengeRateLimit?.windowMs ?? 5 * 60 * 1000,
     max: options.challengeRateLimit?.max ?? 30,
@@ -132,7 +145,7 @@ export function createApp(options: CreateAppOptions = {}): Express {
       return;
     }
     const { endpoint, ownerAddress } = parsed.data;
-    if (!(await guardEndpointHost(endpoint, res, options.networkGuardDeps))) return;
+    if (!(await guardEndpointHost(endpoint, res, options.routableHostDeps))) return;
 
     const result: GetOwnershipChallengeResult = getOwnershipChallenge({ endpoint, ownerAddress }, identity);
     if (!result.ok) {
@@ -149,14 +162,14 @@ export function createApp(options: CreateAppOptions = {}): Express {
       return;
     }
     const { endpoint, ownerAddress, method } = parsed.data;
-    if (!(await guardEndpointHost(endpoint, res, options.networkGuardDeps))) return;
+    if (!(await guardEndpointHost(endpoint, res, options.routableHostDeps))) return;
 
     const proof = await verifyOwnership(
       method as OwnershipMethod,
       endpoint,
       ownerAddress,
       identity.ownershipSecret,
-      options.ownershipDeps,
+      ownershipDeps,
     );
     res.status(200).json(proof);
   });

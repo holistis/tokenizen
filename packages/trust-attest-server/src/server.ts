@@ -50,6 +50,7 @@ import {
   type AttestationContent,
   type EndpointAttestation,
 } from "endpoint-attest";
+import { guardedFetch, resolveTxtGuarded } from "net-guard";
 import { runChecks, type CheckDeps, type CheckFinding, type CheckResult } from "./checks.js";
 import { runActiveToolChainCheck, type ToolFetchDeps } from "./fetch-tools.js";
 import { createAttesterIdentity, type AttesterIdentity } from "./attester-identity.js";
@@ -138,6 +139,13 @@ export async function requestTrustAttestation(
 ): Promise<RequestTrustAttestationResult> {
   const { endpoint, ownerAddress, method } = input;
   const now = deps.now ?? (() => new Date());
+  // Production egress goes through net-guard. These defaults are the ONLY
+  // reason the required fetchImpl/resolveTxtRecords seams below are satisfied
+  // when no test stub is injected, so the real server can never reach an
+  // attacker-supplied endpoint with an unguarded fetch.
+  const ownershipDeps: OwnershipCheckDeps =
+    deps.ownershipDeps ?? { fetchImpl: guardedFetch, resolveTxtRecords: (name) => resolveTxtGuarded(name) };
+  const checkDeps: CheckDeps = deps.checkDeps ?? { fetchImpl: guardedFetch };
   try {
     // Defense in depth, checked BEFORE any network call: verifyAttestation
     // (endpoint-attest/src/signing.ts) rejects attester===owner as
@@ -149,7 +157,7 @@ export async function requestTrustAttestation(
       return { ok: false, error: "ownerAddress must not equal this attester's own address — an attestation where the attester is also the owner is a self-declaration, not an attestation" };
     }
 
-    const proof = await verifyOwnership(method, endpoint, ownerAddress, identity.ownershipSecret, deps.ownershipDeps);
+    const proof = await verifyOwnership(method, endpoint, ownerAddress, identity.ownershipSecret, ownershipDeps);
     if (!proof.ok) {
       return {
         ok: false,
@@ -160,7 +168,7 @@ export async function requestTrustAttestation(
     }
 
     const token = challengeToken(endpoint, ownerAddress, identity.ownershipSecret);
-    let checkResult = await runChecks(endpoint, deps.checkDeps);
+    let checkResult = await runChecks(endpoint, checkDeps);
     if (input.consentToActiveTesting) {
       // Consent-gated active path: only reached because the caller explicitly
       // authorized it AND ownership was already proven above. The active

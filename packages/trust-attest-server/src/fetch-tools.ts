@@ -17,6 +17,7 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
+import { guardedFetch } from "net-guard";
 import type { CheckResult } from "./checks.js";
 import { analyzeToolChains, TOOL_CHAIN_CHECK_NAME, type McpTool } from "./tool-chain-check.js";
 
@@ -74,12 +75,15 @@ async function defaultListTools(endpoint: string, timeoutMs: number): Promise<Mc
   const url = new URL(endpoint);
   const client = new Client({ name: "tokenizen-trust-attester", version: "0.1.0" });
 
+  // Both transports fetch through net-guard's guardedFetch, so the active
+  // MCP handshake to an attacker-supplied endpoint is IP-validated and pinned
+  // on every connection and redirect, exactly like the passive GET in checks.ts.
   let connected = false;
   try {
-    await client.connect(new StreamableHTTPClientTransport(url), { timeout: timeoutMs });
+    await client.connect(new StreamableHTTPClientTransport(url, { fetch: guardedFetch }), { timeout: timeoutMs });
     connected = true;
   } catch {
-    await client.connect(new SSEClientTransport(url), { timeout: timeoutMs });
+    await client.connect(new SSEClientTransport(url, { fetch: guardedFetch }), { timeout: timeoutMs });
     connected = true;
   }
 

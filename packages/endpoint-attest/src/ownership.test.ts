@@ -14,6 +14,25 @@ const OWNER = "0x00000000000000000000000000000000000000aa";
 const OTHER_OWNER = "0x00000000000000000000000000000000000000bb";
 const ENDPOINT = "https://mcp.example.com/sse";
 
+// fetchImpl and resolveTxtRecords are now REQUIRED (the caller owns all egress,
+// see OwnershipCheckDeps). These stubs stand in for the one a test does not
+// exercise, so each test only has to supply the single seam it cares about.
+const STUB_FETCH = (async () => new Response("", { status: 404 })) as typeof fetch;
+const STUB_RESOLVE = async (): Promise<string[][]> => [];
+function verify(
+  method: Parameters<typeof verifyOwnership>[0],
+  endpoint: string,
+  owner: string,
+  secret: string,
+  partial: Partial<Parameters<typeof verifyOwnership>[4]> = {},
+) {
+  return verifyOwnership(method, endpoint, owner, secret, {
+    fetchImpl: STUB_FETCH,
+    resolveTxtRecords: STUB_RESOLVE,
+    ...partial,
+  });
+}
+
 describe("challengeToken", () => {
   it("is deterministic for the same endpoint, owner and secret", () => {
     expect(challengeToken(ENDPOINT, OWNER, SECRET)).toBe(challengeToken(ENDPOINT, OWNER, SECRET));
@@ -75,7 +94,7 @@ describe("verifyOwnership, dns-txt", () => {
   const expected = challengeToken(ENDPOINT, OWNER, SECRET);
 
   it("passes when a TXT record matches exactly", async () => {
-    const r = await verifyOwnership("dns-txt", ENDPOINT, OWNER, SECRET, {
+    const r = await verify("dns-txt", ENDPOINT, OWNER, SECRET, {
       resolveTxtRecords: async () => [["unrelated"], [expected]],
     });
     expect(r.ok).toBe(true);
@@ -87,21 +106,21 @@ describe("verifyOwnership, dns-txt", () => {
 
   it("reassembles a TXT record that the resolver split into chunks", async () => {
     const mid = Math.floor(expected.length / 2);
-    const r = await verifyOwnership("dns-txt", ENDPOINT, OWNER, SECRET, {
+    const r = await verify("dns-txt", ENDPOINT, OWNER, SECRET, {
       resolveTxtRecords: async () => [[expected.slice(0, mid), expected.slice(mid)]],
     });
     expect(r.ok).toBe(true);
   });
 
   it("fails when no record matches", async () => {
-    const r = await verifyOwnership("dns-txt", ENDPOINT, OWNER, SECRET, {
+    const r = await verify("dns-txt", ENDPOINT, OWNER, SECRET, {
       resolveTxtRecords: async () => [["something-else"]],
     });
     expect(r).toMatchObject({ ok: false, reason: expect.stringContaining("no TXT record") });
   });
 
   it("fails cleanly when DNS lookup throws, instead of propagating", async () => {
-    const r = await verifyOwnership("dns-txt", ENDPOINT, OWNER, SECRET, {
+    const r = await verify("dns-txt", ENDPOINT, OWNER, SECRET, {
       resolveTxtRecords: async () => {
         throw new Error("ENOTFOUND");
       },
@@ -111,7 +130,7 @@ describe("verifyOwnership, dns-txt", () => {
 
   it("fails when the record holds ANOTHER owner's token", async () => {
     const othersToken = challengeToken(ENDPOINT, OTHER_OWNER, SECRET);
-    const r = await verifyOwnership("dns-txt", ENDPOINT, OWNER, SECRET, {
+    const r = await verify("dns-txt", ENDPOINT, OWNER, SECRET, {
       resolveTxtRecords: async () => [[othersToken]],
     });
     expect(r.ok).toBe(false);
@@ -122,7 +141,7 @@ describe("verifyOwnership, well-known-file", () => {
   const expected = challengeToken(ENDPOINT, OWNER, SECRET);
 
   it("passes on an exact match, trailing whitespace tolerated", async () => {
-    const r = await verifyOwnership("well-known-file", ENDPOINT, OWNER, SECRET, {
+    const r = await verify("well-known-file", ENDPOINT, OWNER, SECRET, {
       fetchImpl: async () => new Response(expected + "\n", { status: 200 }),
     });
     expect(r.ok).toBe(true);
@@ -131,7 +150,7 @@ describe("verifyOwnership, well-known-file", () => {
 
   it("fetches the well-known path, not the endpoint's own path", async () => {
     let seen = "";
-    await verifyOwnership("well-known-file", ENDPOINT, OWNER, SECRET, {
+    await verify("well-known-file", ENDPOINT, OWNER, SECRET, {
       fetchImpl: async (input) => {
         seen = String(input);
         return new Response(expected, { status: 200 });
@@ -141,21 +160,21 @@ describe("verifyOwnership, well-known-file", () => {
   });
 
   it("refuses a token merely BURIED in a larger page, because that does not show deliberate publication", async () => {
-    const r = await verifyOwnership("well-known-file", ENDPOINT, OWNER, SECRET, {
+    const r = await verify("well-known-file", ENDPOINT, OWNER, SECRET, {
       fetchImpl: async () => new Response(`<html>junk ${expected} more junk</html>`, { status: 200 }),
     });
     expect(r).toMatchObject({ ok: false, reason: expect.stringContaining("did not exactly match") });
   });
 
   it("fails on a non-2xx status", async () => {
-    const r = await verifyOwnership("well-known-file", ENDPOINT, OWNER, SECRET, {
+    const r = await verify("well-known-file", ENDPOINT, OWNER, SECRET, {
       fetchImpl: async () => new Response("nope", { status: 404, statusText: "Not Found" }),
     });
     expect(r).toMatchObject({ ok: false, reason: expect.stringContaining("404") });
   });
 
   it("refuses an oversized file before reading it all", async () => {
-    const r = await verifyOwnership("well-known-file", ENDPOINT, OWNER, SECRET, {
+    const r = await verify("well-known-file", ENDPOINT, OWNER, SECRET, {
       maxFileBytes: 50,
       fetchImpl: async () => new Response("x".repeat(5000), { status: 200 }),
     });
@@ -163,7 +182,7 @@ describe("verifyOwnership, well-known-file", () => {
   });
 
   it("bounds a stalled body by its own timeout instead of hanging", async () => {
-    const r = await verifyOwnership("well-known-file", ENDPOINT, OWNER, SECRET, {
+    const r = await verify("well-known-file", ENDPOINT, OWNER, SECRET, {
       timeoutMs: 30,
       fetchImpl: async (_input, init) => {
         const signal = (init as RequestInit).signal;
@@ -179,7 +198,7 @@ describe("verifyOwnership, well-known-file", () => {
   });
 
   it("fails cleanly on a network error", async () => {
-    const r = await verifyOwnership("well-known-file", ENDPOINT, OWNER, SECRET, {
+    const r = await verify("well-known-file", ENDPOINT, OWNER, SECRET, {
       fetchImpl: async () => {
         throw new Error("getaddrinfo ENOTFOUND");
       },

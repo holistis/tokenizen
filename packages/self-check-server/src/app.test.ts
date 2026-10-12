@@ -11,6 +11,10 @@ import { createAttesterIdentity } from "trust-attest-server/dist/attester-identi
 
 const OWNER_ADDRESS = "0x111111111111111111111111111111111111111a";
 const PUBLIC_IP_LOOKUP = async () => [{ address: "93.184.216.34", family: 4 as const }];
+// OwnershipCheckDeps requires both fetchImpl and resolveTxtRecords; each test
+// supplies the seam it exercises and leans on these stubs for the other.
+const STUB_FETCH = (async () => new Response("", { status: 404 })) as typeof fetch;
+const STUB_RESOLVE = async (): Promise<string[][]> => [];
 
 let server: Server;
 let baseUrl: string;
@@ -18,7 +22,7 @@ let baseUrl: string;
 function startApp(options: CreateAppOptions = {}) {
   const app = createApp({
     identity: createAttesterIdentity(),
-    networkGuardDeps: { dnsLookup: PUBLIC_IP_LOOKUP },
+    routableHostDeps: { dnsLookupAll: PUBLIC_IP_LOOKUP },
     ...options,
   });
   server = createServer(app);
@@ -89,7 +93,7 @@ describe("POST /api/challenge", () => {
   });
 
   it("rejects an endpoint that resolves to the cloud metadata address", async () => {
-    await startApp({ networkGuardDeps: { dnsLookup: async () => [{ address: "169.254.169.254", family: 4 }] } });
+    await startApp({ routableHostDeps: { dnsLookupAll: async () => [{ address: "169.254.169.254", family: 4 }] } });
     const res = await fetch(`${baseUrl}/api/challenge`, {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -107,6 +111,7 @@ describe("POST /api/verify-ownership", () => {
     await startApp({
       identity,
       ownershipDeps: {
+        fetchImpl: STUB_FETCH,
         resolveTxtRecords: async (name: string) => {
           requestedName = name;
           // Compute what the server itself will have derived as the expected
@@ -136,7 +141,7 @@ describe("POST /api/verify-ownership", () => {
 
   it("returns ok:false with a reason when the mocked resolver returns a non-matching value", async () => {
     await startApp({
-      ownershipDeps: { resolveTxtRecords: async () => [["tok_wrong"]] },
+      ownershipDeps: { fetchImpl: STUB_FETCH, resolveTxtRecords: async () => [["tok_wrong"]] },
     });
     const res = await fetch(`${baseUrl}/api/verify-ownership`, {
       method: "POST",
@@ -165,6 +170,7 @@ describe("POST /api/verify-ownership", () => {
           const { wellKnownFile } = await res.json();
           return new Response(wellKnownFile.token, { status: 200 });
         }) as typeof fetch,
+        resolveTxtRecords: STUB_RESOLVE,
       },
     });
 
@@ -191,8 +197,9 @@ describe("POST /api/verify-ownership", () => {
   it("rejects an SSRF-relevant endpoint before calling verifyOwnership at all", async () => {
     let called = false;
     await startApp({
-      networkGuardDeps: { dnsLookup: PUBLIC_IP_LOOKUP },
+      routableHostDeps: { dnsLookupAll: PUBLIC_IP_LOOKUP },
       ownershipDeps: {
+        fetchImpl: STUB_FETCH,
         resolveTxtRecords: async () => {
           called = true;
           return [];
