@@ -66,23 +66,103 @@ function isBlockedIPv4(ip: string): { blocked: true; label: string } | { blocked
   return { blocked: false };
 }
 
-function isBlockedIPv6(ip: string): { blocked: true; label: string } | { blocked: false } {
-  const lower = ip.toLowerCase();
-  if (lower === "::1" || lower === "::") return { blocked: true, label: "loopback/unspecified" };
-  if (lower.startsWith("fe80:") || lower.startsWith("fe8") || lower.startsWith("fe9") || lower.startsWith("fea") || lower.startsWith("feb")) {
-    return { blocked: true, label: "link-local" };
+/**
+ * Expand any valid IPv6 literal to its eight 16-bit groups. Handles `::`
+ * compression, an optional `%zone` suffix, and a trailing dotted-IPv4 tail
+ * (the `::ffff:1.2.3.4` form). Returns null only for genuinely unparseable
+ * input. This replaces the earlier string-prefix matching, which classified
+ * only ONE textual spelling of an address and so let the hex form of an
+ * IPv4-mapped literal (`::ffff:7f00:1`, which is how the WHATWG URL parser and
+ * node:dns actually hand us `::ffff:127.0.0.1`) slip through to loopback and
+ * cloud metadata. Numeric normalisation makes the spelling irrelevant.
+ */
+function parseIPv6Hextets(ip: string): number[] | null {
+  let s = ip.toLowerCase();
+  const pct = s.indexOf("%");
+  if (pct !== -1) s = s.slice(0, pct); // drop zone id
+  if (s.length === 0) return null;
+
+  // A trailing dotted IPv4 ("::ffff:1.2.3.4") becomes two hextets.
+  let tail: number[] = [];
+  const lastColon = s.lastIndexOf(":");
+  const afterLastColon = lastColon === -1 ? s : s.slice(lastColon + 1);
+  if (afterLastColon.includes(".")) {
+    const v4 = ipv4ToInt(afterLastColon);
+    if (v4 === null) return null;
+    tail = [(v4 >>> 16) & 0xffff, v4 & 0xffff];
+    s = lastColon === -1 ? "" : s.slice(0, lastColon + 1);
+    if (s.endsWith(":") && !s.endsWith("::")) s = s.slice(0, -1);
   }
-  // fc00::/7 = unique local (fc/fd prefix).
-  if (lower.startsWith("fc") || lower.startsWith("fd")) return { blocked: true, label: "unique local (ULA)" };
-  // IPv4-mapped (::ffff:a.b.c.d) — unwrap and re-check as IPv4.
-  const mapped = lower.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
-  if (mapped) {
-    const inner = mapped[1];
-    if (inner) {
-      const innerCheck = isBlockedIPv4(inner);
-      if (innerCheck.blocked) return innerCheck;
+
+  const parseGroups = (part: string): number[] | null => {
+    if (part === "") return [];
+    const out: number[] = [];
+    for (const g of part.split(":")) {
+      if (!/^[0-9a-f]{1,4}$/.test(g)) return null;
+      out.push(parseInt(g, 16));
     }
+    return out;
+  };
+
+  let head: number[];
+  let rest: number[];
+  const dbl = s.indexOf("::");
+  if (dbl !== -1) {
+    if (s.indexOf("::", dbl + 1) !== -1) return null; // only one `::` allowed
+    const left = parseGroups(s.slice(0, dbl));
+    const right = parseGroups(s.slice(dbl + 2));
+    if (left === null || right === null) return null;
+    const fill = 8 - (left.length + right.length + tail.length);
+    if (fill < 0) return null;
+    head = left;
+    rest = [...Array(fill).fill(0), ...right];
+  } else {
+    const groups = parseGroups(s);
+    if (groups === null) return null;
+    head = groups;
+    rest = [];
   }
+
+  const full = [...head, ...rest, ...tail];
+  if (full.length !== 8) return null;
+  return full;
+}
+
+function hextetsToEmbeddedV4(h: number[]): string {
+  const h6 = h[6] ?? 0;
+  const h7 = h[7] ?? 0;
+  return `${(h6 >> 8) & 0xff}.${h6 & 0xff}.${(h7 >> 8) & 0xff}.${h7 & 0xff}`;
+}
+
+function isBlockedIPv6(ip: string): { blocked: true; label: string } | { blocked: false } {
+  const h = parseIPv6Hextets(ip);
+  // A family-6 literal we cannot parse is treated as blocked (fail-closed):
+  // every normal valid address parses, so an unparseable one is a red flag,
+  // never a reason to wave it through.
+  if (h === null) return { blocked: true, label: "unparseable IPv6" };
+
+  const allZeroExceptLast = h.slice(0, 7).every((x) => x === 0);
+  if (allZeroExceptLast && h[7] === 0) return { blocked: true, label: "unspecified (::)" };
+  if (allZeroExceptLast && h[7] === 1) return { blocked: true, label: "loopback (::1)" };
+
+  const first = h[0] ?? 0;
+  if ((first & 0xff00) === 0xff00) return { blocked: true, label: "multicast" };
+  if ((first & 0xffc0) === 0xfe80) return { blocked: true, label: "link-local" };
+  if ((first & 0xffc0) === 0xfec0) return { blocked: true, label: "site-local (deprecated)" };
+  if ((first & 0xfe00) === 0xfc00) return { blocked: true, label: "unique local (ULA)" };
+
+  // Embedded-IPv4 forms: check the embedded 32 bits as IPv4 regardless of the
+  // textual spelling. IPv4-mapped ::ffff:0:0/96, IPv4-compatible ::/96, and
+  // NAT64 64:ff9b::/96 all carry a v4 address in the last two groups.
+  const isMapped = h.slice(0, 5).every((x) => x === 0) && h[5] === 0xffff;
+  const isCompat = h.slice(0, 6).every((x) => x === 0); // ::a.b.c.d (deprecated)
+  const isNat64 = h[0] === 0x0064 && h[1] === 0xff9b && h.slice(2, 6).every((x) => x === 0);
+  if (isMapped || isCompat || isNat64) {
+    const embedded = hextetsToEmbeddedV4(h);
+    const inner = isBlockedIPv4(embedded);
+    if (inner.blocked) return { blocked: true, label: `${inner.label} (embedded IPv4 ${embedded})` };
+  }
+
   return { blocked: false };
 }
 
@@ -98,7 +178,13 @@ export function isBlockedAddress(address: string, family: 4 | 6): { blocked: tru
  * an IP literal that is publicly routable. Throws UnsafeHostError otherwise.
  */
 export function assertHostnameLiteralSafe(hostname: string): void {
-  const lower = hostname.toLowerCase();
+  // A URL's .hostname keeps the brackets around an IPv6 literal (e.g.
+  // "[::1]"), and isIP("[::1]") === 0, so without stripping them every IPv6
+  // literal would skip the range check entirely. The connector path hands us
+  // the unbracketed form, so stripping here is a no-op there and a fix on the
+  // URL path.
+  const bare = hostname.replace(/^\[/, "").replace(/\]$/, "");
+  const lower = bare.toLowerCase();
   if (BLOCKED_HOSTNAME_EXACT.has(lower)) {
     throw new UnsafeHostError(`"${hostname}" is not a publicly routable host`, hostname);
   }
@@ -107,9 +193,9 @@ export function assertHostnameLiteralSafe(hostname: string): void {
       throw new UnsafeHostError(`"${hostname}" (${suffix} suffix) is not a publicly routable host`, hostname);
     }
   }
-  const literalFamily = isIP(hostname);
+  const literalFamily = isIP(bare);
   if (literalFamily === 4 || literalFamily === 6) {
-    const check = isBlockedAddress(hostname, literalFamily);
+    const check = isBlockedAddress(bare, literalFamily);
     if (check.blocked) {
       throw new UnsafeHostError(`"${hostname}" is a ${check.label} address, not publicly routable`, hostname);
     }

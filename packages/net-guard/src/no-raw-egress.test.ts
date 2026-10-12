@@ -3,7 +3,10 @@
 // Finding #1 of the trust-layer security review was not "a guard is missing"
 // but "the guard existed (self-check-server/network-guard.ts) and was not on
 // the only road out". A guard that one code path forgets to call is not a
-// guard. This test makes forgetting a build failure.
+// guard. This test is a build-time backstop that fails on the common ways a
+// raw outbound primitive gets added outside net-guard. It is a broad denylist,
+// one layer alongside code review and the required-fetchImpl contract, not a
+// proof that egress is impossible.
 //
 // SCOPE (deliberately asymmetric, see the trust-layer review's remediation
 // note): the SSRF threat is "an anonymous visitor supplies the URL". That is
@@ -60,12 +63,19 @@ function walk(dir: string): string[] {
   return out;
 }
 
-// Raw outbound primitives that must never appear in a guarded package.
+// Raw outbound primitives that must never appear in a guarded package. This is
+// a best-effort denylist backstop, not a proof: a denylist of named APIs will
+// always lag some exotic spelling, so it is one layer, alongside code review
+// and the injected-fetchImpl contract, not a guarantee on its own. It is kept
+// deliberately broad so the common ways to open a socket all trip it.
 const FORBIDDEN: Array<{ label: string; re: RegExp }> = [
-  { label: "global fetch fallback (inject net-guard guardedFetch instead of defaulting to fetch)", re: /\?\?\s*fetch\b/ },
-  { label: "bare global fetch call (use net-guard guardedFetch)", re: /(^|[^.\w])fetch\s*\(/ },
-  { label: "raw ethers JsonRpcProvider (use a net-guard-backed provider)", re: /new\s+(ethers\.)?JsonRpcProvider\s*\(/ },
-  { label: "direct DNS (use net-guard resolveTxtGuarded)", re: /from\s+["']node:dns|require\(["']node:dns|(^|[^.\w])resolveTxt\s*\(|dns\.(lookup|resolve)\b/ },
+  { label: "global fetch fallback (inject net-guard guardedFetch instead of defaulting to fetch)", re: /\?\?\s*(?:(?:globalThis|window|self|global)\.)?fetch\b/ },
+  { label: "bare/global fetch call (use net-guard guardedFetch)", re: /(^|[^.\w])(?:(?:globalThis|window|self|global)\.)?fetch\s*\(/ },
+  { label: "raw ethers provider (v5 or v6 namespace; use a net-guard-backed provider)", re: /new\s+(?:ethers\.)?(?:providers\.)?(?:JsonRpc(?:Batch)?|StaticJsonRpc|WebSocket|Fallback|Ipc|Alchemy|Infura|Etherscan|Pocket|Quorum)Provider\s*\(/ },
+  { label: "direct DNS (use net-guard resolveTxtGuarded)", re: /from\s+["']node:dns|require\(["']node:dns|(^|[^.\w])resolveTxt\s*\(|\bdns\.(?:lookup|resolve|resolve4|resolve6)\b/ },
+  { label: "node http/https/net/tls/dgram module (egress must go through net-guard)", re: /from\s+["'](?:node:)?(?:http|https|net|tls|dgram)["']|require\(["'](?:node:)?(?:http|https|net|tls|dgram)["']/ },
+  { label: "raw http/https request or net/tls connect", re: /(^|[^.\w])https?\.(?:request|get)\s*\(|(^|[^.\w])(?:net|tls)\.connect\s*\(/ },
+  { label: "third-party HTTP client (axios/got/node-fetch/undici/superagent/request)", re: /from\s+["'](?:axios|got|node-fetch|undici|superagent|request|phin|needle)["']|require\(["'](?:axios|got|node-fetch|undici|superagent|request|phin|needle)["']/ },
 ];
 
 // Constructs that may stay but must be bound to net-guard: an MCP transport,

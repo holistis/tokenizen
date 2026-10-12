@@ -55,7 +55,15 @@ async function main(): Promise<void> {
 
   try {
     console.log("3) Attester verifies ownership by fetching it, for real, over a real socket...");
-    const proof = await verifyOwnership("well-known-file", localEndpoint, owner.address, attesterSecret);
+    // This demo talks to its OWN local 127.0.0.1 server, so it injects the
+    // plain global fetch deliberately (net-guard's guardedFetch would, by
+    // design, refuse a loopback target). A public server injects guardedFetch
+    // instead; see trust-attest-server/self-check-server. resolveTxtRecords is
+    // unused on the well-known-file path, so a stub satisfies the required dep.
+    const proof = await verifyOwnership("well-known-file", localEndpoint, owner.address, attesterSecret, {
+      fetchImpl: fetch,
+      resolveTxtRecords: async () => [],
+    });
     console.log("  ", JSON.stringify(proof), "\n");
     if (!proof.ok) throw new Error("ownership verification failed, demo cannot continue");
 

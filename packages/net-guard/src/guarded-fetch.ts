@@ -121,7 +121,15 @@ function assertSafeRequestUrl(input: string | URL): void {
  */
 export function makeGuardedFetch(deps: GuardedFetchDeps = {}): typeof fetch {
   const lookup = createGuardedLookup(deps.dnsLookupAll);
-  const baseConnector = buildConnector({ timeout: deps.connectTimeoutMs ?? DEFAULT_CONNECT_TIMEOUT_MS, lookup });
+  // autoSelectFamily:true pins the Happy-Eyeballs behaviour our lookup depends
+  // on (it is called with {all:true} and answers with an address array), so
+  // correctness never rides on a mutable Node global. buildConnector forwards
+  // this to net.connect rather than consuming it.
+  const baseConnector = buildConnector({
+    timeout: deps.connectTimeoutMs ?? DEFAULT_CONNECT_TIMEOUT_MS,
+    lookup,
+    autoSelectFamily: true,
+  });
 
   // Runs for every connection undici opens — initial request and every
   // redirect hop, hostname or IP literal. IP literals skip the lookup, so the
@@ -143,7 +151,14 @@ export function makeGuardedFetch(deps: GuardedFetchDeps = {}): typeof fetch {
   });
 
   const guarded = async (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
-    const target = typeof input === "string" || input instanceof URL ? input : (input as Request).url;
+    // A Request object carries its own method/headers/body; validate its URL
+    // and pass the Request through intact so none of that is dropped. A plain
+    // string/URL keeps its separate init.
+    if (typeof Request !== "undefined" && input instanceof Request) {
+      assertSafeRequestUrl(input.url);
+      return undiciFetch(input as never, { dispatcher: agent } as never) as unknown as Promise<Response>;
+    }
+    const target = input as string | URL;
     assertSafeRequestUrl(target);
     return undiciFetch(target as string | URL, { ...(init as object), dispatcher: agent } as never) as unknown as Promise<Response>;
   };

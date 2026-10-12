@@ -94,4 +94,47 @@ describe("makeGuardedFetch url guard", () => {
       .join(" | ");
     expect(chain.toLowerCase()).toContain("loopback");
   });
+
+  it("refuses an IPv4-mapped IPv6 literal in hex form (the audit's HIGH bypass)", async () => {
+    let threw: unknown;
+    try {
+      await gf("http://[::ffff:7f00:1]/x", { signal: AbortSignal.timeout(3000) }); // 127.0.0.1
+    } catch (e) {
+      threw = e;
+    }
+    expect(threw).toBeDefined();
+    const chain = [
+      (threw as Error)?.message,
+      ((threw as { cause?: Error })?.cause)?.message,
+      ((threw as { cause?: { cause?: Error } })?.cause?.cause)?.message,
+    ]
+      .filter(Boolean)
+      .join(" | ");
+    expect(chain.toLowerCase()).toContain("loopback");
+  });
+});
+
+describe("makeGuardedFetch connector-stage (the real gate, defeats DNS rebinding)", () => {
+  it("blocks a public-looking hostname that resolves to a private address, via the connector lookup", async () => {
+    // The URL host is NOT a blocked literal, so this passes the early URL
+    // check and only the connector/lookup can stop it — exactly the rebinding
+    // case. The injected resolver returns loopback; the guard must refuse at
+    // connect, with no real outbound socket.
+    const gf = makeGuardedFetch({ dnsLookupAll: async () => [{ address: "127.0.0.1", family: 4 }] });
+    let threw: unknown;
+    try {
+      await gf("http://public-looking-host.example/x", { signal: AbortSignal.timeout(3000) });
+    } catch (e) {
+      threw = e;
+    }
+    expect(threw).toBeDefined();
+    const chain = [
+      (threw as Error)?.message,
+      ((threw as { cause?: Error })?.cause)?.message,
+      ((threw as { cause?: { cause?: Error } })?.cause?.cause)?.message,
+    ]
+      .filter(Boolean)
+      .join(" | ");
+    expect(chain.toLowerCase()).toContain("loopback");
+  });
 });
