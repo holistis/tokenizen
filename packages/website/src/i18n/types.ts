@@ -71,6 +71,15 @@ export interface Dictionary {
     note: string;
     cards: CardText[];
   };
+  secondPillar: {
+    eyebrow: string;
+    h2: string;
+    body: string;
+    cards: CardText[];
+    honestNote: string;
+    ctaLabel: string;
+    ctaNote: string;
+  };
   howItWorks: {
     eyebrow: string;
     h2: string;

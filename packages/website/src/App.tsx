@@ -5,6 +5,7 @@ import { Hero } from "@/components/sections/hero";
 import { Problem } from "@/components/sections/problem";
 import { WhyNow } from "@/components/sections/why-now";
 import { Product } from "@/components/sections/product";
+import { SecondPillar } from "@/components/sections/second-pillar";
 import { HowItWorks } from "@/components/sections/how-it-works";
 import { Boundaries } from "@/components/sections/boundaries";
 import { OpenSource } from "@/components/sections/open-source";
@@ -46,6 +47,7 @@ export default function App() {
               <Problem />
               <WhyNow />
               <Product />
+              <SecondPillar />
               <HowItWorks />
               <Boundaries />
               <OpenSource />
