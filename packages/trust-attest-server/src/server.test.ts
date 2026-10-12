@@ -19,7 +19,7 @@ function freshIdentity(): AttesterIdentity {
 }
 
 /** A fetchImpl for runChecks' auth-signal check that always reports "enforced" (401), so tests focused on ownership/signing don't also have to think about the check outcome. */
-const AUTH_ENFORCED_CHECK_FETCH = (async () => new Response("unauthorized", { status: 401 })) as typeof fetch;
+const AUTH_ENFORCED_CHECK_FETCH = (async () => new Response("unauthorized", { status: 401 })) as typeof fetch; // 401 -> a deterministic inconclusive (a bare GET cannot prove the MCP surface enforces auth)
 
 /** OwnershipCheckDeps now requires resolveTxtRecords too (the caller owns all egress); these ownership tests use the well-known-file method, so this stub stands in for the unused DNS seam. */
 const STUB_RESOLVE = async (): Promise<string[][]> => [];
@@ -142,7 +142,9 @@ describe("requestTrustAttestation: full success path", () => {
     expect(attestation.attesterAddress.toLowerCase()).toBe(identity.wallet.address.toLowerCase());
     expect(attestation.ownershipProof).toMatchObject({ method: "well-known-file", token: expectedToken });
     expect(attestation.checksPerformed.length).toBeGreaterThan(0);
-    expect(attestation.outcome).toBe("passed"); // AUTH_ENFORCED_CHECK_FETCH returns 401
+    // A bare-GET 401 is a positive signal but not proof, so the passive check is
+    // a deterministic "inconclusive" — the attester never signs "passed" from it.
+    expect(attestation.outcome).toBe("inconclusive");
     expect(attestation.findingsHash).toMatch(/^[0-9a-f]{64}$/);
     expect(Date.parse(attestation.checkedAt)).toBeGreaterThanOrEqual(before);
     expect(Date.parse(attestation.checkedAt)).toBeLessThanOrEqual(Date.now());
@@ -318,7 +320,7 @@ describe("requestTrustAttestation: consent-gated active testing", () => {
     // passive check ONLY; the consent result is recorded as a signed FINDING.
     expect(result.attestation.checksPerformed).toEqual(["auth-signal-on-plain-get"]);
     expect(listerCalled).toBe(false); // the real proof: a request flag alone never connects
-    expect(result.attestation.outcome).toBe("passed"); // passive result stands, unchanged
+    expect(result.attestation.outcome).toBe("inconclusive"); // passive result stands, unchanged by the facts-only active path
     expect(result.findings.some((f) => f.check === "mcp-active-test-consent" && f.detail.includes("owner consent could NOT be verified"))).toBe(true);
     // No tool-chain finding at all, because the active check never ran.
     expect(result.findings.some((f) => f.check === "mcp-tool-capability-chains")).toBe(false);
@@ -332,7 +334,7 @@ describe("requestTrustAttestation: consent-gated active testing", () => {
       identity,
       {
         ownershipDeps: bothProofsPublished(identity),
-        checkDeps: { fetchImpl: AUTH_ENFORCED_CHECK_FETCH }, // auth-signal check -> passed
+        checkDeps: { fetchImpl: AUTH_ENFORCED_CHECK_FETCH }, // auth-signal check -> inconclusive
         toolFetchDeps: {
           listTools: async () => [
             { name: "fetch_url", description: "Fetch and read a webpage." },
@@ -349,7 +351,7 @@ describe("requestTrustAttestation: consent-gated active testing", () => {
     // FACTS-ONLY: the active check records facts but renders no verdict, so the
     // signed outcome stays exactly what the passive check determined. Consenting
     // to the active test must never be able to worsen the outcome.
-    expect(result.attestation.outcome).toBe("passed");
+    expect(result.attestation.outcome).toBe("inconclusive");
     expect(result.findings.some((f) => f.check === "mcp-active-test-consent" && f.detail.includes("owner consent for active testing was verified"))).toBe(true);
     expect(result.findings.some((f) => f.check === "mcp-tool-capability-chains" && f.detail.includes("fetch_url") && f.detail.includes("send_payment"))).toBe(true);
     expect(verifyAttestation(result.attestation)).toEqual({ ok: true }); // still independently verifiable
@@ -362,7 +364,7 @@ describe("requestTrustAttestation: consent-gated active testing", () => {
       identity,
       {
         ownershipDeps: bothProofsPublished(identity), // ownership + consent both verify
-        checkDeps: { fetchImpl: AUTH_ENFORCED_CHECK_FETCH }, // auth -> passed
+        checkDeps: { fetchImpl: AUTH_ENFORCED_CHECK_FETCH }, // auth -> inconclusive
         toolFetchDeps: {
           listTools: async () => {
             throw new Error("connection refused");
@@ -377,7 +379,7 @@ describe("requestTrustAttestation: consent-gated active testing", () => {
     expect(result.attestation.checksPerformed).toEqual(["auth-signal-on-plain-get"]);
     // A connection failure is recorded as a fact; it does not drag the signed
     // outcome, which stays what the passive check determined.
-    expect(result.attestation.outcome).toBe("passed");
+    expect(result.attestation.outcome).toBe("inconclusive");
     expect(result.findings.some((f) => f.check === "mcp-tool-capability-chains" && f.detail.includes("could not obtain"))).toBe(true);
     expect(verifyAttestation(result.attestation)).toEqual({ ok: true });
   });

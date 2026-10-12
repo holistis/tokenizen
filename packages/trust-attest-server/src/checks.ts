@@ -9,13 +9,23 @@
 // EXACTLY one plain HTTP GET to the endpoint, the same request a browser
 // would make. It NEVER sends a POST, NEVER attempts an MCP
 // initialize/tools-call handshake or any other protocol-level probe, NEVER
-// supplies credentials, and NEVER writes anything. A 401/403 challenge on a
-// bare GET is read as a GOOD signal (the server is demonstrating that it
-// enforces auth); an explicit, literal "no auth required"-style admission in
-// the body is read as a bad signal worth recording. Anything else is
-// reported as inconclusive rather than guessed — silently upgrading "we
-// could not tell" into "failed" would be exactly the kind of untested
-// overreach Al-Mizaan Poort 7b exists to forbid.
+// supplies credentials, and NEVER writes anything.
+//
+// POSTURE (fail-closed, never falsely assuring). This check can lower
+// confidence but must never manufacture it. A 401/403 on a bare GET is a
+// POSITIVE SIGNAL but NOT proof: it says nothing about whether the actual MCP
+// surface (JSON-RPC over POST) requires auth, and the endpoint is controlled
+// by the party being attested, who can return any status. So 401/403 is
+// recorded as INCONCLUSIVE with the signal noted, never signed as "passed".
+// "passed" is reserved for a future check that actually demonstrates a
+// positive (e.g. an authenticated-vs-unauthenticated comparison on the
+// consent-gated active path), so the attester never signs assurance it did not
+// establish. An explicit, literal "no auth required"-style admission in the
+// body IS signed as "failed": that is the endpoint self-reporting a negative in
+// its own words, and erring toward a recorded concern is the safe direction.
+// Everything else is inconclusive, never guessed — silently upgrading "we could
+// not tell" into a verdict is exactly the untested overreach Al-Mizaan Poort 7b
+// forbids.
 //
 // PURE VS NETWORK: fetchImpl is injected, same DI seam as
 // endpoint-attest/src/ownership.ts's OwnershipCheckDeps, so this is fully
@@ -109,15 +119,17 @@ export async function runChecks(endpoint: string, deps: CheckDeps): Promise<Chec
   const lowerBody = body.toLowerCase();
   const bodySnippet = body.slice(0, 500);
 
-  // A challenge status on a bare, unauthenticated GET is the server itself
-  // demonstrating enforcement — read as passed regardless of body content.
+  // A challenge status on a bare, unauthenticated GET is a POSITIVE SIGNAL but
+  // not proof: it does not establish that the MCP surface (JSON-RPC over POST)
+  // enforces auth, and the endpoint is controlled by the attested party. Record
+  // it as inconclusive with the signal noted; never sign "passed" from it.
   if (response.status === 401 || response.status === 403) {
     return singleFindingResult({
       check: CHECK_NAME,
-      outcome: "passed",
+      outcome: "inconclusive",
       status: response.status,
       bodySnippet,
-      detail: `plain GET was challenged with HTTP ${response.status}, which is the server itself demonstrating that authentication is enforced`,
+      detail: `plain GET was challenged with HTTP ${response.status} — a positive signal that some auth is enforced, but a bare GET cannot establish that the MCP method surface (JSON-RPC over POST) requires auth, so this is recorded as an observation rather than a passing verdict`,
     });
   }
 
