@@ -106,3 +106,54 @@ a fresh proof, so "consent" cannot be asserted by a third party riding a persist
 5. Classification tuning (C #11, #12) and attestation honesty (E).
 
 No merge, no live deploy, no public mention until A, C#10 and D are resolved and re-reviewed.
+
+---
+
+# Full trust-layer Majlis al-Muraqaba (whole system, not just the active path)
+
+Status: INTERNAL review of the ENTIRE trust layer (capacity-attest, endpoint-attest,
+trust-attest-server, self-check-server), requested to be sure no OTHER leaks exist. Our
+own adversarial review, not an external audit. 8 angles, 25 raised, 16 confirmed after
+adversarial verification (1 high, 12 medium, 3 low). Most of these are in the EXISTING
+product, not this branch. The branch is not merge-ready and the existing packages need
+these fixes too.
+
+## Dominant theme: the egress guard exists but is applied in only ONE place
+
+self-check-server/src/network-guard.ts has a correct-ish private/loopback/link-local/
+ULA/metadata blocklist (assertPubliclyRoutableHost), but it is imported ONLY by
+self-check-server/app.ts. Every other outbound path in the system is unguarded.
+
+### SSRF / egress (systemic)
+1. (MEDIUM) capacity-attest/src/erc8004.ts: the shipped `resolve_agent_identity` MCP tool takes a caller-supplied rpcUrl, validated by scheme only (isHttpUrl), then makes JSON-RPC POSTs to it. Blind SSRF with a reachability oracle (differentiated reason strings). Same unguarded pattern also in http-source.ts, eas.ts, erc8004-reputation.ts.
+7. (HIGH) self-check-server/src/app.ts: redirect-following SSRF. network-guard validates only the FIRST hop; verifyOwnership then follows 3xx redirects to internal targets and leaks their status back. The guard's own "known limits" never mention redirects (#16).
+2. (MEDIUM) endpoint-attest/src/ownership.ts: well-known-file proof follows cross-origin redirects, so the token need not be served by the attested host.
+15. (MEDIUM) endpoint-attest/src/schema.ts: ownershipProof.location/token are never bound to `endpoint`; verifyAttestation returns ok:true for a proof about a DIFFERENT host.
+3. (LOW) ownership.ts: proof accepted over plaintext http://, token is public, so weaker than the ACME shape it mirrors.
+
+### DoS / rate-limit / resource
+8. (MEDIUM) self-check-server/rate-limit.ts: req.ip with no trust-proxy config = one global bucket behind a proxy; bypassable per-/128 over IPv6.
+9/11. (MEDIUM) rate-limit.ts: bucket map never evicted/capped = unbounded memory DoS.
+10. (MEDIUM) network-guard.ts: uncancellable dns.lookup() with no timeout = libuv threadpool exhaustion.
+4/12. (MEDIUM) capacity-attest/eas.ts: EAS source materializes unbounded uids and one RPC per uid, and JSON.parses each with no byte cap, BEFORE discovery's per-source cap applies.
+5. (LOW) erc8004.ts: chainId coerced via BigInt() with no digit-length bound (sibling agentId IS capped) = bignum-parse DoS.
+13. (LOW) trust-attest-server/tool-chain-check.ts: CONFIRMATION_RE backtracks O(n^2) on unbounded attacker tool descriptions (ReDoS, distinct from the tool-count O(n^2)).
+
+### Correctness / claims-vs-code / secrets
+14. (MEDIUM) trust-attest-server/checks.ts: signs outcome "passed" on any 403, inferring auth-enforcement the README says it never guesses.
+6. (MEDIUM) self-check-server/app.ts: the public /check process is forced to hold the attester signing private key it never uses (needless secret exposure surface).
+
+## Consolidated remediation (supersedes the per-path plan above)
+
+1. ONE shared egress guard module, reused everywhere (extract/generalise network-guard.ts): resolve host, reject private/loopback/link-local/ULA/metadata (v4+v6), PIN the resolved IP, add a DNS timeout, and RE-VALIDATE every redirect hop (or disable redirects). Apply to: endpoint-attest ownership.ts; trust-attest-server checks.ts + fetch-tools.ts; capacity-attest erc8004.ts, erc8004-reputation.ts, eas.ts, http-source.ts; and fix the first-hop-only gap in self-check-server (#7).
+2. Fail-closed classification in tool-chain-check.ts (never sign "passed"); also bound the regexes (ReDoS, #13) and cap tool count.
+3. Bind ownershipProof to endpoint in the schema (#15); stop following redirects / require https on proofs (#2, #3).
+4. Rate-limit: fix trust-proxy + IPv6 /64 bucketing + evict/cap the map (#8, #9, #11).
+5. Cap EAS/discovery materialisation + byte caps (#4, #12); bound chainId digits (#5).
+6. Do not hold the signing key in the public /check process (#6).
+7. Reconsider the 403 "passed" inference (#14) toward fail-closed.
+8. Consent binding (#13 from the active-path review) remains.
+
+Re-run the full Majlis after remediation. No merge, no live, no public mention until the
+SSRF cluster (egress guard everywhere + redirect re-validation + proof-endpoint binding)
+and the fail-closed classification are resolved and re-reviewed.
