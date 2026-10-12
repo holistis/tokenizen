@@ -125,13 +125,13 @@ async function defaultListTools(endpoint: string, timeoutMs: number): Promise<Mc
   // every connection and redirect, exactly like the passive GET in checks.ts —
   // and wrapped in byteCappedFetch so a malicious endpoint cannot OOM the
   // attester by streaming an unbounded tools/list.
-  const fetchImpl = byteCappedFetch(guardedFetch, MAX_TOOL_LIST_BYTES);
+  const guardedCappedFetch = byteCappedFetch(guardedFetch, MAX_TOOL_LIST_BYTES);
   let connected = false;
   try {
-    await client.connect(new StreamableHTTPClientTransport(url, { fetch: fetchImpl }), { timeout: timeoutMs });
+    await client.connect(new StreamableHTTPClientTransport(url, { fetch: guardedCappedFetch }), { timeout: timeoutMs });
     connected = true;
   } catch {
-    await client.connect(new SSEClientTransport(url, { fetch: fetchImpl }), { timeout: timeoutMs });
+    await client.connect(new SSEClientTransport(url, { fetch: guardedCappedFetch }), { timeout: timeoutMs });
     connected = true;
   }
 
