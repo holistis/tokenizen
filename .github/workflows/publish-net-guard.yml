@@ -1,0 +1,59 @@
+name: Publish net-guard
+
+# net-guard is the shared egress choke-point every public server in this repo
+# routes its outbound DNS and HTTP through. It has to exist on npm in its own
+# right, because trust-attest-server declares it as a runtime dependency: a
+# published trust-attest-server whose net-guard is missing from the registry is
+# an uninstallable package, which is exactly the failure this repo already hit
+# once (trust-attest-server 0.1.0 shipped depending on an endpoint-attest that
+# was not on npm, so npm install failed with E404 from the day it was released).
+#
+# Unlike the other publish workflows here, there is no workspace package to
+# build first: net-guard depends only on undici.
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "publish" to confirm publishing the current version in packages/net-guard/package.json to npm'
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    if: github.event.inputs.confirm == 'publish'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/net-guard
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Update npm (trusted publishing + provenance need npm >= 11.5.1)
+        run: npm install -g npm@latest
+
+      - name: Install dependencies (workspace root)
+        working-directory: .
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish to npm with provenance
+        run: npm publish --provenance --access public
