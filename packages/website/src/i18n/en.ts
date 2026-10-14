@@ -237,28 +237,38 @@ export const en: Dictionary = {
   },
   "status": {
     "eyebrow": "Status, honestly",
-    "h2": "New project. No customers. But a proven foundation.",
-    "body": "Tokenizen just launched, is open source, and is in active development. There are no external users yet, no partnerships, no customers. We just say so. What does exist: this is built on top of proven, self-built payment and MCP infrastructure (x402, several previously published npm/MCP packages), and the first independent verification of a live claim has already happened. The first external integration is the next thing that counts.",
+    "h2": "No paying customers. Three outside parties building on the format, and work others checked themselves.",
+    "body": "Tokenizen is open source and in active development. There are no paying customers and no partnerships, and we say that plainly. What does exist: three parties outside this project now build on the claim format. One of them rebuilt our verifier from scratch in another language and ships it inside their own package. Another cites the measured block as the source of truth for metered delivery in their own draft specification, pinned to a commit of this repo. The next thing that counts is getting the signed test vectors into an official conformance set, so that anyone joining later has to pass them.",
     "checkpoints": [
       {
         "title": "npm publication",
-        "body": "capacity-attest 0.2.0 is live on npm and in the MCP registry.",
+        "body": "capacity-attest is live on npm and in the MCP registry, currently at 0.7.0, with 0.8.0 waiting on a registry hold.",
         "achieved": true
       },
       {
-        "title": "First external clone/install",
-        "body": "Someone outside this project cloning the repository or running npm install capacity-attest, without us demonstrating it first.",
+        "title": "First external use",
+        "body": "Someone outside this project depending on capacity-attest without us demonstrating it first. Three parties now do: a draft ERC-8004 convention that pins this repo by commit hash, an independently rebuilt verifier shipped inside someone else's published package, and a BSV rail adapter built on the same claim format by a separate author.",
+        "achieved": true
+      },
+      {
+        "title": "Independent verification by someone else's code",
+        "body": "An outside party rebuilt the verifier from scratch, standard library only, with its own secp256k1, EIP-191 and canonical JSON implementation. Seven of seven vectors match, including both negative controls, and it now runs as a permanent regression test inside their own published package.",
+        "achieved": true
+      },
+      {
+        "title": "An external agent calling record_delivery itself",
+        "body": "Others verify our claims and depend on the format, but we have no evidence yet of an agent from another party writing a delivery claim through the MCP tool in production. Until we see it, this stays open.",
         "achieved": false
       },
       {
-        "title": "First external agent integration",
-        "body": "An agent from another party that actually calls record_delivery or get_delivery_history.",
+        "title": "The signed vectors in an official conformance set",
+        "body": "The five signed metered vectors adopted into a standards group's own required test set, so passing them becomes a condition of joining rather than a favour to us. Requested, not granted.",
         "achieved": false
       }
     ],
     "proof": {
       "title": "Independently verified",
-      "body": "An external project (ASM spec) independently verified a real payment claim on September 1, 2026: same claimId, same signature recovered to the buyer, same on-chain payment.",
+      "body": "Independent checks by other people rather than by us: a real payment claim verified by an external project on September 1, 2026, with the same claimId and the same signature recovered to the buyer; a verifier rebuilt from scratch in another language; live delivery claims readable by anyone on three separate chains; and a real giveFeedback call against the ERC-8004 Reputation Registry on Base mainnet. Each one is linked from the repository so it can be checked again.",
       "txLabel": "View the transaction",
       "verificationLabel": "View the verification"
     },
