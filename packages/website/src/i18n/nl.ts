@@ -226,7 +226,7 @@ export const nl: Dictionary = {
       },
       {
         title: "Eerste extern gebruik",
-        body: "Iemand buiten dit project die van capacity-attest afhangt zonder dat wij het voordoen. Drie partijen doen dat nu: de ASM-spec als echte dependency, een BSV-rail-adapter op hetzelfde claimformaat, en een concept-ERC-8004-conventie die deze repo op commit-niveau vastpint.",
+        body: "Iemand buiten dit project die van capacity-attest afhangt zonder dat wij het voordoen. Drie partijen doen dat nu: een concept-ERC-8004-conventie die deze repo op commit-niveau vastpint, een onafhankelijk herbouwde verifier die meegeleverd wordt in andermans gepubliceerde pakket, en een BSV-rail-adapter op hetzelfde claimformaat van een losse auteur.",
         achieved: true,
       },
       {
@@ -247,7 +247,7 @@ export const nl: Dictionary = {
     ],
     proof: {
       title: "Onafhankelijk geverifieerd",
-      body: "Zes losse controles door andere mensen in plaats van door ons: een echte betaalclaim die een extern project op 1 september 2026 verifieerde, met hetzelfde claimId en dezelfde handtekening terugberekend naar de koper; een verifier die van de grond af in een andere taal is herbouwd; live leveringsclaims die iedereen kan uitlezen op drie losse chains; en een echte giveFeedback-aanroep op het ERC-8004 Reputation Registry op Base mainnet. Elke controle staat gelinkt vanuit de repository, zodat hij opnieuw na te rekenen is.",
+      body: "Onafhankelijke controles door andere mensen in plaats van door ons: een echte betaalclaim die een extern project op 1 september 2026 verifieerde, met hetzelfde claimId en dezelfde handtekening terugberekend naar de koper; een verifier die van de grond af in een andere taal is herbouwd; live leveringsclaims die iedereen kan uitlezen op drie losse chains; en een echte giveFeedback-aanroep op het ERC-8004 Reputation Registry op Base mainnet. Elke controle staat gelinkt vanuit de repository, zodat hij opnieuw na te rekenen is.",
       txLabel: "Bekijk de transactie",
       verificationLabel: "Bekijk de verificatie",
     },

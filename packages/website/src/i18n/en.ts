@@ -247,7 +247,7 @@ export const en: Dictionary = {
       },
       {
         "title": "First external use",
-        "body": "Someone outside this project depending on capacity-attest without us demonstrating it first. Three parties now do: the ASM spec as a real dependency, a BSV rail adapter built on the same claim format, and a draft ERC-8004 convention that pins this repo by commit hash.",
+        "body": "Someone outside this project depending on capacity-attest without us demonstrating it first. Three parties now do: a draft ERC-8004 convention that pins this repo by commit hash, an independently rebuilt verifier shipped inside someone else's published package, and a BSV rail adapter built on the same claim format by a separate author.",
         "achieved": true
       },
       {
@@ -268,7 +268,7 @@ export const en: Dictionary = {
     ],
     "proof": {
       "title": "Independently verified",
-      "body": "Six separate checks by other people rather than by us: a real payment claim verified by an external project on September 1, 2026, with the same claimId and the same signature recovered to the buyer; a verifier rebuilt from scratch in another language; live delivery claims readable by anyone on three separate chains; and a real giveFeedback call against the ERC-8004 Reputation Registry on Base mainnet. Each one is linked from the repository so it can be checked again.",
+      "body": "Independent checks by other people rather than by us: a real payment claim verified by an external project on September 1, 2026, with the same claimId and the same signature recovered to the buyer; a verifier rebuilt from scratch in another language; live delivery claims readable by anyone on three separate chains; and a real giveFeedback call against the ERC-8004 Reputation Registry on Base mainnet. Each one is linked from the repository so it can be checked again.",
       "txLabel": "View the transaction",
       "verificationLabel": "View the verification"
     },
