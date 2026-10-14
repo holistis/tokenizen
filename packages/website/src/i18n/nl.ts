@@ -241,7 +241,7 @@ export const nl: Dictionary = {
       },
       {
         title: "Het formaat in een officiële conformance-set",
-        body: "Het measured-blok zit al in de eigen conformance-set van één partij, met vijf ondertekende vectoren en twee verifiers eromheen gebouwd. De bredere stap staat nog open: dat een standaardengroep die vectoren opneemt in zijn eigen verplichte testset, zodat eraan voldoen een voorwaarde voor meedoen wordt in plaats van de keuze van één project. Aangevraagd, nog niet toegekend.",
+        body: "Het measured-blok zit al in de eigen conformance-set van één partij, met vijf ondertekende vectoren en twee verifiers eromheen gebouwd. Op 14 oktober zei de auteur die de ERC-8004-vocabulaire voor grounded feedback schrijft dat die vijf vectoren ongewijzigd in de gedeelde conformance-set kunnen, naast fixtures van twee andere partijen. Dat is een toezegging van degene die het opschrijft, geen gepubliceerd besluit, dus dit blijft open tot de vectoren er echt in staan.",
         achieved: false,
       },
     ],
