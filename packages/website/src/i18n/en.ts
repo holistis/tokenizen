@@ -261,8 +261,8 @@ export const en: Dictionary = {
         "achieved": false
       },
       {
-        "title": "The signed vectors in an official conformance set",
-        "body": "The five signed metered vectors adopted into a standards group's own required test set, so passing them becomes a condition of joining rather than a favour to us. Requested, not granted.",
+        "title": "The format in an official conformance set",
+        "body": "The measured block already sits inside one party's own conformance set, which has five signed vectors and two verifiers built around it. The wider step is still open: a standards group adopting those vectors into its own required test set, so that passing them becomes a condition of joining rather than one project's choice. Requested, not granted.",
         "achieved": false
       }
     ],
