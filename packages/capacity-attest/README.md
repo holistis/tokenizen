@@ -152,6 +152,23 @@ Note: import `capacity-attest/dist/signing.js` directly, not the package root. T
 
 A working, externally reproduced example of these exact steps is in [github.com/YE-YI7/asm-spec, PR #18](https://github.com/YE-YI7/asm-spec/pull/18): an independent project that ran this against a real, live registered claim.
 
+## What is safe to depend on
+
+If you are writing your own verifier, or pinning this repo in a specification, this is the part you need: what will not move under you.
+
+Four things are fixed, and a claim signed today is meant to still verify years from now:
+
+- The canonical form a claim is hashed over, byte for byte, as specified in [`docs/metered-delivery-spec.md`](docs/metered-delivery-spec.md).
+- How `claimId` is derived from that canonical form.
+- The EIP-191 message that gets signed, and that the signature recovers to `buyerAddress`.
+- The strict `issuedAt` shape, `YYYY-MM-DDTHH:MM:SS.sssZ` with exactly three fractional digits.
+
+Adding a new optional field is not a break and can happen in a minor version, because an old verifier reading a new claim still gets the same `claimId` for the fields it knows. Removing a field, renaming one, reordering the canonical form, or changing how the hash is computed would invalidate every claim ever signed, so it is treated as something we do not do rather than something we version.
+
+That promise is checked rather than stated. The published test vectors in [`examples/`](examples) carry each intermediate step separately: the canonical preimage, its byte length, the `claimId`, the EIP-191 digest, the signature and the expected recovered address. Two standalone scripts verify them on every CI run, and both are deliberate reimplementations that read one JSON file and never import this package's own source, so they cannot pass by agreeing with the code they are supposed to be checking. Break the format and CI goes red before anything can be published.
+
+If a break ever becomes genuinely unavoidable, it ships as a new major version under a different package name, the old one keeps working and keeps being published, and the reason goes in [DECISIONS.md](DECISIONS.md) before the code changes. Parties that pinned a commit are not moved by us.
+
 ## Sharing your own submitted claims, independent of a host (D-006)
 
 `get_delivery_history` relies on the honesty of whoever operates the MCP server: see the `note` in that tool's response and [DECISIONS.md](https://github.com/holistis/tokenizen/blob/main/packages/capacity-attest/DECISIONS.md) (D-006). Every claim shown is genuinely real (the signature has also been re-checked on read since 2026-09-06, not only on write), but nothing proves the host is showing the FULL set it actually has.

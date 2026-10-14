@@ -62,3 +62,19 @@ jobs:
       # command above would never reach it. A gate nobody runs is a gate that rots.
       - name: Test the own-dependency guard
         run: npm run check-own-deps-test
+
+      # The published test vectors are what other projects pin and build their
+      # own verifiers against, so the format they describe has to keep
+      # verifying. These two scripts are deliberate reimplementations: they
+      # read one JSON file, import only ethers for ecrecover, and never touch
+      # src/. That is what makes them able to catch a format change at all,
+      # and it is also why `npm test` does not reach them. Until now nothing
+      # ran them, so the stability other people rely on was a promise in prose
+      # rather than a check. If a change to canonicalization, claimId
+      # derivation or the signing preimage breaks an already-signed vector,
+      # this step goes red before the change can be published.
+      - name: Verify the published test vectors against independent verifiers
+        run: |
+          node examples/verify-metered-example.mjs
+          node examples/verify-offer-receipt-link.mjs
+        working-directory: packages/capacity-attest
