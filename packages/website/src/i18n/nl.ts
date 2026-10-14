@@ -240,8 +240,8 @@ export const nl: Dictionary = {
         achieved: false,
       },
       {
-        title: "De ondertekende vectoren in een officiële conformance-set",
-        body: "De vijf ondertekende gemeten vectoren opgenomen in de eigen verplichte testset van een standaardengroep, zodat eraan voldoen een voorwaarde voor meedoen wordt in plaats van een gunst aan ons. Aangevraagd, nog niet toegekend.",
+        title: "Het formaat in een officiële conformance-set",
+        body: "Het measured-blok zit al in de eigen conformance-set van één partij, met vijf ondertekende vectoren en twee verifiers eromheen gebouwd. De bredere stap staat nog open: dat een standaardengroep die vectoren opneemt in zijn eigen verplichte testset, zodat eraan voldoen een voorwaarde voor meedoen wordt in plaats van de keuze van één project. Aangevraagd, nog niet toegekend.",
         achieved: false,
       },
     ],
