@@ -216,28 +216,38 @@ export const nl: Dictionary = {
   },
   status: {
     eyebrow: "Status, eerlijk",
-    h2: "Nieuw project. Geen klanten. Wel bewezen fundament.",
-    body: "Tokenizen is net gelanceerd, open source, en in actieve ontwikkeling. Er zijn nog geen externe gebruikers, geen partnerships, geen klanten. Dat zeggen we gewoon zo. Wat er wél staat: dit is gebouwd bovenop bewezen eigen betaal- en MCP-infrastructuur (x402, meerdere eerder gepubliceerde npm/MCP-packages), en de eerste onafhankelijke verificatie van een live claim heeft al plaatsgevonden. De eerste externe integratie is het volgende dat telt.",
+    h2: "Geen betalende klanten. Wel drie externe partijen die op het formaat bouwen, en werk dat anderen zelf hebben nagerekend.",
+    body: "Tokenizen is open source en in actieve ontwikkeling. Er zijn geen betalende klanten en geen partnerships, en dat zeggen we gewoon zo. Wat er wel is: drie partijen buiten dit project bouwen inmiddels op het claimformaat. Een van hen heeft onze verifier van de grond af opnieuw gebouwd in een andere taal en levert hem mee in zijn eigen pakket. Een ander noemt het measured-blok de bron van waarheid voor gemeten levering in zijn eigen conceptspecificatie, vastgepind op een commit van deze repo. Het volgende dat telt is de ondertekende testvectoren in een officiële conformance-set krijgen, zodat iedereen die later meedoet er langs moet.",
     checkpoints: [
       {
         title: "npm-publicatie",
-        body: "capacity-attest 0.2.0 staat live op npm en in het MCP-register.",
+        body: "capacity-attest staat live op npm en in het MCP-register, op dit moment als 0.7.0, met 0.8.0 wachtend op een blokkade bij de registry.",
         achieved: true,
       },
       {
-        title: "Eerste externe clone/install",
-        body: "Iemand buiten dit project die de repository kloont of npm install capacity-attest draait, zonder dat wij het voordoen.",
+        title: "Eerste extern gebruik",
+        body: "Iemand buiten dit project die van capacity-attest afhangt zonder dat wij het voordoen. Drie partijen doen dat nu: de ASM-spec als echte dependency, een BSV-rail-adapter op hetzelfde claimformaat, en een concept-ERC-8004-conventie die deze repo op commit-niveau vastpint.",
+        achieved: true,
+      },
+      {
+        title: "Onafhankelijke verificatie door andermans code",
+        body: "Een externe partij heeft de verifier van de grond af opnieuw gebouwd, alleen met de standaardbibliotheek, met een eigen implementatie van secp256k1, EIP-191 en canonieke JSON. Zeven van zeven vectoren komen overeen, inclusief beide negatieve controles, en het draait nu als permanente regressietest binnen zijn eigen gepubliceerde pakket.",
+        achieved: true,
+      },
+      {
+        title: "Een externe agent die zelf record_delivery aanroept",
+        body: "Anderen verifiëren onze claims en hangen van het formaat af, maar we hebben nog geen bewijs van een agent van een andere partij die in productie een leveringsclaim via de MCP-tool wegschrijft. Tot we dat zien, blijft dit open.",
         achieved: false,
       },
       {
-        title: "Eerste externe agent-integratie",
-        body: "Een agent van een andere partij die record_delivery of get_delivery_history daadwerkelijk aanroept.",
+        title: "De ondertekende vectoren in een officiële conformance-set",
+        body: "De vijf ondertekende gemeten vectoren opgenomen in de eigen verplichte testset van een standaardengroep, zodat eraan voldoen een voorwaarde voor meedoen wordt in plaats van een gunst aan ons. Aangevraagd, nog niet toegekend.",
         achieved: false,
       },
     ],
     proof: {
       title: "Onafhankelijk geverifieerd",
-      body: "Een extern project (ASM-spec) verifieerde op 1 september 2026 zelfstandig een echte betaalclaim: zelfde claimId, zelfde handtekening terugberekend naar de koper, dezelfde on-chain betaling.",
+      body: "Zes losse controles door andere mensen in plaats van door ons: een echte betaalclaim die een extern project op 1 september 2026 verifieerde, met hetzelfde claimId en dezelfde handtekening terugberekend naar de koper; een verifier die van de grond af in een andere taal is herbouwd; live leveringsclaims die iedereen kan uitlezen op drie losse chains; en een echte giveFeedback-aanroep op het ERC-8004 Reputation Registry op Base mainnet. Elke controle staat gelinkt vanuit de repository, zodat hij opnieuw na te rekenen is.",
       txLabel: "Bekijk de transactie",
       verificationLabel: "Bekijk de verificatie",
     },
