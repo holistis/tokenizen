@@ -262,7 +262,7 @@ export const en: Dictionary = {
       },
       {
         "title": "The format in an official conformance set",
-        "body": "The measured block already sits inside one party's own conformance set, which has five signed vectors and two verifiers built around it. The wider step is still open: a standards group adopting those vectors into its own required test set, so that passing them becomes a condition of joining rather than one project's choice. Requested, not granted.",
+        "body": "The measured block already sits inside one party's own conformance set, which has five signed vectors and two verifiers built around it. On 14 October the author writing the ERC-8004 grounded-feedback vocabulary said those five vectors can go into the shared conformance set as-is, alongside fixtures from two other parties. That is a commitment from the person drafting it, not a published decision, so this stays open until the vectors are actually in the set.",
         "achieved": false
       }
     ],
