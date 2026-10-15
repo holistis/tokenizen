@@ -28,8 +28,13 @@ export interface ReceiptFields {
   payer?: string;
   /** The settlement this receipt is about. Compared case-insensitively against the claim's settlementRef. */
   transaction?: string;
-  /** When the seller issued the receipt. A receipt issued after the buyer's claim is a disagreement about ordering. */
-  issuedAt?: string;
+  /**
+   * When the seller issued the receipt. The x402 offer-and-receipt extension defines this as a
+   * unix timestamp in SECONDS (§5.2), which is why a number is accepted and treated as such.
+   * A string is accepted too, parsed as a date, because a caller may already have normalised it.
+   * A receipt issued after the buyer's claim is a disagreement about ordering.
+   */
+  issuedAt?: string | number;
 }
 
 export interface ClaimSide {
@@ -109,15 +114,15 @@ export function compareClaimToReceipt(claim: ClaimSide, receipt: ReceiptFields):
   if (receipt.issuedAt === undefined) {
     notCompared.push("issuedAt");
   } else {
-    const r = Date.parse(receipt.issuedAt);
+    const r = typeof receipt.issuedAt === "number" ? receipt.issuedAt * 1000 : Date.parse(receipt.issuedAt);
     const c = Date.parse(claim.timestamp);
-    if (Number.isNaN(r) || Number.isNaN(c)) {
+    if (!Number.isFinite(r) || Number.isNaN(c)) {
       notCompared.push("issuedAt");
     } else if (r > c) {
       disagreements.push({
         field: "issuedAt",
         claim: claim.timestamp,
-        receipt: receipt.issuedAt,
+        receipt: String(receipt.issuedAt),
         note: "the seller issued the receipt after the buyer signed the claim about it",
       });
     }
