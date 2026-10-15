@@ -6,9 +6,11 @@ import { MarkdownLite } from "@/components/markdown-lite";
 const TITLE = "A signed receipt that cannot name its own payment | tokenizen";
 const DESCRIPTION = "A receipt that verifies, carries an authorized signature, and cannot tell you which payment it is about. What that costs, who caught the error in it, and what changed the same day.";
 
-const BODY = `I paid my own API one tenth of a cent yesterday to find out whether the receipt it hands back is worth anything. It is signed, it verifies, the key is provably mine, and it cannot tell you which payment it is about.
+const BODY = `I paid my own API a tenth of a cent to find out whether the receipt it hands back is worth anything. It is signed, it verifies, the key is provably mine, and it cannot tell you which payment it is about.
 
-That is not a bug in my code. It took me most of a day to establish that, and the answer turned out to be the interesting part.
+Of 20,462 live x402 resources I sampled, not one declared the receipt extension at all. So I built the first one. The first receipt it ever issued was broken in a way that passes every check you can run on it.
+
+Within hours of publishing that, the author of an independent verifier went and tested his own implementation against the case, found it would have accepted the receipt too, and shipped a hard-fail, a new conformance vector and a new invariant the same day. That invariant now correctly rejects every receipt my own live route issues. I would rather say that out loud than have someone find it.
 
 ## The thing everyone agrees on
 
@@ -16,7 +18,7 @@ When one agent pays another for an API call, two parties end up with an account 
 
 I had built the buyer's half, a signed claim of what was delivered, which names the seller's receipt by the hash of its exact bytes so the two pin each other. Then I went looking for receipts to pin to.
 
-There are none. Sampling one facilitator's discovery index of 20,462 live x402 resources at six spread offsets of a hundred each, not one declares the extension. Seven of the eight facilitator addresses I tried returned no usable JSON on that path, so they are unmeasured rather than zero, and the largest index is among them. A strong indication, not a proof.
+There are none, and the counting method matters more than the headline. One facilitator’s discovery index, 20,462 live resources, sampled at six spread offsets of a hundred each, and not one declares the extension. Seven of the eight facilitator addresses I tried returned no usable JSON on that path, so they are unmeasured rather than zero, and the largest index is among them. A strong indication, not a proof.
 
 So I made one, and that is where it got interesting.
 
