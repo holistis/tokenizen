@@ -26,6 +26,7 @@ export const nl: Dictionary = {
       { href: "#ontwerpgrenzen", label: "Grenzen" },
       { href: "#open-source", label: "Open source" },
       { href: "#status", label: "Status" },
+      { href: "/notes", label: "Notities" },
     ],
     github: "GitHub",
     openMenu: "Open menu",

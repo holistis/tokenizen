@@ -46,6 +46,10 @@ export const en: Dictionary = {
       {
         "href": "#status",
         "label": "Status"
+      },
+      {
+        "href": "/notes",
+        "label": "Notes"
       }
     ],
     "github": "GitHub",
