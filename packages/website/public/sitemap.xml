@@ -33,6 +33,16 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/notes" />
   </url>
   <url>
+    <loc>https://tokenizen.nl/en/notes/a-signed-receipt-that-cannot-name-its-own-payment</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/en/notes/733203-attestations-were-taken-back</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://tokenizen.nl/en/notes/zero-of-600-x402-services-sign-a-receipt</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

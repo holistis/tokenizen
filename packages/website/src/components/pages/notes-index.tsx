@@ -24,6 +24,13 @@ interface NoteEntry {
 
 const NOTES: NoteEntry[] = [
   {
+    slug: "/notes/733203-attestations-were-taken-back",
+    date: "2026-10-15",
+    title: "733,203 attestations were taken back",
+    blurb:
+      "Counting revocations across the three largest EAS indexers to answer a fair objection: a signature does not make a statement true. Every one of them is an issuer withdrawing its own statement, and the counterparty has no move at all.",
+  },
+  {
     slug: "/notes/a-signed-receipt-that-cannot-name-its-own-payment",
     date: "2026-10-15",
     title: "A signed receipt that cannot name its own payment",

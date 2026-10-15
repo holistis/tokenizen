@@ -17,6 +17,7 @@ import { SelfCheckPage } from "@/components/pages/self-check-page";
 import { NotesIndex } from "@/components/pages/notes-index";
 import { ZeroOf600Article } from "@/components/pages/zero-of-600-article";
 import { ReceiptCannotNameArticle } from "@/components/pages/receipt-cannot-name-article";
+import { RevocationsArticle } from "@/components/pages/revocations-article";
 
 // Engelstalig-only stukken: geen NL-versie. De taalwissel-knop in de header
 // bouwt zijn href door het /en-voorvoegsel te strippen (i18n/context.tsx),
@@ -25,6 +26,7 @@ import { ReceiptCannotNameArticle } from "@/components/pages/receipt-cannot-name
 const ARTICLES: Record<string, () => JSX.Element> = {
   "/notes": NotesIndex,
   "/notes/a-signed-receipt-that-cannot-name-its-own-payment": ReceiptCannotNameArticle,
+  "/notes/733203-attestations-were-taken-back": RevocationsArticle,
   "/notes/zero-of-600-x402-services-sign-a-receipt": ZeroOf600Article,
   "/notes/nine-ways-to-fake-a-delivery-claim": NineWaysArticle,
   "/notes/the-hierarchy-of-agent-trust": HierarchyOfAgentTrustArticle,
