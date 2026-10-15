@@ -1,0 +1,105 @@
+{
+  "measuredAt": "2026-10-15T20:02:35.496Z",
+  "buyer": "0x87f344b6Ec48A936373d774D3De8649DEEB66Ee1",
+  "resource": "https://api.tokenizen.nl/api/paid/verify-ownership",
+  "receiptDigest": "e177d2cf93ab874f056d70d317d5c1d865a5fc9e88f54c6ab17d8232f4081deb",
+  "receipt": {
+    "format": "eip712",
+    "payload": {
+      "version": 1,
+      "network": "eip155:84532",
+      "resourceUrl": "https://api.tokenizen.nl/api/paid/verify-ownership",
+      "payer": "0x87f344b6Ec48A936373d774D3De8649DEEB66Ee1",
+      "issuedAt": 1792094640,
+      "transaction": ""
+    },
+    "signature": "0x2add013684ceb1b2d220db5c87a34c2ae93dbac85931ad641cc4d5abae6cccb03e922596b7878705776a58836029fa9899953f6527bc4067c0c5cad4ef4142971c"
+  },
+  "nonce": "0xc01225fc79db19be6ea2afdbbbc195968e121184e39df0b4f62d7f8f5df40c83",
+  "authorization": {
+    "from": "0x87f344b6Ec48A936373d774D3De8649DEEB66Ee1",
+    "to": "0x2888F36548a900B9b08d584524e1f73BC563eC26",
+    "value": "1000",
+    "validAfter": "0",
+    "validBefore": "1792094854",
+    "nonce": "0xc01225fc79db19be6ea2afdbbbc195968e121184e39df0b4f62d7f8f5df40c83"
+  },
+  "settlement": {
+    "success": true,
+    "payer": "0x87f344b6Ec48A936373d774D3De8649DEEB66Ee1",
+    "transaction": "0x1345479a7c529962b1c71138d961b834547ab4e27e43a535f88e148e24f2de88",
+    "network": "eip155:84532",
+    "extensions": {
+      "offer-receipt": {
+        "info": {
+          "receipt": {
+            "format": "eip712",
+            "payload": {
+              "version": 1,
+              "network": "eip155:84532",
+              "resourceUrl": "https://api.tokenizen.nl/api/paid/verify-ownership",
+              "payer": "0x87f344b6Ec48A936373d774D3De8649DEEB66Ee1",
+              "issuedAt": 1792094640,
+              "transaction": ""
+            },
+            "signature": "0x2add013684ceb1b2d220db5c87a34c2ae93dbac85931ad641cc4d5abae6cccb03e922596b7878705776a58836029fa9899953f6527bc4067c0c5cad4ef4142971c"
+          }
+        },
+        "schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "receipt": {
+              "type": "object",
+              "properties": {
+                "format": {
+                  "type": "string"
+                },
+                "payload": {
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "integer"
+                    },
+                    "network": {
+                      "type": "string"
+                    },
+                    "resourceUrl": {
+                      "type": "string"
+                    },
+                    "payer": {
+                      "type": "string"
+                    },
+                    "issuedAt": {
+                      "type": "integer"
+                    },
+                    "transaction": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "version",
+                    "network",
+                    "resourceUrl",
+                    "payer",
+                    "issuedAt"
+                  ]
+                },
+                "signature": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "format",
+                "signature"
+              ]
+            }
+          },
+          "required": [
+            "receipt"
+          ]
+        }
+      }
+    }
+  }
+}
