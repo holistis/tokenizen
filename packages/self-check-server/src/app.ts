@@ -258,7 +258,9 @@ export function createApp(options: CreateAppOptions = {}): Express {
     res.status(200).json(proof);
   };
 
-  app.post("/api/verify-ownership", verifyLimiter, handleVerifyOwnership);
+  app.post("/api/verify-ownership", verifyLimiter, async (req: Request, res: Response) => {
+    await handleVerifyOwnership(req, res);
+  });
 
   // The paid twin, and only when a seller is actually configured. Unconfigured
   // means no 402 and no route at all, because advertising a price we cannot
@@ -267,8 +269,18 @@ export function createApp(options: CreateAppOptions = {}): Express {
   // emits receipts.
   const seller = options.seller === undefined ? readSellerConfig(process.env) : options.seller;
   if (seller) {
-    app.use(buildPaymentMiddleware(seller));
-    app.post("/api/paid/verify-ownership", verifyLimiter, handleVerifyOwnership);
+    // The payment middleware talks to a facilitator on every request it sees,
+    // so it is mounted ON the paid path and BEHIND the limiter, never globally
+    // with app.use. Mounted globally it would let an anonymous caller make this
+    // server call out repeatedly, which is someone else's rate limit to pay.
+    app.post(
+      "/api/paid/verify-ownership",
+      verifyLimiter,
+      buildPaymentMiddleware(seller),
+      async (req: Request, res: Response) => {
+        await handleVerifyOwnership(req, res);
+      },
+    );
   }
 
   // Last resort: a route handler throwing (a bug, an unexpected rejection)
