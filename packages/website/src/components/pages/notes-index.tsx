@@ -24,6 +24,13 @@ interface NoteEntry {
 
 const NOTES: NoteEntry[] = [
   {
+    slug: "/notes/a-signed-receipt-that-cannot-name-its-own-payment",
+    date: "2026-10-15",
+    title: "A signed receipt that cannot name its own payment",
+    blurb:
+      "It verifies, the key is authorized, and it cannot tell you which payment it is about. Tracing why, being corrected in public by someone who checked the chain, and the verifier another project changed the same day.",
+  },
+  {
     slug: "/notes/zero-of-600-x402-services-sign-a-receipt",
     date: "2026-10-15",
     title: "I checked 600 live x402 services. None of them signs a receipt.",
