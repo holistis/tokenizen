@@ -39,9 +39,15 @@ Before going further, a correction to the first version of this post. I original
 
 That mistake is the argument, better than I made it. With an empty transaction field, a receipt can only be matched to a settlement by payer, payee, amount and time. Two identical payments six minutes apart were already ambiguous on that basis, and a one-second gap was the only thing that separated them. For a seller with repeat buyers at a fixed price, that is not an edge case, it is Tuesday.
 
-I traced the cause rather than guessed, because a public claim about someone else's code should survive someone else reading it. Called directly, the extension honours the flag exactly as documented: give it a declaration with \`includeTxHash: true\` and a populated result, and the hash lands in the receipt. The failure is upstream of that. The route's declaration is passed through an enrichment step that assigns over the key rather than merging into it, so by the time the receipt is signed, the object being read is the enrichment output and the flag is simply not in it. A declaration that cannot survive to the moment it is read is a declaration that can never take effect.
+I traced the cause, and then I got it wrong, and I am leaving both halves here because the second half is the useful one.
 
-Filed, with the lines and a reproduction. That part is ordinary open-source maintenance.
+What I filed, and what this article said for most of a day: the route's declaration is passed through an enrichment step that assigns over the key instead of merging into it, so the flag is gone by the time the receipt is signed. That reads well and it is not what happens. The hook that step depends on does not exist for this extension, so the branch never runs. I had reasoned from the shape of the code rather than from the code.
+
+What does happen, measured by standing up a local seller wired the same way and logging what the extension receives at the moment it signs. Building the 402 response assigns the declaration object onto the response and then writes the enrichment output through that same reference. Response and declaration are one object, so the declaration is overwritten by the signed offers it just produced. At settlement the extension is handed those offers instead of its own configuration, and the flag it looks for is not in there. The settlement hash was available the entire time.
+
+One line changes it, a copy instead of a shared reference, and the same function already does exactly that for the payment requirements a few lines above. With that line in place the same route issues a receipt carrying its own settlement hash. Fix and regression test are upstream now, and the test fails without the change, because a check that cannot fail is not a check.
+
+Filed, corrected once the measurement contradicted the filing, and fixed. That part is ordinary open-source maintenance, apart from the detour.
 
 ## The part that is not ordinary
 
