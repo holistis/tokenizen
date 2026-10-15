@@ -35,6 +35,9 @@ import {
   createOfferReceiptExtension,
   declareOfferReceiptExtension,
 } from "@x402/extensions/offer-receipt";
+import { HTTPFacilitatorClient, x402ResourceServer } from "@x402/core/server";
+import { ExactEvmScheme } from "@x402/evm/exact/server";
+import { paymentMiddleware } from "@x402/express";
 
 /** Base Sepolia. Confirmed supported by the public facilitator with scheme "exact" on 2026-10-15. */
 export const SELLER_NETWORK = "eip155:84532";
@@ -157,4 +160,19 @@ export function buildPaidRoutes(config: SellerConfig): Record<string, unknown> {
       },
     },
   };
+}
+
+/**
+ * The express middleware that turns the declared route into a real 402.
+ *
+ * Built only when a seller is configured, which is why it is a function rather
+ * than a module-level constant: constructing it reaches for a facilitator, and
+ * an unconfigured server should make no such reach.
+ */
+export function buildPaymentMiddleware(config: SellerConfig) {
+  const facilitator = new HTTPFacilitatorClient({ url: FACILITATOR_URL });
+  const server = new x402ResourceServer(facilitator)
+    .register(SELLER_NETWORK, new ExactEvmScheme())
+    .registerExtension(buildOfferReceiptExtension(config));
+  return paymentMiddleware(buildPaidRoutes(config) as never, server);
 }
