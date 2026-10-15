@@ -11,7 +11,7 @@
 // fetch/resolver) and a per-IP rate limit (rate-limit.ts), because this is
 // now reachable by any anonymous visitor.
 //
-// TWO ROUTES ONLY, MATCHING THE FREE/PAID SPLIT IN trust-attest-server:
+// THREE ROUTES, MATCHING THE FREE/PAID SPLIT IN trust-attest-server:
 //   POST /api/challenge        — free, no network call, derives the token.
 //   POST /api/verify-ownership — free, ONE real DNS/HTTP check of whatever
 //                                 the visitor already published. This is the
@@ -28,6 +28,16 @@
 //                                 /check page copy, which says so plainly
 //                                 rather than hiding a stub behind a working
 //                                 button.
+//   POST /api/paid/verify-ownership — the same ownership proof, settled over
+//                                 x402 first, answering with a signed
+//                                 offer-receipt alongside the proof. The
+//                                 receipt IS the product here: the answer
+//                                 itself stays free above. Present only when a
+//                                 seller is configured; see x402-seller.ts for
+//                                 why a price we cannot settle must never be
+//                                 advertised, and why this still does not
+//                                 trigger trust-attest-server's paid checks or
+//                                 sign an attestation.
 
 import cors from "cors";
 import express, { type Express, type NextFunction, type Request, type Response } from "express";
@@ -50,11 +60,19 @@ import {
   resolveTxtGuarded,
   type RoutableHostDeps,
 } from "tokenizen-net-guard";
+import { readSellerConfig, buildPaymentMiddleware, type SellerConfig } from "./x402-seller.js";
 import { createRateLimiter } from "./rate-limit.js";
 
 const DEFAULT_ALLOWED_ORIGINS = ["http://localhost:5173", "https://tokenizen.nl", "https://www.tokenizen.nl"];
 
 export interface CreateAppOptions {
+  /**
+   * x402 seller configuration. Omit to read it from the environment, which is
+   * what production does. Pass null in a test to keep the paid route off even
+   * when the environment happens to carry a key.
+   */
+  seller?: SellerConfig | null | undefined;
+
   /**
    * The ownership-challenge secret (HMAC) to use — NOT a full signing identity.
    * This edge issues and verifies ownership challenges but never signs an
@@ -218,7 +236,10 @@ export function createApp(options: CreateAppOptions = {}): Express {
     res.status(200).json(result);
   });
 
-  app.post("/api/verify-ownership", verifyLimiter, async (req: Request, res: Response) => {
+  // One implementation, two routes. The paid route differs only in that a
+  // payment is settled first and a signed receipt comes back with the answer;
+  // a second copy of this logic would be a second thing to keep correct.
+  const handleVerifyOwnership = async (req: Request, res: Response): Promise<void> => {
     const parsed = VerifyBody.safeParse(req.body);
     if (!parsed.success) {
       badRequest(res, parsed.error.issues.map((i) => i.message).join("; "));
@@ -235,7 +256,20 @@ export function createApp(options: CreateAppOptions = {}): Express {
       ownershipDeps,
     );
     res.status(200).json(proof);
-  });
+  };
+
+  app.post("/api/verify-ownership", verifyLimiter, handleVerifyOwnership);
+
+  // The paid twin, and only when a seller is actually configured. Unconfigured
+  // means no 402 and no route at all, because advertising a price we cannot
+  // settle would be a false promise. See x402-seller.ts for why this exists:
+  // the buyer's half of a delivery record has nothing to name while no seller
+  // emits receipts.
+  const seller = options.seller === undefined ? readSellerConfig(process.env) : options.seller;
+  if (seller) {
+    app.use(buildPaymentMiddleware(seller));
+    app.post("/api/paid/verify-ownership", verifyLimiter, handleVerifyOwnership);
+  }
 
   // Last resort: a route handler throwing (a bug, an unexpected rejection)
   // must never leak a stack trace to the caller (exposure-check) — respond
