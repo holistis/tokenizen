@@ -36,6 +36,35 @@ export const RECEIPT_EIP712_DOMAIN = { name: "x402 receipt", version: "1", chain
 /** Only version 1 is defined (§5.2). */
 export const RECEIPT_PAYLOAD_VERSION = 1;
 
+/**
+ * Section 5.3, receipt payload version 2: the same type with two fields appended.
+ *
+ * A SEPARATE constant, not an edit of the one above, and that is the whole point.
+ * EIP-712 hashes the field list into the signature, so appending to the v1 type
+ * would invalidate every v1 receipt ever signed. Section 5.5 step 2 says a verifier
+ * picks the types by payload.version, which only works if both lists still exist.
+ *
+ * Written against commit 0e492d6730bef14b9c722428386c114f3475a914 of the open
+ * receipt-authorization-commitment branch. Pinned because that PR can still move.
+ */
+export const RECEIPT_EIP712_TYPES_V2 = {
+  Receipt: [
+    ...RECEIPT_EIP712_TYPES.Receipt,
+    { name: "authorizationMethod", type: "string" },
+    { name: "authorizationCommitment", type: "string" },
+  ],
+} as const;
+
+/** Section 5.2. Opt in by passing a commitment; v2 is never chosen for a caller. */
+export const RECEIPT_PAYLOAD_VERSION_V2 = 2;
+
+/** Pick the schema the way section 5.5 step 2 requires: by the version in the payload. */
+export function receiptTypesForVersion(version: number) {
+  if (version === RECEIPT_PAYLOAD_VERSION) return RECEIPT_EIP712_TYPES;
+  if (version === RECEIPT_PAYLOAD_VERSION_V2) return RECEIPT_EIP712_TYPES_V2;
+  return null;
+}
+
 /** CAIP-2, which §5.2 requires even though x402 v1 messages use names like "base-sepolia". */
 const CAIP2_RE = /^[-a-z0-9]{3,8}:[-_a-zA-Z0-9]{1,32}$/;
 
@@ -47,6 +76,9 @@ export interface ReceiptPayload {
   issuedAt: number;
   /** §5.3: absent means the empty string, because a fixed EIP-712 schema has no absent. */
   transaction: string;
+  /** Version 2 only. Both present together, empty strings when unused (section 5.3). */
+  authorizationMethod?: string;
+  authorizationCommitment?: string;
 }
 
 export interface ReceiptInput {
@@ -60,6 +92,13 @@ export interface ReceiptInput {
   issuedAt: number;
   /** Omit for the privacy-minimal default that §5.4 describes. */
   transaction?: string | undefined;
+  /**
+   * Section 5.6. Supplying either of these makes the payload version 2. The salt
+   * that opens the commitment is deliberately NOT an input here: it must never
+   * reach the signed payload (5.6.3), so it travels beside the receipt instead.
+   */
+  authorizationMethod?: string | undefined;
+  authorizationCommitment?: string | undefined;
 }
 
 export function buildReceiptPayload(input: ReceiptInput): ReceiptPayload {
@@ -80,13 +119,35 @@ export function buildReceiptPayload(input: ReceiptInput): ReceiptPayload {
   if (input.issuedAt > 1e12) {
     throw new Error("issuedAt looks like milliseconds: section 5.2 defines it as unix seconds");
   }
-  return {
+  const base = {
     version: RECEIPT_PAYLOAD_VERSION,
     network: input.network,
     resourceUrl: input.resourceUrl,
     payer: input.payer,
     issuedAt: input.issuedAt,
     transaction: input.transaction ?? "",
+  };
+
+  // Either commitment field lifts the payload to version 2, and then BOTH are
+  // present. A v2 receipt carrying only one of the pair would hash under the v2
+  // type with a field the caller never decided on, so the pair is completed here
+  // instead of left to the caller to remember.
+  const method = input.authorizationMethod;
+  const commitment = input.authorizationCommitment;
+  if (method === undefined && commitment === undefined) return base;
+  if (!!method !== !!commitment) {
+    throw new Error(
+      "authorizationMethod and authorizationCommitment go together per section 5.6: one without the other commits to nothing",
+    );
+  }
+  if (commitment !== undefined && commitment !== "" && !/^0x[0-9a-fA-F]{64}$/.test(commitment)) {
+    throw new Error("authorizationCommitment must be a 0x-prefixed SHA-256 digest (section 5.6.2)");
+  }
+  return {
+    ...base,
+    version: RECEIPT_PAYLOAD_VERSION_V2,
+    authorizationMethod: method ?? "",
+    authorizationCommitment: commitment ?? "",
   };
 }
 
@@ -108,7 +169,13 @@ export interface TypedDataSigner {
  * digest.
  */
 export async function issueReceipt(payload: ReceiptPayload, signer: TypedDataSigner): Promise<string> {
-  const signature = await signer.signTypedData(RECEIPT_EIP712_DOMAIN, RECEIPT_EIP712_TYPES, payload);
+  const types = receiptTypesForVersion(payload.version);
+  if (!types) throw new Error(`no EIP-712 types defined for receipt payload version ${payload.version}`);
+  const signature = await signer.signTypedData(
+    RECEIPT_EIP712_DOMAIN,
+    types as typeof RECEIPT_EIP712_TYPES,
+    payload,
+  );
   return JSON.stringify({ format: "eip712", payload, signature });
 }
 
@@ -146,10 +213,21 @@ export function recoverReceiptSigner(artifact: string): RecoveredSigner {
     typeof p.issuedAt === "number" &&
     typeof p.transaction === "string";
   if (!shapeOk) return { ok: false, reason: "malformed" };
+
+  // Section 5.5 step 2. An unknown version is rejected rather than verified
+  // against the nearest schema we happen to have: a signature only means
+  // something together with the exact field list it was made over.
+  const types = receiptTypesForVersion(p.version as number);
+  if (!types) return { ok: false, reason: "malformed" };
+  if (p.version === RECEIPT_PAYLOAD_VERSION_V2) {
+    if (typeof p.authorizationMethod !== "string" || typeof p.authorizationCommitment !== "string") {
+      return { ok: false, reason: "malformed" };
+    }
+  }
   try {
     const signer = ethers.verifyTypedData(
       RECEIPT_EIP712_DOMAIN,
-      RECEIPT_EIP712_TYPES as never,
+      types as never,
       p,
       signature,
     );
