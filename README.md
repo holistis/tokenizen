@@ -16,6 +16,29 @@ Three concrete things close that gap:
 
 No reputation score, no judgment, no financial instrument. A delivery slip, not a verdict.
 
+## Call it
+
+There is a live endpoint. It answers 402 with signed offers in the `Payment-Required` header, and issues an EIP-712 receipt after settlement, under the x402 offer-and-receipt extension.
+
+```bash
+curl -i -X POST https://api.tokenizen.nl/api/paid/verify-ownership \
+  -H "Content-Type: application/json" \
+  -d '{"endpoint":"https://api.tokenizen.nl/sse","ownerAddress":"0x1111111111111111111111111111111111111111","method":"dns-txt"}'
+```
+
+The offers are in the header, not the body. Base64-decode it, recover the signature against the domain `{name: "x402 offer", version: "1", chainId: 1}`, then check that the recovered key is allowed to speak for the host, which the specification treats as a separate question:
+
+```bash
+dig +short TXT _controllers.tokenizen.nl
+"v=1;controller=did:pkh:eip155:1:0x4E1174b774643B6AD9EE966A81ea1e3665D1159a"
+```
+
+Same key. Two commands, no trust in us required.
+
+It runs on Base Sepolia, so the money is test money and the cryptography is not. If you are implementing the client side of that extension, this gives you a live signed artifact instead of a fixture you wrote yourself and therefore cannot be surprised by.
+
+Two honest limits. The `transaction` field in those receipts is empty, so a receipt cannot name its own settlement; that is an upstream bug we traced and filed, with the fix open as [x402#3826](https://github.com/x402-foundation/x402/pull/3826). And every payment through it so far has been ours on both sides, which proves the chain runs and proves nothing about adoption.
+
 ## Independently verified
 
 Code is copyable, independent verification is not. Everything below is someone else checking our work rather than reading about it, with the link so it can be checked again.
