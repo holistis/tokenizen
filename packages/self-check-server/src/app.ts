@@ -288,6 +288,31 @@ export function createApp(options: CreateAppOptions = {}): Express {
         await handleVerifyOwnership(req, res);
       },
     );
+
+    // A GET on the paid path used to fall through to Express's default handler,
+    // which answers with an HTML page reading "Cannot GET /api/paid/...". That
+    // page is what every person who clicks this URL in a browser sees, and this
+    // URL is the one we hand to readers when we point at a live x402 route. The
+    // first impression of the product was an error page.
+    //
+    // This answers 405 with an Allow header rather than 402, on purpose. A 402
+    // would promise that paying gets you this resource by GET, and it does not;
+    // 405 is what the method actually is, and the body says where to read the
+    // terms. Naming the wrong status to look more x402-shaped would be the kind
+    // of small untruth this whole project exists to avoid.
+    app.get("/api/paid/verify-ownership", verifyLimiter, (_req: Request, res: Response) => {
+      res
+        .status(405)
+        .set("Allow", "POST")
+        .json({
+          ok: false,
+          error: "method not allowed",
+          detail:
+            "This is a paid x402 endpoint and it answers POST. A GET cannot return the resource, so this is 405 rather than 402.",
+          use: { method: "POST", contentType: "application/json" },
+          terms: "/api/x402/conformance",
+        });
+    });
   }
 
   // Last resort: a route handler throwing (a bug, an unexpected rejection)
