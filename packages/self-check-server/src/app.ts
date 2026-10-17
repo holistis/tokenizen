@@ -62,6 +62,7 @@ import {
 } from "tokenizen-net-guard";
 import { readSellerConfig, buildPaymentMiddleware, type SellerConfig } from "./x402-seller.js";
 import { createRateLimiter } from "./rate-limit.js";
+import { handleConformance } from "./x402-conformance.js";
 
 const DEFAULT_ALLOWED_ORIGINS = ["http://localhost:5173", "https://tokenizen.nl", "https://www.tokenizen.nl"];
 
@@ -212,6 +213,12 @@ export function createApp(options: CreateAppOptions = {}): Express {
   app.get("/api/health", (_req, res) => {
     res.status(200).json({ ok: true });
   });
+
+  // Een levende testbestemming voor offer-receipt 5.6. Statische, al-publieke
+  // waarden en een GET zonder parameters, dus geen invoer om te misbruiken.
+  // Staat ACHTER de challenge-limiter: hij is goedkoop maar niet gratis, en een
+  // publieke route zonder limiet is precies wat de rate-check verbiedt.
+  app.get("/api/x402/conformance", challengeLimiter, handleConformance);
 
   app.post("/api/challenge", challengeLimiter, async (req: Request, res: Response) => {
     const parsed = ChallengeBody.safeParse(req.body);

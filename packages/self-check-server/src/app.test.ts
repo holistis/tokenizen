@@ -51,6 +51,35 @@ describe("GET /api/health", () => {
   });
 });
 
+describe("GET /api/x402/conformance", () => {
+  beforeEach(() => startApp());
+
+  // De fixture zelf wordt apart nagerekend in x402-conformance.test.ts. Dit
+  // toetst alleen het stuk dat die test niet kan zien: dat de route bestaat en
+  // de drie gevallen daadwerkelijk de deur uit komen. Een correcte handler die
+  // nergens geregistreerd staat, levert een vreemde nog steeds een 404 op.
+  it("serves the three cases a stranger needs to test section 5.6.4", async () => {
+    const res = await fetch(baseUrl + "/api/x402/conformance");
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.replayableCases.cases).toHaveLength(3);
+    for (const c of body.replayableCases.cases) {
+      expect(c.receipt.payload.version).toBe(2);
+      expect(c.authorizationSalt).toMatch(/^0x[0-9a-f]{64}$/);
+      expect(c.expected.settlementTransaction).toMatch(/^0x[0-9a-f]{64}$/);
+    }
+    expect(body.replayableCases.asset).toMatch(/^0x[0-9a-fA-F]{40}$/);
+    expect(body.citeAs).toContain("api.tokenizen.nl");
+  });
+
+  it("points at the paid route, because a fixture cannot test the salt placement", async () => {
+    const res = await fetch(baseUrl + "/api/x402/conformance");
+    const body = await res.json();
+    expect(body.getYourOwnReceipt.url).toContain("/api/paid/verify-ownership");
+    expect(body.getYourOwnReceipt.saltLocation).toContain("authorizationSalt");
+  });
+});
+
 describe("the /check edge holds no attestation signing key", () => {
   // The whole point of lock (i): this anonymous-facing edge issues ownership
   // challenges from an ownership-only context (the HMAC secret), never a full
