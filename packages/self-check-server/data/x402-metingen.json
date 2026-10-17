@@ -1,6 +1,6 @@
 {
   "gegenereerd": "2026-10-17",
-  "aantal": 50,
+  "aantal": 52,
   "metingen": [
     {
       "url": "https://sol.blockrun.ai/api/v1/chat/completions",
@@ -350,6 +350,22 @@
       "host": "try402.fun",
       "trede": -1,
       "uitBestand": "liveness-payai.json",
+      "editie": "2026-10-17"
+    },
+    {
+      "url": "https://api.tokenizen.nl/api/paid/verify-ownership",
+      "host": "api.tokenizen.nl",
+      "trede": 2,
+      "uitBestand": "liveness-payai.json",
+      "rol": "controle",
+      "editie": "2026-10-17"
+    },
+    {
+      "url": "https://example.com/",
+      "host": "example.com",
+      "trede": -1,
+      "uitBestand": "liveness-payai.json",
+      "rol": "controle",
       "editie": "2026-10-17"
     }
   ]
