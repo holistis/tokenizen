@@ -63,6 +63,7 @@ import {
 import { readSellerConfig, buildPaymentMiddleware, type SellerConfig } from "./x402-seller.js";
 import { createRateLimiter } from "./rate-limit.js";
 import { handleConformance } from "./x402-conformance.js";
+import { handleBadge, handleBadgeJson } from "./x402-badge.js";
 
 const DEFAULT_ALLOWED_ORIGINS = ["http://localhost:5173", "https://tokenizen.nl", "https://www.tokenizen.nl"];
 
@@ -219,6 +220,13 @@ export function createApp(options: CreateAppOptions = {}): Express {
   // Staat ACHTER de challenge-limiter: hij is goedkoop maar niet gratis, en een
   // publieke route zonder limiet is precies wat de rate-check verbiedt.
   app.get("/api/x402/conformance", challengeLimiter, handleConformance);
+
+  // A badge an operator can paste in his own README, and its json twin. Both answer
+  // from a dated, bundled measurement and never measure live: measuring on request
+  // would let anyone use this server to probe arbitrary hosts, on our address. See
+  // x402-badge.ts for why the caller's url never reaches the rendered svg.
+  app.get("/api/x402/badge", challengeLimiter, handleBadge);
+  app.get("/api/x402/badge.json", challengeLimiter, handleBadgeJson);
 
   app.post("/api/challenge", challengeLimiter, async (req: Request, res: Response) => {
     const parsed = ChallengeBody.safeParse(req.body);
