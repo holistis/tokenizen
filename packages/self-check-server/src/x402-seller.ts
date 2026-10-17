@@ -35,6 +35,8 @@ import {
   createOfferReceiptExtension,
   declareOfferReceiptExtension,
 } from "@x402/extensions/offer-receipt";
+import { bazaarResourceServerExtension, declareDiscoveryExtension } from "@x402/extensions/bazaar";
+import { OWNERSHIP_METHODS } from "endpoint-attest";
 import { HTTPFacilitatorClient, x402ResourceServer } from "@x402/core/server";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { paymentMiddleware } from "@x402/express";
@@ -68,6 +70,33 @@ export interface SellerEnv {
    * live seller signs; turning it on stays a decision someone makes on a date.
    */
   X402_RECEIPT_V2?: string | undefined;
+  /**
+   * Set to "1" to declare the bazaar discovery extension on the paid route.
+   *
+   * OFF BY DEFAULT. It changes the bytes of a live 402 response, and it only
+   * pays off when settlement runs through a facilitator that keeps an index.
+   * See `declareBazaarDiscovery` for why a declaration alone catalogues nothing.
+   */
+  X402_BAZAAR?: string | undefined;
+  /**
+   * The facilitator that verifies and settles payments for this route.
+   *
+   * WHY THIS IS NOW A VARIABLE. Measured 2026-10-18: the default,
+   * x402.org/facilitator, answers 404 on /discovery/resources, /discovery/search
+   * and /discovery, so it keeps no catalogue at all. Cataloguing happens inside
+   * the facilitator's settle step, so no declaration on our side can be picked up
+   * by a facilitator that has nowhere to put it. Changing this is therefore the
+   * other half of being discoverable, and it stays a configuration choice rather
+   * than an edit to the code.
+   *
+   * Known alternatives, each measured on its own /supported endpoint on
+   * 2026-10-18, each keeping its own index that nobody cross-posts:
+   *   https://facilitator.payai.network   v2 exact on eip155:84532 AND
+   *     eip155:8453, no API key needed, index of 20.840 resources
+   *   https://api.cdp.coinbase.com/platform/v2/x402   largest index at 46.414 and
+   *     it does list Base Sepolia entries, but needs CDP credentials
+   */
+  X402_FACILITATOR_URL?: string | undefined;
 }
 
 export interface SellerConfig {
@@ -78,6 +107,10 @@ export interface SellerConfig {
   price: string;
   resourceBase: string;
   privateKey: string;
+  /** Whether to declare the bazaar discovery extension, so a facilitator can catalogue this route. */
+  bazaar: boolean;
+  /** The facilitator that verifies and settles. Only one that keeps an index can catalogue us. */
+  facilitatorUrl: string;
   /** Whether to emit receipt payload version 2 with a commitment. */
   receiptV2: boolean;
 }
@@ -120,6 +153,8 @@ export function readSellerConfig(env: SellerEnv): SellerConfig | null {
     resourceBase,
     privateKey: key,
     receiptV2: env.X402_RECEIPT_V2?.trim() === "1",
+    bazaar: env.X402_BAZAAR?.trim() === "1",
+    facilitatorUrl: env.X402_FACILITATOR_URL?.trim() || FACILITATOR_URL,
   };
 }
 
@@ -292,6 +327,100 @@ export const RECEIPT_V2_SCHEMA = {
   required: ["receipt"],
 } as const;
 
+/**
+ * The bazaar discovery declaration: what this route takes and what it answers.
+ *
+ * WHY THIS IS THE ONLY WAY INTO A CATALOGUE. There is no registration endpoint
+ * anywhere. `specs/extensions/bazaar.md` line 523 settles it: "Clients are
+ * expected to echo the `bazaar` extension from `PaymentRequired` into their
+ * `PaymentPayload`. If the extension is omitted, discovery cataloging will not
+ * occur." So the chain is: we declare it here, a paying client echoes it back
+ * automatically, and the FACILITATOR catalogues it while settling. A declaration
+ * without a payment lists nothing, a payment without the declaration lists
+ * nothing, and each facilitator keeps its own index. Nobody cross-posts.
+ *
+ * Measured on 2026-10-18, which is why this exists at all: our live 402 declared
+ * only offer-receipt, and `x402.org/facilitator` answers 404 on every discovery
+ * path. So there was nothing to catalogue AND nobody to catalogue it. Being
+ * absent from every index was never a rejection.
+ *
+ * THE SHAPE IS NOT HAND-ROLLED. `declareDiscoveryExtension` is their own builder
+ * and it emits both `info` and the `schema` that facilitators MUST validate
+ * `info` against before cataloguing (spec line 323). Writing that pair by hand is
+ * how you end up catalogued as something you are not.
+ *
+ * ABOUT THE EXAMPLE, and this matters more than it looks. An agent may copy it
+ * verbatim. It shows the SHAPE of a call, not a call that can succeed: proving
+ * ownership needs an endpoint the caller actually controls and a token the caller
+ * actually published. A worked example that pretends otherwise would be a lie
+ * told to a machine.
+ *
+ * NOT DECLARED HERE: serviceName, tags and iconUrl. Those live on the `resource`
+ * object rather than in this extension, they are optional, and invalid ones are
+ * dropped silently. They are the shop window, not the door: x402 issue 3835 is an
+ * operator who IS catalogued and still shows no description, category or icon,
+ * because that part is curated by a human. Door first.
+ */
+export function declareBazaarDiscovery(): Record<string, unknown> {
+  return declareDiscoveryExtension({
+    bodyType: "json",
+    input: {
+      endpoint: "https://example.com/api/health",
+      ownerAddress: "0x2888F36548a900B9b08d584524e1f73BC563eC26",
+      method: "dns-txt",
+    },
+    inputSchema: {
+      type: "object",
+      properties: {
+        endpoint: {
+          type: "string",
+          minLength: 1,
+          maxLength: 2048,
+          description: "The endpoint whose ownership is being proven. Its host must be publicly routable.",
+        },
+        ownerAddress: {
+          type: "string",
+          pattern: "^0x[0-9a-fA-F]{40}$",
+          description: "The operator claiming control of that endpoint.",
+        },
+        method: {
+          // Taken from the running code rather than retyped, so a new method can
+          // never be accepted by the route while the catalogue still advertises
+          // the old list.
+          type: "string",
+          enum: [...OWNERSHIP_METHODS],
+          description: "How control is proven: a DNS TXT record, or a file under /.well-known.",
+        },
+      },
+      required: ["endpoint", "ownerAddress", "method"],
+      additionalProperties: false,
+    },
+    output: {
+      example: {
+        method: "dns-txt",
+        token: "tokenizen-ownership-0000000000000000",
+        location: "_tokenizen.example.com",
+        verifiedAt: "2026-10-18T00:00:00Z",
+      },
+      schema: {
+        type: "object",
+        properties: {
+          method: { type: "string", enum: [...OWNERSHIP_METHODS] },
+          token: { type: "string", minLength: 16, maxLength: 512 },
+          location: {
+            type: "string",
+            minLength: 1,
+            maxLength: 2048,
+            description: "The DNS name queried or the URL fetched, so a reader can re-check it without us.",
+          },
+          verifiedAt: { type: "string", description: "ISO timestamp of when control was proven." },
+        },
+        required: ["method", "token", "location", "verifiedAt"],
+      },
+    },
+  } as never) as Record<string, unknown>;
+}
+
 /** The one paid route, with the offer-receipt declaration attached. */
 export function buildPaidRoutes(config: SellerConfig): Record<string, unknown> {
   return {
@@ -312,6 +441,11 @@ export function buildPaidRoutes(config: SellerConfig): Record<string, unknown> {
         // useful as the counterpart to a buyer's claim. A testnet demo has no
         // correlation risk worth protecting.
         ...declareOfferReceiptExtension({ includeTxHash: true } as never),
+        // OFF BY DEFAULT, same reasoning as receipt version 2. Declaring this
+        // changes the bytes of a live 402 response and only pays off through a
+        // facilitator that keeps an index, so switching it on stays a decision
+        // someone makes on a date rather than a side effect of a deploy.
+        ...(config.bazaar ? declareBazaarDiscovery() : {}),
       },
     },
   };
@@ -325,9 +459,18 @@ export function buildPaidRoutes(config: SellerConfig): Record<string, unknown> {
  * an unconfigured server should make no such reach.
  */
 export function buildPaymentMiddleware(config: SellerConfig) {
-  const facilitator = new HTTPFacilitatorClient({ url: FACILITATOR_URL });
+  const facilitator = new HTTPFacilitatorClient({ url: config.facilitatorUrl });
   const server = new x402ResourceServer(facilitator)
     .register(SELLER_NETWORK, new ExactEvmScheme())
     .registerExtension(buildOfferReceiptExtension(config));
+  // THE SECOND HALF, and leaving it out would have failed silently. The
+  // declaration from `declareDiscoveryExtension` carries NO http method on
+  // purpose: `bazaarResourceServerExtension.enrichDeclaration` fills it in from
+  // the real request, into both `info.input.method` and the schema enum. Without
+  // it the served `info` fails its own `schema`, and the spec says a facilitator
+  // MUST validate one against the other before cataloguing. So the 402 would have
+  // looked complete to us and been rejected by every index, with no error
+  // anywhere. Found by the test, not by reading.
+  if (config.bazaar) server.registerExtension(bazaarResourceServerExtension as never);
   return paymentMiddleware(buildPaidRoutes(config) as never, server);
 }
