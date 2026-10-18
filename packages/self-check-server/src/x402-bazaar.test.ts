@@ -31,6 +31,7 @@ import { describe, it, expect } from "vitest";
 import Ajv from "ajv";
 import {
   bazaarResourceServerExtension,
+  sanitizeResourceServiceMetadata,
   validateDiscoveryExtension,
   validateDiscoveryExtensionSpec,
 } from "@x402/extensions/bazaar";
@@ -185,5 +186,44 @@ describe("de facilitator, want zonder catalogus aan de andere kant verklaren we 
 
   it("negeert een lege waarde in plaats van zonder facilitator te draaien", () => {
     expect(configMet({ X402_FACILITATOR_URL: "   " }).facilitatorUrl).toBe(FACILITATOR_URL);
+  });
+});
+
+describe("de etalage, getoetst door hun eigen opschoner", () => {
+  // Deze drie velden worden STIL weggelaten als ze niet door hun controle komen.
+  // Daarom is de vraag niet of wij ze zetten, maar of ze het overleven. Een naam
+  // van 33 tekens of een icoon op een niet-publieke host verdwijnt zonder een woord.
+  function etalage() {
+    const routes = buildPaidRoutes(configMet({ X402_BAZAAR: "1" })) as any;
+    const r = routes["POST /api/paid/verify-ownership"];
+    return { serviceName: r.serviceName, tags: r.tags, iconUrl: r.iconUrl };
+  }
+
+  it("alle drie de velden zijn gezet", () => {
+    const e = etalage();
+    expect(e.serviceName).toBeTruthy();
+    expect(Array.isArray(e.tags) && e.tags.length > 0).toBe(true);
+    expect(String(e.iconUrl).startsWith("https://")).toBe(true);
+  });
+
+  it("en alle drie overleven hun eigen opschoner, dus niets wordt stil weggelaten", () => {
+    const e = etalage();
+    const schoon = (sanitizeResourceServiceMetadata as any)(e) ?? {};
+    expect(schoon.serviceName, "de naam werd weggelaten").toBe(e.serviceName);
+    expect(schoon.iconUrl, "het icoon werd weggelaten").toBe(e.iconUrl);
+    expect(schoon.tags, "labels werden weggelaten").toEqual(e.tags);
+  });
+
+  it("de naam blijft binnen hun lengtegrens, met marge", () => {
+    // Hun grens is 32 printbare ascii-tekens. Deze test wordt rood als iemand de
+    // naam oprekt tot hij stil verdwijnt.
+    const naam = etalage().serviceName as string;
+    expect(naam.length).toBeLessThanOrEqual(32);
+    expect(/^[ -~]+$/.test(naam)).toBe(true);
+  });
+
+  it("een te lange naam wordt door hun opschoner WEL weggelaten, dus de test meet echt iets", () => {
+    const schoon = (sanitizeResourceServiceMetadata as any)({ serviceName: "x".repeat(40) }) ?? {};
+    expect(schoon.serviceName).toBeUndefined();
   });
 });
