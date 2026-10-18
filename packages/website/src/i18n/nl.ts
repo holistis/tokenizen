@@ -215,6 +215,57 @@ export const nl: Dictionary = {
     copyLabel: "Kopieer",
     copiedLabel: "Gekopieerd",
   },
+  metingen: {
+    eyebrow: "Wat we gemeten hebben",
+    h2: "Onze eigen controle bleek fout. We hebben het uitgezocht, gerepareerd en hier opgeschreven.",
+    body:
+      "Een computerprogramma dat zelf iets koopt, wil vooraf weten of de verkoper netjes om geld vraagt. " +
+      "Daar maakten wij een gratis controleprogramma voor. In oktober lieten we het los op zestig echte " +
+      "verkopers, en toen bleek dat het bij de meesten onterecht zei dat zij het fout deden. De fout zat " +
+      "bij ons: ons programma klopte op de verkeerde deur. Dat is nu gerepareerd. Het staat hier omdat een " +
+      "cijfer zonder methode niets waard is, en omdat wie zijn eigen fout verzwijgt zijn cijfers later ook " +
+      "niet meer waard is.",
+    rows: [
+      {
+        date: "18 oktober 2026",
+        title: "Van vierenzestig procent fout naar nul",
+        body:
+          "We namen zestig verkopers uit de openbare lijst van Coinbase en vroegen elk van hen een keer om " +
+          "een prijs. Negenenvijftig vragen echt geld. Van die negenenvijftig gaven wij er achtendertig " +
+          "onterecht een onvoldoende. Na de reparatie: geen een. De methode en de ruwe uitkomst staan in de " +
+          "code, dus je kunt het zelf overdoen.",
+      },
+      {
+        date: "oktober 2026",
+        title: "Vier bouwers gebruiken onze manier van tellen",
+        body:
+          "In de openbare gesprekken over deze afspraken namen vier mensen onze indeling over. De " +
+          "belangrijkste is het verschil tussen \"dit is fout\" en \"dit kon ik niet nakijken\". Dat klinkt " +
+          "klein en is het niet: wie die twee op een hoop gooit, geeft een eerlijke verkoper de schuld van " +
+          "een storing bij de controleur.",
+      },
+      {
+        date: "stand van nu",
+        title: "Nog geen betalende klant",
+        body:
+          "Nul. Er is buiten dit project nog niemand die hiervoor betaalt. Dat schrijven we liever zelf op " +
+          "dan dat iemand het ontdekt.",
+      },
+      {
+        date: "laatste veertien dagen",
+        title: "Honderd mensen keken, niemand installeerde",
+        body:
+          "Honderdtwee mensen haalden de code binnen om te kijken. Het aantal installaties staat op nul. " +
+          "Dat betekent dat we gevonden worden en niet overtuigen, en dat is een ander probleem dan " +
+          "onbekend zijn.",
+      },
+    ],
+    footer:
+      "Elke regel hierboven heeft een datum en een manier van meten. Verandert een cijfer, dan verandert de " +
+      "regel en blijft de datum zichtbaar. Zo kun je zien of iets nog waar is in plaats van het te moeten " +
+      "aannemen. De code en de ruwe uitkomsten staan op github.com/holistis/agent-receipt-verify, dus je " +
+      "kunt elke regel hierboven zelf narekenen.",
+  },
   status: {
     eyebrow: "Status, eerlijk",
     h2: "Geen betalende klanten. Wel drie externe partijen die op het formaat bouwen, en werk dat anderen zelf hebben nagerekend.",
