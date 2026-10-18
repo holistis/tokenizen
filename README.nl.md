@@ -91,7 +91,7 @@ npm run build --workspace=capacity-attest
 
 ## Status
 
-Vroeg-stadium open source, met echte externe gebruikers. Twee packages staan op npm (`capacity-attest`, `trust-attest-server`), beide op dit moment één versie achter deze repo, de nieuwere versies zijn nog niet gepubliceerd. Het claimformaat zelf is het deel waar andere projecten al van afhangen, en het staat in minstens één externe specificatie vastgepind op commit-niveau, dus we behandelen het als vast: het breken ervan breekt hun werk, niet alleen het onze.
+Vroeg-stadium open source. Wat dat in cijfers betekent, want het woord gebruikers verstopt het verschil: npm telde afgelopen maand 573 downloads van `capacity-attest` en 157 van `trust-attest-server`, en downloads zijn geen gebruikers. Betalende klanten zijn er niet. Wat er wel is: vier externe bouwers die op het claimformaat voortbouwen en het op commit vastpinnen. Elke betaling via ons eigen live eindpunt was tot nu toe van ons aan beide kanten. Twee packages staan op npm (`capacity-attest`, `trust-attest-server`), beide op dit moment één versie achter deze repo, de nieuwere versies zijn nog niet gepubliceerd. Het claimformaat zelf is het deel waar andere projecten al van afhangen, en het staat in minstens één externe specificatie vastgepind op commit-niveau, dus we behandelen het als vast: het breken ervan breekt hun werk, niet alleen het onze.
 
 ## Contributing
 
