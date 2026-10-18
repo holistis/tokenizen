@@ -553,12 +553,13 @@ export function buildPaidRoutes(config: SellerConfig): Record<string, unknown> {
       // buildOfferReceiptExtension leest context.requirements.network, dus die volgt
       // automatisch de regel die de koper koos.
       accepts: [
-        {
-          scheme: "exact",
-          price: config.price,
-          network: SELLER_NETWORK,
-          payTo: config.payTo,
-        },
+        // MAINNET VOOROP ZODRA HIJ AAN STAAT, en dat is gemeten en geen voorkeur. De
+        // officiele client kiest accepts[0] (zie @x402/core, getDisplayAmount en de
+        // selectie eromheen), dus de ORDE bepaalt waar een gewone koper betaalt. Onze
+        // eerste mainnet-poging ging daardoor over testnet, met mainnet op plek twee.
+        // Wie echt geld aanzet, wil dat een koper echt geld betaalt; een tester kiest
+        // de andere regel expliciet. Staat mainnet uit, dan is er maar een regel en
+        // verandert hier niets.
         ...(config.mainnet
           ? [
               {
@@ -569,6 +570,12 @@ export function buildPaidRoutes(config: SellerConfig): Record<string, unknown> {
               },
             ]
           : []),
+        {
+          scheme: "exact",
+          price: config.price,
+          network: SELLER_NETWORK,
+          payTo: config.payTo,
+        },
       ],
       description:
         "Ownership verification with a signed receipt. The receipt is the product: the same answer is available for free at /api/verify-ownership.",

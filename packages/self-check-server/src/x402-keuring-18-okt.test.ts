@@ -567,7 +567,9 @@ describe("de mainnet-route, standaard uit", () => {
     const routes = buildPaidRoutes(config) as any;
     const accepts = routes["POST /api/paid/verify-ownership"].accepts;
     expect(accepts).toHaveLength(2);
-    expect(accepts.map((a: { network: string }) => a.network)).toEqual([SELLER_NETWORK, MAINNET_NETWORK]);
+    // MAINNET VOOROP, want de officiele client kiest accepts[0]. Gemeten: onze eerste
+    // mainnet-poging betaalde op testnet omdat die regel vooraan stond.
+    expect(accepts.map((a: { network: string }) => a.network)).toEqual([MAINNET_NETWORK, SELLER_NETWORK]);
     // Dezelfde prijs en hetzelfde ontvangstadres op beide, anders adverteren we twee
     // verschillende aanbiedingen zonder dat iemand dat besloot.
     expect(new Set(accepts.map((a: { price: string }) => a.price)).size).toBe(1);
