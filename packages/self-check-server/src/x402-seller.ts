@@ -355,11 +355,17 @@ export const RECEIPT_V2_SCHEMA = {
  * actually published. A worked example that pretends otherwise would be a lie
  * told to a machine.
  *
- * NOT DECLARED HERE: serviceName, tags and iconUrl. Those live on the `resource`
- * object rather than in this extension, they are optional, and invalid ones are
- * dropped silently. They are the shop window, not the door: x402 issue 3835 is an
- * operator who IS catalogued and still shows no description, category or icon,
- * because that part is curated by a human. Door first.
+ * NOT PART OF THIS EXTENSION: serviceName, tags and iconUrl. Those are set on the
+ * route config, which puts them on the `resource` object of the 402 rather than
+ * inside this declaration. They are the shop window and this is the door, and the
+ * door had to work first: our first catalogue entry on 2026-10-18 carried the full
+ * call information and three nulls where a name should be. They are set now, in
+ * `buildPaidRoutes` below.
+ *
+ * Worth keeping separate in your head, because x402 issue 3835 confuses the two:
+ * being LISTED is mechanical and these fields are part of that, while the
+ * description and category on a site like agentic.market are curated by a human and
+ * no field of ours can set those.
  */
 export function declareBazaarDiscovery(): Record<string, unknown> {
   return declareDiscoveryExtension({
@@ -435,6 +441,16 @@ export function buildPaidRoutes(config: SellerConfig): Record<string, unknown> {
       ],
       description:
         "Ownership verification with a signed receipt. The receipt is the product: the same answer is available for free at /api/verify-ownership.",
+      // THE SHOP WINDOW, and these three are the difference between a line and a
+      // name. Measured 2026-10-18: our first catalogue entry carried the full call
+      // information (method, fields, example, price) but serviceName, tags and
+      // iconUrl were all null, which among twenty thousand entries is an anonymous
+      // row. They live on RouteConfig next to description, they are optional, and an
+      // invalid one is dropped SILENTLY, which is exactly why the test runs their own
+      // sanitizer over these values instead of trusting them.
+      serviceName: "tokenizen ownership receipts",
+      tags: ["x402", "receipts", "ownership", "verification", "eip-3009"],
+      iconUrl: "https://tokenizen.nl/favicon.svg",
       extensions: {
         // includeTxHash true: §5.4 makes omitting the transaction the privacy
         // default, and a receipt that cannot be tied to a settlement is far less
