@@ -185,6 +185,73 @@ function guardEndpointLiteralOnly(endpoint: string, res: Response): boolean {
   return true;
 }
 
+/**
+ * Zet een storing in de afrekening om in een eerlijk antwoord, en zet de res daarna terug.
+ *
+ * OP MODULEBEREIK EN GEEXPORTEERD, met opzet. Deze twee sluiten over niets uit createApp
+ * heen, en binnen createApp waren ze niet te toetsen: onze eigen keuring moest de wrapper
+ * letterlijk kopieren om hem te kunnen meten, en een test op een kopie meet de kopie. Nu
+ * meet de test het echte ding.
+ */
+export const BETAAL_STORING = {
+  ok: false,
+  error: "settlement is temporarily unavailable, so no payment was taken and no receipt was issued",
+};
+
+export const betaalstoringNaar503 = (_req: Request, res: Response, next: NextFunction): void => {
+  const origJson = res.json.bind(res);
+  const origSend = res.send.bind(res);
+  const origSendStatus = res.sendStatus.bind(res);
+
+  // ALLE DRIE DE UITGANGEN, niet alleen res.json. Gemeten: @x402/express antwoordt met
+  // res.send voor een html-lichaam, dus die weg liep gewoon om deze omzetting heen en
+  // leverde de koper een kale 500. res.sendStatus idem.
+  const naar503 = (watErGebeurde: unknown): boolean => {
+    if (res.headersSent) return false;
+    if (res.statusCode !== 500) return false;
+    console.error("[app] the paid route answered 500, reported to the buyer as 503:", watErGebeurde);
+    res.status(503);
+    origJson(BETAAL_STORING);
+    return true;
+  };
+
+  res.json = ((lichaam: unknown) => (naar503(lichaam) ? res : origJson(lichaam as never))) as typeof res.json;
+  res.send = ((lichaam: unknown) => (naar503(lichaam) ? res : origSend(lichaam as never))) as typeof res.send;
+  res.sendStatus = ((code: number) => {
+    if (code === 500 && !res.headersSent) {
+      console.error("[app] the paid route answered sendStatus 500, reported to the buyer as 503");
+      res.status(503);
+      origJson(BETAAL_STORING);
+      return res;
+    }
+    return origSendStatus(code);
+  }) as typeof res.sendStatus;
+
+  // En de terugzetter hangt aan dit verzoek, zodat de volgende middleware hem kan
+  // aanroepen zonder de sluitingen hierboven nog eens op te bouwen.
+  (res as unknown as { __herstelAntwoord?: () => void }).__herstelAntwoord = () => {
+    res.json = origJson as typeof res.json;
+    res.send = origSend as typeof res.send;
+    res.sendStatus = origSendStatus as typeof res.sendStatus;
+  };
+  next();
+};
+
+/**
+ * Zet de originele res-uitgangen terug zodra de betaalmiddleware heeft doorgegeven.
+ *
+ * DIT IS DE HELE REPARATIE, en zonder deze stap herschreef de wrapper ook een 500 uit
+ * ONZE EIGEN handler, die niets met afrekenen te maken heeft. Een echte fout kreeg dan
+ * een vals excuus mee, en dat is erger dan een kale 500: de koper krijgt te horen dat
+ * er niets is afgeschreven, terwijl de storing ergens anders zat. Van buitenaf is niet
+ * te zien welke code een 500 gaf, maar wel WIE het antwoord op dat moment in handen
+ * had, en dat is de grens die hier getrokken wordt.
+ */
+export const herstelAntwoord = (_req: Request, res: Response, next: NextFunction): void => {
+  (res as unknown as { __herstelAntwoord?: () => void }).__herstelAntwoord?.();
+  next();
+};
+
 export function createApp(options: CreateAppOptions = {}): Express {
   const identity = options.identity ?? loadOwnershipSecret();
   const allowedOrigins = options.allowedOrigins ?? DEFAULT_ALLOWED_ORIGINS;
@@ -350,21 +417,7 @@ export function createApp(options: CreateAppOptions = {}): Express {
    * status 500 op de betaalde route. Al het andere gaat ongemoeid door, want een
    * middleware die meer herschrijft dan hij begrijpt verbergt de volgende storing.
    */
-  const betaalstoringNaar503 = (_req: Request, res: Response, next: NextFunction): void => {
-    const origineel = res.json.bind(res);
-    res.json = ((lichaam: unknown) => {
-      if (res.statusCode === 500) {
-        console.error("[app] the paid route answered 500, reported to the buyer as 503:", lichaam);
-        res.status(503);
-        return origineel({
-          ok: false,
-          error: "settlement is temporarily unavailable, so no payment was taken and no receipt was issued",
-        });
-      }
-      return origineel(lichaam as never);
-    }) as typeof res.json;
-    next();
-  };
+
 
   // Tweede net, voor het geval de middleware ooit wel GOOIT in plaats van zelf te
   // antwoorden. Kost niets en vangt een vorm die de bovenstaande niet ziet.
@@ -394,6 +447,7 @@ export function createApp(options: CreateAppOptions = {}): Express {
       paidLimiter,
       betaalstoringNaar503,
       betaalmiddleware,
+      herstelAntwoord,
       async (req: Request, res: Response) => {
         await handleVerifyOwnership(req, res);
       },

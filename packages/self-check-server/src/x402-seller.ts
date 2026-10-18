@@ -479,7 +479,7 @@ export function declareBazaarDiscovery(): Record<string, unknown> {
             minLength: 16,
             maxLength: 512,
             description:
-              "The exact token the check compared against. Public by construction: the owner has to publish it, so returning it is what lets a third party re-read the answer without trusting us.",
+              "The exact token the check compared against, so a third party can re-read the answer instead of trusting us. Returning it discloses nothing new: the same token is already available from /api/challenge for any endpoint and owner, with no proof required.",
           },
           location: {
             type: "string",

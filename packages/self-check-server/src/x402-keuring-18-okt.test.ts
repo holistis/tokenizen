@@ -12,9 +12,11 @@
 
 import { describe, it, expect } from "vitest";
 import Ajv from "ajv";
-import { DNS_LABEL, WELL_KNOWN_PATH, verifyOwnership } from "endpoint-attest";
+import { DNS_LABEL, WELL_KNOWN_PATH, challengeToken, verifyOwnership } from "endpoint-attest";
 import { declareBazaarDiscovery, readSellerConfig, FACILITATOR_URL } from "./x402-seller.js";
-import { createApp } from "./app.js";
+import express from "express";
+import type { NextFunction, Request, Response } from "express";
+import { createApp, betaalstoringNaar503, herstelAntwoord } from "./app.js";
 
 /** Lang genoeg voor hun eigen poort: een kort geheim maakt elk token te raden. */
 const GEHEIM = "een-wegwerp-attestergeheim-van-ruim-genoeg-tekens";
@@ -268,5 +270,268 @@ describe("een facilitator die niet antwoordt is onze storing, niet die van de ko
       // En onze eigen facilitator-naam hoort NIET in het antwoord te staan.
       expect(JSON.stringify(body)).not.toContain("nergens.invalid");
     });
+  });
+});
+
+describe("de 503-omzetting dekt alle uitgangen en niets meer dan dat", () => {
+  // GEMETEN DOOR ONZE TWEEDE KEURING, met echte express. De eerste versie van deze
+  // wrapper verving alleen res.json, en liet twee dingen mis gaan tegelijk:
+  //
+  //   facilitator stuk via res.json        -> 503  (de bedoeling)
+  //   facilitator stuk via res.send        -> 500  (gemist, en @x402/express GEBRUIKT res.send)
+  //   facilitator stuk via res.sendStatus  -> 500  (gemist)
+  //   ONZE EIGEN 500, niets met afrekenen  -> 503  (een vals excuus voor een echte fout)
+  //
+  // Dat laatste is het ergste van de vier: een koper krijgt te horen dat er niets is
+  // afgeschreven, terwijl de storing ergens anders zat. De grens die nu getrokken wordt
+  // is niet "welke code gaf deze 500" (van buitenaf onzichtbaar) maar "wie had het
+  // antwoord op dat moment in handen", en dat is wel te zien.
+  //
+  // Deze tests draaien tegen de ECHTE, geexporteerde middlewares. De keuring moest de
+  // wrapper letterlijk kopieren om hem te kunnen meten, en een test op een kopie meet de
+  // kopie.
+
+  const metKeten = async (
+    nepMiddleware: (req: Request, res: Response, next: NextFunction) => void,
+    onzeHandler: (req: Request, res: Response) => void,
+    werk: (basis: string) => Promise<void>,
+  ) => {
+    const app = express();
+    app.post("/betaald", betaalstoringNaar503, nepMiddleware, herstelAntwoord, onzeHandler);
+    const server = app.listen(0);
+    try {
+      await werk(`http://127.0.0.1:${(server.address() as { port: number }).port}`);
+    } finally {
+      server.close();
+    }
+  };
+
+  const post = (basis: string) => fetch(basis + "/betaald", { method: "POST" });
+  const nooitBereikt = (_req: Request, res: Response) => {
+    res.status(200).json({ ok: true, let: "de middleware hoorde dit niet te bereiken" });
+  };
+
+  it("res.json met 500 wordt 503 met de ware regel", async () => {
+    await metKeten(
+      (_req, res) => {
+        res.status(500).json({ error: "Internal Server Error" });
+      },
+      nooitBereikt,
+      async (basis) => {
+        const r = await post(basis);
+        expect(r.status).toBe(503);
+        const body = (await r.json()) as { ok: boolean; error: string };
+        expect(body.ok).toBe(false);
+        expect(body.error).toMatch(/no payment was taken/);
+      },
+    );
+  });
+
+  it("res.send met 500 wordt OOK 503, en dat is de weg die @x402/express neemt", async () => {
+    await metKeten(
+      (_req, res) => {
+        res.status(500).send("<html><body>Internal Server Error</body></html>");
+      },
+      nooitBereikt,
+      async (basis) => {
+        const r = await post(basis);
+        expect(r.status).toBe(503);
+        const body = (await r.json()) as { ok: boolean; error: string };
+        expect(body.error).toMatch(/no payment was taken/);
+        // En de html van de ander komt niet mee naar de koper.
+        expect(JSON.stringify(body)).not.toContain("<html>");
+      },
+    );
+  });
+
+  it("res.sendStatus(500) wordt ook 503", async () => {
+    await metKeten(
+      (_req, res) => {
+        res.sendStatus(500);
+      },
+      nooitBereikt,
+      async (basis) => {
+        const r = await post(basis);
+        expect(r.status).toBe(503);
+        expect(((await r.json()) as { error: string }).error).toMatch(/no payment was taken/);
+      },
+    );
+  });
+
+  it("maar een 402 of 200 van de middleware gaat ONGEMOEID door", async () => {
+    await metKeten(
+      (_req, res) => {
+        res.status(402).json({ x402Version: 2, accepts: [] });
+      },
+      nooitBereikt,
+      async (basis) => {
+        const r = await post(basis);
+        expect(r.status).toBe(402);
+        expect((await r.json()) as Record<string, unknown>).toHaveProperty("x402Version", 2);
+      },
+    );
+  });
+
+  it("en ONZE EIGEN 500, na de middleware, blijft 500 in plaats van een vals excuus", async () => {
+    // Dit is de reparatie. De betaling is hier GELUKT (de middleware geeft door), en pas
+    // daarna loopt onze eigen handler stuk. "er is niets afgeschreven" zou dan een
+    // onwaarheid zijn, en een echte fout zou erachter verdwijnen.
+    await metKeten(
+      (_req, _res, next) => {
+        next();
+      },
+      (_req, res) => {
+        res.status(500).json({ error: "onze eigen fout, niets met afrekenen te maken" });
+      },
+      async (basis) => {
+        const r = await post(basis);
+        expect(r.status).toBe(500);
+        const body = (await r.json()) as { error: string };
+        expect(body.error).toMatch(/onze eigen fout/);
+        expect(JSON.stringify(body)).not.toContain("no payment was taken");
+      },
+    );
+  });
+
+  it("en dat geldt ook voor res.send en res.sendStatus na de middleware", async () => {
+    await metKeten(
+      (_req, _res, next) => {
+        next();
+      },
+      (_req, res) => {
+        res.status(500).send("onze eigen kale fout");
+      },
+      async (basis) => {
+        const r = await post(basis);
+        expect(r.status).toBe(500);
+        expect(await r.text()).toContain("onze eigen kale fout");
+      },
+    );
+    await metKeten(
+      (_req, _res, next) => {
+        next();
+      },
+      (_req, res) => {
+        res.sendStatus(500);
+      },
+      async (basis) => {
+        const r = await post(basis);
+        expect(r.status).toBe(500);
+      },
+    );
+  });
+
+  it("en als de kop al verstuurd is wordt er niets meer herschreven", async () => {
+    await metKeten(
+      (_req, res) => {
+        res.status(500);
+        res.write("eerste stuk");
+        res.json({ error: "te laat" });
+      },
+      nooitBereikt,
+      async (basis) => {
+        const r = await post(basis);
+        // De kop stond al vast op 500, dus die blijft. Het punt is dat er geen tweede
+        // antwoord bovenop wordt geschreven, want dat gooit in express.
+        expect(r.status).toBe(500);
+      },
+    );
+  });
+});
+
+describe("de terugzetter is dragend, niet decoratief", () => {
+  // Een test die bewijst DAT de reparatie het verschil maakt. Zonder deze toets zou
+  // iemand herstelAntwoord later kunnen weghalen omdat hij er overbodig uitziet, en dan
+  // is het gat stil terug: een eigen 500 die aan de koper gemeld wordt als
+  // afrekeningsstoring. Dezelfde keten, EEN middleware minder.
+  it("laat je de terugzetter weg, dan krijgt een eigen 500 een vals excuus", async () => {
+    const app = express();
+    app.post(
+      "/betaald",
+      betaalstoringNaar503,
+      (_req: Request, _res: Response, next: NextFunction) => next(),
+      // GEEN herstelAntwoord hier, met opzet.
+      (_req: Request, res: Response) => {
+        res.status(500).json({ error: "onze eigen fout, niets met afrekenen te maken" });
+      },
+    );
+    const server = app.listen(0);
+    try {
+      const poort = (server.address() as { port: number }).port;
+      const r = await fetch(`http://127.0.0.1:${poort}/betaald`, { method: "POST" });
+      expect(r.status).toBe(503);
+      expect(JSON.stringify(await r.json())).toContain("no payment was taken");
+    } finally {
+      server.close();
+    }
+  });
+});
+
+describe("waarom het token teruggeven niets weggeeft, en waar die reden aan hangt", () => {
+  // GEMETEN DOOR ONZE TWEEDE KEURING. De eerste onderbouwing zei dat het token "per
+  // constructie publiek" is omdat de eigenaar hem moet publiceren. Dat klopt bij een
+  // GESLAAGDE controle en is bij een MISLUKTE per definitie onwaar, want mislukt betekent
+  // juist dat hij hem niet gepubliceerd heeft. De echte reden is anders en meetbaar:
+  // /api/challenge geeft precies hetzelfde token al gratis voor een willekeurig paar.
+  //
+  // DEZE TEST IS DE PLEK WAAR DIE KOPPELING VASTLIGT. Zet iemand /api/challenge later
+  // achter een inlog, dan valt deze test en wordt de afweging opnieuw gemaakt in plaats
+  // van stilzwijgend overgenomen.
+
+  const challengeTokenVan = (endpoint: string) => challengeToken(endpoint, TEST_ENV.X402_PAY_TO, GEHEIM);
+
+  it("de gratis challenge-route geeft hetzelfde token als een mislukte verificatie", async () => {
+    const endpoint = "https://klant.example/mcp";
+    const eigenaar = TEST_ENV.X402_PAY_TO;
+
+    const viaChallenge = challengeToken(endpoint, eigenaar, GEHEIM);
+    const mislukt = await verifyOwnership("dns-txt", endpoint, eigenaar, GEHEIM, {
+      resolveTxtRecords: async () => [["iets volstrekt anders"]],
+      fetchImpl: async () => {
+        throw new Error("niet gebruikt in deze tak");
+      },
+    } as never);
+
+    expect(mislukt.ok).toBe(false);
+    expect((mislukt as { token: string }).token).toBe(viaChallenge);
+  });
+
+  it("en die route zit niet achter een inlog, wat de hele reden is dat dit mag", async () => {
+    // Faalt deze, dan is /api/challenge dichtgezet en is verifyOwnership het goedkoopste
+    // orakel geworden. Dan hoort de onderbouwing in ownership.ts opnieuw bekeken te
+    // worden, en daarom staat die verwijzing hier letterlijk in de test.
+    const app = createApp({
+      seller: null,
+      routableHostDeps: { lookup: async () => [{ address: "93.184.216.34", family: 4 }] } as never,
+    } as never);
+    const server = app.listen(0);
+    try {
+      const poort = (server.address() as { port: number }).port;
+      const r = await fetch(`http://127.0.0.1:${poort}/api/challenge`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ endpoint: "https://klant.example/mcp", ownerAddress: TEST_ENV.X402_PAY_TO }),
+      });
+      expect(r.status).toBe(200);
+      // GEMETEN, niet aangenomen: de route geeft een blok per methode terug, met per
+      // blok de plek EN het token. Hij geeft bovendien ook het consent-token weg, dus de
+      // route is nog ruimer dan de onderbouwing nodig heeft.
+      const body = (await r.json()) as {
+        ok: boolean;
+        dnsTxt: { location: string; token: string };
+        wellKnownFile: { location: string; token: string };
+      };
+      expect(body.ok).toBe(true);
+      expect(typeof body.dnsTxt.token).toBe("string");
+      expect(body.dnsTxt.token).toBe(body.wellKnownFile.token);
+      // NIET vergelijken met een token uit ons eigen geheim: deze server maakt in een
+      // test zijn eigen willekeurige geheim, dus dat kan per definitie niet kloppen. Wat
+      // hier telt is dat de route OPEN staat en een token teruggeeft zonder enig bewijs,
+      // en dat beide methoden hetzelfde token dragen, wat laat zien dat het aan het PAAR
+      // hangt en niet aan de methode.
+      expect(body.dnsTxt.token.startsWith("tok_")).toBe(true);
+    } finally {
+      server.close();
+    }
   });
 });

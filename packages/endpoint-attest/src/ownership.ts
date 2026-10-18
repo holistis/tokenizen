@@ -202,12 +202,29 @@ export interface OwnershipCheckDeps {
  * van onze eigen dienst verwerken. Een belofte in een catalogus die de route niet
  * nakomt is erger dan een ontbrekende belofte.
  *
- * EN HET IS VEILIG, want dit is per constructie een publieke waarde: de eigenaar
- * MOET hem zelf publiceren in DNS of in een bestand, anders kan de controle nooit
- * slagen. Hem teruggeven verklapt dus niets wat niet al openbaar hoort te staan,
- * en het is precies wat een derde partij nodig heeft om het antwoord zelf na te
- * lezen in plaats van ons op ons woord te geloven. Hij gaat ook mee bij een
- * MISLUKTE controle, want dan is hij het antwoord op "wat had er moeten staan".
+ * WAAROM DIT VEILIG IS, EN DE EERSTE VERSIE VAN DEZE ONDERBOUWING WAS ONJUIST. Er stond
+ * dat het token "per constructie een publieke waarde" is omdat de eigenaar hem zelf moet
+ * publiceren. Dat klopt bij een GESLAAGDE controle en is bij een MISLUKTE per definitie
+ * onwaar: mislukt betekent juist dat hij hem NIET gepubliceerd heeft. Onze eigen tweede
+ * keuring wees dat aan, en de verkeerde formulering stond toen ook al in het publieke
+ * Bazaar-schema van de betaalde route.
+ *
+ * De echte reden dat dit niets weggeeft is gemeten en luidt anders. `/api/challenge`
+ * geeft precies hetzelfde token al terug voor een WILLEKEURIG paar van eindpunt en
+ * eigenaar, zonder enig bewijs, met een RUIMERE limiet (30 per 5 minuten tegen 10) en een
+ * LOSSERE gastheercontrole. Wie het token wil hebben, heeft deze route dus niet nodig en
+ * neemt de goedkopere. Drie scenario's zijn nagelopen (een overgenomen subdomein, een
+ * zwevend dns-record, een plek waar een ander een bestand kan zetten) en geen van de
+ * drie geeft een aanvaller iets extra: het token bindt aan het VOLLEDIGE eindpunt, dus
+ * schema plus host plus poort plus pad, en publiceren kan alleen wie die plek beheert.
+ *
+ * DE KOPPELING DIE HIERUIT VOLGT, en die is nergens anders vastgelegd dan hier en in de
+ * test ernaast: zet iemand `/api/challenge` later achter een inlog, dan wordt deze
+ * functie stil het goedkoopste orakel voor hetzelfde token. Dan hoort deze afweging
+ * opnieuw gemaakt te worden, en niet overgenomen.
+ *
+ * Het token gaat ook mee bij een MISLUKTE controle, want dan is hij het antwoord op "wat
+ * had er moeten staan", en dat is wat een eigenaar nodig heeft om het te repareren.
  */
 export type OwnershipResult =
   | { ok: true; method: OwnershipMethod; token: string; location: string; verifiedAt: string }
