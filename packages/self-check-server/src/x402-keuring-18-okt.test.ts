@@ -13,7 +13,14 @@
 import { describe, it, expect } from "vitest";
 import Ajv from "ajv";
 import { DNS_LABEL, WELL_KNOWN_PATH, challengeToken, verifyOwnership } from "endpoint-attest";
-import { declareBazaarDiscovery, readSellerConfig, FACILITATOR_URL } from "./x402-seller.js";
+import {
+  declareBazaarDiscovery,
+  readSellerConfig,
+  buildPaidRoutes,
+  FACILITATOR_URL,
+  SELLER_NETWORK,
+  MAINNET_NETWORK,
+} from "./x402-seller.js";
 import express from "express";
 import type { NextFunction, Request, Response } from "express";
 import { createApp, betaalstoringNaar503, herstelAntwoord } from "./app.js";
@@ -533,5 +540,41 @@ describe("waarom het token teruggeven niets weggeeft, en waar die reden aan hang
     } finally {
       server.close();
     }
+  });
+});
+
+describe("de mainnet-route, standaard uit", () => {
+  // GEMETEN op 2026-10-18: facilitator.payai.network noemt eip155:8453 met scheme exact
+  // op versie 2, en x402.org/facilitator noemt mainnet NIET. Een mainnet-prijs adverteren
+  // met een facilitator die niet mainnet kan, is dus een prijs die niemand kan afrekenen.
+  const mainnetEnv = {
+    ...TEST_ENV,
+    X402_MAINNET: "1",
+    X402_FACILITATOR_URL: "https://facilitator.payai.network",
+  };
+
+  it("staat standaard uit, dus een deploy verandert het live antwoord niet", () => {
+    expect(readSellerConfig(TEST_ENV)?.mainnet).toBe(false);
+    const routes = buildPaidRoutes(readSellerConfig(TEST_ENV)!) as any;
+    const accepts = routes["POST /api/paid/verify-ownership"].accepts;
+    expect(accepts).toHaveLength(1);
+    expect(accepts[0].network).toBe(SELLER_NETWORK);
+  });
+
+  it("aan gezet biedt hij TWEE netwerken aan, geen omschakeling", () => {
+    const config = readSellerConfig(mainnetEnv)!;
+    expect(config.mainnet).toBe(true);
+    const routes = buildPaidRoutes(config) as any;
+    const accepts = routes["POST /api/paid/verify-ownership"].accepts;
+    expect(accepts).toHaveLength(2);
+    expect(accepts.map((a: { network: string }) => a.network)).toEqual([SELLER_NETWORK, MAINNET_NETWORK]);
+    // Dezelfde prijs en hetzelfde ontvangstadres op beide, anders adverteren we twee
+    // verschillende aanbiedingen zonder dat iemand dat besloot.
+    expect(new Set(accepts.map((a: { price: string }) => a.price)).size).toBe(1);
+    expect(new Set(accepts.map((a: { payTo: string }) => a.payTo)).size).toBe(1);
+  });
+
+  it("weigert mainnet met een facilitator die mainnet niet kan", () => {
+    expect(() => readSellerConfig({ ...TEST_ENV, X402_MAINNET: "1" })).toThrow(/does not list eip155:8453/);
   });
 });
