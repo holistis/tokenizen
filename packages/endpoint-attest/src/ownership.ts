@@ -193,9 +193,42 @@ export interface OwnershipCheckDeps {
   maxFileBytes?: number;
 }
 
+/**
+ * WAAROM `token` HIERIN ZIT, en dat is geen uitbreiding maar een reparatie.
+ *
+ * Het gepubliceerde 402-contract van de betaalde route eist `token` als verplicht
+ * uitvoerveld, en dit type gaf het nooit terug. Gemeten op 2026-10-18: ons eigen
+ * leveringscontroleur leest precies dat veld, dus hij kon geen enkel echt antwoord
+ * van onze eigen dienst verwerken. Een belofte in een catalogus die de route niet
+ * nakomt is erger dan een ontbrekende belofte.
+ *
+ * WAAROM DIT VEILIG IS, EN DE EERSTE VERSIE VAN DEZE ONDERBOUWING WAS ONJUIST. Er stond
+ * dat het token "per constructie een publieke waarde" is omdat de eigenaar hem zelf moet
+ * publiceren. Dat klopt bij een GESLAAGDE controle en is bij een MISLUKTE per definitie
+ * onwaar: mislukt betekent juist dat hij hem NIET gepubliceerd heeft. Onze eigen tweede
+ * keuring wees dat aan, en de verkeerde formulering stond toen ook al in het publieke
+ * Bazaar-schema van de betaalde route.
+ *
+ * De echte reden dat dit niets weggeeft is gemeten en luidt anders. `/api/challenge`
+ * geeft precies hetzelfde token al terug voor een WILLEKEURIG paar van eindpunt en
+ * eigenaar, zonder enig bewijs, met een RUIMERE limiet (30 per 5 minuten tegen 10) en een
+ * LOSSERE gastheercontrole. Wie het token wil hebben, heeft deze route dus niet nodig en
+ * neemt de goedkopere. Drie scenario's zijn nagelopen (een overgenomen subdomein, een
+ * zwevend dns-record, een plek waar een ander een bestand kan zetten) en geen van de
+ * drie geeft een aanvaller iets extra: het token bindt aan het VOLLEDIGE eindpunt, dus
+ * schema plus host plus poort plus pad, en publiceren kan alleen wie die plek beheert.
+ *
+ * DE KOPPELING DIE HIERUIT VOLGT, en die is nergens anders vastgelegd dan hier en in de
+ * test ernaast: zet iemand `/api/challenge` later achter een inlog, dan wordt deze
+ * functie stil het goedkoopste orakel voor hetzelfde token. Dan hoort deze afweging
+ * opnieuw gemaakt te worden, en niet overgenomen.
+ *
+ * Het token gaat ook mee bij een MISLUKTE controle, want dan is hij het antwoord op "wat
+ * had er moeten staan", en dat is wat een eigenaar nodig heeft om het te repareren.
+ */
 export type OwnershipResult =
-  | { ok: true; method: OwnershipMethod; location: string; verifiedAt: string }
-  | { ok: false; method: OwnershipMethod; location: string; reason: string };
+  | { ok: true; method: OwnershipMethod; token: string; location: string; verifiedAt: string }
+  | { ok: false; method: OwnershipMethod; token: string; location: string; reason: string };
 
 /**
  * Verify control of `endpoint` by the holder of `ownerAddress`, using one
@@ -260,16 +293,16 @@ async function verifyTokenPublished(
     try {
       records = await resolver(location);
     } catch (e) {
-      return { ok: false, method, location, reason: `dns lookup failed: ${(e as Error).message}` };
+      return { ok: false, method, token: expected, location, reason: `dns lookup failed: ${(e as Error).message}` };
     }
     // A TXT record can be split into multiple strings by the resolver; the
     // published value is their concatenation, which is how every DNS client
     // reassembles long records.
     const values = records.map((chunks) => chunks.join("").trim());
     if (!values.includes(expected)) {
-      return { ok: false, method, location, reason: "no TXT record at that name matched the expected token" };
+      return { ok: false, method, token: expected, location, reason: "no TXT record at that name matched the expected token" };
     }
-    return { ok: true, method, location, verifiedAt: now() };
+    return { ok: true, method, token: expected, location, verifiedAt: now() };
   }
 
   const fetchImpl = deps.fetchImpl;
@@ -285,25 +318,25 @@ async function verifyTokenPublished(
     // merely has an open redirect at /.well-known/endpoint-attest.txt.
     response = await fetchImpl(location, { signal: AbortSignal.timeout(timeoutMs), redirect: "error" });
   } catch (e) {
-    return { ok: false, method, location, reason: `fetch failed: ${(e as Error).message}` };
+    return { ok: false, method, token: expected, location, reason: `fetch failed: ${(e as Error).message}` };
   }
   if (!response.ok) {
-    return { ok: false, method, location, reason: `responded ${response.status} ${response.statusText}` };
+    return { ok: false, method, token: expected, location, reason: `responded ${response.status} ${response.statusText}` };
   }
 
   let body: string;
   try {
     body = await readBounded(response, maxFileBytes);
   } catch (e) {
-    return { ok: false, method, location, reason: (e as Error).message };
+    return { ok: false, method, token: expected, location, reason: (e as Error).message };
   }
   // Exact match on the trimmed content, not a substring search: a token
   // buried in an otherwise unrelated page does not demonstrate that the
   // operator deliberately published it.
   if (body.trim() !== expected) {
-    return { ok: false, method, location, reason: "file content did not exactly match the expected token" };
+    return { ok: false, method, token: expected, location, reason: "file content did not exactly match the expected token" };
   }
-  return { ok: true, method, location, verifiedAt: now() };
+  return { ok: true, method, token: expected, location, verifiedAt: now() };
 }
 
 /** Read a response body up to maxBytes, refusing the moment the limit is crossed instead of buffering the rest. */

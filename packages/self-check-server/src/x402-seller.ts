@@ -36,7 +36,7 @@ import {
   declareOfferReceiptExtension,
 } from "@x402/extensions/offer-receipt";
 import { bazaarResourceServerExtension, declareDiscoveryExtension } from "@x402/extensions/bazaar";
-import { OWNERSHIP_METHODS } from "endpoint-attest";
+import { DNS_LABEL, OWNERSHIP_METHODS } from "endpoint-attest";
 import { HTTPFacilitatorClient, x402ResourceServer } from "@x402/core/server";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { paymentMiddleware } from "@x402/express";
@@ -143,6 +143,31 @@ export function readSellerConfig(env: SellerEnv): SellerConfig | null {
     throw new Error("X402_RESOURCE_BASE must be an https origin with no path, e.g. https://api.tokenizen.nl");
   }
 
+  // THE FACILITATOR URL GETS THE SAME SCRUTINY AS THE RESOURCE BASE, and it did
+  // not before. Three lines above validate X402_RESOURCE_BASE strictly; this one
+  // went in unchecked, and it is the more dangerous of the two: every payment this
+  // server verifies and settles goes to whatever is in it, and the answer that
+  // comes back is what our key then signs a receipt about. A typo in an env file,
+  // or anything that can set an env var, silently redirects that.
+  const facilitatorUrl = (env.X402_FACILITATOR_URL?.trim() || FACILITATOR_URL).replace(/\/+$/, "");
+  const checkFacilitator = (() => {
+    let u: URL;
+    try {
+      u = new URL(facilitatorUrl);
+    } catch {
+      return "X402_FACILITATOR_URL is not a usable url";
+    }
+    // http is refused even for a local facilitator: the payment payload and the
+    // settlement answer both travel over this, and a receipt our key signs depends
+    // on the answer. Someone who needs plain http in development can say so by
+    // changing this line on purpose, which is the point.
+    if (u.protocol !== "https:") return `X402_FACILITATOR_URL must be https, got ${u.protocol}`;
+    if (u.username || u.password) return "X402_FACILITATOR_URL must not carry credentials";
+    if (u.search || u.hash) return "X402_FACILITATOR_URL must not carry a query or fragment";
+    return null;
+  })();
+  if (checkFacilitator) throw new Error(checkFacilitator);
+
   return {
     // Matches the controller published at _controllers.<domain> exactly. A
     // verifier compares these two strings, so they must not drift.
@@ -154,7 +179,7 @@ export function readSellerConfig(env: SellerEnv): SellerConfig | null {
     privateKey: key,
     receiptV2: env.X402_RECEIPT_V2?.trim() === "1",
     bazaar: env.X402_BAZAAR?.trim() === "1",
-    facilitatorUrl: env.X402_FACILITATOR_URL?.trim() || FACILITATOR_URL,
+    facilitatorUrl,
   };
 }
 
@@ -269,6 +294,27 @@ export function buildOfferReceiptExtension(config: SellerConfig): OfferReceiptEx
         const resourceUrl = context.transportContext?.request?.adapter?.getUrl?.();
         if (!payer || !network || !resourceUrl) return upstreamSettle(declaration, context);
 
+        // THE FACILITATOR IS NOT A WITNESS WE CAN SKIP CHECKING. `network` comes
+        // straight out of its settle answer, and our key is about to sign a receipt
+        // that names it. Nothing compared it to the network we actually offered. A
+        // facilitator that answers with another chain would get our signature on a
+        // statement about a payment we never advertised, and a reader of that receipt
+        // has no way to know.
+        //
+        // We refuse to sign rather than fall back, and that is deliberate. Falling
+        // back to the upstream version 1 receipt would sign the same wrong network,
+        // just without the commitment. No receipt is an honest outcome; a signed
+        // false one is not. Measured against our three live receipts first: all three
+        // carry eip155:84532, exactly SELLER_NETWORK, so this refuses nothing that
+        // works today.
+        const verwachtNetwerk = context?.requirements?.network ?? SELLER_NETWORK;
+        if (String(network) !== String(verwachtNetwerk)) {
+          console.error(
+            `[x402-seller] refusing to sign: the facilitator settled on ${String(network)} while this route offered ${String(verwachtNetwerk)}`,
+          );
+          return undefined;
+        }
+
         const auth = readSettlementAuthorization(context, payer);
         if (!auth) return upstreamSettle(declaration, context);
 
@@ -372,7 +418,11 @@ export function declareBazaarDiscovery(): Record<string, unknown> {
     bodyType: "json",
     input: {
       endpoint: "https://example.com/api/health",
-      ownerAddress: "0x2888F36548a900B9b08d584524e1f73BC563eC26",
+      // NIET ons payTo-adres. Dat stond hier, en dan staat ons eigen ontvangstadres
+      // in een publieke catalogus als voorbeeld van "de partij die beweert dit
+      // eindpunt te beheren". Dit is een adres uit de documentatie van ethers zelf,
+      // onmiskenbaar een voorbeeld.
+      ownerAddress: "0x0000000000000000000000000000000000000001",
       method: "dns-txt",
     },
     inputSchema: {
@@ -401,27 +451,52 @@ export function declareBazaarDiscovery(): Record<string, unknown> {
       required: ["endpoint", "ownerAddress", "method"],
       additionalProperties: false,
     },
+    // THE OUTPUT CONTRACT, AND IT IS READ BY MACHINES. Measured on 2026-10-18:
+    // this block required a `token` field that the route never returned, named a
+    // location format the code does not use (the real DNS label is DNS_LABEL,
+    // `_endpoint-attest`), and left out `ok` and `reason`, which the route does
+    // return. A failed check carries no `verifiedAt` at all, so the old `required`
+    // list could not hold even in principle. Our own delivery checker reads the
+    // `token` field, so it could not process a single real answer from its own
+    // target service. A promise in a catalogue that the route does not keep is
+    // worse than no promise: the facilitator validates `info` against `schema`,
+    // and an agent decides whether to call us from exactly this.
     output: {
       example: {
+        ok: true,
         method: "dns-txt",
-        token: "tokenizen-ownership-0000000000000000",
-        location: "_tokenizen.example.com",
+        token: "endpoint-attest-0000000000000000",
+        location: `${DNS_LABEL}.example.com`,
         verifiedAt: "2026-10-18T00:00:00Z",
       },
       schema: {
         type: "object",
         properties: {
+          ok: { type: "boolean", description: "Whether control was proven. False is an answer, not an error." },
           method: { type: "string", enum: [...OWNERSHIP_METHODS] },
-          token: { type: "string", minLength: 16, maxLength: 512 },
+          token: {
+            type: "string",
+            minLength: 16,
+            maxLength: 512,
+            description:
+              "The exact token the check compared against, so a third party can re-read the answer instead of trusting us. Returning it discloses nothing new: the same token is already available from /api/challenge for any endpoint and owner, with no proof required.",
+          },
           location: {
             type: "string",
             minLength: 1,
             maxLength: 2048,
             description: "The DNS name queried or the URL fetched, so a reader can re-check it without us.",
           },
-          verifiedAt: { type: "string", description: "ISO timestamp of when control was proven." },
+          verifiedAt: {
+            type: "string",
+            description: "ISO timestamp of when control was proven. Present only when ok is true.",
+          },
+          reason: {
+            type: "string",
+            description: "Why control was not proven. Present only when ok is false.",
+          },
         },
-        required: ["method", "token", "location", "verifiedAt"],
+        required: ["ok", "method", "token", "location"],
       },
     },
   } as never) as Record<string, unknown>;

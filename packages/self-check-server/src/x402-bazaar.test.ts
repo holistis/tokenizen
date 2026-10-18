@@ -142,12 +142,20 @@ describe("waarheid tegenover de echte route", () => {
   });
 
   it("de drie velden die de route echt vereist staan erin, en geen verzonnen vierde", () => {
-    const platteTekst = JSON.stringify(declareBazaarDiscovery());
-    for (const veld of ["endpoint", "ownerAddress", "method"]) {
-      expect(platteTekst).toContain(veld);
-    }
-    expect(platteTekst).not.toContain("apiKey");
-    expect(platteTekst).not.toContain("challenge");
+    // GEMETEN OP DE VELDNAMEN, NIET OP DE HELE JSON, en dat is een correctie. Dit zocht
+    // eerder de losse woorden in JSON.stringify van de hele verklaring, dus ook in elke
+    // BESCHRIJVING. Een beschrijving die uitlegt waar een lezer datzelfde token gratis
+    // kan ophalen liet de test daardoor vallen, terwijl er geen enkel veld bij was
+    // gekomen. Dat is een proxy-meting: hij meet iets dat met de vraag samenhangt in
+    // plaats van de vraag zelf, en valt dan om op tekst die niets met velden te maken
+    // heeft.
+    const b = declareBazaarDiscovery().bazaar as any;
+    const schemaVelden = Object.keys(b.schema.properties.input.properties.body.properties);
+    expect(schemaVelden.sort()).toEqual(["endpoint", "method", "ownerAddress"]);
+    expect(Object.keys(b.info.input.body).sort()).toEqual(["endpoint", "method", "ownerAddress"]);
+    // En het schema mag geen extra velden toestaan, anders is de lijst hierboven een
+    // wens en geen grens.
+    expect(b.schema.properties.input.properties.body.additionalProperties).toBe(false);
   });
 });
 

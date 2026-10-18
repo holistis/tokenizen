@@ -163,4 +163,38 @@ describe("the seller with version 2 switched on", () => {
   it("emits nothing at all for a failed settlement", async () => {
     expect(await settle(true, { result: { success: false } })).toBeUndefined();
   });
+
+  // ONZE SLEUTEL TEKENT NIET OP HET WOORD VAN EEN DERDE. `network` komt rechtstreeks
+  // uit het settle-antwoord van de facilitator, en niets vergeleek het met het netwerk
+  // dat deze route zelf aanbood. Een facilitator die een andere keten noemt, kreeg
+  // daarmee onze handtekening op een uitspraak over een betaling die wij nooit hebben
+  // geadverteerd, en een lezer van dat bonnetje kan dat niet zien.
+  //
+  // WEIGEREN, NIET TERUGVALLEN. Terugvallen op het bonnetje van versie 1 zou hetzelfde
+  // verkeerde netwerk ondertekenen, alleen zonder commitment. Geen bonnetje is een
+  // eerlijke uitkomst; een ondertekend onwaar bonnetje niet.
+  //
+  // GEMETEN VOOR DIT ERIN GING: onze drie echte bonnetjes dragen alle drie
+  // eip155:84532, precies SELLER_NETWORK, dus dit weigert niets wat vandaag werkt.
+  it("weigert te tekenen als de facilitator een ander netwerk meldt dan wij aanboden", async () => {
+    const uit = await settle(true, {
+      result: { success: true, payer: BUYER, network: "eip155:1", transaction: "0x" + "ee".repeat(32) },
+    });
+    expect(uit).toBeUndefined();
+  });
+
+  it("en ook als de route een netwerk EIST dat de facilitator niet gebruikte", async () => {
+    const uit = await settle(true, {
+      requirements: { asset: ASSET, network: "eip155:8453" },
+    });
+    expect(uit).toBeUndefined();
+  });
+
+  it("maar tekent gewoon als het netwerk klopt met wat de route eist", async () => {
+    const uit = await settle(true, {
+      requirements: { asset: ASSET, network: SELLER_NETWORK },
+    });
+    expect(uit?.info?.receipt).toBeTruthy();
+    expect(uit?.info?.authorizationSalt).toMatch(/^0x[0-9a-f]{64}$/);
+  });
 });
