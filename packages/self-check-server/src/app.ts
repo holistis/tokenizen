@@ -105,6 +105,14 @@ export interface CreateAppOptions {
   trustProxy?: boolean | number | string;
   /** Rate limit for the (real network I/O) verify-ownership route. Defaults to 10 requests / 5 minutes per IP. */
   verifyRateLimit?: { windowMs: number; max: number };
+  /**
+   * Rate limit for the PAID verify-ownership route, with its OWN bucket.
+   *
+   * It shared the free route's bucket, which let anyone spend a paying customer's
+   * budget with free calls. Falls back to verifyRateLimit when unset, so nothing
+   * changes for an existing caller except that the two no longer drain each other.
+   */
+  paidRateLimit?: { windowMs: number; max: number };
   /** Rate limit for the (no network I/O) challenge route. Defaults to 30 requests / 5 minutes per IP — looser, since it is pure local HMAC, same posture trust-attest-server's own comments describe for get_ownership_challenge. */
   challengeRateLimit?: { windowMs: number; max: number };
 }
@@ -193,6 +201,16 @@ export function createApp(options: CreateAppOptions = {}): Express {
   const verifyLimiter = createRateLimiter({
     windowMs: options.verifyRateLimit?.windowMs ?? 5 * 60 * 1000,
     max: options.verifyRateLimit?.max ?? 10,
+  });
+  // EEN EIGEN EMMER VOOR DE BETAALDE ROUTE. Hij deelde die met de gratis route, en
+  // dat is tegen de regel die rate-limit.ts zelf opschrijft: een limiet PER AANROEPER
+  // op alles wat echt werk doet. De betaalde route doet MEER werk dan de gratis
+  // (hij praat ook met een facilitator), en een gedeelde emmer betekent dat iemand
+  // met gratis verzoeken het budget van de betalende klant kan opmaken. Dat is geen
+  // bescherming, dat is een dicht te drukken verdienroute.
+  const paidLimiter = createRateLimiter({
+    windowMs: options.paidRateLimit?.windowMs ?? options.verifyRateLimit?.windowMs ?? 5 * 60 * 1000,
+    max: options.paidRateLimit?.max ?? options.verifyRateLimit?.max ?? 10,
   });
 
   const app = express();
@@ -283,18 +301,103 @@ export function createApp(options: CreateAppOptions = {}): Express {
   // the buyer's half of a delivery record has nothing to name while no seller
   // emits receipts.
   const seller = options.seller === undefined ? readSellerConfig(process.env) : options.seller;
+  // A THIRD PARTY MUST NOT BE ABLE TO CLOSE OUR FREE DOOR. Building the payment
+  // middleware constructs a facilitator client, so anything wrong out there (an
+  // unusable url, a client that reaches for /supported while being constructed)
+  // threw right here, at app construction, and took down every free route with it:
+  // health, challenge, verify-ownership, the badge and the conformance endpoint.
+  // The paid route is one route; the free ones are the reason this server exists.
+  //
+  // What we do NOT do is mount the paid route anyway. Advertising a price we cannot
+  // settle is a false promise, which is the same reason an unconfigured seller has
+  // no paid route at all. So: loud on the way out, and the paid door stays shut.
+  let betaalmiddleware: ReturnType<typeof buildPaymentMiddleware> | null = null;
   if (seller) {
+    try {
+      betaalmiddleware = buildPaymentMiddleware(seller);
+    } catch (error) {
+      console.error(
+        "[app] the paid route could not be built, so it is NOT mounted. Every free route stays up:",
+        error,
+      );
+    }
+  }
+
+  /**
+   * Een onbereikbare facilitator is onze storing, niet die van de koper, en hij
+   * hoort dat te horen in plaats van een kale 500 te krijgen.
+   *
+   * GEMETEN, en anders dan de keuring vermoedde. Die dacht dat een kapotte
+   * facilitator het hele proces kon afsluiten. Dat reproduceert NIET: de
+   * betaalmiddleware wordt lui opgebouwd en reikt pas bij het eerste verzoek naar
+   * buiten. Wat er wel gebeurde, met een adres dat niet oplost: de betaalde route
+   * antwoordde `500 Internal Server Error` en niets meer. Voor een koper is dat niet
+   * te onderscheiden van "dit product is stuk", terwijl het ware antwoord is "wij
+   * kunnen nu niet afrekenen, er is niets betaald". 503 met een korte, ware regel.
+   * De details blijven in ons eigen log, niet in het antwoord: daarin staat de naam
+   * van onze facilitator en een stapeldump.
+   */
+  /**
+   * Zet een storing in de afrekening om in een eerlijk antwoord, VOOR de
+   * betaalmiddleware aan het woord komt.
+   *
+   * WAAROM DIT GEEN FOUTOPVANGER IS, en dat is gemeten in plaats van aangenomen. Een
+   * express-foutopvanger kan hier niets, want de betaalmiddleware GOOIT niet: hij
+   * antwoordt zelf, letterlijk `500 {"error":"Internal Server Error"}`, met een
+   * onbereikbare facilitator. Voor een koper is dat niet te onderscheiden van "dit
+   * product is stuk", terwijl het ware antwoord is dat wij nu niet kunnen afrekenen en
+   * dat er niets is afgeschreven. Daarom wordt hier alleen dat ENE geval herschreven:
+   * status 500 op de betaalde route. Al het andere gaat ongemoeid door, want een
+   * middleware die meer herschrijft dan hij begrijpt verbergt de volgende storing.
+   */
+  const betaalstoringNaar503 = (_req: Request, res: Response, next: NextFunction): void => {
+    const origineel = res.json.bind(res);
+    res.json = ((lichaam: unknown) => {
+      if (res.statusCode === 500) {
+        console.error("[app] the paid route answered 500, reported to the buyer as 503:", lichaam);
+        res.status(503);
+        return origineel({
+          ok: false,
+          error: "settlement is temporarily unavailable, so no payment was taken and no receipt was issued",
+        });
+      }
+      return origineel(lichaam as never);
+    }) as typeof res.json;
+    next();
+  };
+
+  // Tweede net, voor het geval de middleware ooit wel GOOIT in plaats van zelf te
+  // antwoorden. Kost niets en vangt een vorm die de bovenstaande niet ziet.
+  const betaalfoutmelder = (
+    error: unknown,
+    _req: Request,
+    res: Response,
+    next: NextFunction,
+  ): void => {
+    if (res.headersSent) {
+      next(error);
+      return;
+    }
+    console.error("[app] the paid route could not settle:", error);
+    res.status(503).json({
+      ok: false,
+      error: "settlement is temporarily unavailable, so no payment was taken and no receipt was issued",
+    });
+  };
+  if (seller && betaalmiddleware) {
     // The payment middleware talks to a facilitator on every request it sees,
     // so it is mounted ON the paid path and BEHIND the limiter, never globally
     // with app.use. Mounted globally it would let an anonymous caller make this
     // server call out repeatedly, which is someone else's rate limit to pay.
     app.post(
       "/api/paid/verify-ownership",
-      verifyLimiter,
-      buildPaymentMiddleware(seller),
+      paidLimiter,
+      betaalstoringNaar503,
+      betaalmiddleware,
       async (req: Request, res: Response) => {
         await handleVerifyOwnership(req, res);
       },
+      betaalfoutmelder,
     );
 
     // A GET on the paid path used to fall through to Express's default handler,
@@ -308,7 +411,7 @@ export function createApp(options: CreateAppOptions = {}): Express {
     // 405 is what the method actually is, and the body says where to read the
     // terms. Naming the wrong status to look more x402-shaped would be the kind
     // of small untruth this whole project exists to avoid.
-    app.get("/api/paid/verify-ownership", verifyLimiter, (_req: Request, res: Response) => {
+    app.get("/api/paid/verify-ownership", paidLimiter, (_req: Request, res: Response) => {
       res
         .status(405)
         .set("Allow", "POST")

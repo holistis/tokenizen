@@ -193,9 +193,25 @@ export interface OwnershipCheckDeps {
   maxFileBytes?: number;
 }
 
+/**
+ * WAAROM `token` HIERIN ZIT, en dat is geen uitbreiding maar een reparatie.
+ *
+ * Het gepubliceerde 402-contract van de betaalde route eist `token` als verplicht
+ * uitvoerveld, en dit type gaf het nooit terug. Gemeten op 2026-10-18: ons eigen
+ * leveringscontroleur leest precies dat veld, dus hij kon geen enkel echt antwoord
+ * van onze eigen dienst verwerken. Een belofte in een catalogus die de route niet
+ * nakomt is erger dan een ontbrekende belofte.
+ *
+ * EN HET IS VEILIG, want dit is per constructie een publieke waarde: de eigenaar
+ * MOET hem zelf publiceren in DNS of in een bestand, anders kan de controle nooit
+ * slagen. Hem teruggeven verklapt dus niets wat niet al openbaar hoort te staan,
+ * en het is precies wat een derde partij nodig heeft om het antwoord zelf na te
+ * lezen in plaats van ons op ons woord te geloven. Hij gaat ook mee bij een
+ * MISLUKTE controle, want dan is hij het antwoord op "wat had er moeten staan".
+ */
 export type OwnershipResult =
-  | { ok: true; method: OwnershipMethod; location: string; verifiedAt: string }
-  | { ok: false; method: OwnershipMethod; location: string; reason: string };
+  | { ok: true; method: OwnershipMethod; token: string; location: string; verifiedAt: string }
+  | { ok: false; method: OwnershipMethod; token: string; location: string; reason: string };
 
 /**
  * Verify control of `endpoint` by the holder of `ownerAddress`, using one
@@ -260,16 +276,16 @@ async function verifyTokenPublished(
     try {
       records = await resolver(location);
     } catch (e) {
-      return { ok: false, method, location, reason: `dns lookup failed: ${(e as Error).message}` };
+      return { ok: false, method, token: expected, location, reason: `dns lookup failed: ${(e as Error).message}` };
     }
     // A TXT record can be split into multiple strings by the resolver; the
     // published value is their concatenation, which is how every DNS client
     // reassembles long records.
     const values = records.map((chunks) => chunks.join("").trim());
     if (!values.includes(expected)) {
-      return { ok: false, method, location, reason: "no TXT record at that name matched the expected token" };
+      return { ok: false, method, token: expected, location, reason: "no TXT record at that name matched the expected token" };
     }
-    return { ok: true, method, location, verifiedAt: now() };
+    return { ok: true, method, token: expected, location, verifiedAt: now() };
   }
 
   const fetchImpl = deps.fetchImpl;
@@ -285,25 +301,25 @@ async function verifyTokenPublished(
     // merely has an open redirect at /.well-known/endpoint-attest.txt.
     response = await fetchImpl(location, { signal: AbortSignal.timeout(timeoutMs), redirect: "error" });
   } catch (e) {
-    return { ok: false, method, location, reason: `fetch failed: ${(e as Error).message}` };
+    return { ok: false, method, token: expected, location, reason: `fetch failed: ${(e as Error).message}` };
   }
   if (!response.ok) {
-    return { ok: false, method, location, reason: `responded ${response.status} ${response.statusText}` };
+    return { ok: false, method, token: expected, location, reason: `responded ${response.status} ${response.statusText}` };
   }
 
   let body: string;
   try {
     body = await readBounded(response, maxFileBytes);
   } catch (e) {
-    return { ok: false, method, location, reason: (e as Error).message };
+    return { ok: false, method, token: expected, location, reason: (e as Error).message };
   }
   // Exact match on the trimmed content, not a substring search: a token
   // buried in an otherwise unrelated page does not demonstrate that the
   // operator deliberately published it.
   if (body.trim() !== expected) {
-    return { ok: false, method, location, reason: "file content did not exactly match the expected token" };
+    return { ok: false, method, token: expected, location, reason: "file content did not exactly match the expected token" };
   }
-  return { ok: true, method, location, verifiedAt: now() };
+  return { ok: true, method, token: expected, location, verifiedAt: now() };
 }
 
 /** Read a response body up to maxBytes, refusing the moment the limit is crossed instead of buffering the rest. */
