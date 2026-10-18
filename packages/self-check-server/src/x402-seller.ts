@@ -49,6 +49,20 @@ import { buildReceiptPayload, issueReceipt } from "capacity-attest/dist/receipt-
 /** Base Sepolia. Confirmed supported by the public facilitator with scheme "exact" on 2026-10-15. */
 export const SELLER_NETWORK = "eip155:84532";
 
+/**
+ * Base MAINNET, waar een betaling echt geld kost.
+ *
+ * GEMETEN op 2026-10-18: facilitator.payai.network se /supported noemt eip155:8453 met
+ * scheme "exact" op x402-versie 2, en ook batch-settlement. x402.org/facilitator noemt
+ * mainnet NIET (elf kinds, alleen testnet), dus die kan hier niet afrekenen. Wie mainnet
+ * aanzet moet dus ook de facilitator meeveranderen, en dat is precies wat de controle in
+ * readSellerConfig hieronder afdwingt in plaats van het aan een lezer over te laten.
+ */
+export const MAINNET_NETWORK = "eip155:8453";
+
+/** De facilitator die mainnet WEL kan. Gemeten, niet aangenomen. */
+export const MAINNET_FACILITATOR_URL = "https://facilitator.payai.network";
+
 /** The public facilitator. Its /supported endpoint lists this network and scheme. */
 export const FACILITATOR_URL = "https://x402.org/facilitator";
 
@@ -97,6 +111,12 @@ export interface SellerEnv {
    *     it does list Base Sepolia entries, but needs CDP credentials
    */
   X402_FACILITATOR_URL?: string | undefined;
+  /**
+   * "1" zet de mainnet-route aan, naast testnet. Vereist een facilitator die mainnet
+   * kan; readSellerConfig weigert de combinatie met een facilitator die het niet kan,
+   * want een prijs adverteren die niet af te rekenen is, is een valse belofte.
+   */
+  X402_MAINNET?: string | undefined;
 }
 
 export interface SellerConfig {
@@ -109,6 +129,14 @@ export interface SellerConfig {
   privateKey: string;
   /** Whether to declare the bazaar discovery extension, so a facilitator can catalogue this route. */
   bazaar: boolean;
+  /**
+   * Of de route OOK een mainnet-betaling aanbiedt, naast testnet.
+   *
+   * STANDAARD UIT, zelfde reden als de bazaar-vlag en bonnetje versie 2: zodra dit aan
+   * staat verandert het live 402-antwoord en kost een betaling echt geld. Dat hoort een
+   * besluit op een datum te zijn, geen neveneffect van een deploy.
+   */
+  mainnet: boolean;
   /** The facilitator that verifies and settles. Only one that keeps an index can catalogue us. */
   facilitatorUrl: string;
   /** Whether to emit receipt payload version 2 with a commitment. */
@@ -168,6 +196,18 @@ export function readSellerConfig(env: SellerEnv): SellerConfig | null {
   })();
   if (checkFacilitator) throw new Error(checkFacilitator);
 
+  // MAINNET EN DE FACILITATOR MOETEN BIJ ELKAAR PASSEN, en dat wordt hier afgedwongen in
+  // plaats van gedocumenteerd. Gemeten op 2026-10-18: x402.org/facilitator noemt
+  // eip155:8453 niet in zijn /supported, dus met die facilitator zou de route een
+  // mainnet-prijs adverteren die niemand kan afrekenen. Dat is precies de valse belofte
+  // waarom een ongeconfigureerde verkoper ook geen betaalde route krijgt.
+  const mainnet = env.X402_MAINNET?.trim() === "1";
+  if (mainnet && facilitatorUrl === FACILITATOR_URL) {
+    throw new Error(
+      `X402_MAINNET is on, but ${FACILITATOR_URL} does not list ${MAINNET_NETWORK} in its /supported. Set X402_FACILITATOR_URL to a facilitator that settles mainnet, for example ${MAINNET_FACILITATOR_URL}`,
+    );
+  }
+
   return {
     // Matches the controller published at _controllers.<domain> exactly. A
     // verifier compares these two strings, so they must not drift.
@@ -179,6 +219,7 @@ export function readSellerConfig(env: SellerEnv): SellerConfig | null {
     privateKey: key,
     receiptV2: env.X402_RECEIPT_V2?.trim() === "1",
     bazaar: env.X402_BAZAAR?.trim() === "1",
+    mainnet,
     facilitatorUrl,
   };
 }
@@ -506,6 +547,11 @@ export function declareBazaarDiscovery(): Record<string, unknown> {
 export function buildPaidRoutes(config: SellerConfig): Record<string, unknown> {
   return {
     "POST /api/paid/verify-ownership": {
+      // TWEE AANBIEDINGEN ZODRA MAINNET AAN STAAT, niet een omschakeling. Een koper die
+      // testnet gebruikt om te proberen moet dat kunnen blijven doen, en een koper die
+      // echt wil betalen kiest de andere regel. De netwerkvergelijking in
+      // buildOfferReceiptExtension leest context.requirements.network, dus die volgt
+      // automatisch de regel die de koper koos.
       accepts: [
         {
           scheme: "exact",
@@ -513,6 +559,16 @@ export function buildPaidRoutes(config: SellerConfig): Record<string, unknown> {
           network: SELLER_NETWORK,
           payTo: config.payTo,
         },
+        ...(config.mainnet
+          ? [
+              {
+                scheme: "exact",
+                price: config.price,
+                network: MAINNET_NETWORK,
+                payTo: config.payTo,
+              },
+            ]
+          : []),
       ],
       description:
         "Ownership verification with a signed receipt. The receipt is the product: the same answer is available for free at /api/verify-ownership.",
@@ -554,6 +610,8 @@ export function buildPaymentMiddleware(config: SellerConfig) {
   const server = new x402ResourceServer(facilitator)
     .register(SELLER_NETWORK, new ExactEvmScheme())
     .registerExtension(buildOfferReceiptExtension(config));
+  // Zonder deze regel adverteert de route mainnet wel en kan hij het niet verifieren.
+  if (config.mainnet) server.register(MAINNET_NETWORK, new ExactEvmScheme());
   // THE SECOND HALF, and leaving it out would have failed silently. The
   // declaration from `declareDiscoveryExtension` carries NO http method on
   // purpose: `bazaarResourceServerExtension.enrichDeclaration` fills it in from
