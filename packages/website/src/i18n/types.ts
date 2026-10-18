@@ -109,6 +109,13 @@ export interface Dictionary {
     copyLabel: string;
     copiedLabel: string;
   };
+  metingen: {
+    eyebrow: string;
+    h2: string;
+    body: string;
+    rows: { date: string; title: string; body: string }[];
+    footer: string;
+  };
   status: {
     eyebrow: string;
     h2: string;

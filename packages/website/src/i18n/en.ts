@@ -239,6 +239,34 @@ export const en: Dictionary = {
     "copyLabel": "Copy",
     "copiedLabel": "Copied"
   },
+  "metingen": {
+    "eyebrow": "What we measured",
+    "h2": "Our own check turned out to be wrong. We tracked it down, fixed it, and wrote it down here.",
+    "body": "A program that buys something on its own wants to know up front whether the seller asks for money properly. We built a free checking program for that. In October we ran it against sixty real sellers, and it turned out to be telling most of them they were doing it wrong. The fault was ours: our program was knocking on the wrong door. It is fixed now. It is here because a number without a method is worth nothing, and because anyone who hides their own mistake is not worth believing on their next number either.",
+    "rows": [
+      {
+        "date": "18 October 2026",
+        "title": "From sixty four percent wrong to zero",
+        "body": "We took sixty sellers from the public Coinbase list and asked each of them once for a price. Fifty nine really do ask for money. Of those fifty nine, thirty eight were wrongly failed by us. After the fix: none. The method and the raw output are in the code, so you can redo it yourself."
+      },
+      {
+        "date": "October 2026",
+        "title": "Four builders now use our way of counting",
+        "body": "In the public discussions about these agreements, four people adopted our breakdown. The one that matters most is the difference between this is wrong and I could not check this. That sounds small and it is not: anyone who merges those two blames an honest seller for a failure at the checker end."
+      },
+      {
+        "date": "as of today",
+        "title": "No paying customer yet",
+        "body": "Zero. Nobody outside this project pays for this yet. We would rather write that down ourselves than have someone find it out."
+      },
+      {
+        "date": "last fourteen days",
+        "title": "A hundred people looked, nobody installed",
+        "body": "A hundred and two people pulled the code to look at it. The install count is zero. That means we are being found and not convincing anyone, which is a different problem from being unknown."
+      }
+    ],
+    "footer": "Every line above carries a date and a way of measuring. If a number changes, the line changes and the date stays visible. That way you can see whether something is still true instead of having to assume it. The code and the raw output are at github.com/holistis/agent-receipt-verify, so you can recheck every line above yourself."
+  },
   "status": {
     "eyebrow": "Status, honestly",
     "h2": "No paying customers. Three outside parties building on the format, and work others checked themselves.",
