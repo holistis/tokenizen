@@ -67,6 +67,99 @@ describe("http-server: real end-to-end MCP calls over HTTP", () => {
   });
 });
 
+describe("http-server: get_compute_track_record filters to compute claims only", () => {
+  // Isolated from the rest of this file's tests: config.ts resolves
+  // CAPACITY_ATTEST_DATA_DIR lazily on every ledger call (not at import
+  // time), so this describe block can point at its own throwaway directory
+  // without touching the shared server started above or the "unused
+  // address" test's empty-result assumption elsewhere in this file.
+  let tmpDir: string;
+  const sellerAddress = "0x00000000000000000000000000000000000000bb";
+
+  beforeAll(async () => {
+    const { mkdtempSync } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const { join } = await import("node:path");
+    tmpDir = mkdtempSync(join(tmpdir(), "capacity-attest-compute-test-"));
+    process.env["CAPACITY_ATTEST_DATA_DIR"] = tmpDir;
+
+    const { testWallet, evidenceHash } = await import("./test-helpers.js");
+    const { signClaim } = await import("./signing.js");
+    const { appendClaim } = await import("./ledger.js");
+    const wallet = testWallet();
+
+    // One real compute claim (gpu-hours + measured) — SHOULD be returned.
+    const computeContent = {
+      sellerAddress,
+      buyerAddress: wallet.address,
+      assetType: "gpu-hours" as const,
+      promisedSpec: "1x A100, 4 hours",
+      delivered: "yes" as const,
+      evidenceHash: evidenceHash("compute evidence"),
+      settlementRef: "0x" + "22".repeat(32),
+      timestamp: new Date().toISOString(),
+      measured: {
+        unit: "gpu-second" as const,
+        basis: "supplied" as const,
+        promisedAmount: "14400",
+        deliveredAmount: "14400",
+        period: {
+          start: new Date(Date.now() - 14_400_000).toISOString().replace(/\.\d{3}Z$/, "Z"),
+          end: new Date().toISOString().replace(/\.\d{3}Z$/, "Z"),
+        },
+        method: { attribution: "buyer" as const, instrument: "test fixture" },
+      },
+    };
+    const computeSigned = await signClaim(wallet, computeContent);
+    await appendClaim({ ...computeContent, ...computeSigned });
+
+    // One real, but NON-compute, unmeasured claim — must NOT be returned by
+    // the filtered tool (it should still show up in plain get_delivery_history).
+    const otherContent = {
+      sellerAddress,
+      buyerAddress: wallet.address,
+      assetType: "storage" as const,
+      promisedSpec: "10GB for a month",
+      delivered: "yes" as const,
+      evidenceHash: evidenceHash("storage evidence"),
+      settlementRef: "0x" + "33".repeat(32),
+      timestamp: new Date().toISOString(),
+    };
+    const otherSigned = await signClaim(wallet, otherContent);
+    await appendClaim({ ...otherContent, ...otherSigned });
+  });
+
+  afterAll(async () => {
+    const { rmSync } = await import("node:fs");
+    delete process.env["CAPACITY_ATTEST_DATA_DIR"];
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it("get_delivery_history (unfiltered) shows BOTH claims", async () => {
+    const res = await postMcp({
+      jsonrpc: "2.0",
+      id: 10,
+      method: "tools/call",
+      params: { name: "get_delivery_history", arguments: { sellerAddress } },
+    });
+    const text = await res.text();
+    expect(text).toContain('\\"count\\": 2');
+  });
+
+  it("get_compute_track_record returns ONLY the gpu-hours+measured claim", async () => {
+    const res = await postMcp({
+      jsonrpc: "2.0",
+      id: 11,
+      method: "tools/call",
+      params: { name: "get_compute_track_record", arguments: { sellerAddress } },
+    });
+    const text = await res.text();
+    expect(text).toContain('\\"count\\": 1');
+    expect(text).toContain("gpu-hours");
+    expect(text).not.toContain('\\"assetType\\": \\"storage\\"');
+  });
+});
+
 describe("http-server: data-check (mandatory check 2)", () => {
   it("rejects malformed JSON with 400, never a raw parse error", async () => {
     const res = await postMcp("not json");
