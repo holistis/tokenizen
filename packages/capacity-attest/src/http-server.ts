@@ -68,6 +68,15 @@
 //      In-memory is a known, accepted limitation for a single process (see
 //      the comment on RATE_LIMIT below), not an oversight.
 //
+// EVERY TOOL ADDED SINCE THE ABOVE WAS WRITTEN (get_compute_track_record,
+// get_fabrication_signals, compare_sellers, discover_delivery_history,
+// get_agent_snapshot) is covered by this SAME posture: read-only, derived
+// purely from data get_delivery_history/resolveAgentIdentity already expose,
+// no new auth surface, no new secret, same RATE_LIMIT below. Only
+// bridge_x402_receipt and publish_reputation_feedback needed their OWN
+// addendum below, because each changes one of these four checks in a way
+// the others don't.
+//
 // bridge_x402_receipt (added 2026-10-21, niche #3 of this session's three —
 // see DECISIONS.md D-020): wires up receipt-check.ts/receipt-issue.ts, which
 // already existed as tested library functions but were never exposed over
@@ -229,9 +238,30 @@ if (RECORD_DELIVERY_PAY_TO) {
 // real on-chain publish, for the same reason record_delivery's ledger write
 // lives there: nothing irreversible (a claimed slot, a real transaction)
 // happens before payment has genuinely cleared.
+// DEPLOYMENT NOTE, found on self-review (not yet relevant to any test here,
+// only to whoever sets real env vars on a real server): PUBLISH_FEEDBACK_PAY_TO
+// (where the fee lands) and the signer derived from
+// REPUTATION_PUBLISHER_PRIVATE_KEY (which pays gas) are TWO INDEPENDENT
+// addresses — nothing in this file routes one into the other automatically.
+// Set PUBLISH_FEEDBACK_PAY_TO to the SAME address as the signer's own
+// (publicly knowable — ethers.Wallet(privateKey).address) if the intent is
+// for fee income to actually replenish the gas wallet over time, the way
+// this feature was described to the king. Pointing the fee anywhere else is
+// a valid configuration (e.g. routing fee income to a separate treasury
+// address) but then means THIS wallet's gas balance only ever goes down and
+// must be topped up by some other process — a silent, slow drain if that
+// is not the deliberate intent.
 const REPUTATION_PUBLISHER_PRIVATE_KEY = process.env.REPUTATION_PUBLISHER_PRIVATE_KEY;
 const PUBLISH_FEEDBACK_PAY_TO = process.env.PUBLISH_FEEDBACK_PAY_TO;
 const PUBLISH_FEEDBACK_PRICE = process.env.PUBLISH_FEEDBACK_PRICE || "$0.05";
+// KNOWN, ACCEPTED LIMITATION (same shape as RATE_LIMIT below): in-memory,
+// resets to zero on every process restart. A crash-loop could therefore
+// exceed this cap in wall-clock terms across restarts. Not a financial
+// safety issue on its own — gas cost per call is a small fraction of the
+// fee charged (see DECISIONS.md's measured figures), so even a bypassed cap
+// does not put the wallet NET negative per call — but it does mean the cap
+// is a soft, best-effort throttle, not a hard guarantee, exactly like
+// RATE_LIMIT already is for the same reason.
 const PUBLISH_FEEDBACK_MAX_PER_HOUR = Number(process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR ?? "20");
 
 const FEEDBACK_HOUR_MS = 60 * 60 * 1000;
