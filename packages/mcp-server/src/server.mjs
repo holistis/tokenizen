@@ -44,15 +44,18 @@ async function buildCdpJwt(method, path) {
     .sign(key);
 }
 
-// CDP geprobeerd (2026-10-21): verify/settle werken met deze sleutel, maar
-// GET /supported geeft 401 (bevestigd met een losse, handmatige JWT-test,
-// geen codefout). x402ResourceServer.initialize() EIST een geslaagde
-// getSupported()-aanroep, dus de hele dienst start niet op met alleen
-// verify/settle-rechten. Terug naar payai tot de sleutel in het Coinbase-
-// portaal bredere leesrechten heeft, of een eigen FacilitatorClient die
-// getSupported() niet hard vereist.
+// CDP (2026-10-21): de eerste 401 op GET /supported was geen sleutelprobleem,
+// het was IPv6. De sleutel staat alleen met een IPv4-adres op de allowlist,
+// en deze VPS stuurde standaard over IPv6 naar buiten, dus CDP zag een
+// afwijkend, niet-toegestaan adres. Opgelost met --dns-result-order=ipv4first
+// op de systemd-ExecStart. Bevestigd met een losse JWT-test: 200 op /supported.
 const facilitatorClient = new HTTPFacilitatorClient({
-  url: process.env.MCP_FACILITATOR_URL || "https://facilitator.payai.network",
+  url: "https://api.cdp.coinbase.com/platform/v2/x402",
+  createAuthHeaders: async () => ({
+    verify: { Authorization: `Bearer ${await buildCdpJwt("POST", "/platform/v2/x402/verify")}` },
+    settle: { Authorization: `Bearer ${await buildCdpJwt("POST", "/platform/v2/x402/settle")}` },
+    supported: { Authorization: `Bearer ${await buildCdpJwt("GET", "/platform/v2/x402/supported")}` },
+  }),
 });
 const resourceServer = new x402ResourceServer(facilitatorClient);
 resourceServer.register(NETWORK, new ExactEvmScheme());

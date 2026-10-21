@@ -8,7 +8,7 @@ The tool does not reimplement the check. It calls self-check-server's own free e
 
 Runs on `x402-mcp.tokenizen.nl`, a standalone systemd service alongside self-check-server (same hardening: `NoNewPrivileges`, `ProtectSystem=strict`, `ProtectHome=read-only`). Kept as its own process so a mistake here can never take the paid HTTP route down.
 
-A real mainnet payment was made end to end on 2026-10-21: tool call, payment-required response, client signs and pays, tool executes, settled receipt returned.
+A real mainnet payment was made end to end on 2026-10-21: tool call, payment-required response, client signs and pays, tool executes, settlement response returned.
 
 - Settlement: `0x044100b016ea7836b436ea38af57b24987bae01cc4268a97b9119d66f5c26e02`
 
