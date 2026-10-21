@@ -39,6 +39,24 @@ beforeAll(async () => {
       );
       return;
     }
+    // ADVERSARIAL PROBE (not a real facilitator): /verify always says the
+    // payment is good, /settle always says it failed. A real facilitator
+    // would never behave this way for a genuinely bad payment, but THIS
+    // exact sequence — verify passes, settlement later fails — is exactly
+    // what happens for a real payer with insufficient funds, a reused/
+    // already-spent authorization, or a dropped settlement transaction. The
+    // question this answers: does record_delivery() run (write to the
+    // ledger) before that failure is known?
+    if (req.url === "/verify" && req.method === "POST") {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify({ isValid: true }));
+      return;
+    }
+    if (req.url === "/settle" && req.method === "POST") {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify({ success: false, errorReason: "insufficient_funds" }));
+      return;
+    }
     res.writeHead(501, { "content-type": "application/json" }).end(JSON.stringify({ error: "not implemented in fake" }));
   });
   fakeFacilitator.listen(0, "127.0.0.1");
@@ -116,4 +134,46 @@ describe("http-server: record_delivery registered when RECORD_DELIVERY_PAY_TO is
     expect(text.toLowerCase()).toContain("payment");
     expect(text).toContain(FAKE_PAY_TO);
   });
+
+  it(
+    "the pre-payment tool handler must never itself call recordDelivery/appendClaim — only hooks.onAfterSettlement may",
+    async () => {
+      // WHY A SOURCE-STRUCTURE CHECK, NOT A FULL FACILITATOR ROUND-TRIP: an
+      // earlier version of this test tried to adversarially prove the same
+      // property end-to-end (build a real EIP-712 payload against a fake
+      // facilitator whose /verify passes and /settle fails, then assert the
+      // ledger stayed empty). That attempt is what FOUND the real bug this
+      // file now fixes — @x402/core's default "authorization" payment flow
+      // for EIP-3009/"exact" runs the tool handler BEFORE settlement, so a
+      // handler that appended directly wrote to the ledger on a payment that
+      // never actually cleared. Getting that adversarial test's hand-built
+      // payment payload to pass @x402/core's strict deep-equal requirements
+      // matcher proved too brittle to keep as a maintained regression test
+      // (three attempts, three different internal-shape mismatches, none of
+      // them about the property under test). This check guards the same
+      // property a cheaper, more robust way: by construction, the only code
+      // path that can reach appendClaim() is the one gated behind a
+      // CONFIRMED settlement, because that is literally the only place the
+      // source calls it.
+      const { readFileSync } = await import("node:fs");
+      const { fileURLToPath } = await import("node:url");
+      const source = readFileSync(fileURLToPath(new URL("./http-server.ts", import.meta.url)), "utf-8");
+
+      const hooksStart = source.indexOf("onAfterSettlement:");
+      expect(hooksStart, "onAfterSettlement hook must exist in http-server.ts").toBeGreaterThan(-1);
+      const hooksEnd = source.indexOf("},", hooksStart);
+      const hookBody = source.slice(hooksStart, hooksEnd);
+      expect(hookBody).toContain("recordDelivery(");
+
+      const handlerStart = source.indexOf("recordDeliveryPaid(async");
+      expect(handlerStart, "the record_delivery tool handler must exist").toBeGreaterThan(-1);
+      const handlerEnd = source.indexOf("}),", handlerStart);
+      const handlerBody = source.slice(handlerStart, handlerEnd);
+      expect(handlerBody, "the handler must still validate (fail fast before payment)").toContain("verifyClaim(");
+      expect(handlerBody, "the handler must NOT itself call recordDelivery — that would write before settlement is confirmed").not.toContain(
+        "recordDelivery(",
+      );
+      expect(handlerBody, "the handler must NOT itself call appendClaim").not.toContain("appendClaim(");
+    },
+  );
 });

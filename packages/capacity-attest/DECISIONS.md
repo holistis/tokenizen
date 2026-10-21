@@ -1213,3 +1213,42 @@ vraag kan zijn, geen zelfstandige reden om zonder uitgewerkt plan te gaan bouwen
 **Status:** niet gebouwd. Voorlopig plan, vastgelegd op verzoek van de koning na de vraag "zij
 gebruiken mijn tools en verdienen er aan en ik niet" (wazir-al-ghanima-sessie, 2026-09-24). Wacht
 op uitwerking via wazir-al-mal.
+
+## D-020: drie nieuwe hoeken tegen D-014, 2026-10-21 — ook gedood, en een tiende, andere hoek die overleefde
+
+**Herkomst:** een sessie met de koning werkte drie nieuwe anti-fabricatie-ideeën uit die D-018
+hierboven niet noemt: een Kanban-stijl "rijpingsrij" (een nieuwe portemonnee mag maar een beperkt
+aantal nog-niet-bevestigde claims tegelijk hebben), vertrouwen dat doorstroomt via het netwerk
+(Web-of-Trust/PageRank-stijl, zoals Vertex op Nostr), en een Byzantijnse-foutentolerantie-grens
+(een bevestigende groep telt pas als een geheime kliek er nooit meer dan een derde van kan zijn).
+
+**Alle drie gedood, om dezelfde reden als de negen in D-018:** elk van de drie vereist dat
+sommige claims of portemonnees meer gewicht krijgen dan andere (de rijpingsrij geeft "oude"
+portemonnees voorrang, Web-of-Trust rekent letterlijk een gewicht per portemonnee uit, de
+Byzantijnse grens weegt een bevestigende groep). Dat is een rangorde, ongeacht de naam, en botst
+frontaal met D-004. Geen van de drie wordt gebouwd.
+
+**Wat wel overleefde, en NU GEBOUWD is (`packages/capacity-attest/src/http-server.ts`,
+`record_delivery`, HTTP/MCP): een tiende, structureel andere hoek.** Een vaste, verplichte
+vergoeding, identiek voor elke aanroeper, ingebakken in de enige manier om de tool aan te roepen
+(RECORD_DELIVERY_PAY_TO). Dit is geen rangorde (iedereen betaalt hetzelfde) en geen vrijwillige
+controle (niet te omzeilen, want zonder betaling bestaat de aanroep niet). Expliciet NIET
+verward met de negen/drie eerdere, al gedode pogingen: dit raakt D-014 niet op, het verhoogt
+alleen de kostprijs van MASSALE fabricage en doet niets tegen één gerichte valse claim — zie de
+tool-beschrijving in de code zelf voor de volledige, eerlijke grens.
+
+**Een echte bug, gevonden tijdens het bouwen, niet vooraf bedacht:** de eerste versie liet de
+tool-handler zelf `appendClaim()` aanroepen. Een adversariële test tegen een nagebouwde
+facilitator (altijd `/verify` geldig, altijd `/settle` mislukt) liet zien dat het briefje toch in
+het grootboek belandde, want `@x402/core`'s standaard betaalstroom voor EIP-3009/"exact"
+("authorization"-stroom) voert de tool-handler uit VOOR de afrekening wordt bevestigd, niet erna.
+Gefixt door de echte schrijfactie te verplaatsen naar `hooks.onAfterSettlement`, dat alleen
+afgaat bij een daadwerkelijk geslaagde afrekening. De handler zelf doet nu alleen de
+schema-/handtekeningcontrole, zodat een aanroeper snel een foutmelding krijgt zonder al te
+hoeven betalen voor een claim die toch nooit opgeslagen had kunnen worden.
+
+**Trigger-criterium voor verdere pogingen tegen D-014:** ongewijzigd t.o.v. D-018, zie daar.
+
+**Status:** de drie nieuwe hoeken: niet gebouwd, gedood. De tiende hoek (vaste verplichte
+vergoeding): gebouwd, getest (`http-server.test.ts`, `http-server-record-delivery.test.ts`), nog
+niet gemerged (PR #26).
