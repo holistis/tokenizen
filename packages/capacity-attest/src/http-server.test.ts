@@ -33,7 +33,11 @@ async function postMcp(body: unknown, extraHeaders: Record<string, string> = {})
 }
 
 describe("http-server: real end-to-end MCP calls over HTTP", () => {
-  it("initializes and lists exactly the two read-only tools, never record_delivery", async () => {
+  // RECORD_DELIVERY_PAY_TO is unset in this process, so record_delivery
+  // should not be registered — see http-server-record-delivery.test.ts for
+  // the opposite case (PAY_TO set), which needs a fresh module import to
+  // exercise that branch's module-load-time setup.
+  it("initializes and lists exactly the two read-only tools when RECORD_DELIVERY_PAY_TO is unset", async () => {
     const initRes = await postMcp({
       jsonrpc: "2.0",
       id: 1,
