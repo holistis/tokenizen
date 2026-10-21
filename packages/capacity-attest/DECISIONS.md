@@ -1358,3 +1358,35 @@ handeling, voor de koning zelf, zodra hij terug is.
 **Status:** gebouwd, getest (`http-server-publish-feedback.test.ts`, 5 nieuwe tests, 697/697 totaal
 groen), eigen branch/PR (apart van PR #26, andere risicoklasse). Mainnet-sleutel bestaat, nog
 ongefinancierd.
+
+### Twee EXTRA services, zelfde autonome nacht, matrix-aanpak op koning-verzoek
+
+Na `publish_reputation_feedback` vroeg de koning expliciet: denk in matrices wat AI-agents nog meer
+nodig hebben (nu of binnenkort), bouw en test dat ook, blijf non-stop bezig, vraag niets (hij was
+niet bereikbaar, harde grens 3 uur vanaf 23:22). Matrix opgesteld (idee x hergebruik-bestaande-code
+x risico-zonder-koning-aanwezig x dient-een-concrete-nabije-behoefte x bouwbaar-binnen-resttijd),
+vijf ideeën gewogen (batch-vergelijken, EAS-brug, versheid-check, notify/webhook-abonnement,
+generieke tx-lookup). Twee gekozen: hoogste score, laagste risico (beide read-only, geen nieuwe
+sleutel, geen nieuw schrijfpad), notify/webhook afgevallen (nieuwe infra, groter misbruik-
+oppervlak, te groot voor vannacht zonder koning-review).
+
+1. **`compare_sellers`** — `get_compute_track_record` en `get_fabrication_signals`'s logica
+   hergebruikt (gerefactord naar gedeelde pure helpers, `filterComputeClaims`/
+   `fabricationSignalsFromClaims`, exact dezelfde getallen, 0 regressie) over tot 10
+   sellerAddresses in EEN aanroep. Rijen in INVOERVOLGORDE, nooit gesorteerd op een getal — expres,
+   zodat dit nooit voor een rangschikker kan worden aangezien (D-004).
+2. **`discover_delivery_history`** — ontsluit `discoverDeliveryHistory()`/`localLedgerSource()`/
+   `easSource()`/`rpcAttestationReader()`/`httpClaimSource()` (discovery.ts, eas.ts, http-source.ts),
+   ALLEMAAL al bestaande, al geteste bibliotheekcode, NOOIT eerder over MCP ontsloten — zelfde
+   patroon als `bridge_x402_receipt` eerder vannacht. Altijd het lokale grootboek, optioneel tot 3
+   EAS-bronnen en tot 3 HTTP-bronnen van andere installaties erbij, elke bron apart
+   fout-geïsoleerd en elke claim apart geherverifieerd (een bron kan niets injecteren, hoogstens
+   niets bijdragen). Bewust GEEN nieuwe blootstelling-categorie: `resolve_agent_identity` accepteert
+   al een door de aanroeper opgegeven rpcUrl en doet al een uitgaande netwerkaanroep; dit volgt
+   exact hetzelfde, al geaccepteerde patroon, alleen tot 6 bronnen per aanroep in plaats van 1
+   (vandaar de max-3-per-type-grens en de vermelding in de tool-beschrijving dat latency meeschaalt).
+
+**Status:** beide gebouwd, getest (`http-server.test.ts`, 8 nieuwe tests samen, 703/703 totaal
+groen), zelfde branch/PR als `publish_reputation_feedback` (read-only, dus eigenlijk dezelfde
+risicoklasse als PR #26's drie — apart vermeld zodat de koning ze bij het beoordelen correct kan
+groeperen, ook al zitten ze qua branch achter de betaalde feature aan).
