@@ -1,0 +1,97 @@
+{
+  "_README": "Worked example of the two halves of one delivery: a seller-signed x402 offer-receipt and the buyer-signed capacity-attest claim that answers it, joined by offerReceiptHash. Everything needed to check this offline is in this file. Both signatures are real. Verify with: node examples/verify-offer-receipt-link.mjs",
+  "signingKeyNote": "Seller is the publicly known Hardhat/anvil account #1, buyer is account #0. TEST KEYS ONLY, never funded, never used for anything real. Published deliberately so this vector is reproducible by anyone.",
+  "x402Spec": "https://github.com/x402-foundation/x402/blob/main/specs/extensions/extension-offer-and-receipt.md",
+  "sellerHalf": {
+    "_what": "x402 offer-receipt extension artifact, signed by the resource server. Its payload carries no identifier of its own (spec section 5.2), which is why the buyer's claim references it by digest.",
+    "eip712Domain": {
+      "name": "x402 receipt",
+      "version": "1",
+      "chainId": 1
+    },
+    "eip712PrimaryType": "Receipt",
+    "eip712Types": {
+      "Receipt": [
+        {
+          "name": "version",
+          "type": "uint256"
+        },
+        {
+          "name": "network",
+          "type": "string"
+        },
+        {
+          "name": "resourceUrl",
+          "type": "string"
+        },
+        {
+          "name": "payer",
+          "type": "string"
+        },
+        {
+          "name": "issuedAt",
+          "type": "uint256"
+        },
+        {
+          "name": "transaction",
+          "type": "string"
+        }
+      ]
+    },
+    "_typesNote": "Recorded here for offline verification only. The spec (section 3.2.1) says these are normative and MUST NOT be transmitted on the wire.",
+    "receipt": {
+      "format": "eip712",
+      "payload": {
+        "version": 1,
+        "network": "eip155:8453",
+        "resourceUrl": "https://gpu.example.com/v1/train",
+        "payer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+        "issuedAt": 1788249600,
+        "transaction": "0x3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b"
+      },
+      "signature": "0x5f52a916aeab4616a0092322a6a55fdb8f9051589fb3fbade907f3f2274f9de326e1a5b3d6b120eb591602f827e6fe48b5801036c3d34f8fb8e6c85d0ea64ebe1b"
+    },
+    "expectedReceiptSigner": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    "transmittedBytes": "{\"format\":\"eip712\",\"payload\":{\"version\":1,\"network\":\"eip155:8453\",\"resourceUrl\":\"https://gpu.example.com/v1/train\",\"payer\":\"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\"issuedAt\":1788249600,\"transaction\":\"0x3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b\"},\"signature\":\"0x5f52a916aeab4616a0092322a6a55fdb8f9051589fb3fbade907f3f2274f9de326e1a5b3d6b120eb591602f827e6fe48b5801036c3d34f8fb8e6c85d0ea64ebe1b\"}",
+    "transmittedBytesSha256": "aa7d4dd0dace7889acea654adb86dad1d42bd450646327f572b55f2982bbb85e"
+  },
+  "buyerHalf": {
+    "_what": "capacity-attest delivery claim, signed by the buyer. delivered is 'partial': the seller's receipt says service was delivered, the buyer says 25230 of 28800 gpu-seconds arrived. Both statements can be true at once, which is the entire reason both halves are kept.",
+    "claim": {
+      "sellerAddress": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+      "buyerAddress": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "assetType": "gpu-hours",
+      "promisedSpec": {
+        "gpuModel": "A100-80GB",
+        "region": "eu-west",
+        "devices": 2,
+        "hours": 4
+      },
+      "delivered": "partial",
+      "evidenceHash": "769f12f0aad0cd27c4c24d383b89609a935db65743dec1b2c54a3f884cb99587",
+      "settlementRef": "0x3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b",
+      "timestamp": "2026-09-01T08:00:12.417Z",
+      "offerReceiptHash": "aa7d4dd0dace7889acea654adb86dad1d42bd450646327f572b55f2982bbb85e",
+      "claimId": "0xc5310ca4bd156e6cc09aa5e261a14b9f5dfe2de9f4a07541aabc5f457aea400e",
+      "signature": "0x662022ffed4c04be2e0d8b3ad6d3473a180b4503563a3181f905f56e916c6b426f3675d7e5f788fe35dd174e60679a52c9ff475e9526ffdd5bd80bb7214f5f1c1b"
+    },
+    "canonicalPreimage": "{\"assetType\":\"gpu-hours\",\"buyerAddress\":\"0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266\",\"delivered\":\"partial\",\"evidenceHash\":\"769f12f0aad0cd27c4c24d383b89609a935db65743dec1b2c54a3f884cb99587\",\"offerReceiptHash\":\"aa7d4dd0dace7889acea654adb86dad1d42bd450646327f572b55f2982bbb85e\",\"promisedSpec\":{\"devices\":2,\"gpuModel\":\"A100-80GB\",\"hours\":4,\"region\":\"eu-west\"},\"sellerAddress\":\"0x70997970c51812dc3a010c7d01b50e0d17dc79c8\",\"settlementRef\":\"0x3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b\",\"timestamp\":\"2026-09-01T08:00:12.417Z\"}",
+    "canonicalPreimageByteLength": 541,
+    "claimId": "0xc5310ca4bd156e6cc09aa5e261a14b9f5dfe2de9f4a07541aabc5f457aea400e",
+    "eip191MessageDigestOverClaimIdString": "0x50ade6fd9455c7b09a9d7f3aa96c883a27d898041acd30a473c4bd41b84472ad",
+    "signature": "0x662022ffed4c04be2e0d8b3ad6d3473a180b4503563a3181f905f56e916c6b426f3675d7e5f788fe35dd174e60679a52c9ff475e9526ffdd5bd80bb7214f5f1c1b",
+    "expectedRecoveredAddress": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+  },
+  "theJoin": {
+    "offerReceiptHash": "aa7d4dd0dace7889acea654adb86dad1d42bd450646327f572b55f2982bbb85e",
+    "_what": "sha256 over sellerHalf.transmittedBytes, carried inside the buyer's signed content. Because it is inside the signed bytes, changing it changes claimId and breaks the buyer's signature, so a receipt reference cannot be swapped in or stripped out after the fact.",
+    "receiptSignerEqualsClaimSellerAddress": true,
+    "_signerNote": "True here because this example uses the spec's simplest signer-authorization approach, where the service signs with the key for its payTo address. The spec says production deployments SHOULD use a dedicated signing key instead, in which case the recovered receipt signer will NOT equal sellerAddress and this equality must not be relied on."
+  },
+  "whatThisVectorDoesNotEstablish": [
+    "That the receipt signer was authorized to speak for the service. The spec treats signer authorization as a separate, external problem (section 4.3 on authorization approaches) and notes it SHOULD be evaluated as of the receipt's issuedAt, not at verification time. Nothing here checks that.",
+    "That the settlement transaction exists or moved any funds. These are unfunded test keys and no chain was consulted.",
+    "That the delivered amounts are accurate. The buyer asserts them; capacity-attest records the assertion and who signed it, and never certifies that an assertion is true.",
+    "Any judgment about whether the seller performed well. There is no score here, only two signed statements and the link between them."
+  ]
+}

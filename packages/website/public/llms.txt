@@ -22,6 +22,9 @@ New, but no longer unused. It has been run end to end against a real live paid e
 - [npm package](https://www.npmjs.com/package/capacity-attest): `npm install capacity-attest`
 - [MCP registry entry](https://registry.modelcontextprotocol.io): registered as `io.github.holistis/capacity-attest`
 - [Technical write-up](https://dev.to/holistis/x402-payments-prove-money-moved-they-dont-prove-you-got-what-you-paid-for-2doo): why the gap exists and how this fills it
+- [A signed receipt that cannot name its own payment](https://tokenizen.nl/en/notes/a-signed-receipt-that-cannot-name-its-own-payment): a live x402 receipt that verifies and still cannot say which payment it is about, the measured cause in the reference implementation, and the corrections that followed in public
+- [733,203 attestations were taken back](https://tokenizen.nl/en/notes/733203-attestations-were-taken-back): a count of revocations across the three largest EAS indexers, showing that every revocation is an issuer withdrawing its own statement and the counterparty has no move at all
+- [600 live x402 services, none signing a receipt](https://tokenizen.nl/en/notes/zero-of-600-x402-services-sign-a-receipt): a measured count of how many live x402 resources declare the offer-receipt extension, the commands to reproduce it, the limits of the number, and a live endpoint that does sign one
 - [Nine ways to fake a delivery claim](https://tokenizen.nl/en/notes/nine-ways-to-fake-a-delivery-claim): nine independent designs for making buyer-signed claims harder to fake, each built and broken against the real code, and the structural reason none of them fully worked
 - [The Hierarchy of Agent Trust](https://tokenizen.nl/en/notes/the-hierarchy-of-agent-trust): a plain-language story explaining why capacity-attest stops at evidence and deliberately never becomes a score or a judge
 

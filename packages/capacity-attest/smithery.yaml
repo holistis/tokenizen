@@ -1,0 +1,12 @@
+# Smithery configuration: https://smithery.ai/docs/config#smitheryyaml
+
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      dataDir:
+        type: string
+        description: "Directory the append-only claims ledger (claims.jsonl) is written to and read from. Optional, defaults to ./data inside the package."
+  commandFunction: |-
+    (config) => ({command: 'npx', args: ['-y', 'capacity-attest'], env: config.dataDir ? {CAPACITY_ATTEST_DATA_DIR: config.dataDir} : {}})

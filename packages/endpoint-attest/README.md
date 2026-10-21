@@ -59,3 +59,13 @@ Full working example with a real local HTTP server proving the whole flow, inclu
 ## Status
 
 43 tests passing (`npm test`), clean typecheck and build. Not yet published to npm. No independent, external review of this code has been done; see [capacity-attest's own security notes](../capacity-attest/docs/SECURITY-REVIEW-2026-09-11.md) for how that project handles the same honesty requirement, which this package follows too.
+
+## Verifying your own implementation
+
+The full derivation, plus machine readable vectors you can check yourself in any language, lives in
+[docs/OWNERSHIP-CONFORMANCE.md](docs/OWNERSHIP-CONFORMANCE.md) and
+[examples/ownership-challenge-testvector.json](examples/ownership-challenge-testvector.json).
+
+The vectors are generated from this implementation and re-checked against it in CI, so they cannot
+drift away from the code. The secret in them is public on purpose: it exists so anyone can reproduce
+the tokens without asking us for anything.

@@ -71,6 +71,15 @@ export interface Dictionary {
     note: string;
     cards: CardText[];
   };
+  secondPillar: {
+    eyebrow: string;
+    h2: string;
+    body: string;
+    cards: CardText[];
+    honestNote: string;
+    ctaLabel: string;
+    ctaNote: string;
+  };
   howItWorks: {
     eyebrow: string;
     h2: string;
@@ -100,6 +109,13 @@ export interface Dictionary {
     copyLabel: string;
     copiedLabel: string;
   };
+  metingen: {
+    eyebrow: string;
+    h2: string;
+    body: string;
+    rows: { date: string; title: string; body: string }[];
+    footer: string;
+  };
   status: {
     eyebrow: string;
     h2: string;
@@ -122,6 +138,26 @@ export interface Dictionary {
     githubLabel: string;
     copyright: string;
     legend: Array<{ dot: string; label: string }>;
+  };
+  trustRadar: {
+    metaTitle: string;
+    metaDescription: string;
+    eyebrow: string;
+    h1: string;
+    intro: string;
+    disclaimer: string;
+    checkedLabel: string;
+    mailSubject: string;
+    empty: {
+      title: string;
+      body: string;
+      cta: string;
+    };
+    badges: {
+      checksPassed: string;
+      openUnclear: string;
+      selfDeclaredUnsafe: string;
+    };
   };
   noscript: {
     h1: string;

@@ -1,6 +1,6 @@
 {
   "name": "trust-attest-server",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP server for the tokenizen.nl trust layer: an AI agent proves it controls an endpoint (ACME-style, via endpoint-attest), a passive check reads what that endpoint's own response says about authentication, and the outcome is returned as a signed, content-addressed, expiring EndpointAttestation. Ownership proof is required before any check runs or any attestation is issued.",
   "keywords": [
     "mcp",
@@ -14,6 +14,7 @@
   "author": "holistis",
   "license": "MIT",
   "homepage": "https://tokenizen.nl",
+  "mcpName": "io.github.holistis/trust-attest-server",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/holistis/tokenizen.git",
@@ -43,7 +44,8 @@
     "endpoint-attest": "^0.1.0",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "ethers": "^6.13.0",
-    "zod": "^4.5.2"
+    "zod": "^4.5.2",
+    "tokenizen-net-guard": "^0.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",

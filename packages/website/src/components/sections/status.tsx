@@ -13,7 +13,7 @@ export function Status() {
   const { t } = useLocale();
 
   return (
-    <Section id="status" index="07" eyebrow={t.status.eyebrow}>
+    <Section id="status" index="08" eyebrow={t.status.eyebrow}>
       <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">{t.status.h2}</h2>
       <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">{t.status.body}</p>
 

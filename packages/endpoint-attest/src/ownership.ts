@@ -30,13 +30,23 @@
 // life of one attestation, not indefinitely.
 
 import { createHmac } from "node:crypto";
-import { resolveTxt } from "node:dns/promises";
 import { OWNERSHIP_METHODS, type OwnershipMethod } from "./schema.js";
 
 /** The DNS label the token is published under, prefixed to the endpoint's host. Mirrors ACME's _acme-challenge convention. */
 export const DNS_LABEL = "_endpoint-attest";
 /** The path the token is published at for the file method. Standard well-known location per RFC 8615. */
 export const WELL_KNOWN_PATH = "/.well-known/endpoint-attest.txt";
+
+/**
+ * A SECOND, distinct proof the owner publishes to opt IN to active testing.
+ * Separate from the ownership proof on purpose: proving control of an endpoint
+ * is not the same as consenting to have it actively connected-to and probed
+ * (an MCP client handshake and tools/list), so each is its own published
+ * token at its own location. Published at a distinct DNS label / well-known
+ * path so it never collides with the ownership proof (a file holds one value).
+ */
+export const ACTIVE_CONSENT_DNS_LABEL = "_endpoint-attest-active-consent";
+export const ACTIVE_CONSENT_WELL_KNOWN_PATH = "/.well-known/endpoint-attest-active-consent.txt";
 
 const DEFAULT_TIMEOUT_MS = 10_000;
 // A well-known file only ever needs to hold one short token. Anything larger
@@ -64,15 +74,73 @@ export function challengeToken(endpoint: string, ownerAddress: string, attesterS
   if (attesterSecret.length < 32) {
     throw new OwnershipError("attesterSecret must be at least 32 characters: a short secret makes every token guessable");
   }
-  const host = endpointHost(endpoint);
+  const bound = normalizeEndpoint(endpoint);
   const mac = createHmac("sha256", attesterSecret)
-    .update(`${host}\n${ownerAddress.toLowerCase()}`, "utf-8")
+    .update(`${bound}\n${ownerAddress.toLowerCase()}`, "utf-8")
     .digest("hex");
   return `tok_${mac}`;
 }
 
+/**
+ * Derive the ACTIVE-TEST consent token for one (endpoint, owner) pair — the
+ * token the owner publishes to authorize active testing (an MCP client
+ * handshake and tools/list), distinct from the ownership challenge token.
+ *
+ * Domain-separated from challengeToken: the HMAC message is prefixed with
+ * "active-test-consent\n", so a consent token can never equal an ownership
+ * token for the same pair, and neither can be replayed as the other. Because a
+ * hostname cannot contain a newline and an owner address cannot either, the two
+ * messages ("host\nowner" vs "active-test-consent\nhost\nowner") can never
+ * collide. Same unguessable-without-the-secret property as the ownership token.
+ */
+export function activeTestConsentToken(endpoint: string, ownerAddress: string, attesterSecret: string): string {
+  if (attesterSecret.length < 32) {
+    throw new OwnershipError("attesterSecret must be at least 32 characters: a short secret makes every token guessable");
+  }
+  const bound = normalizeEndpoint(endpoint);
+  const mac = createHmac("sha256", attesterSecret)
+    .update(`active-test-consent\n${bound}\n${ownerAddress.toLowerCase()}`, "utf-8")
+    .digest("hex");
+  return `consent_${mac}`;
+}
+
 /** The exact host an endpoint's proof must be published under. Rejects anything that is not a plain http(s) URL, so a file:// or credential-bearing URL can never reach a DNS query or a fetch. */
 export function endpointHost(endpoint: string): string {
+  return parseEndpoint(endpoint).hostname;
+}
+
+/**
+ * The canonical form a token binds to and an attestation records: scheme +
+ * host + port + path, with credentials, query and fragment stripped and a
+ * single trailing slash removed (but the root "/" kept). Computed from a
+ * parsed URL, so a raw string can never smuggle a newline into the HMAC
+ * message (new URL rejects/strips control characters).
+ *
+ * WHY THE FULL ENDPOINT, NOT JUST THE HOST: the challenge/consent tokens used
+ * to bind only to the hostname, so one published proof (a single host-wide TXT
+ * record, or a host-root well-known file) authorized an attestation — and the
+ * consent-gated active probe — for EVERY scheme/port/path on that host. An
+ * attacker who could read a victim's published proof could then point the
+ * attester at http://victim:6379/anything and both mint a signed attestation
+ * the owner never requested and use the attester as a non-blind port/path
+ * probe. Binding the token to the normalized endpoint makes the token for
+ * one endpoint useless for any other, so only the exact endpoints the owner
+ * actually published a token for can be attested. The publish LOCATION stays
+ * host/origin-based (a DNS name cannot carry a path); distinctness comes from
+ * the token value, and verifyTokenPublished scans every record/finds the exact
+ * match, so one host can carry many endpoints' tokens side by side.
+ */
+export function normalizeEndpoint(endpoint: string): string {
+  const url = parseEndpoint(endpoint);
+  let path = url.pathname;
+  if (path.length > 1 && path.endsWith("/")) path = path.slice(0, -1);
+  // url.host includes the port (unlike url.hostname) — the port is part of the
+  // identity we bind to, so a different port is a different endpoint.
+  return `${url.protocol}//${url.host}${path}`;
+}
+
+/** Parse + validate an endpoint as a plain, credential-free http(s) URL. Shared by endpointHost and normalizeEndpoint so both reject the same inputs identically. */
+function parseEndpoint(endpoint: string): URL {
   let url: URL;
   try {
     url = new URL(endpoint);
@@ -88,7 +156,7 @@ export function endpointHost(endpoint: string): string {
   if (url.hostname === "") {
     throw new OwnershipError("endpoint has no host");
   }
-  return url.hostname;
+  return url;
 }
 
 /** Where a reader can re-check the proof themselves, per method. Recorded verbatim in the attestation's ownershipProof.location. */
@@ -99,17 +167,68 @@ export function proofLocation(method: OwnershipMethod, endpoint: string): string
   return `${url.protocol}//${url.host}${WELL_KNOWN_PATH}`;
 }
 
-/** Injection seams so verification is unit-testable without real DNS or a real network, the same DI pattern capacity-attest uses for its chain reads. */
+/** Where the owner publishes the active-test consent token, per method. Distinct from proofLocation so the two proofs never share a file or DNS name. */
+export function consentProofLocation(method: OwnershipMethod, endpoint: string): string {
+  const host = endpointHost(endpoint);
+  if (method === "dns-txt") return `${ACTIVE_CONSENT_DNS_LABEL}.${host}`;
+  const url = new URL(endpoint);
+  return `${url.protocol}//${url.host}${ACTIVE_CONSENT_WELL_KNOWN_PATH}`;
+}
+
+/**
+ * The network operations this verifier performs, supplied by the CALLER
+ * rather than defaulted here. endpoint-attest deliberately does not ship the
+ * process that runs the check (see README "What this does not do"), and that
+ * now extends to the network primitives: a public server must inject a guarded
+ * fetch/resolver (net-guard) so an anonymous visitor cannot turn ownership
+ * verification into an SSRF or DNS-rebinding probe. Both are REQUIRED, so a
+ * caller physically cannot reach the network unguarded by forgetting to pass
+ * one — the previous global-fetch/node:dns defaults were exactly how one road
+ * stayed unguarded. Tests inject stubs, so this stays unit-testable offline.
+ */
 export interface OwnershipCheckDeps {
-  resolveTxtRecords?: (name: string) => Promise<string[][]>;
-  fetchImpl?: typeof fetch;
+  resolveTxtRecords: (name: string) => Promise<string[][]>;
+  fetchImpl: typeof fetch;
   timeoutMs?: number;
   maxFileBytes?: number;
 }
 
+/**
+ * WAAROM `token` HIERIN ZIT, en dat is geen uitbreiding maar een reparatie.
+ *
+ * Het gepubliceerde 402-contract van de betaalde route eist `token` als verplicht
+ * uitvoerveld, en dit type gaf het nooit terug. Gemeten op 2026-10-18: ons eigen
+ * leveringscontroleur leest precies dat veld, dus hij kon geen enkel echt antwoord
+ * van onze eigen dienst verwerken. Een belofte in een catalogus die de route niet
+ * nakomt is erger dan een ontbrekende belofte.
+ *
+ * WAAROM DIT VEILIG IS, EN DE EERSTE VERSIE VAN DEZE ONDERBOUWING WAS ONJUIST. Er stond
+ * dat het token "per constructie een publieke waarde" is omdat de eigenaar hem zelf moet
+ * publiceren. Dat klopt bij een GESLAAGDE controle en is bij een MISLUKTE per definitie
+ * onwaar: mislukt betekent juist dat hij hem NIET gepubliceerd heeft. Onze eigen tweede
+ * keuring wees dat aan, en de verkeerde formulering stond toen ook al in het publieke
+ * Bazaar-schema van de betaalde route.
+ *
+ * De echte reden dat dit niets weggeeft is gemeten en luidt anders. `/api/challenge`
+ * geeft precies hetzelfde token al terug voor een WILLEKEURIG paar van eindpunt en
+ * eigenaar, zonder enig bewijs, met een RUIMERE limiet (30 per 5 minuten tegen 10) en een
+ * LOSSERE gastheercontrole. Wie het token wil hebben, heeft deze route dus niet nodig en
+ * neemt de goedkopere. Drie scenario's zijn nagelopen (een overgenomen subdomein, een
+ * zwevend dns-record, een plek waar een ander een bestand kan zetten) en geen van de
+ * drie geeft een aanvaller iets extra: het token bindt aan het VOLLEDIGE eindpunt, dus
+ * schema plus host plus poort plus pad, en publiceren kan alleen wie die plek beheert.
+ *
+ * DE KOPPELING DIE HIERUIT VOLGT, en die is nergens anders vastgelegd dan hier en in de
+ * test ernaast: zet iemand `/api/challenge` later achter een inlog, dan wordt deze
+ * functie stil het goedkoopste orakel voor hetzelfde token. Dan hoort deze afweging
+ * opnieuw gemaakt te worden, en niet overgenomen.
+ *
+ * Het token gaat ook mee bij een MISLUKTE controle, want dan is hij het antwoord op "wat
+ * had er moeten staan", en dat is wat een eigenaar nodig heeft om het te repareren.
+ */
 export type OwnershipResult =
-  | { ok: true; method: OwnershipMethod; location: string; verifiedAt: string }
-  | { ok: false; method: OwnershipMethod; location: string; reason: string };
+  | { ok: true; method: OwnershipMethod; token: string; location: string; verifiedAt: string }
+  | { ok: false; method: OwnershipMethod; token: string; location: string; reason: string };
 
 /**
  * Verify control of `endpoint` by the holder of `ownerAddress`, using one
@@ -121,60 +240,103 @@ export async function verifyOwnership(
   endpoint: string,
   ownerAddress: string,
   attesterSecret: string,
-  deps: OwnershipCheckDeps = {},
+  deps: OwnershipCheckDeps,
 ): Promise<OwnershipResult> {
   if (!OWNERSHIP_METHODS.includes(method)) {
     throw new OwnershipError(`unknown ownership method: ${JSON.stringify(method)}`);
   }
   const expected = challengeToken(endpoint, ownerAddress, attesterSecret);
   const location = proofLocation(method, endpoint);
+  return verifyTokenPublished(method, expected, location, deps);
+}
+
+/**
+ * Verify the owner has published the ACTIVE-TEST consent token (opting in to
+ * being actively connected-to and probed), using the same channel they used
+ * for the ownership proof. Read-only, same posture as verifyOwnership. This is
+ * a SEPARATE gate: proving control of an endpoint does not by itself authorize
+ * active testing of it, so the attester runs the active path only when this
+ * returns ok.
+ */
+export async function verifyActiveTestConsent(
+  method: OwnershipMethod,
+  endpoint: string,
+  ownerAddress: string,
+  attesterSecret: string,
+  deps: OwnershipCheckDeps,
+): Promise<OwnershipResult> {
+  if (!OWNERSHIP_METHODS.includes(method)) {
+    throw new OwnershipError(`unknown ownership method: ${JSON.stringify(method)}`);
+  }
+  const expected = activeTestConsentToken(endpoint, ownerAddress, attesterSecret);
+  const location = consentProofLocation(method, endpoint);
+  return verifyTokenPublished(method, expected, location, deps);
+}
+
+/**
+ * The shared read-only check behind both verifyOwnership and
+ * verifyActiveTestConsent: confirm that `expected` is exactly what is published
+ * at `location` via `method`. Factored out so the two gates can never drift
+ * apart in how they fetch, bound, and exact-match a published token.
+ */
+async function verifyTokenPublished(
+  method: OwnershipMethod,
+  expected: string,
+  location: string,
+  deps: OwnershipCheckDeps,
+): Promise<OwnershipResult> {
   const now = () => new Date().toISOString();
 
   if (method === "dns-txt") {
-    const resolver = deps.resolveTxtRecords ?? resolveTxt;
+    const resolver = deps.resolveTxtRecords;
     let records: string[][];
     try {
       records = await resolver(location);
     } catch (e) {
-      return { ok: false, method, location, reason: `dns lookup failed: ${(e as Error).message}` };
+      return { ok: false, method, token: expected, location, reason: `dns lookup failed: ${(e as Error).message}` };
     }
     // A TXT record can be split into multiple strings by the resolver; the
     // published value is their concatenation, which is how every DNS client
     // reassembles long records.
     const values = records.map((chunks) => chunks.join("").trim());
     if (!values.includes(expected)) {
-      return { ok: false, method, location, reason: "no TXT record at that name matched the expected token" };
+      return { ok: false, method, token: expected, location, reason: "no TXT record at that name matched the expected token" };
     }
-    return { ok: true, method, location, verifiedAt: now() };
+    return { ok: true, method, token: expected, location, verifiedAt: now() };
   }
 
-  const fetchImpl = deps.fetchImpl ?? fetch;
+  const fetchImpl = deps.fetchImpl;
   const timeoutMs = deps.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const maxFileBytes = deps.maxFileBytes ?? MAX_FILE_BYTES;
 
   let response: Response;
   try {
-    response = await fetchImpl(location, { signal: AbortSignal.timeout(timeoutMs) });
+    // redirect:"error" — a control proof must be served DIRECTLY at the exact
+    // well-known URL. Following redirects would let an open redirect (or a
+    // scheme downgrade) at that path turn some OTHER server's body into a
+    // "valid" proof, so a third party could forge ownership of a host that
+    // merely has an open redirect at /.well-known/endpoint-attest.txt.
+    response = await fetchImpl(location, { signal: AbortSignal.timeout(timeoutMs), redirect: "error" });
   } catch (e) {
-    return { ok: false, method, location, reason: `fetch failed: ${(e as Error).message}` };
+    return { ok: false, method, token: expected, location, reason: `fetch failed: ${(e as Error).message}` };
   }
   if (!response.ok) {
-    return { ok: false, method, location, reason: `responded ${response.status} ${response.statusText}` };
+    return { ok: false, method, token: expected, location, reason: `responded ${response.status} ${response.statusText}` };
   }
 
   let body: string;
   try {
     body = await readBounded(response, maxFileBytes);
   } catch (e) {
-    return { ok: false, method, location, reason: (e as Error).message };
+    return { ok: false, method, token: expected, location, reason: (e as Error).message };
   }
   // Exact match on the trimmed content, not a substring search: a token
   // buried in an otherwise unrelated page does not demonstrate that the
   // operator deliberately published it.
   if (body.trim() !== expected) {
-    return { ok: false, method, location, reason: "file content did not exactly match the expected token" };
+    return { ok: false, method, token: expected, location, reason: "file content did not exactly match the expected token" };
   }
-  return { ok: true, method, location, verifiedAt: now() };
+  return { ok: true, method, token: expected, location, verifiedAt: now() };
 }
 
 /** Read a response body up to maxBytes, refusing the moment the limit is crossed instead of buffering the rest. */

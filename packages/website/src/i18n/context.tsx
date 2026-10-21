@@ -29,8 +29,16 @@ function stripLocalePrefix(pathname: string): string {
   return pathname;
 }
 
-export function LocaleProvider({ children }: { children: ReactNode }) {
-  const locale = useMemo(() => localeFromPathname(window.location.pathname), []);
+export function LocaleProvider({ children, locale: forcedLocale }: { children: ReactNode; locale?: Locale }) {
+  // In the browser the locale comes from the path, which is what we want in
+  // production. A caller may pass one explicitly instead, which is how tests
+  // render a page in a chosen language: this suite runs with no DOM at all
+  // (vitest environment "node"), so reading window.location would throw and the
+  // page could never be asserted in either language.
+  const locale = useMemo(
+    () => forcedLocale ?? localeFromPathname(window.location.pathname),
+    [forcedLocale],
+  );
   const t = DICTIONARIES[locale];
   const otherLocale: Locale = locale === "nl" ? "en" : "nl";
 

@@ -1,0 +1,44 @@
+{
+  "name": "tokenizen-net-guard",
+  "version": "0.1.0",
+  "description": "The single enforced egress choke-point for the tokenizen trust layer: an IP-validating, IP-pinning fetch and DNS resolver that refuses private, loopback, link-local and cloud-metadata addresses on every hop, including redirects. Published as tokenizen-net-guard because npm rejects the name net-guard as too similar to the existing netguard package.",
+  "keywords": [
+    "ssrf",
+    "egress",
+    "dns-rebinding",
+    "security",
+    "fetch"
+  ],
+  "author": "holistis",
+  "license": "MIT",
+  "homepage": "https://tokenizen.nl",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/holistis/tokenizen.git",
+    "directory": "packages/net-guard"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "undici": "^6.21.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsx": "^4.23.15",
+    "typescript": "^5.7.3",
+    "vitest": "^4.1.11"
+  }
+}

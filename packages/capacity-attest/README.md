@@ -20,6 +20,7 @@ Every claim about this project below is clickable and independently verifiable, 
 | A real `giveFeedback()` call on the ERC-8004 Reputation Registry, Base mainnet | [tx 0x2217...efc0](https://basescan.org/tx/0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0) | Live |
 | Proposed as a buyer-side addition to someone else's agent spec | [omworldprotocol/om-world#18](https://github.com/omworldprotocol/om-world/pull/18) | In review, not yet merged |
 | An independently rebuilt, stdlib-only Python verifier (its own secp256k1/EIP-191/canonical-JSON implementation, no shared code), 7/7 match against our own test vectors including both negative controls (forged signature, tampered claim), now a permanent regression test in a separate, independently published project | [x402-foundation/x402#2887 (comment)](https://github.com/x402-foundation/x402/issues/2887#issuecomment-5687398497), author goun7, integrated into Tamga (`pip install tamga-protocol`) | Permanently integrated into someone else's project |
+| The `measured` block cited as the source of truth for metered delivery in a draft ERC-8004 grounded-feedback convention, pinned to a specific commit of this repo, with two independent verifiers (Node and Python) green on five signed test vectors | [erc-8004/erc-8004-contracts#99](https://github.com/erc-8004/erc-8004-contracts/issues/99), schema doc at [predgeAI/erc8004-outcome-validator](https://github.com/predgeAI/erc8004-outcome-validator/blob/2c4d745f1205ba91f3aabded221b5b5acdbcb5ed/grounded-feedback/README.md) | Draft v0, public, referenced by commit hash |
 
 **Kept honestly separate from the table above, because this is not third-party review:** before 0.6.0 (the first version that actually writes to the blockchain), we ran our own adversarial security review. Nine findings, all fixed: seven closed by a dedicated regression test, one verified by a packaging check (`npm pack --dry-run`) rather than a unit test, and one a documentation-only fix. Not an independent audit by an outside party. Full, checkable report: [docs/SECURITY-REVIEW-2026-09-11.md](https://github.com/holistis/tokenizen/blob/main/packages/capacity-attest/docs/SECURITY-REVIEW-2026-09-11.md).
 
@@ -67,6 +68,7 @@ The paying agent (the buyer) calls this **after** an x402 settlement, once it's 
 | `signature` | EIP-191 personal-sign signature by the buyer over `claimId` |
 | `externalRefs` | *(optional, since 0.3.0)* unverified references to other agent-economy infrastructure: `sellerAgentRef`/`buyerAgentRef` (e.g. an ERC-8004 agent id or DID), `mandateRef`+`mandateIssuerDid` (an externally issued AP2/AAE mandate), `intentRef` (an external AP2 IntentMandate), `disputeContext` (`protocol`+`termsHash`+optional `resolutionRef`, e.g. a Legal Context Protocol reference). See [DECISIONS.md](https://github.com/holistis/tokenizen/blob/main/packages/capacity-attest/DECISIONS.md) D-007 through D-013 |
 | `priorClaimId` | *(optional, since 0.4.0)* the `claimId` of your previous claim about the same `sellerAddress`, so your claims about that seller form a chain. Omitted on your first claim about a seller. Part of the signed content, so a host can't strip it. Lets a reader catch a host hiding a middle claim. See [DECISIONS.md](https://github.com/holistis/tokenizen/blob/main/packages/capacity-attest/DECISIONS.md) D-006 |
+| `offerReceiptHash` | *(optional, since 0.8.0)* sha256 hex of the seller-signed [x402 offer-receipt](https://github.com/x402-foundation/x402/blob/main/specs/extensions/extension-offer-and-receipt.md) that this claim answers, taken over the receipt artifact exactly as it was transmitted. Their receipt is the seller's statement that service was delivered; this claim is the buyer's statement of what actually arrived. Linking the two gives a dispute both sides of the story instead of only the interested party's. Part of the signed content, so the reference cannot be swapped in or stripped out after signing. Worked example with both halves and real signatures: [`examples/offer-receipt-link-testvector.json`](https://github.com/holistis/tokenizen/blob/main/packages/capacity-attest/examples/offer-receipt-link-testvector.json) |
 
 The server first validates the schema, then whether `claimId` really is the hash of the content, then whether `signature` really recovers to `buyerAddress`. Only then is the claim appended to the append-only ledger (`data/claims.jsonl`). An invalid signature or a claim that's already stored (same `claimId`) is rejected.
 
@@ -149,6 +151,23 @@ Note: import `capacity-attest/dist/signing.js` directly, not the package root. T
 `verifyClaim()` checks exactly two things: that `claimId` is the content-addressed hash of the claim fields, and that `signature` (EIP-191) recovers to `buyerAddress`. It does not check whether the underlying settlement (`settlementRef`) really checks out on-chain — that's a separate check against the relevant chain — and it does not check whether `delivered` is true or whether `evidenceHash` covers real evidence; that remains the paying agent's own statement.
 
 A working, externally reproduced example of these exact steps is in [github.com/YE-YI7/asm-spec, PR #18](https://github.com/YE-YI7/asm-spec/pull/18): an independent project that ran this against a real, live registered claim.
+
+## What is safe to depend on
+
+If you are writing your own verifier, or pinning this repo in a specification, this is the part you need: what will not move under you.
+
+Four things are fixed, and a claim signed today is meant to still verify years from now:
+
+- The canonical form a claim is hashed over, byte for byte, as specified in [`docs/metered-delivery-spec.md`](docs/metered-delivery-spec.md).
+- How `claimId` is derived from that canonical form.
+- The EIP-191 message that gets signed, and that the signature recovers to `buyerAddress`.
+- The strict `issuedAt` shape, `YYYY-MM-DDTHH:MM:SS.sssZ` with exactly three fractional digits.
+
+Adding a new optional field is not a break and can happen in a minor version, because an old verifier reading a new claim still gets the same `claimId` for the fields it knows. Removing a field, renaming one, reordering the canonical form, or changing how the hash is computed would invalidate every claim ever signed, so it is treated as something we do not do rather than something we version.
+
+That promise is checked rather than stated. The published test vectors in [`examples/`](examples) carry each intermediate step separately: the canonical preimage, its byte length, the `claimId`, the EIP-191 digest, the signature and the expected recovered address. Two standalone scripts verify them on every CI run, and both are deliberate reimplementations that read one JSON file and never import this package's own source, so they cannot pass by agreeing with the code they are supposed to be checking. Break the format and CI goes red before anything can be published.
+
+If a break ever becomes genuinely unavoidable, it ships as a new major version under a different package name, the old one keeps working and keeps being published, and the reason goes in [DECISIONS.md](DECISIONS.md) before the code changes. Parties that pinned a commit are not moved by us.
 
 ## Sharing your own submitted claims, independent of a host (D-006)
 

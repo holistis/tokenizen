@@ -20,10 +20,10 @@ jobs:
         working-directory: packages/endpoint-attest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
@@ -48,5 +48,22 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Auth comes from NPM_TOKEN, not from trusted publishing. Trusted publishing
+      # can only authenticate a package that is ALREADY on npm with a configured
+      # repo+workflow link, so it cannot create a brand new package name: npm
+      # answers E404 on the PUT, which reads like "does not exist" but actually
+      # means "not authenticated" (npm masks auth failures as 404). The same trap
+      # fires if a package is ever removed from npm, because the trusted-publisher
+      # link goes with it. --provenance is unaffected: it signs via GitHub's OIDC
+      # (id-token: write), independent of how the publish authenticates.
+      # Refuse to ship a package whose own dependencies are not resolvable on
+      # npm. Inside this workspace they always resolve, because npm symlinks
+      # them, so a green build proves nothing about the person installing it.
+      - name: Refuse to publish if our own dependencies are missing from npm
+        working-directory: .
+        run: node scripts/check-own-deps-published.mjs --package=endpoint-attest
+
       - name: Publish to npm with provenance
         run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

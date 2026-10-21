@@ -1,0 +1,76 @@
+name: Publish net-guard
+
+# net-guard is the shared egress choke-point every public server in this repo
+# routes its outbound DNS and HTTP through. It has to exist on npm in its own
+# right, because trust-attest-server declares it as a runtime dependency: a
+# published trust-attest-server whose net-guard is missing from the registry is
+# an uninstallable package, which is exactly the failure this repo already hit
+# once (trust-attest-server 0.1.0 shipped depending on an endpoint-attest that
+# was not on npm, so npm install failed with E404 from the day it was released).
+#
+# Unlike the other publish workflows here, there is no workspace package to
+# build first: net-guard depends only on undici.
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "publish" to confirm publishing the current version in packages/net-guard/package.json to npm'
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    if: github.event.inputs.confirm == 'publish'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/net-guard
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Update npm (trusted publishing + provenance need npm >= 11.5.1)
+        run: npm install -g npm@latest
+
+      - name: Install dependencies (workspace root)
+        working-directory: .
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      # Auth comes from NPM_TOKEN, not from trusted publishing. Trusted publishing
+      # can only authenticate a package that is ALREADY on npm with a configured
+      # repo+workflow link, so it cannot create a brand new package name: npm
+      # answers E404 on the PUT, which reads like "does not exist" but actually
+      # means "not authenticated" (npm masks auth failures as 404). The same trap
+      # fires if a package is ever removed from npm, because the trusted-publisher
+      # link goes with it. --provenance is unaffected: it signs via GitHub's OIDC
+      # (id-token: write), independent of how the publish authenticates.
+      # Refuse to ship a package whose own dependencies are not resolvable on
+      # npm. Inside this workspace they always resolve, because npm symlinks
+      # them, so a green build proves nothing about the person installing it.
+      - name: Refuse to publish if our own dependencies are missing from npm
+        working-directory: .
+        run: node scripts/check-own-deps-published.mjs --package=tokenizen-net-guard
+
+      - name: Publish to npm with provenance
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

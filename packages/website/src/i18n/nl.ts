@@ -21,10 +21,12 @@ export const nl: Dictionary = {
       { href: "#probleem", label: "Probleem" },
       { href: "#waarom-nu", label: "Waarom nu" },
       { href: "#product", label: "Product" },
+      { href: "#controle", label: "Controle" },
       { href: "#hoe-het-werkt", label: "Hoe het werkt" },
       { href: "#ontwerpgrenzen", label: "Grenzen" },
       { href: "#open-source", label: "Open source" },
       { href: "#status", label: "Status" },
+      { href: "/notes", label: "Notities" },
     ],
     github: "GitHub",
     openMenu: "Open menu",
@@ -42,10 +44,10 @@ export const nl: Dictionary = {
     dark: "Donker",
   },
   hero: {
-    eyebrow: "Infrastructuur voor de AI-agent-economie · open source",
-    h1Line1: "Iedereen bouwt de koperskant.",
-    h1Line2: "Wij bouwen de verkoperskant.",
-    body: "Agent-identiteit, spend-limits en betaalrails zijn onderweg (x402: betaling per API-call, Google AP2: autorisatie-protocol, ERC-8004: on-chain reputatie-registers). Wat nog ontbreekt: een ondertekend spoor van wat een verkoper claimt geleverd te hebben, en of dat overeenkwam met wat beloofd was. Tokenizen bouwt dat spoor, te beginnen met Capacity Attest: een ondertekende, feitelijke leveringsclaim voor x402-capaciteitshandel tussen agents.",
+    eyebrow: "Open source infrastructuur voor de AI-agent-economie",
+    h1Line1: "AI-agenten doen straks zaken met elkaar.",
+    h1Line2: "Niemand kan nakijken wat er echt gebeurde.",
+    body: "Een AI-agent koopt iets bij een andere agent en betaalt binnen een seconde. Of er ook echt geleverd is wat beloofd was, legt niemand vast. Wij maken daar ondertekende bonnetjes van. Twee soorten: een bonnetje van wat er geleverd werd, en een bonnetje van wat een controle van zo'n agent werkelijk aantrof. Allebei na te lezen door de volgende die zaken wil doen.",
     clarifier: "De koper tekent de claim, want alleen hij weet wat er echt aankwam. Wat ontstaat is desondanks het trackrecord van de verkoper: het bewijs dat een goede verkoper aan de volgende koper kan tonen.",
     trustLine: "Geen token · geen lening · geen yield",
     ctaPrimary: "Bekijk de code op GitHub",
@@ -54,8 +56,8 @@ export const nl: Dictionary = {
   },
   problem: {
     eyebrow: "Het probleem",
-    h2: "Een agent betaalt, krijgt minder, en heeft er geen ondertekend spoor van.",
-    body: "Een AI-agent betaalt via x402 voor capaciteit bij een andere agent of dienst: GPU-uren, opslag, API/inference-credits, bandbreedte. De levering valt tegen: minder uren dan toegezegd, lagere kwaliteit, minder opslag. Er is geen kwitantie die vastlegt wat beloofd en geclaimd werd. Dat is geen bewijs dat de levering zelf klopte, wel een ondertekend spoor dat een agent later kan raadplegen en tonen.",
+    h2: "Betalen gaat al vanzelf. Nakijken wat je kreeg, niet.",
+    body: "Een agent betaalt in een seconde voor rekenkracht, opslag of toegang tot een dienst. Kreeg hij minder dan beloofd, dan verdwijnt dat zodra de sessie stopt. Er blijft niets over dat iemand later kan bekijken. Geen klacht, geen bewijs, geen geheugen.",
     cards: [
       {
         title: "De koper weet het",
@@ -94,9 +96,9 @@ export const nl: Dictionary = {
     ],
   },
   product: {
-    eyebrow: "Het product: Capacity Attest",
-    h2: "Een ondertekende, feitelijke leveringsclaim. Geen oordeel, geen score.",
-    body: "Na een x402-afwikkeling voor capaciteit (GPU-uren, opslag, API-credits, bandbreedte) laat de betalende agent een cryptografisch ondertekende claim achter: `delivered` (yes/no/partial) plus een hash van het bewijsmateriaal, content-addressed en op een append-only ledger. Andere agents kunnen die geschiedenis opvragen vóórdat ze zelf zaken doen met een verkoper.",
+    eyebrow: "Pijler 1: bewijs van levering",
+    h2: "Een bonnetje van wat er geleverd is. Geen cijfer, geen oordeel.",
+    body: "Zodra een agent betaald heeft, legt hij vast of hij kreeg wat beloofd was: ja, nee, of gedeeltelijk. Dat bonnetje wordt ondertekend en kan daarna niet meer worden veranderd. Wie later met diezelfde verkoper zaken wil doen, kan die geschiedenis opvragen voordat hij betaalt.",
     codeLabelRecordCall: "MCP tool-call → record_delivery",
     codeLabelHistoryCall: "MCP tool-call → get_delivery_history",
     codeLabelResult: "antwoord",
@@ -111,6 +113,28 @@ export const nl: Dictionary = {
         body: "Gegeven een `sellerAddress`: alle bekende, handtekening-geverifieerde claims tegen die verkoper, chronologisch. Puur feitelijk: geen gemiddelde, geen percentage, geen trust score.",
       },
     ],
+  },
+  secondPillar: {
+    eyebrow: "Pijler 2",
+    h2: "Bewijs van controle, niet van veiligheid.",
+    body: "Een bedrijf dat een vreemde AI-agent binnenlaat heeft alleen de folder van de maker. Pijler 2 maakt daar een bonnetje van dat iedereen kan nakijken: de eigenaar bewijst eerst dat de endpoint van hem is, geeft toestemming, en wij leggen vast wat wij werkelijk aantroffen. Ondertekend, met een datum, en door iedereen na te lezen.",
+    cards: [
+      {
+        title: "De eigenaar bewijst dat het van hem is",
+        body: "Hij zet een code in zijn DNS of als bestand op zijn eigen server. Daarmee toont hij aan dat hij de endpoint beheert, zoals een briefje in je brievenbus aantoont dat het jouw huis is.",
+      },
+      {
+        title: "Hij geeft toestemming",
+        body: "Zonder uitdrukkelijke toestemming raken wij een endpoint niet aan, en wij zetten nooit iemand op een lijst die er niet om gevraagd heeft.",
+      },
+      {
+        title: "Wij schrijven op wat we zagen",
+        body: "Geen cijfer en geen oordeel. Wat wij niet konden vaststellen heet onvaststelbaar, en dat staat er dan ook gewoon.",
+      },
+    ],
+    honestNote: "Wij zetten nooit het stempel veilig. Een test kan laten zien dat er iets mis is, maar nooit bewijzen dat er niets mis is.",
+    ctaLabel: "Probeer het gratis",
+    ctaNote: "Gratis en zonder account. De betaalde stempel staat bewust nog uit.",
   },
   howItWorks: {
     eyebrow: "Hoe het werkt",
@@ -191,30 +215,91 @@ export const nl: Dictionary = {
     copyLabel: "Kopieer",
     copiedLabel: "Gekopieerd",
   },
+  metingen: {
+    eyebrow: "Wat we gemeten hebben",
+    h2: "Onze eigen controle bleek fout. We hebben het uitgezocht, gerepareerd en hier opgeschreven.",
+    body:
+      "Een computerprogramma dat zelf iets koopt, wil vooraf weten of de verkoper netjes om geld vraagt. " +
+      "Daar maakten wij een gratis controleprogramma voor. In oktober lieten we het los op zestig echte " +
+      "verkopers, en toen bleek dat het bij de meesten onterecht zei dat zij het fout deden. De fout zat " +
+      "bij ons: ons programma klopte op de verkeerde deur. Dat is nu gerepareerd. Het staat hier omdat een " +
+      "cijfer zonder methode niets waard is, en omdat wie zijn eigen fout verzwijgt zijn cijfers later ook " +
+      "niet meer waard is.",
+    rows: [
+      {
+        date: "18 oktober 2026",
+        title: "Van vierenzestig procent fout naar nul",
+        body:
+          "We namen zestig verkopers uit de openbare lijst van Coinbase en vroegen elk van hen een keer om " +
+          "een prijs. Negenenvijftig vragen echt geld. Van die negenenvijftig gaven wij er achtendertig " +
+          "onterecht een onvoldoende. Na de reparatie: geen een. De methode en de ruwe uitkomst staan in de " +
+          "code, dus je kunt het zelf overdoen.",
+      },
+      {
+        date: "oktober 2026",
+        title: "Vier bouwers gebruiken onze manier van tellen",
+        body:
+          "In de openbare gesprekken over deze afspraken namen vier mensen onze indeling over. De " +
+          "belangrijkste is het verschil tussen \"dit is fout\" en \"dit kon ik niet nakijken\". Dat klinkt " +
+          "klein en is het niet: wie die twee op een hoop gooit, geeft een eerlijke verkoper de schuld van " +
+          "een storing bij de controleur.",
+      },
+      {
+        date: "stand van nu",
+        title: "Nog geen betalende klant",
+        body:
+          "Nul. Er is buiten dit project nog niemand die hiervoor betaalt. Dat schrijven we liever zelf op " +
+          "dan dat iemand het ontdekt.",
+      },
+      {
+        date: "laatste veertien dagen",
+        title: "Honderd mensen keken, niemand installeerde",
+        body:
+          "Honderdtwee mensen haalden de code binnen om te kijken. Het aantal installaties staat op nul. " +
+          "Dat betekent dat we gevonden worden en niet overtuigen, en dat is een ander probleem dan " +
+          "onbekend zijn.",
+      },
+    ],
+    footer:
+      "Elke regel hierboven heeft een datum en een manier van meten. Verandert een cijfer, dan verandert de " +
+      "regel en blijft de datum zichtbaar. Zo kun je zien of iets nog waar is in plaats van het te moeten " +
+      "aannemen. De code en de ruwe uitkomsten staan op github.com/holistis/agent-receipt-verify, dus je " +
+      "kunt elke regel hierboven zelf narekenen.",
+  },
   status: {
     eyebrow: "Status, eerlijk",
-    h2: "Nieuw project. Geen klanten. Wel bewezen fundament.",
-    body: "Tokenizen is net gelanceerd, open source, en in actieve ontwikkeling. Er zijn nog geen externe gebruikers, geen partnerships, geen klanten. Dat zeggen we gewoon zo. Wat er wél staat: dit is gebouwd bovenop bewezen eigen betaal- en MCP-infrastructuur (x402, meerdere eerder gepubliceerde npm/MCP-packages), en de eerste onafhankelijke verificatie van een live claim heeft al plaatsgevonden. De eerste externe integratie is het volgende dat telt.",
+    h2: "Geen betalende klanten. Wel drie externe partijen die op het formaat bouwen, en werk dat anderen zelf hebben nagerekend.",
+    body: "Tokenizen is open source en in actieve ontwikkeling. Er zijn geen betalende klanten en geen partnerships, en dat zeggen we gewoon zo. Wat er wel is: drie partijen buiten dit project bouwen inmiddels op het claimformaat. Een van hen heeft onze verifier van de grond af opnieuw gebouwd in een andere taal en levert hem mee in zijn eigen pakket. Een ander noemt het measured-blok de bron van waarheid voor gemeten levering in zijn eigen conceptspecificatie, vastgepind op een commit van deze repo. Het volgende dat telt is de ondertekende testvectoren in een officiële conformance-set krijgen, zodat iedereen die later meedoet er langs moet.",
     checkpoints: [
       {
         title: "npm-publicatie",
-        body: "capacity-attest 0.2.0 staat live op npm en in het MCP-register.",
+        body: "capacity-attest staat live op npm en in het MCP-register, op dit moment als 0.7.0, met 0.8.0 wachtend op een blokkade bij de registry.",
         achieved: true,
       },
       {
-        title: "Eerste externe clone/install",
-        body: "Iemand buiten dit project die de repository kloont of npm install capacity-attest draait, zonder dat wij het voordoen.",
+        title: "Eerste extern gebruik",
+        body: "Iemand buiten dit project die van capacity-attest afhangt zonder dat wij het voordoen. Drie partijen doen dat nu: een concept-ERC-8004-conventie die deze repo op commit-niveau vastpint, een onafhankelijk herbouwde verifier die meegeleverd wordt in andermans gepubliceerde pakket, en een BSV-rail-adapter op hetzelfde claimformaat van een losse auteur.",
+        achieved: true,
+      },
+      {
+        title: "Onafhankelijke verificatie door andermans code",
+        body: "Een externe partij heeft de verifier van de grond af opnieuw gebouwd, alleen met de standaardbibliotheek, met een eigen implementatie van secp256k1, EIP-191 en canonieke JSON. Zeven van zeven vectoren komen overeen, inclusief beide negatieve controles, en het draait nu als permanente regressietest binnen zijn eigen gepubliceerde pakket.",
+        achieved: true,
+      },
+      {
+        title: "Een externe agent die zelf record_delivery aanroept",
+        body: "Anderen verifiëren onze claims en hangen van het formaat af, maar we hebben nog geen bewijs van een agent van een andere partij die in productie een leveringsclaim via de MCP-tool wegschrijft. Tot we dat zien, blijft dit open.",
         achieved: false,
       },
       {
-        title: "Eerste externe agent-integratie",
-        body: "Een agent van een andere partij die record_delivery of get_delivery_history daadwerkelijk aanroept.",
+        title: "Het formaat in een officiële conformance-set",
+        body: "Het measured-blok zit al in de eigen conformance-set van één partij, met vijf ondertekende vectoren en twee verifiers eromheen gebouwd. Op 14 oktober zei de auteur die de ERC-8004-vocabulaire voor grounded feedback schrijft dat die vijf vectoren ongewijzigd in de gedeelde conformance-set kunnen, naast fixtures van twee andere partijen. Dat is een toezegging van degene die het opschrijft, geen gepubliceerd besluit, dus dit blijft open tot de vectoren er echt in staan.",
         achieved: false,
       },
     ],
     proof: {
       title: "Onafhankelijk geverifieerd",
-      body: "Een extern project (ASM-spec) verifieerde op 1 september 2026 zelfstandig een echte betaalclaim: zelfde claimId, zelfde handtekening terugberekend naar de koper, dezelfde on-chain betaling.",
+      body: "Onafhankelijke controles door andere mensen in plaats van door ons: een echte betaalclaim die een extern project op 1 september 2026 verifieerde, met hetzelfde claimId en dezelfde handtekening terugberekend naar de koper; een verifier die van de grond af in een andere taal is herbouwd; live leveringsclaims die iedereen kan uitlezen op drie losse chains; en een echte giveFeedback-aanroep op het ERC-8004 Reputation Registry op Base mainnet. Elke controle staat gelinkt vanuit de repository, zodat hij opnieuw na te rekenen is.",
       txLabel: "Bekijk de transactie",
       verificationLabel: "Bekijk de verificatie",
     },
@@ -233,6 +318,26 @@ export const nl: Dictionary = {
       { dot: "bg-rule-yellow", label: "met guardrail" },
       { dot: "bg-rule-red", label: "nooit, hardcoded uitgesloten" },
     ],
+  },
+  trustRadar: {
+    metaTitle: "Trust Radar | tokenizen",
+    metaDescription: "Een gratis, openbare lijst van MCP-servers waarvan de eigenaar zelf om een controle vroeg en aantoonde dat hij de endpoint beheert. Geen beveiligingsaudit, en nooit een vermelding waar de eigenaar niet om gevraagd heeft.",
+    eyebrow: "Gratis en openbaar",
+    h1: "Trust Radar",
+    intro: "Een openbare lijst van MCP-servers waarvan de eigenaar zelf om een controle vroeg, aantoonde dat hij de endpoint beheert, en toestemming gaf om het ondertekende resultaat hier te tonen.",
+    disclaimer: "Dit is geen algemene beveiligingsaudit, en wij zetten hier nooit iemand neer die er niet om gevraagd heeft. Elke regel hieronder is een zelf aangevraagde controle met bewezen eigendom: de eigenaar toonde eerst aan dat hij het domein beheert, via een DNS TXT-record of een bestand op zijn eigen server, voordat het ondertekende resultaat werd gepubliceerd. “Controles doorstaan” betekent dat de ondertekende controles zijn uitgevoerd en dat er geen enkele faalde. Het is geen garantie dat de server veilig is.",
+    checkedLabel: "Gecontroleerd",
+    mailSubject: "Trust Radar: controle aanvragen",
+    empty: {
+      title: "Nog geen bevestigde endpoints.",
+      body: "Hier staat niets totdat een eigenaar zelf om een controle vraagt, aantoont dat hij de endpoint beheert, en het ondertekende resultaat laat publiceren. Wij zetten nooit een endpoint op deze lijst zonder dat de eigenaar erom vroeg.",
+      cta: "Wees de eerste, vraag een gratis stempel aan",
+    },
+    badges: {
+      checksPassed: "Controles doorstaan",
+      openUnclear: "Open, onduidelijk",
+      selfDeclaredUnsafe: "Zelf onveilig genoemd",
+    },
   },
   noscript: {
     h1: "Tokenizen: bewijs van levering voor de AI-agent-economie",

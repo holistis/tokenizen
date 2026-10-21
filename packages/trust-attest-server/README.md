@@ -36,6 +36,8 @@ npx tsx examples/demo.ts
 
 Full worked example, including the "ownership not yet proven" failure path and an honest `failed` outcome: [examples/demo.ts](examples/demo.ts).
 
+**This package is published on npm, but `npm install trust-attest-server` on its own, outside this monorepo, currently fails.** Its dependency `endpoint-attest` is deliberately `"private": true` and is not published to the npm registry, so npm cannot resolve it (`404 Not Found - endpoint-attest`). Use it from within the `tokenizen` monorepo (the `npm install` above) until that dependency is either published separately or bundled into this package.
+
 ## Status
 
 Built on endpoint-attest (43 tests passing — see its own README). 27 tests in this package. No independent, external review of this code has been done.

@@ -17,7 +17,7 @@ export function Boundaries() {
   const { t } = useLocale();
 
   return (
-    <Section id="ontwerpgrenzen" index="05" eyebrow={t.boundaries.eyebrow}>
+    <Section id="ontwerpgrenzen" index="06" eyebrow={t.boundaries.eyebrow}>
       <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">{t.boundaries.h2}</h2>
       <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">{t.boundaries.body}</p>
 

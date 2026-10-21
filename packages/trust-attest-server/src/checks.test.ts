@@ -4,21 +4,24 @@ import { runChecks } from "./checks.js";
 const ENDPOINT = "https://mcp.example.com/sse";
 
 describe("runChecks: auth-signal-on-plain-get", () => {
-  it("passes when the endpoint challenges a bare GET with 401", async () => {
+  it("records a bare-GET 401 as an inconclusive positive signal, never as a passing verdict", async () => {
     const result = await runChecks(ENDPOINT, {
       fetchImpl: (async () => new Response("unauthorized", { status: 401 })) as typeof fetch,
     });
     expect(result.checksPerformed).toEqual(["auth-signal-on-plain-get"]);
-    expect(result.outcome).toBe("passed");
+    // A GET challenge does not prove the MCP POST surface enforces auth, and the
+    // endpoint is attacker-controlled, so this must never sign "passed".
+    expect(result.outcome).toBe("inconclusive");
     expect(result.findings).toHaveLength(1);
-    expect(result.findings[0]).toMatchObject({ outcome: "passed", status: 401 });
+    expect(result.findings[0]).toMatchObject({ outcome: "inconclusive", status: 401 });
+    expect(result.findings[0]?.detail).toContain("positive signal");
   });
 
-  it("passes when the endpoint challenges a bare GET with 403", async () => {
+  it("records a bare-GET 403 as inconclusive too", async () => {
     const result = await runChecks(ENDPOINT, {
       fetchImpl: (async () => new Response("forbidden", { status: 403 })) as typeof fetch,
     });
-    expect(result.outcome).toBe("passed");
+    expect(result.outcome).toBe("inconclusive");
     expect(result.findings[0]?.status).toBe(403);
   });
 

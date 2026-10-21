@@ -1,0 +1,99 @@
+{
+  "$comment": [
+    "Conformance vectors for the endpoint-attest ownership proof.",
+    "Every value here was produced by the implementation in this repository and is re-checked by",
+    "ownership-conformance.test.ts on every CI run, so this file cannot drift away from the code.",
+    "The secret below is PUBLIC on purpose: these vectors exist so an independent implementation can",
+    "verify itself without asking anyone for anything. Never use it for a real attester.",
+    "See docs/OWNERSHIP-CONFORMANCE.md for the algorithm in prose."
+  ],
+  "version": 1,
+  "algorithm": {
+    "ownershipToken": "tok_ + HMAC-SHA256(secret, normalizedEndpoint + LF + lowercase(ownerAddress)) as lowercase hex",
+    "activeTestConsentToken": "consent_ + HMAC-SHA256(secret, 'active-test-consent' + LF + normalizedEndpoint + LF + lowercase(ownerAddress)) as lowercase hex. Note the different prefix: ownership tokens start with tok_.",
+    "normalizedEndpoint": "scheme://host[:port]path, where a trailing slash is stripped unless the path is exactly '/', and query and fragment are dropped. The port is part of the identity.",
+    "domainSeparation": "The consent message is prefixed, so a consent token can never equal an ownership token for the same pair and neither can be replayed as the other."
+  },
+  "publishLocations": {
+    "ownershipDnsLabel": "_endpoint-attest",
+    "ownershipWellKnownPath": "/.well-known/endpoint-attest.txt",
+    "consentDnsLabel": "_endpoint-attest-active-consent",
+    "consentWellKnownPath": "/.well-known/endpoint-attest-active-consent.txt",
+    "$note": "The DNS label is prefixed to the endpoint's host. One host can carry many endpoints' tokens side by side, because verification scans every record for an exact match."
+  },
+  "secret": "tokenizen-public-conformance-secret-not-for-production-0001",
+  "cases": [
+    {
+      "name": "canonical",
+      "endpoint": "https://mcp.example.com/sse",
+      "ownerAddress": "0x1111111111111111111111111111111111111111",
+      "normalizedEndpoint": "https://mcp.example.com/sse",
+      "ownershipToken": "tok_32b90809e22f023869625cd000e48813d92a6e759f1644d7934487df2cde3e81",
+      "activeTestConsentToken": "consent_ecafb90601f5215cc17cbf61b501e9c05da38051d2dabb2fb35661efb6da5f50"
+    },
+    {
+      "name": "trailing-slash-is-stripped",
+      "endpoint": "https://mcp.example.com/sse/",
+      "ownerAddress": "0x1111111111111111111111111111111111111111",
+      "normalizedEndpoint": "https://mcp.example.com/sse",
+      "ownershipToken": "tok_32b90809e22f023869625cd000e48813d92a6e759f1644d7934487df2cde3e81",
+      "activeTestConsentToken": "consent_ecafb90601f5215cc17cbf61b501e9c05da38051d2dabb2fb35661efb6da5f50"
+    },
+    {
+      "name": "query-is-ignored",
+      "endpoint": "https://mcp.example.com/sse?session=abc",
+      "ownerAddress": "0x1111111111111111111111111111111111111111",
+      "normalizedEndpoint": "https://mcp.example.com/sse",
+      "ownershipToken": "tok_32b90809e22f023869625cd000e48813d92a6e759f1644d7934487df2cde3e81",
+      "activeTestConsentToken": "consent_ecafb90601f5215cc17cbf61b501e9c05da38051d2dabb2fb35661efb6da5f50"
+    },
+    {
+      "name": "fragment-is-ignored",
+      "endpoint": "https://mcp.example.com/sse#top",
+      "ownerAddress": "0x1111111111111111111111111111111111111111",
+      "normalizedEndpoint": "https://mcp.example.com/sse",
+      "ownershipToken": "tok_32b90809e22f023869625cd000e48813d92a6e759f1644d7934487df2cde3e81",
+      "activeTestConsentToken": "consent_ecafb90601f5215cc17cbf61b501e9c05da38051d2dabb2fb35661efb6da5f50"
+    },
+    {
+      "name": "owner-address-case-is-ignored",
+      "endpoint": "https://mcp.example.com/sse",
+      "ownerAddress": "0x1111111111111111111111111111111111111111",
+      "normalizedEndpoint": "https://mcp.example.com/sse",
+      "ownershipToken": "tok_32b90809e22f023869625cd000e48813d92a6e759f1644d7934487df2cde3e81",
+      "activeTestConsentToken": "consent_ecafb90601f5215cc17cbf61b501e9c05da38051d2dabb2fb35661efb6da5f50"
+    },
+    {
+      "name": "port-changes-the-endpoint",
+      "endpoint": "https://mcp.example.com:8443/sse",
+      "ownerAddress": "0x1111111111111111111111111111111111111111",
+      "normalizedEndpoint": "https://mcp.example.com:8443/sse",
+      "ownershipToken": "tok_f70d009d616cf02649b95a343e55c711f2110e2ea1843d01dac01a3ced54e96c",
+      "activeTestConsentToken": "consent_c6b878fb5b4d4b47f0e2e499e0983a87ae6d3b15c7c23cf1c2f5df0db2bcc228"
+    },
+    {
+      "name": "path-changes-the-endpoint",
+      "endpoint": "https://mcp.example.com/other",
+      "ownerAddress": "0x1111111111111111111111111111111111111111",
+      "normalizedEndpoint": "https://mcp.example.com/other",
+      "ownershipToken": "tok_3994bb77b11561cf13398fdd98f74329388309153e02f5ca4ac270e49c1ba24d",
+      "activeTestConsentToken": "consent_c53977fd7a4e1b6e4b82f11354cff894c74184fd5240fdd1dd80f8e9dbe0ca86"
+    },
+    {
+      "name": "scheme-changes-the-endpoint",
+      "endpoint": "http://mcp.example.com/sse",
+      "ownerAddress": "0x1111111111111111111111111111111111111111",
+      "normalizedEndpoint": "http://mcp.example.com/sse",
+      "ownershipToken": "tok_5694813b3fbfc1ac036fb537fff67ac9a15f5ad892d4d90d8f075cddc88bbbc5",
+      "activeTestConsentToken": "consent_d5ef3161a73d67ba0d44cade1f16ea8adcdb60d9fd535006db359a546b3e2bef"
+    },
+    {
+      "name": "root-path-keeps-its-slash",
+      "endpoint": "https://mcp.example.com/",
+      "ownerAddress": "0x1111111111111111111111111111111111111111",
+      "normalizedEndpoint": "https://mcp.example.com/",
+      "ownershipToken": "tok_58b03e5b598b81539231b6553b40f599f16293f82cc905cc34a372d75b2223f5",
+      "activeTestConsentToken": "consent_8f1746409afb652bbfd3a5e7a8230d17390c77d7c03d2a1ecba229c928284ffe"
+    }
+  ]
+}

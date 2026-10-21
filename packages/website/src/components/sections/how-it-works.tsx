@@ -9,7 +9,7 @@ export function HowItWorks() {
   const { t } = useLocale();
 
   return (
-    <Section id="hoe-het-werkt" index="04" eyebrow={t.howItWorks.eyebrow}>
+    <Section id="hoe-het-werkt" index="05" eyebrow={t.howItWorks.eyebrow}>
       <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">{t.howItWorks.h2}</h2>
       <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">{t.howItWorks.body}</p>
 

@@ -533,6 +533,58 @@ export const ClaimContentObject = z.object({
     .string()
     .regex(SHA256_HEX_RE, "evidenceHash must be a sha256 hex digest (64 hex chars, no 0x prefix)")
     .describe("sha256 hex digest of evidence for this claim (logs, response payload, etc.) — the evidence itself is not stored here"),
+  // OPTIONAL, and that is load bearing. The field was added after claims were
+  // already being signed in the wild, so it must be absent-by-default: an older
+  // claim serialises byte-identically with or without this line existing in the
+  // schema, which keeps every previously signed claimId and signature valid.
+  //
+  // WHY IT EXISTS: x402 ships an official offer-receipt extension whose receipt
+  // is signed by the RESOURCE SERVER and, in its own words, "proves service was
+  // delivered". That is the seller's account of the seller's own performance.
+  // This claim is the other half: signed by the BUYER, who is the only party who
+  // knows whether what arrived matched what was promised. Their own README lists
+  // dispute resolution as a use case, and a dispute cannot be settled on the
+  // word of the interested party alone.
+  //
+  // WHAT THE DIGEST IS OVER, precisely, because "the signed bytes" is ambiguous
+  // for this artifact. Per x402's offer-and-receipt extension spec, a receipt is
+  // transmitted as { format, payload, signature } where format is "eip712" or
+  // "jws" (§3.1), and its payload carries no identifier field of its own (§5.2:
+  // version, network, resourceUrl, payer, issuedAt, transaction). Neither format
+  // exposes a single canonical byte string to hash: for "eip712" the signing
+  // digest is derived from normative types the spec says MUST NOT be transmitted
+  // (§3.2.1), and for "jws" the payload is base64url-encoded inside the compact
+  // serialization. So this digest is deliberately taken over the receipt artifact
+  // EXACTLY AS THE SELLER TRANSMITTED IT, with no re-canonicalisation by us.
+  //
+  // That choice is the conservative one. The spec states plainly that wire shape
+  // is not stable (§2) while the payload and signature rules are, so inventing a
+  // canonical form here would mean maintaining a second, competing
+  // canonicalisation of somebody else's artifact — the exact ambiguity this field
+  // exists to avoid. The honest limitation that follows: two parties handed the
+  // same receipt serialised differently (key order, whitespace) compute different
+  // digests. That is acceptable because this is the BUYER's claim about the
+  // receipt the buyer was actually handed, so byte-exactness is the property
+  // wanted. Anyone holding those same bytes can recompute the digest and check
+  // the signature with x402's own verifier; nobody has to take our word for it.
+  // Their spec already anticipates this use, noting an artifact may be stored
+  // "outside the x402 negotiation context (e.g., in attestations or reputation
+  // systems)" (§4.1.1).
+  //
+  // LOWER-CASE ONLY, enforced here rather than at ingest: this field is new, so
+  // no claim has ever been signed with an upper-case value and there is nothing
+  // to stay compatible with. evidenceHash carries the permissive regex only
+  // because it predates that rule, which is why its lower-case check had to be
+  // bolted on at ingest instead (S-3). Same reasoning as readingsHash and
+  // termsHash: strict from day one, so the same receipt can never mint two
+  // different claimIds depending on how its digest was typed.
+  offerReceiptHash: z
+    .string()
+    .regex(LOWER_SHA256_HEX_RE, "offerReceiptHash must be a lower-case sha256 hex digest (64 chars, no 0x prefix)")
+    .optional()
+    .describe(
+      "optional sha256 hex digest (lower-case, no 0x prefix) of the seller-signed x402 offer-receipt this claim answers, taken over the receipt artifact exactly as it was transmitted. The receipt itself is not stored here. Omit it if there is no receipt.",
+    ),
   settlementRef: z
     .string()
     .min(1, "settlementRef is required (x402 payment reference or on-chain tx hash)")

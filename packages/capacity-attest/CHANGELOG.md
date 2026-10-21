@@ -2,6 +2,24 @@
 
 Alle noemenswaardige wijzigingen aan dit package worden hier bijgehouden.
 
+## 0.8.0
+
+**Nieuw, optioneel veld `offerReceiptHash`: de koperhelft aan de verkoperhelft knopen.**
+
+x402 heeft een eigen offer-receipt-uitbreiding. Zo'n bonnetje wordt ondertekend door de resource server, dus door de verkoper, en hun eigen spec omschrijft het als een ondertekende verklaring die bevestigt "that payment was received and service was delivered". Dat is de verkoper die iets verklaart over zijn eigen prestatie. Hun spec noemt geschilbeslechting als toepassing, en een geschil valt niet te beslechten op het woord van de belanghebbende partij alleen. Deze claim is de andere helft: ondertekend door de koper, de enige die weet of wat er aankwam overeenkwam met wat er beloofd was. `offerReceiptHash` is wat die twee helften tot een dossier maakt in plaats van twee losse papiertjes.
+
+- Het veld is OPTIONEEL, en dat is dragend. Een eerder ondertekende claim serialiseert byte-identiek met of zonder dat deze regel in het schema bestaat, dus elke al bestaande `claimId` en handtekening blijft geldig. De bevroren regressie-ankers in `measured.test.ts` bewijzen dat, niet een aanname.
+- Het zit IN de ondertekende inhoud, niet ernaast. Daardoor verandert het toevoegen, omruilen of weghalen van de verwijzing de `claimId`, en dekt de handtekening van de koper die nieuwe waarde niet meer. Een verkoper kan er dus niet achteraf een ander bonnetje aan vastnijeten en een host kan de verwijzing er niet uit slopen.
+- Alleen kleine letters, afgedwongen in het schema zelf en niet pas bij ingest. Het veld is nieuw, dus er is nooit een claim mee ondertekend en er is niets om compatibel mee te blijven. `evidenceHash` draagt de ruimere regex alleen omdat dat veld ouder is dan die regel, en daarom moest de kleine-letter-controle daar achteraf bij ingest worden aangebouwd (S-3). Zelfde keuze als bij `readingsHash` en `termsHash`: streng vanaf dag een, zodat hetzelfde bonnetje nooit twee verschillende `claimId`s kan opleveren door hoe het hex getypt is.
+- Waar de digest precies over gaat, is expliciet vastgelegd in `schema.ts`, want "de ondertekende bytes" is voor dit artefact dubbelzinnig. Een bonnetje gaat over de lijn als `{ format, payload, signature }` met `format` is `eip712` of `jws`. Bij `eip712` komt de ondertekeningsdigest uit normatieve types die volgens de spec juist NIET over de lijn gaan, en bij `jws` zit de payload base64url-gecodeerd in de compacte string. Er is dus geen enkele canonieke bytereeks die voor beide formaten werkt. Daarom gaat de digest over het artefact precies zoals het verstuurd is, zonder dat wij andermans artefact gaan hercanonicaliseren. De eerlijke beperking die daarbij hoort staat er ook: twee partijen die hetzelfde bonnetje anders geserialiseerd krijgen, berekenen een andere digest. Dat is acceptabel omdat dit de verklaring van de KOPER is over het bonnetje dat de koper daadwerkelijk kreeg.
+
+**Uitgewerkt voorbeeld met twee echte handtekeningen**, want dit moet na te rekenen zijn in plaats van te geloven:
+- `examples/offer-receipt-link-testvector.json`: een volledig, zelfstandig testvector met beide helften. De verkoperhelft is een ECHTE EIP-712-handtekening over x402's eigen normatieve domein (`name: "x402 receipt"`, `version: "1"`, `chainId: 1`) en hun normatieve `Receipt`-types, geen opvulling.
+- `examples/verify-offer-receipt-link.mjs`: controleert dat vector volledig los van dit package. Leest een bestand, importeert een bibliotheek (ethers), raakt het netwerk niet aan, en herimplementeert de canonicalisatie zelf. Als het alleen met `schema.ts` overeenkwam doordat het `schema.ts` aanriep, bewees het niets. 23 controles groen, inclusief negatieve controles: een gewijzigd bonnetje krijgt een andere digest en verliest zijn eigen handtekening, en het omruilen of weghalen van de verwijzing in de claim verandert de `claimId`.
+- Het vector noemt ook expliciet wat het NIET aantoont: dat de ondertekenaar van het bonnetje bevoegd was om voor de dienst te spreken (x402 behandelt dat als een apart probleem, te beoordelen op het moment van `issuedAt`), dat de afrekening echt bestaat, en dat de gemeten aantallen juist zijn.
+
+**Tests:** 14 nieuwe in `offer-receipt-link.test.ts`, waaronder de ledger-rondgang. Een veld dat correct ondertekent en verifieert maar onderweg naar of uit het grootboek verdwijnt, zou precies op de enige plek waar het gelezen moet worden onbruikbaar zijn. Ondertekenen is geen opslag, dus dat is apart bewezen. Totaal 609 tests groen.
+
 ## 0.7.0
 
 **WP1/WP2/WP4 van het NLnet-self-build-plan afgerond** (`docs/NLNET-SELFBUILD-PLAN-2026-09-28.md`), zelf gebouwd en getest vooruitlopend op een eventuele toekenning, niet erop wachtend.

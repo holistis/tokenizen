@@ -28,6 +28,10 @@ export const en: Dictionary = {
         "label": "Product"
       },
       {
+        "href": "#controle",
+        "label": "Inspection"
+      },
+      {
         "href": "#hoe-het-werkt",
         "label": "How it works"
       },
@@ -42,6 +46,10 @@ export const en: Dictionary = {
       {
         "href": "#status",
         "label": "Status"
+      },
+      {
+        "href": "/notes",
+        "label": "Notes"
       }
     ],
     "github": "GitHub",
@@ -60,10 +68,10 @@ export const en: Dictionary = {
     "dark": "Dark"
   },
   "hero": {
-    "eyebrow": "Infrastructure for the AI agent economy · open source",
-    "h1Line1": "Everyone is building the buyer side.",
-    "h1Line2": "We're building the seller side.",
-    "body": "Agent identity, spend limits, and payment rails are on their way (x402: per-call machine payments, Google AP2: an authorization protocol, ERC-8004: on-chain reputation registries). What's still missing: a signed record of what a seller claims to have delivered, and whether that matched what was promised. Tokenizen builds that record, starting with Capacity Attest: a signed, factual delivery claim for x402 capacity trading between agents.",
+    "eyebrow": "Open source infrastructure for the AI agent economy",
+    "h1Line1": "AI agents are about to do business with each other.",
+    "h1Line2": "Nobody can check what actually happened.",
+    "body": "An AI agent buys something from another agent and pays within a second. Whether what was promised actually arrived is recorded nowhere. We turn that into signed receipts. Two kinds: a receipt of what was delivered, and a receipt of what an inspection of that agent actually found. Both readable by whoever does business next.",
     "clarifier": "The buyer signs the claim, because only the buyer knows what actually arrived. What it produces is still the seller's track record: the evidence a good seller can point to for the next buyer.",
     "trustLine": "No token · no lending · no yield",
     "ctaPrimary": "View the code on GitHub",
@@ -72,8 +80,8 @@ export const en: Dictionary = {
   },
   "problem": {
     "eyebrow": "The problem",
-    "h2": "An agent pays, gets less, and has no signed record of it.",
-    "body": "An AI agent pays via x402 for capacity from another agent or service: GPU-hours, storage, API/inference credits, bandwidth. The delivery falls short: fewer hours than promised, lower quality, less storage. There is no receipt that records what was promised and what was claimed. That is not proof that the delivery itself was correct, but it is a signed record an agent can later consult and show.",
+    "h2": "Paying already happens by itself. Checking what you got does not.",
+    "body": "An agent pays within a second for compute, storage or access to a service. If it got less than promised, that disappears the moment the session ends. Nothing is left for anyone to look at later. No complaint, no proof, no memory.",
     "cards": [
       {
         "title": "The buyer knows",
@@ -112,9 +120,9 @@ export const en: Dictionary = {
     ]
   },
   "product": {
-    "eyebrow": "The product: Capacity Attest",
-    "h2": "A signed, factual delivery claim. No judgment, no score.",
-    "body": "After an x402 settlement for capacity (GPU-hours, storage, API credits, bandwidth), the paying agent leaves a cryptographically signed claim: `delivered` (yes/no/partial) plus a hash of the evidence, content-addressed and on an append-only ledger. Other agents can query that history before doing business with a seller themselves.",
+    "eyebrow": "Pillar 1: proof of delivery",
+    "h2": "A receipt of what was delivered. No score, no verdict.",
+    "body": "Once an agent has paid, it records whether it got what was promised: yes, no, or partial. That receipt is signed and cannot be changed afterwards. Anyone who later wants to deal with that same seller can look up the history before paying.",
     "codeLabelRecordCall": "MCP tool call → record_delivery",
     "codeLabelHistoryCall": "MCP tool call → get_delivery_history",
     "codeLabelResult": "response",
@@ -129,6 +137,28 @@ export const en: Dictionary = {
         "body": "Given a `sellerAddress`: all known, signature-verified claims against that seller, chronologically. Purely factual: no average, no percentage, no trust score."
       }
     ]
+  },
+  "secondPillar": {
+    "eyebrow": "Pillar 2",
+    "h2": "Proof of inspection, not proof of safety.",
+    "body": "A company letting a stranger's AI agent in has nothing but the vendor's own brochure. Pillar 2 turns that into a receipt anyone can check: the owner first proves the endpoint is theirs, gives permission, and we record what we actually found. Signed, dated, and readable by anyone.",
+    "cards": [
+      {
+        "title": "The owner proves it is theirs",
+        "body": "They publish a token in their DNS or as a file on their own server. That proves they control the endpoint, the same way a note in your letterbox proves the house is yours.",
+      },
+      {
+        "title": "They give permission",
+        "body": "We never touch an endpoint without explicit consent, and we never list one whose owner did not ask for it.",
+      },
+      {
+        "title": "We write down what we saw",
+        "body": "No score and no verdict. Whatever we could not establish is called inconclusive, and it says so.",
+      },
+    ],
+    "honestNote": "We never stamp something safe. A test can show that something is wrong, but it can never prove that nothing is.",
+    "ctaLabel": "Try it, free",
+    "ctaNote": "Free, no account needed. The paid attestation is deliberately still switched off.",
   },
   "howItWorks": {
     "eyebrow": "How it works",
@@ -209,30 +239,68 @@ export const en: Dictionary = {
     "copyLabel": "Copy",
     "copiedLabel": "Copied"
   },
+  "metingen": {
+    "eyebrow": "What we measured",
+    "h2": "Our own check turned out to be wrong. We tracked it down, fixed it, and wrote it down here.",
+    "body": "A program that buys something on its own wants to know up front whether the seller asks for money properly. We built a free checking program for that. In October we ran it against sixty real sellers, and it turned out to be telling most of them they were doing it wrong. The fault was ours: our program was knocking on the wrong door. It is fixed now. It is here because a number without a method is worth nothing, and because anyone who hides their own mistake is not worth believing on their next number either.",
+    "rows": [
+      {
+        "date": "18 October 2026",
+        "title": "From sixty four percent wrong to zero",
+        "body": "We took sixty sellers from the public Coinbase list and asked each of them once for a price. Fifty nine really do ask for money. Of those fifty nine, thirty eight were wrongly failed by us. After the fix: none. The method and the raw output are in the code, so you can redo it yourself."
+      },
+      {
+        "date": "October 2026",
+        "title": "Four builders now use our way of counting",
+        "body": "In the public discussions about these agreements, four people adopted our breakdown. The one that matters most is the difference between this is wrong and I could not check this. That sounds small and it is not: anyone who merges those two blames an honest seller for a failure at the checker end."
+      },
+      {
+        "date": "as of today",
+        "title": "No paying customer yet",
+        "body": "Zero. Nobody outside this project pays for this yet. We would rather write that down ourselves than have someone find it out."
+      },
+      {
+        "date": "last fourteen days",
+        "title": "A hundred people looked, nobody installed",
+        "body": "A hundred and two people pulled the code to look at it. The install count is zero. That means we are being found and not convincing anyone, which is a different problem from being unknown."
+      }
+    ],
+    "footer": "Every line above carries a date and a way of measuring. If a number changes, the line changes and the date stays visible. That way you can see whether something is still true instead of having to assume it. The code and the raw output are at github.com/holistis/agent-receipt-verify, so you can recheck every line above yourself."
+  },
   "status": {
     "eyebrow": "Status, honestly",
-    "h2": "New project. No customers. But a proven foundation.",
-    "body": "Tokenizen just launched, is open source, and is in active development. There are no external users yet, no partnerships, no customers. We just say so. What does exist: this is built on top of proven, self-built payment and MCP infrastructure (x402, several previously published npm/MCP packages), and the first independent verification of a live claim has already happened. The first external integration is the next thing that counts.",
+    "h2": "No paying customers. Three outside parties building on the format, and work others checked themselves.",
+    "body": "Tokenizen is open source and in active development. There are no paying customers and no partnerships, and we say that plainly. What does exist: three parties outside this project now build on the claim format. One of them rebuilt our verifier from scratch in another language and ships it inside their own package. Another cites the measured block as the source of truth for metered delivery in their own draft specification, pinned to a commit of this repo. The next thing that counts is getting the signed test vectors into an official conformance set, so that anyone joining later has to pass them.",
     "checkpoints": [
       {
         "title": "npm publication",
-        "body": "capacity-attest 0.2.0 is live on npm and in the MCP registry.",
+        "body": "capacity-attest is live on npm and in the MCP registry, currently at 0.7.0, with 0.8.0 waiting on a registry hold.",
         "achieved": true
       },
       {
-        "title": "First external clone/install",
-        "body": "Someone outside this project cloning the repository or running npm install capacity-attest, without us demonstrating it first.",
+        "title": "First external use",
+        "body": "Someone outside this project depending on capacity-attest without us demonstrating it first. Three parties now do: a draft ERC-8004 convention that pins this repo by commit hash, an independently rebuilt verifier shipped inside someone else's published package, and a BSV rail adapter built on the same claim format by a separate author.",
+        "achieved": true
+      },
+      {
+        "title": "Independent verification by someone else's code",
+        "body": "An outside party rebuilt the verifier from scratch, standard library only, with its own secp256k1, EIP-191 and canonical JSON implementation. Seven of seven vectors match, including both negative controls, and it now runs as a permanent regression test inside their own published package.",
+        "achieved": true
+      },
+      {
+        "title": "An external agent calling record_delivery itself",
+        "body": "Others verify our claims and depend on the format, but we have no evidence yet of an agent from another party writing a delivery claim through the MCP tool in production. Until we see it, this stays open.",
         "achieved": false
       },
       {
-        "title": "First external agent integration",
-        "body": "An agent from another party that actually calls record_delivery or get_delivery_history.",
+        "title": "The format in an official conformance set",
+        "body": "The measured block already sits inside one party's own conformance set, which has five signed vectors and two verifiers built around it. On 14 October the author writing the ERC-8004 grounded-feedback vocabulary said those five vectors can go into the shared conformance set as-is, alongside fixtures from two other parties. That is a commitment from the person drafting it, not a published decision, so this stays open until the vectors are actually in the set.",
         "achieved": false
       }
     ],
     "proof": {
       "title": "Independently verified",
-      "body": "An external project (ASM spec) independently verified a real payment claim on September 1, 2026: same claimId, same signature recovered to the buyer, same on-chain payment.",
+      "body": "Independent checks by other people rather than by us: a real payment claim verified by an external project on September 1, 2026, with the same claimId and the same signature recovered to the buyer; a verifier rebuilt from scratch in another language; live delivery claims readable by anyone on three separate chains; and a real giveFeedback call against the ERC-8004 Reputation Registry on Base mainnet. Each one is linked from the repository so it can be checked again.",
       "txLabel": "View the transaction",
       "verificationLabel": "View the verification"
     },
@@ -260,6 +328,26 @@ export const en: Dictionary = {
         "label": "never, hardcoded excluded"
       }
     ]
+  },
+  "trustRadar": {
+    "metaTitle": "Trust Radar | tokenizen",
+    "metaDescription": "A free, public list of MCP servers whose owners requested and passed an ownership-verified check. Not a security audit, and never a listing an owner did not ask for.",
+    "eyebrow": "Free & public",
+    "h1": "Trust Radar",
+    "intro": "A public list of MCP servers whose owners requested a check, proved they control the endpoint, and let the signed result be published here.",
+    "disclaimer": "This is not a general security audit, and it is never a listing an owner did not ask for. Every entry below is a self-requested, ownership-verified check: the owner proved control of the domain (DNS TXT or a well-known file) before the signed result was published. “Checks passed” means the signed checks ran and none of them failed. It is not a guarantee that the server is safe.",
+    "checkedLabel": "Checked",
+    "mailSubject": "Trust Radar: request a check",
+    "empty": {
+      "title": "No confirmed endpoints yet.",
+      "body": "Nothing is listed here until an owner requests a check, proves they control the endpoint, and lets the signed result be published. We never list an endpoint whose owner did not ask.",
+      "cta": "Be the first, request a free attestation",
+    },
+    "badges": {
+      "checksPassed": "Checks passed",
+      "openUnclear": "Open, unclear",
+      "selfDeclaredUnsafe": "Self-declared unsafe",
+    },
   },
   "noscript": {
     "h1": "Tokenizen: proof of delivery for the AI agent economy",

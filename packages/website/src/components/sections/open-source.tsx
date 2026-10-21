@@ -22,7 +22,7 @@ npm test           # ${t.openSource.commentTest}
 npm run demo       # ${t.openSource.commentDemo}`;
 
   return (
-    <Section id="open-source" index="06" eyebrow={t.openSource.eyebrow}>
+    <Section id="open-source" index="07" eyebrow={t.openSource.eyebrow}>
       <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">{t.openSource.h2}</h2>
       <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
         {withInlineCode(t.openSource.body)}
