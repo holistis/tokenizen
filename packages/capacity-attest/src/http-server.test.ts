@@ -55,6 +55,7 @@ describe("http-server: real end-to-end MCP calls over HTTP", () => {
     expect(names).toContain("bridge_x402_receipt");
     expect(names).toContain("resolve_agent_identity");
     expect(names).not.toContain("record_delivery");
+    expect(names).not.toContain("publish_reputation_feedback");
   });
 
   it("calls get_delivery_history for real and gets a well-formed, empty result for an unused address", async () => {
