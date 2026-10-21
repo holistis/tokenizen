@@ -160,6 +160,85 @@ describe("http-server: get_compute_track_record filters to compute claims only",
   });
 });
 
+describe("http-server: get_fabrication_signals counts real, distinct buyers", () => {
+  let tmpDir: string;
+  const sellerAddress = "0x00000000000000000000000000000000000000cc";
+
+  beforeAll(async () => {
+    const { mkdtempSync } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const { join } = await import("node:path");
+    tmpDir = mkdtempSync(join(tmpdir(), "capacity-attest-fabrication-test-"));
+    process.env["CAPACITY_ATTEST_DATA_DIR"] = tmpDir;
+
+    const { testWallet, evidenceHash } = await import("./test-helpers.js");
+    const { signClaim } = await import("./signing.js");
+    const { appendClaim } = await import("./ledger.js");
+
+    // Buyer A: 3 claims. Buyer B: 1 claim. 4 total, 2 distinct buyers,
+    // top buyer share 3/4 = 0.75 — three independently checkable, exact
+    // numbers, not "looks about right".
+    const buyerA = testWallet();
+    const buyerB = testWallet();
+    for (let i = 0; i < 3; i++) {
+      const content = {
+        sellerAddress,
+        buyerAddress: buyerA.address,
+        assetType: "api-credits" as const,
+        promisedSpec: `call batch ${i}`,
+        delivered: "yes" as const,
+        evidenceHash: evidenceHash(`buyerA evidence ${i}`),
+        settlementRef: "0x" + "44".repeat(32),
+        timestamp: new Date().toISOString(),
+      };
+      await appendClaim({ ...content, ...(await signClaim(buyerA, content)) });
+    }
+    const soloContent = {
+      sellerAddress,
+      buyerAddress: buyerB.address,
+      assetType: "api-credits" as const,
+      promisedSpec: "one-off call",
+      delivered: "yes" as const,
+      evidenceHash: evidenceHash("buyerB evidence"),
+      settlementRef: "0x" + "55".repeat(32),
+      timestamp: new Date().toISOString(),
+    };
+    await appendClaim({ ...soloContent, ...(await signClaim(buyerB, soloContent)) });
+  });
+
+  afterAll(async () => {
+    const { rmSync } = await import("node:fs");
+    delete process.env["CAPACITY_ATTEST_DATA_DIR"];
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it("counts total claims, distinct buyers, and the top buyer's exact share", async () => {
+    const res = await postMcp({
+      jsonrpc: "2.0",
+      id: 20,
+      method: "tools/call",
+      params: { name: "get_fabrication_signals", arguments: { sellerAddress } },
+    });
+    const text = await res.text();
+    expect(text).toContain('\\"totalClaims\\": 4');
+    expect(text).toContain('\\"distinctBuyers\\": 2');
+    expect(text).toContain('\\"topBuyerShare\\": 0.75');
+  });
+
+  it("a seller with zero claims gets zero/null facts, not a crash or a fake default", async () => {
+    const res = await postMcp({
+      jsonrpc: "2.0",
+      id: 21,
+      method: "tools/call",
+      params: { name: "get_fabrication_signals", arguments: { sellerAddress: "0x00000000000000000000000000000000000000dd" } },
+    });
+    const text = await res.text();
+    expect(text).toContain('\\"totalClaims\\": 0');
+    expect(text).toContain('\\"distinctBuyers\\": 0');
+    expect(text).toContain('\\"topBuyerShare\\": null');
+  });
+});
+
 describe("http-server: data-check (mandatory check 2)", () => {
   it("rejects malformed JSON with 400, never a raw parse error", async () => {
     const res = await postMcp("not json");
