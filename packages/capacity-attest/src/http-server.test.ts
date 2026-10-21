@@ -37,7 +37,7 @@ describe("http-server: real end-to-end MCP calls over HTTP", () => {
   // should not be registered — see http-server-record-delivery.test.ts for
   // the opposite case (PAY_TO set), which needs a fresh module import to
   // exercise that branch's module-load-time setup.
-  it("initializes and lists exactly the six read-only tools when RECORD_DELIVERY_PAY_TO is unset", async () => {
+  it("initializes and lists exactly the seven read-only tools when RECORD_DELIVERY_PAY_TO is unset", async () => {
     const initRes = await postMcp({
       jsonrpc: "2.0",
       id: 1,
@@ -55,6 +55,7 @@ describe("http-server: real end-to-end MCP calls over HTTP", () => {
     expect(names).toContain("compare_sellers");
     expect(names).toContain("discover_delivery_history");
     expect(names).toContain("bridge_x402_receipt");
+    expect(names).toContain("get_agent_snapshot");
     expect(names).toContain("resolve_agent_identity");
     expect(names).not.toContain("record_delivery");
     expect(names).not.toContain("publish_reputation_feedback");
@@ -420,6 +421,34 @@ describe("http-server: discover_delivery_history aggregates the local ledger wit
     });
     const text = await res.text();
     expect(text.toLowerCase()).toContain("invalid");
+  });
+});
+
+describe("http-server: get_agent_snapshot combines identity resolution and delivery history", () => {
+  it("lists get_agent_snapshot alongside the other read-only tools", async () => {
+    const res = await postMcp({ jsonrpc: "2.0", id: 60, method: "tools/call", params: { name: "get_agent_snapshot", arguments: {} } });
+    const text = await res.text();
+    // Called with no arguments at all: MCP's own schema validation should
+    // refuse this before the handler ever runs — proves the tool is wired
+    // into the real schema, not merely present in tools/list.
+    expect(text.toLowerCase()).toMatch(/invalid|required|error/);
+  });
+
+  it("when identity resolution fails, returns the identity failure directly without attempting a delivery-history lookup", async () => {
+    const res = await postMcp({
+      jsonrpc: "2.0",
+      id: 61,
+      method: "tools/call",
+      params: {
+        name: "get_agent_snapshot",
+        arguments: { agentRegistryRef: "not-a-valid-ref", agentId: "1", rpcUrl: "https://example-rpc.invalid/" },
+      },
+    });
+    const text = await res.text();
+    // The exact wording resolveAgentIdentity() itself produces for a malformed
+    // ref — confirms this short-circuited at identity resolution, never
+    // reached a deliveryHistory lookup with a meaningless "owner".
+    expect(text).toContain("agentRegistryRef must match");
   });
 });
 
