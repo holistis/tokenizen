@@ -317,6 +317,22 @@ describe("http-server: compare_sellers runs the same facts across several addres
     expect(result.sellers[1].distinctBuyers).toBe(1);
   });
 
+  it("accepts exactly 10 sellerAddresses (the boundary itself, not just one past it)", async () => {
+    const exactlyTen = Array.from({ length: 10 }, (_, i) => `0x${(i + 1).toString(16).padStart(40, "0")}`);
+    const res = await postMcp({
+      jsonrpc: "2.0",
+      id: 42,
+      method: "tools/call",
+      params: { name: "compare_sellers", arguments: { sellerAddresses: exactlyTen } },
+    });
+    const text = await res.text();
+    const match = text.match(/"text":"((?:[^"\\]|\\.)*)"/);
+    if (!match) throw new Error(`no text content in MCP response: ${text}`);
+    const result = JSON.parse(JSON.parse(`"${match[1]}"`));
+    expect(result.sellers).toHaveLength(10);
+    expect(result.sellers.every((s: { error?: string }) => s.error === undefined)).toBe(true);
+  });
+
   it("rejects more than 10 sellerAddresses in one call", async () => {
     const tooMany = Array.from({ length: 11 }, (_, i) => `0x${(i + 1).toString(16).padStart(40, "0")}`);
     const res = await postMcp({
@@ -394,6 +410,29 @@ describe("http-server: discover_delivery_history aggregates the local ledger wit
     // than the whole call failing or the error being silently swallowed.
     expect(text).toContain('\\"name\\": \\"eas:8453\\"');
     expect(text.toLowerCase()).toContain("econnrefused");
+  });
+
+  it("an EAS source AND an HTTP source can both be named and both fail in isolation at once, without interfering with each other or the local ledger", async () => {
+    const res = await postMcp({
+      jsonrpc: "2.0",
+      id: 54,
+      method: "tools/call",
+      params: {
+        name: "discover_delivery_history",
+        arguments: {
+          sellerAddress,
+          easSources: [{ rpcUrl: "http://127.0.0.1:1", chainId: 8453 }],
+          httpSources: ["http://127.0.0.1:1/claims"],
+        },
+      },
+    });
+    const text = await res.text();
+    expect(text).toContain('\\"count\\": 1'); // local ledger's claim still comes through
+    expect(text).toContain('\\"name\\": \\"eas:8453\\"');
+    expect(text).toContain('\\"name\\": \\"http:http://127.0.0.1:1/claims\\"');
+    // Three sources total: local-ledger, the eas one, the http one — not two
+    // (proving neither silently swallowed the other).
+    expect([...text.matchAll(/\\"name\\":/g)]).toHaveLength(3);
   });
 
   it("refuses an unlisted chainId with no easAddress override, cleanly, before attempting any network call", async () => {
