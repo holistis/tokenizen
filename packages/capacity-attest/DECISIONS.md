@@ -1252,3 +1252,54 @@ hoeven betalen voor een claim die toch nooit opgeslagen had kunnen worden.
 **Status:** de drie nieuwe hoeken: niet gebouwd, gedood. De tiende hoek (vaste verplichte
 vergoeding): gebouwd, getest (`http-server.test.ts`, `http-server-record-delivery.test.ts`), nog
 niet gemerged (PR #26).
+
+### Drie nieuwe services deze sessie (2026-10-21), en waarom de derde geen portemonnee kreeg
+
+Dezelfde sessie bouwde, één voor één, drie nieuwe, gratis-of-vast-geprijsde MCP-tools op
+`http-server.ts`, elk expliciet een ANDER niche-idee dan D-018's negen en dan de tiende hoek
+hierboven:
+
+1. **`get_compute_track_record`** — `get_delivery_history`, voorgefilterd op compute-relevante
+   claims (`assetType` gpu-hours/api-credits MET een `measured`-blok). Geen nieuwe data, geen
+   nieuw schrijfpad.
+2. **`get_fabrication_signals`** — dezelfde D-014/D-018-zorg (één partij die koper en verkoper
+   tegelijk is) als TELBARE FEITEN in plaats van een oordeel: totaal aantal claims, aantal
+   verschillende kopers, aandeel van de grootste koper. Expliciet GEEN score (D-004): de
+   aanroeper trekt zijn eigen conclusie uit de kale getallen.
+3. **`bridge_x402_receipt`** — leest een x402 offer-receipt-artefact (`receipt-issue.ts`'s eigen
+   format, EIP-712, `{format,payload,signature}`) van EENDER WELKE x402-verkoper, niet alleen
+   onze eigen kopers, en zet 'm om in: de herstelde ondertekenaar, de sha256-digest die een koper
+   in `offerReceiptHash` zou citeren, en een vooringe vulde CLAIM-KLADVERSIE (`buyerAddress`,
+   `settlementRef` waar aanwezig, `offerReceiptHash`) met een expliciete `stillRequired`-lijst
+   voor wat de kwitantie NIET kan invullen (`assetType`, `promisedSpec`, `delivered`,
+   `evidenceHash`, `timestamp` — dat zijn de KOPER's eigen beweringen, nooit afgeleid). Optioneel,
+   als de aanroeper al een VOLLEDIG ONDERTEKENDE claim meestuurt: herverifieert die claim eerst
+   (`verifyClaim`), dan pas `checkReceiptBinding`/`compareClaimToReceipt` — nooit een vergelijking
+   tegen losse, ongeverifieerde velden die de aanroeper zelf intypte, want dat bewijst niets.
+   Alle drie onderliggende functies (`receiptDigest`, `recoverReceiptSigner`,
+   `checkReceiptBinding`, `compareClaimToReceipt`) bestonden al als geteste bibliotheekfuncties
+   (`receipt-check.ts`/`receipt-issue.ts`) maar waren NERGENS als MCP-tool ontsloten — dit is
+   bedrading, geen nieuwe logica.
+
+**Bewust NIET gebouwd, zelfde sessie: automatisch doorpubliceren naar ERC-8004/EAS namens de
+aanroeper.** De koning's eigen vraag bij punt 3 ("stuur me een bonnetje, zet het door naar de
+plekken waar robots kijken") kan ook gelezen worden als "onderteken en verstuur het ook voor
+mij". Dat is een ANDERE risicoklasse dan alle vier bovenstaande tools: het zou een PRIVATE
+ONDERTEKENSLEUTEL met gas-geld op de server vereisen, die automatisch tekent op basis van door
+vreemden aangeleverde data. Dat breekt bovendien de bestaande architectuur van dit pakket zelf —
+`publishReputationFeedback()` (D-016) en elke andere publicatiefunctie is altijd "de aanroeper
+brengt zijn eigen sleutel mee", nooit een door de server gehouden sleutel. `bridge_x402_receipt`
+levert daarom de KLADVERSIE (wat je zou moeten ondertekenen) en NIET de ondertekening/verzending
+zelf. Een server-gehouden hete portemonnee die automatisch tekent is een zelfstandig,
+veiligheidskritiek ontwerpbesluit en verdient zijn eigen aparte review en expliciete
+koning-goedkeuring voor het gebouwd wordt, niet een bijvangst in dezelfde sessie als drie
+read-only tools.
+
+**Trigger-criterium om dit ooit alsnog te bouwen:** een concreet, uitgewerkt dreigingsmodel voor
+een server-gehouden ondertekensleutel (hoeveel gas-geld, welke rate-limit, welke blast radius bij
+compromittering, welke aansprakelijkheid als de sleutel een foute/kwaadaardige transactie
+ondertekent namens een vreemde) plus expliciete koning-goedkeuring op DAT dreigingsmodel, niet
+alleen op "bouw service 3 af".
+
+**Status:** alle drie gebouwd, getest, in PR #26. Zie `http-server.test.ts` voor de drie nieuwe
+describe-blokken.
