@@ -14,10 +14,10 @@ A real mainnet payment was made end to end on 2026-10-21: tool call, payment-req
 
 ## Environment
 
-- `X402_PAY_TO` — same payTo address self-check-server already uses.
-- `MCP_FACILITATOR_URL` — defaults to `https://facilitator.payai.network`, the same facilitator self-check-server settles mainnet through.
-- `FREE_CHECK_URL` — defaults to `http://127.0.0.1:8787/api/verify-ownership`, self-check-server's own free route.
-- `MCP_PORT` — defaults to `4100`.
+- `X402_PAY_TO`: same payTo address self-check-server already uses.
+- `MCP_FACILITATOR_URL`: defaults to `https://facilitator.payai.network`, the same facilitator self-check-server settles mainnet through.
+- `FREE_CHECK_URL`: defaults to `http://127.0.0.1:8787/api/verify-ownership`, self-check-server's own free route.
+- `MCP_PORT`: defaults to `4100`.
 
 ## Run
 

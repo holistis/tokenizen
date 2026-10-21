@@ -1,4 +1,4 @@
-// server.mjs — paid MCP tool wrapping the existing, already-live
+// server.mjs: paid MCP tool wrapping the existing, already-live
 // ownership-verification check (self-check-server), so AI agents can find
 // and pay for it through the MCP shelf of a discovery catalog (type=mcp),
 // not just the plain HTTP route they already had.
@@ -33,7 +33,7 @@ const FACILITATOR_URL = process.env.MCP_FACILITATOR_URL || "https://facilitator.
 const FREE_CHECK_URL = process.env.FREE_CHECK_URL || "http://127.0.0.1:8787/api/verify-ownership";
 
 if (!PAY_TO) {
-  console.error("X402_PAY_TO ontbreekt in de omgeving — zonder payTo kan deze dienst geen betaling eisen.");
+  console.error("X402_PAY_TO ontbreekt in de omgeving, zonder payTo kan deze dienst geen betaling eisen.");
   process.exit(1);
 }
 
@@ -106,4 +106,4 @@ app.get("/mcp", (_req, res) => {
   res.writeHead(405).end(JSON.stringify({ jsonrpc: "2.0", error: { code: -32000, message: "Method not allowed." }, id: null }));
 });
 
-app.listen(PORT, () => console.log(`tokenizen-mcp luistert op poort ${PORT}, pad /mcp`));
+app.listen(PORT, "127.0.0.1", () => console.log(`tokenizen-mcp luistert op poort ${PORT}, pad /mcp`));
