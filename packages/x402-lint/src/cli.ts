@@ -10,7 +10,7 @@ import { checkX402Conformance } from "./check.js";
 function usageAndExit(code: number): never {
   process.stderr.write(
     [
-      "Usage: x402-lint <resourceUrl> [options]",
+      "Usage: check-x402 <resourceUrl> [options]",
       "",
       "Checks resourceUrl's own payment-required response against the REAL",
       "client-side schema from @x402/core — the same schema a real buyer's",
@@ -26,7 +26,7 @@ function usageAndExit(code: number): never {
       "Exit code: 0 if ok, 1 if the response failed the check, 2 on a usage error.",
       "",
       "Example:",
-      "  x402-lint https://capacity-attest.tokenizen.nl/mcp --tool publish_reputation_feedback",
+      "  check-x402 https://capacity-attest.tokenizen.nl/mcp --tool publish_reputation_feedback",
     ].join("\n") + "\n",
   );
   process.exit(code);
@@ -62,7 +62,7 @@ async function main(): Promise<void> {
   try {
     parsed = parseCliArgs(process.argv.slice(2));
   } catch (e) {
-    process.stderr.write(`x402-lint: ${(e as Error).message}\n`);
+    process.stderr.write(`check-x402: ${(e as Error).message}\n`);
     usageAndExit(2);
   }
 
@@ -73,7 +73,7 @@ async function main(): Promise<void> {
     try {
       mcpToolArguments = JSON.parse(parsed.values.args) as Record<string, unknown>;
     } catch {
-      process.stderr.write("x402-lint: --args must be valid JSON\n");
+      process.stderr.write("check-x402: --args must be valid JSON\n");
       usageAndExit(2);
     }
   }
@@ -92,6 +92,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((e: unknown) => {
-  process.stderr.write(`x402-lint: unexpected error: ${(e as Error).message}\n`);
+  process.stderr.write(`check-x402: unexpected error: ${(e as Error).message}\n`);
   process.exit(2);
 });

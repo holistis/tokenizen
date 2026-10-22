@@ -9,9 +9,11 @@ x402-lint runs that exact, real schema — imported directly from `@x402/core`, 
 ## Use it from the terminal
 
 ```
-npx x402-lint https://your-service.example/some-route
-npx x402-lint https://your-service.example/mcp --tool your_paid_tool_name
+npx @alghanima/x402-lint https://your-service.example/some-route
+npx @alghanima/x402-lint https://your-service.example/mcp --tool your_paid_tool_name
 ```
+
+(installs a `check-x402` command — `npm install -g @alghanima/x402-lint` then run `check-x402 <url>` directly)
 
 ```
 OK  https://capacity-attest.tokenizen.nl/mcp  (mcp transport, HTTP 200)
