@@ -10,7 +10,7 @@ import { checkX402Conformance } from "./check.js";
 
 let server: Server;
 let baseUrl: string;
-let mode: "rest" | "mcp-payment-required" | "mcp-no-payment-required" | "non-402" | "bad-json" = "rest";
+let mode: "rest" | "mcp-payment-required" | "mcp-no-payment-required" | "mcp-input-error" | "non-402" | "bad-json" = "rest";
 let restBody: unknown = null;
 let mcpPaymentRequiredBody: unknown = null;
 
@@ -60,7 +60,9 @@ beforeAll(async () => {
     const payload =
       mode === "mcp-payment-required"
         ? { isError: true, content: [{ type: "text", text: JSON.stringify(mcpPaymentRequiredBody) }] }
-        : { isError: false, content: [{ type: "text", text: "{\"ok\":true}" }] };
+        : mode === "mcp-input-error"
+          ? { isError: true, content: [{ type: "text", text: "Error: missing required field 'claim'" }] } // plain text, NOT JSON — a real tool's own input-validation error
+          : { isError: false, content: [{ type: "text", text: "{\"ok\":true}" }] };
     res
       .writeHead(200, { "content-type": "application/json" })
       .end(JSON.stringify({ jsonrpc: "2.0", id: rpc.id, result: payload }));
@@ -158,6 +160,14 @@ describe("checkX402Conformance, MCP transport (one URL, many named tools)", () =
     const report = await checkX402Conformance(`${baseUrl}/mcp`, { mcpToolName: "record_delivery", fetchImpl: fetch });
     expect(report.schemaValid).toBe(false);
     expect(report.schemaErrors.join(" ")).toContain("serviceName");
+  });
+
+  it("never claims a schema failure when the schema was never reached (e.g. a plain-text input-validation error)", async () => {
+    mode = "mcp-input-error";
+    const report = await checkX402Conformance(`${baseUrl}/mcp`, { mcpToolName: "some_paid_tool", fetchImpl: fetch });
+    expect(report.ok).toBe(false);
+    expect(report.schemaValid).toBeNull(); // NOT false — the schema never ran, this is not a schema verdict
+    expect(report.schemaErrors).toEqual([]);
   });
 
   it("reports an honest error when the named tool is not payment-gated at all (never demanded payment)", async () => {

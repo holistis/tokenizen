@@ -35,7 +35,8 @@ function usageAndExit(code: number): never {
 function printHuman(report: Awaited<ReturnType<typeof checkX402Conformance>>): void {
   const out = process.stdout;
   out.write(`${report.ok ? "OK" : "FAIL"}  ${report.testedUrl}  (${report.transport} transport, HTTP ${report.httpStatus ?? "n/a"})\n`);
-  out.write(`schema: ${report.schemaValid ? "valid" : "INVALID"} against @x402/core's PaymentRequiredSchema\n`);
+  const schemaLabel = report.schemaValid === null ? "not evaluated (see error below)" : report.schemaValid ? "valid" : "INVALID";
+  out.write(`schema: ${schemaLabel} against @x402/core's PaymentRequiredSchema\n`);
   for (const err of report.schemaErrors) out.write(`  error: ${err}\n`);
   for (const issue of report.issues) out.write(`  ${issue.severity}: [${issue.field}] ${issue.message}\n`);
   if (report.schemaErrors.length === 0 && report.issues.length === 0) {
