@@ -1,0 +1,55 @@
+{
+  "name": "x402-lint",
+  "version": "0.1.0",
+  "description": "Checks an x402 seller's own payment-required (402) response against the REAL client-side schema from @x402/core, catching the exact class of bug where a response looks fine to its own author but silently fails every real buyer's own validation (found live, 2026-10-22: a serviceName field 53/71 characters long against the client schema's 32-character limit). Free, read-only, no wallet involved.",
+  "keywords": [
+    "x402",
+    "conformance",
+    "lint",
+    "payments",
+    "mcp"
+  ],
+  "author": "holistis",
+  "license": "MIT",
+  "homepage": "https://tokenizen.nl",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/holistis/tokenizen.git",
+    "directory": "packages/x402-lint"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node -e \"require('fs').chmodSync('dist/http-server-bin.js', 0o755); require('fs').chmodSync('dist/cli.js', 0o755)\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "start:http": "node dist/http-server-bin.js"
+  },
+  "bin": {
+    "x402-lint": "./dist/cli.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@x402/core": "^2.28.0",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "tokenizen-net-guard": "^0.1.0",
+    "zod": "^4.5.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^4.1.11"
+  }
+}
