@@ -57,6 +57,7 @@ beforeAll(async () => {
   process.env.PUBLISH_FEEDBACK_PRICE = "$0.05";
   process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR = "3";
   process.env.RECORD_DELIVERY_FACILITATOR_URL = facilitatorUrl;
+  process.env.CAPACITY_ATTEST_BAZAAR = "1";
 
   vi.resetModules();
   const { createApp } = await import("./http-server.js");
@@ -76,6 +77,7 @@ afterAll(async () => {
   delete process.env.PUBLISH_FEEDBACK_PRICE;
   delete process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR;
   delete process.env.RECORD_DELIVERY_FACILITATOR_URL;
+  delete process.env.CAPACITY_ATTEST_BAZAAR;
 });
 
 async function postMcp(body: unknown): Promise<Response> {
@@ -174,6 +176,30 @@ describe("http-server: publish_reputation_feedback registered when both env vars
       const paymentRequiredObject = JSON.parse(JSON.parse(`"${match[1]}"`));
       const parsed = parsePaymentRequired(paymentRequiredObject);
       expect(parsed.success, parsed.success ? "" : JSON.stringify(parsed.error?.issues)).toBe(true);
+    },
+  );
+
+  it(
+    "with CAPACITY_ATTEST_BAZAAR=1, the real 402 carries a valid bazaar discovery declaration",
+    async () => {
+      // Same wiring-not-just-declaration proof as record_delivery's own
+      // equivalent test — see its comment for why this is checked against
+      // the REAL served response, not the declare function in isolation.
+      const { validateDiscoveryExtension } = await import("@x402/extensions/bazaar");
+      const res = await postMcp({
+        jsonrpc: "2.0",
+        id: 5,
+        method: "tools/call",
+        params: { name: "publish_reputation_feedback", arguments: SOME_CLAIM_ARGS },
+      });
+      const text = await res.text();
+      const match = text.match(/"text":"((?:[^"\\]|\\.)*)"/);
+      if (!match) throw new Error(`no text content in MCP response: ${text}`);
+      const paymentRequiredObject = JSON.parse(JSON.parse(`"${match[1]}"`)) as { extensions?: { bazaar?: unknown } };
+      const bazaar = paymentRequiredObject.extensions?.bazaar;
+      expect(bazaar, "extensions.bazaar missing from the real served 402 — registerExtension() wiring gap").toBeTruthy();
+      const result = validateDiscoveryExtension(bazaar as never);
+      expect(result.valid, JSON.stringify(result.errors)).toBe(true);
     },
   );
 

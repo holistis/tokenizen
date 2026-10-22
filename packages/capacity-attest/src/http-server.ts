@@ -108,6 +108,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createPaymentWrapper, x402ResourceServer } from "@x402/mcp";
 import { HTTPFacilitatorClient } from "@x402/core/server";
+import { bazaarResourceServerExtension } from "@x402/extensions/bazaar";
+import { declareRecordDeliveryBazaarDiscovery, declarePublishReputationFeedbackBazaarDiscovery } from "./bazaar-discovery.js";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { ClaimContentSchema, DeliveryClaimObject, DeliveryClaimSchema, StrictDeliveryClaimSchema, type DeliveryClaim } from "./schema.js";
 import { verifyClaim } from "./signing.js";
@@ -131,6 +133,14 @@ const RECORD_DELIVERY_PAY_TO = process.env.RECORD_DELIVERY_PAY_TO;
 const RECORD_DELIVERY_PRICE = process.env.RECORD_DELIVERY_PRICE || "$0.01";
 const RECORD_DELIVERY_NETWORK = process.env.RECORD_DELIVERY_NETWORK || "eip155:8453";
 const RECORD_DELIVERY_FACILITATOR_URL = process.env.RECORD_DELIVERY_FACILITATOR_URL || "https://facilitator.payai.network";
+// OFF BY DEFAULT, same reasoning as self-check-server's own X402_BAZAAR flag
+// (x402-seller.ts): declaring this changes the bytes of a live 402 response,
+// and it only pays off through a facilitator that keeps an index — which
+// facilitator.payai.network, our default above, measurably does (see that
+// file's own comment, 20.840 resources indexed as of 2026-10-18). Turning
+// this on is a decision made on a date (2026-10-22, king: "ja doe dat"), not
+// a side effect of an unrelated deploy.
+const CAPACITY_ATTEST_BAZAAR = process.env.CAPACITY_ATTEST_BAZAAR === "1";
 
 // Built ONCE at module load, not per-request: the facilitator handshake
 // (resourceServer.initialize()) and the signed payment-requirements object
@@ -150,6 +160,7 @@ if (RECORD_DELIVERY_PAY_TO) {
   const facilitatorClient = new HTTPFacilitatorClient({ url: RECORD_DELIVERY_FACILITATOR_URL });
   const resourceServer = new x402ResourceServer(facilitatorClient);
   resourceServer.register(network, new ExactEvmScheme());
+  if (CAPACITY_ATTEST_BAZAAR) resourceServer.registerExtension(bazaarResourceServerExtension as never);
   await resourceServer.initialize();
   const accepts = await resourceServer.buildPaymentRequirements({
     scheme: "exact",
@@ -159,6 +170,7 @@ if (RECORD_DELIVERY_PAY_TO) {
   });
   recordDeliveryPaid = createPaymentWrapper(resourceServer, {
     accepts,
+    extensions: CAPACITY_ATTEST_BAZAAR ? declareRecordDeliveryBazaarDiscovery() : undefined,
     resource: {
       // ROOT CAUSE, found 2026-10-22 while chasing down a live client-side
       // test that kept reporting paymentMade:false: @x402/core's own
@@ -325,6 +337,7 @@ if (REPUTATION_PUBLISHER_PRIVATE_KEY && PUBLISH_FEEDBACK_PAY_TO) {
   const facilitatorClient = new HTTPFacilitatorClient({ url: RECORD_DELIVERY_FACILITATOR_URL });
   const resourceServer = new x402ResourceServer(facilitatorClient);
   resourceServer.register(network, new ExactEvmScheme());
+  if (CAPACITY_ATTEST_BAZAAR) resourceServer.registerExtension(bazaarResourceServerExtension as never);
   await resourceServer.initialize();
   const accepts = await resourceServer.buildPaymentRequirements({
     scheme: "exact",
@@ -334,6 +347,7 @@ if (REPUTATION_PUBLISHER_PRIVATE_KEY && PUBLISH_FEEDBACK_PAY_TO) {
   });
   publishFeedbackPaid = createPaymentWrapper(resourceServer, {
     accepts,
+    extensions: CAPACITY_ATTEST_BAZAAR ? declarePublishReputationFeedbackBazaarDiscovery() : undefined,
     resource: {
       // Same 32-character cap as record_delivery's own serviceName above —
       // see that field's comment for the full root-cause writeup.

@@ -68,6 +68,7 @@ beforeAll(async () => {
   process.env.RECORD_DELIVERY_PAY_TO = FAKE_PAY_TO;
   process.env.RECORD_DELIVERY_FACILITATOR_URL = facilitatorUrl;
   process.env.RECORD_DELIVERY_PRICE = "$0.01";
+  process.env.CAPACITY_ATTEST_BAZAAR = "1";
 
   vi.resetModules();
   const { createApp } = await import("./http-server.js");
@@ -85,6 +86,7 @@ afterAll(async () => {
   delete process.env.RECORD_DELIVERY_PAY_TO;
   delete process.env.RECORD_DELIVERY_FACILITATOR_URL;
   delete process.env.RECORD_DELIVERY_PRICE;
+  delete process.env.CAPACITY_ATTEST_BAZAAR;
 });
 
 async function postMcp(body: unknown): Promise<Response> {
@@ -174,6 +176,46 @@ describe("http-server: record_delivery registered when RECORD_DELIVERY_PAY_TO is
       const paymentRequiredObject = JSON.parse(JSON.parse(`"${match[1]}"`));
       const parsed = parsePaymentRequired(paymentRequiredObject);
       expect(parsed.success, parsed.success ? "" : JSON.stringify(parsed.error?.issues)).toBe(true);
+    },
+  );
+
+  it(
+    "with CAPACITY_ATTEST_BAZAAR=1, the real 402 carries a valid bazaar discovery declaration",
+    async () => {
+      // Confirms the WIRING, not just the declare function in isolation
+      // (bazaar-discovery.test.ts already covers that): this is exactly the
+      // failure mode self-check-server's own x402-seller.ts warns about —
+      // a declaration that looks right by itself but never reaches the real
+      // served response because .registerExtension() was never called.
+      const { validateDiscoveryExtension } = await import("@x402/extensions/bazaar");
+      const res = await postMcp({
+        jsonrpc: "2.0",
+        id: 4,
+        method: "tools/call",
+        params: {
+          name: "record_delivery",
+          arguments: {
+            sellerAddress: "0x0000000000000000000000000000000000000000",
+            buyerAddress: "0x0000000000000000000000000000000000000000",
+            assetType: "api-credits",
+            promisedSpec: "test",
+            delivered: "yes",
+            evidenceHash: "0".repeat(64),
+            settlementRef: "test-ref",
+            timestamp: new Date(0).toISOString(),
+            claimId: `0x${"0".repeat(64)}`,
+            signature: `0x${"0".repeat(130)}`,
+          },
+        },
+      });
+      const text = await res.text();
+      const match = text.match(/"text":"((?:[^"\\]|\\.)*)"/);
+      if (!match) throw new Error(`no text content in MCP response: ${text}`);
+      const paymentRequiredObject = JSON.parse(JSON.parse(`"${match[1]}"`)) as { extensions?: { bazaar?: unknown } };
+      const bazaar = paymentRequiredObject.extensions?.bazaar;
+      expect(bazaar, "extensions.bazaar missing from the real served 402 — registerExtension() wiring gap").toBeTruthy();
+      const result = validateDiscoveryExtension(bazaar as never);
+      expect(result.valid, JSON.stringify(result.errors)).toBe(true);
     },
   );
 
