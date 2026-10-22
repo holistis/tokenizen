@@ -57,8 +57,8 @@ export interface ConformanceReport {
   transport: "rest" | "mcp";
   /** The raw HTTP status received. For MCP this is usually 200 even on a real payment-required outcome — see the module header. */
   httpStatus: number | null;
-  /** Did @x402/core's own parsePaymentRequired() accept the extracted object at all? If false, no real client ever will either. */
-  schemaValid: boolean;
+  /** Did @x402/core's own parsePaymentRequired() accept the extracted object at all? null means the schema was never reached (network/transport/status/body error before extraction) — never read null as a schema failure. */
+  schemaValid: boolean | null;
   /** Raw zod issue messages from parsePaymentRequired(), empty if schemaValid. */
   schemaErrors: string[];
   /** Extra, honest sanity checks the schema itself does not enforce (address shape, resource.url match). Never schema violations themselves. */
@@ -77,7 +77,7 @@ export interface CheckOptions {
    * without naming a tool.
    */
   mcpToolName?: string;
-  /** Arguments sent with the MCP tools/call probe. Default {} — a paid tool's payment check runs before its own input validation in every pattern this package has seen, so {} is normally enough to see the 402-equivalent signal. */
+  /** Arguments sent with the MCP tools/call probe. Default {} — UNVERIFIED whether a given paid tool checks payment before its own input validation; {} may hit an input error instead of the payment-required signal. If so, pass real arguments. */
   mcpToolArguments?: Record<string, unknown>;
   /**
    * Overrides the fetch implementation. Defaults to net-guard's own
@@ -104,7 +104,7 @@ function errorReport(
     testedUrl: resourceUrl,
     transport,
     httpStatus,
-    schemaValid: false,
+    schemaValid: null,
     schemaErrors: [],
     issues: [{ severity: "error", field, message }],
     rawPaymentRequired: null,
@@ -206,7 +206,13 @@ async function checkMcp(
   try {
     body = JSON.parse(text);
   } catch {
-    return errorReport(resourceUrl, "mcp", res.status, "body", "the error result's text is not valid JSON");
+    return errorReport(
+      resourceUrl,
+      "mcp",
+      res.status,
+      "body",
+      `the error result's text is not valid JSON — this may just mean "${toolName}" rejected the given arguments before any payment check ran, not a schema problem`,
+    );
   }
 
   return finishReport(resourceUrl, "mcp", res.status, body);

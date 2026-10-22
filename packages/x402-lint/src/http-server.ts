@@ -88,7 +88,9 @@ function buildServer(): McpServer {
         mcpToolArguments: z
           .record(z.string(), z.unknown())
           .optional()
-          .describe("Arguments sent with the MCP tools/call probe. Default {} — a payment check normally runs before input validation"),
+          .describe(
+            "Arguments sent with the MCP tools/call probe. Default {} — UNVERIFIED whether this tool checks payment before its own input validation; {} may hit an input error instead of the payment-required signal (the report says so honestly, schemaValid:null, rather than claiming a schema failure). If so, pass real arguments.",
+          ),
       },
     },
     async ({ resourceUrl, mcpToolName, mcpToolArguments }) => {
