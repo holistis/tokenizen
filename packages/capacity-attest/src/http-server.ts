@@ -273,6 +273,23 @@ const PUBLISH_FEEDBACK_PRICE = process.env.PUBLISH_FEEDBACK_PRICE || "$0.05";
 // is a soft, best-effort throttle, not a hard guarantee, exactly like
 // RATE_LIMIT already is for the same reason.
 const PUBLISH_FEEDBACK_MAX_PER_HOUR = Number(process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR ?? "20");
+// Separate from RECORD_DELIVERY_NETWORK (a CAIP-2 chain id, used for x402
+// payment matching): this is the actual JSON-RPC endpoint the signer below
+// broadcasts real transactions through. Defaults to Base mainnet's own
+// public endpoint, matching RECORD_DELIVERY_NETWORK's default chain.
+const REPUTATION_PUBLISHER_RPC_URL = process.env.REPUTATION_PUBLISHER_RPC_URL || "https://mainnet.base.org";
+
+// Exported so a test can prove the exact thing that silently broke in
+// production, 2026-10-22: new ethers.Wallet(privateKey) with NO provider
+// argument signs fine (every unit test here that only checks signing
+// passed), but throws "missing provider (operation=sendTransaction,
+// code=UNSUPPORTED_OPERATION)" the moment publishReputationFeedback()
+// actually tries to broadcast giveFeedback() — which only happens inside
+// onAfterSettlement, AFTER a real caller has already paid the real fee.
+// Found via a live, real end-to-end test (see DECISIONS.md), not a hunch.
+export function buildReputationPublisherSigner(privateKey: string, rpcUrl: string = REPUTATION_PUBLISHER_RPC_URL): ethers.Wallet {
+  return new ethers.Wallet(privateKey, new ethers.JsonRpcProvider(rpcUrl));
+}
 
 const FEEDBACK_HOUR_MS = 60 * 60 * 1000;
 let feedbackPublishTimestamps: number[] = [];
@@ -302,7 +319,7 @@ if (REPUTATION_PUBLISHER_PRIVATE_KEY && PUBLISH_FEEDBACK_PAY_TO) {
   // Parsed once, at module load: fails loudly at startup on a malformed key,
   // never silently on the first real request. Captured only by this
   // closure — nothing outside this block ever needs the signer itself.
-  const signer = new ethers.Wallet(REPUTATION_PUBLISHER_PRIVATE_KEY);
+  const signer = buildReputationPublisherSigner(REPUTATION_PUBLISHER_PRIVATE_KEY);
   const network = RECORD_DELIVERY_NETWORK as `${string}:${string}`;
   const facilitatorClient = new HTTPFacilitatorClient({ url: RECORD_DELIVERY_FACILITATOR_URL });
   const resourceServer = new x402ResourceServer(facilitatorClient);

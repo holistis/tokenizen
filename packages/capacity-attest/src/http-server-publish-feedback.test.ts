@@ -105,6 +105,34 @@ const SOME_CLAIM_ARGS = {
   },
 };
 
+describe("http-server: buildReputationPublisherSigner connects a real provider", () => {
+  it(
+    "the signer is connected to a provider, so it CAN broadcast a real transaction (not just sign)",
+    async () => {
+      // Found live, 2026-10-22: new ethers.Wallet(key) with no provider
+      // signs fine but throws "missing provider (sendTransaction,
+      // UNSUPPORTED_OPERATION)" the moment publishReputationFeedback()
+      // tries to actually broadcast giveFeedback() -- inside
+      // onAfterSettlement, i.e. only AFTER a real caller already paid.
+      // ethers.Wallet exposes no "can this send a tx" check directly, so
+      // this proves it the same way the real failure surfaced: attempt a
+      // sendTransaction and check which error comes back. A connected
+      // signer fails on something network/balance-shaped (this test uses
+      // an address with no funds and a bogus value, on purpose); an
+      // UNCONNECTED signer fails with UNSUPPORTED_OPERATION specifically,
+      // before ever reaching the network.
+      const { buildReputationPublisherSigner } = await import("./http-server.js");
+      const signer = buildReputationPublisherSigner("0x" + "11".repeat(32), "https://mainnet.base.org");
+      expect(signer.provider, "signer must have a provider attached, or it can never broadcast a real transaction").not.toBeNull();
+      try {
+        await signer.estimateGas({ to: "0x0000000000000000000000000000000000000001", value: 1n });
+      } catch (e) {
+        expect((e as { code?: string }).code).not.toBe("UNSUPPORTED_OPERATION");
+      }
+    },
+  );
+});
+
 describe("http-server: publish_reputation_feedback registered when both env vars are set", () => {
   it("lists publish_reputation_feedback alongside the read-only tools", async () => {
     const listRes = await postMcp({ jsonrpc: "2.0", id: 1, method: "tools/list", params: {} });
