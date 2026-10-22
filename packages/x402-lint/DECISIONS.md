@@ -60,6 +60,22 @@ nieuwe token aanmaken), geen scriptfout. Volledig: memory `x402-lint-gebouwd-liv
 Ook: PR #90 fixte een echte bug (`schemaValid` stond op `false` i.p.v. `null` als het schema nooit
 draaide), gevonden door advisor-review voor publicatie overwogen werd.
 
+## D-006: renamed to @alghanima/x402-lint, bin renamed to check-x402 (2026-10-22)
+
+First real publish attempt hit a 403: "Package name too similar to existing package x402lint." A
+genuine, pre-existing competitor: `x402lint@0.3.1` (alias `x402check`, x402check.com), published 8
+months before this package, by a different author, doing the same kind of thing ("Validate x402
+payment configurations"). Not something we checked for before building — should have, per the
+house's own "bestaat dit al" step. No README on the registry entry to compare feature-for-feature;
+worth a closer look before claiming this is the only tool of its kind anywhere.
+
+Followed npm's own suggested fix: scoped the package to `@alghanima/x402-lint`. The bin command
+also got silently stripped by npm at actual publish time ("bin[x402-lint] ... was invalid and
+removed") — not reproducible with a local `npm pack --dry-run`, so it is a server-side check, most
+likely the same anti-collision logic applied to the GLOBAL bin-command namespace against
+x402lint's own registered `bin: x402lint`. Renamed the bin command to `check-x402` rather than
+drop the CLI entirely.
+
 ## D-005: not yet published to npm (2026-10-22)
 
 `tokenizen-net-guard`, which x402-lint depends on, is itself not yet on the

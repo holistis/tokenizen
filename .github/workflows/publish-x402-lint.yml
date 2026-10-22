@@ -61,7 +61,7 @@ jobs:
       # this publish is attempted, or this ships an uninstallable package.
       - name: Refuse to publish if our own dependencies are missing from npm
         working-directory: .
-        run: node scripts/check-own-deps-published.mjs --package=x402-lint
+        run: node scripts/check-own-deps-published.mjs --package=@alghanima/x402-lint
 
       - name: Publish to npm with provenance
         run: npm publish --provenance --access public
