@@ -50,6 +50,16 @@ open but not yet merged, pending review. The server's working tree on that
 one package's checkout will track whatever the king decides for the PR;
 nothing here blocks reverting by just stopping the systemd unit.
 
+## CORRECTIE op D-004/D-005 (2026-10-22, zelfde avond, na koning "Is goed doe maar")
+
+PR #89 is inmiddels gemerged naar main (niet meer "open, niet gemerged"). De npm-publicatie is
+geprobeerd (`gh workflow run publish-net-guard.yml`) en faalde op `npm error code EOTP`: de
+NPM_TOKEN-secret heeft geen Bypass-2FA aan, en trusted publishing kan een gloednieuwe pakketnaam
+niet voor de eerste keer publiceren. Dit is een koning-only actie (eigen security key, of een
+nieuwe token aanmaken), geen scriptfout. Volledig: memory `x402-lint-gebouwd-live-npm-2fa-blokkade-2026-10-22`.
+Ook: PR #90 fixte een echte bug (`schemaValid` stond op `false` i.p.v. `null` als het schema nooit
+draaide), gevonden door advisor-review voor publicatie overwogen werd.
+
 ## D-005: not yet published to npm (2026-10-22)
 
 `tokenizen-net-guard`, which x402-lint depends on, is itself not yet on the
