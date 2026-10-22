@@ -1365,6 +1365,52 @@ mergen/deployen, dan op de ECHTE server een nieuwe sleutel genereren, dan storte
 uitgewerkt in het geheugen:
 `tokenizen-autonome-nacht-publish-reputation-feedback-2026-10-21.md`.
 
+### LIVE BEWEZEN, 2026-10-22 (echt geld, echte mainnet-transactie)
+
+`publish_reputation_feedback` draait nu echt op `https://capacity-attest.tokenizen.nl/mcp`
+(systemd-service `capacity-attest-http`, VPS 116.203.155.226). De echte, duurzame sleutel is op
+die server zelf gegenereerd (nooit via een Claude-sessie), adres
+`0xF2b3679bE59ADaC8981A2b4095ff772736120339`, gefinancierd met 21 dollar aan ETH door de koning.
+
+Eerste live-test, volledig onafhankelijk op-chain geverifieerd (niet alleen het "ok" van onze
+eigen code vertrouwd): een tijdelijk testagent geregistreerd op de Identity Registry (tx
+`0xe7d97747d2647d2179b71d75b371019459c140e04036801af42bd3a1f88764bb`, agentId 517554), daarna
+`publishReputationFeedback()` via onze echte signer aangeroepen. Resultaat: tx
+`0x6686358e3d8bf8337a2760e8d825f6c92a23f0f0aa772d72fa4fd544fabd3664`, status succes, log toont
+letterlijk `capacity-attest:delivered` / `api-credits` op het echte Reputation Registry-adres,
+afkomstig van onze signer. Basescan:
+https://basescan.org/tx/0x6686358e3d8bf8337a2760e8d825f6c92a23f0f0aa772d72fa4fd544fabd3664
+
+**Onderweg gevonden, geen bug in onze code:** direct na een geslaagde `register()`-tx kan een
+`ownerOf(agentId)`-lookup via `publicnode`/`mainnet.base.org` kortstondig falen met "execution
+reverted (unknown custom error)", terwijl een directe `eth_call` op datzelfde adres een paar
+seconden later wel gewoon lukt. Vermoedelijke oorzaak: propagatie-vertraging tussen de
+load-balanced RPC-nodes achter dat publieke endpoint, geen bug in `resolveAgentIdentity()` of
+`publishReputationFeedback()`. Workaround die werkte: een korte wachttijd (8s) tussen registratie
+en de daaropvolgende aanroep.
+
+Resterend saldo na de test: ongeveer 0,0079 ETH (~19,66 dollar) — twee volledige testrondes
+(storten + registreren + feedback geven, inclusief een eerste mislukte poging door de
+propagatie-vertraging hierboven) kostten samen ongeveer 1,50 dollar, dus duidelijk minder dan
+duizenden toekomstige aanroepen in de weg staat.
+
+**Eerlijk ONDERSCHEID in wat precies bewezen is.** Het bovenstaande bewijst dat `signer +
+publishReputationFeedback()` samen echt werken, rechtstreeks aangeroepen (de bibliotheekfunctie
+zelf, dezelfde code die de betaalde tool achter de schermen gebruikt). Het bewijst NIET apart dat
+een echte x402-betaling via de officiele client-bibliotheek de betaalde MCP-tool succesvol
+activeert. Een poging om dat OOK live te bewijzen (bestaande koper-sleutel `X402_TEST_CLIENT_KEY`
+uit wazir-al-ghanima, echte 0,91 USDC op Base mainnet) liep vast op precies hetzelfde obstakel als
+eerder deze sessie bij `record_delivery` se eigen adversariele test
+(`http-server-record-delivery.test.ts`'s eigen commentaar): de betaalbibliotheek herkent het
+betaalverzoek correct (de juiste $0,05, het juiste adres kwamen terug), maar rondt de betaling
+zelf niet af (`paymentMade:false`), ook na het vinden en gebruiken van de juiste, MCP-specifieke
+client (`wrapMCPClientWithPayment` uit `@x402/mcp`, niet de generieke `@x402/fetch`). Niet verder
+uitgezocht vannacht, bewust: dit is dezelfde, al eerder als broos bestempelde hoek, en de kern die
+ertoe doet (werkt onze server-kant, inclusief de echte handtekening-/cap-/schrijf-na-afrekening-
+logica) staat al apart, grondig getest (de 697/697 unit-tests met een nagebouwde facilitator) EN
+nu ook live bewezen voor het signer-gedeelte. Status van dit ene smalle gat: open, laag risico,
+voor een volgende sessie met frisse blik.
+
 ### Twee EXTRA services, zelfde autonome nacht, matrix-aanpak op koning-verzoek
 
 Na `publish_reputation_feedback` vroeg de koning expliciet: denk in matrices wat AI-agents nog meer
