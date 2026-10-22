@@ -159,7 +159,17 @@ if (RECORD_DELIVERY_PAY_TO) {
   recordDeliveryPaid = createPaymentWrapper(resourceServer, {
     accepts,
     resource: {
-      serviceName: "capacity-attest record_delivery (paid, shared ledger)",
+      // ROOT CAUSE, found 2026-10-22 while chasing down a live client-side
+      // test that kept reporting paymentMade:false: @x402/core's own
+      // ResourceInfoSchema caps serviceName at 32 characters
+      // (z.string().min(1).max(32)...). The original string here was 53
+      // characters, so EVERY spec-compliant client's own
+      // PaymentRequiredSchema.safeParse() silently failed, which is why
+      // extractPaymentRequiredFromResult() never recognized this as a
+      // payment-required response at all -- not a third-party library bug,
+      // not a facilitator issue, just this field being too long. Kept well
+      // under 32 here, not just barely under, so a future rename has room.
+      serviceName: "capacity-attest:delivery",
       description:
         "Write a signed delivery claim into this installation's SHARED ledger. A flat, mandatory fee, identical " +
         "for every caller, applies to every submission — see this tool's own description for exactly what that " +
@@ -307,7 +317,9 @@ if (REPUTATION_PUBLISHER_PRIVATE_KEY && PUBLISH_FEEDBACK_PAY_TO) {
   publishFeedbackPaid = createPaymentWrapper(resourceServer, {
     accepts,
     resource: {
-      serviceName: "capacity-attest publish_reputation_feedback (paid, real on-chain write)",
+      // Same 32-character cap as record_delivery's own serviceName above —
+      // see that field's comment for the full root-cause writeup.
+      serviceName: "capacity-attest:reputation",
       description:
         "Publishes a claim's delivered fact to an ERC-8004 Reputation Registry using THIS SERVER'S OWN signer " +
         "and gas. A flat fee applies per call, and a global hourly cap applies across ALL callers — see this " +

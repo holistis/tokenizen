@@ -127,6 +127,29 @@ describe("http-server: publish_reputation_feedback registered when both env vars
   });
 
   it(
+    "the payment-required response actually validates against @x402/core's REAL client-side PaymentRequiredSchema",
+    async () => {
+      // Same regression as record_delivery's own equivalent test — see its
+      // comment for the full root-cause writeup (a too-long serviceName
+      // silently failed every real client's own schema validation, which a
+      // hand-rolled shape check like the two tests above would never catch).
+      const { parsePaymentRequired } = await import("@x402/core/schemas");
+      const res = await postMcp({
+        jsonrpc: "2.0",
+        id: 3,
+        method: "tools/call",
+        params: { name: "publish_reputation_feedback", arguments: SOME_CLAIM_ARGS },
+      });
+      const text = await res.text();
+      const match = text.match(/"text":"((?:[^"\\]|\\.)*)"/);
+      if (!match) throw new Error(`no text content in MCP response: ${text}`);
+      const paymentRequiredObject = JSON.parse(JSON.parse(`"${match[1]}"`));
+      const parsed = parsePaymentRequired(paymentRequiredObject);
+      expect(parsed.success, parsed.success ? "" : JSON.stringify(parsed.error?.issues)).toBe(true);
+    },
+  );
+
+  it(
     "the pre-payment handler must never itself call publishReputationFeedback — only hooks.onAfterSettlement may",
     async () => {
       // Same reasoning as the equivalent record_delivery test: a hand-built,

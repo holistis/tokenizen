@@ -136,6 +136,48 @@ describe("http-server: record_delivery registered when RECORD_DELIVERY_PAY_TO is
   });
 
   it(
+    "the payment-required response actually validates against @x402/core's REAL client-side PaymentRequiredSchema",
+    async () => {
+      // Found 2026-10-22: this file's own serviceName was 53 characters.
+      // @x402/core's ResourceInfoSchema caps it at 32, so EVERY spec-
+      // compliant client's PaymentRequiredSchema.safeParse() silently
+      // failed on our response — paymentMade stayed false, with no error at
+      // all, for every real caller, not a flaky edge case. The two tests
+      // above only check that OUR OWN server emits a 402-shaped object;
+      // they would have passed unchanged with the 53-character string that
+      // caused this. This test closes that gap by running our response
+      // through the REAL client-side parser, not a hand-rolled shape check.
+      const { parsePaymentRequired } = await import("@x402/core/schemas");
+      const res = await postMcp({
+        jsonrpc: "2.0",
+        id: 3,
+        method: "tools/call",
+        params: {
+          name: "record_delivery",
+          arguments: {
+            sellerAddress: "0x0000000000000000000000000000000000000000",
+            buyerAddress: "0x0000000000000000000000000000000000000000",
+            assetType: "api-credits",
+            promisedSpec: "test",
+            delivered: "yes",
+            evidenceHash: "0".repeat(64),
+            settlementRef: "test-ref",
+            timestamp: new Date(0).toISOString(),
+            claimId: `0x${"0".repeat(64)}`,
+            signature: `0x${"0".repeat(130)}`,
+          },
+        },
+      });
+      const text = await res.text();
+      const match = text.match(/"text":"((?:[^"\\]|\\.)*)"/);
+      if (!match) throw new Error(`no text content in MCP response: ${text}`);
+      const paymentRequiredObject = JSON.parse(JSON.parse(`"${match[1]}"`));
+      const parsed = parsePaymentRequired(paymentRequiredObject);
+      expect(parsed.success, parsed.success ? "" : JSON.stringify(parsed.error?.issues)).toBe(true);
+    },
+  );
+
+  it(
     "the pre-payment tool handler must never itself call recordDelivery/appendClaim — only hooks.onAfterSettlement may",
     async () => {
       // WHY A SOURCE-STRUCTURE CHECK, NOT A FULL FACILITATOR ROUND-TRIP: an
