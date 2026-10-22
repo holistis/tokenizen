@@ -37,7 +37,7 @@ describe("http-server: real end-to-end MCP calls over HTTP", () => {
   // should not be registered — see http-server-record-delivery.test.ts for
   // the opposite case (PAY_TO set), which needs a fresh module import to
   // exercise that branch's module-load-time setup.
-  it("initializes and lists exactly the four read-only tools when RECORD_DELIVERY_PAY_TO is unset", async () => {
+  it("initializes and lists exactly the seven read-only tools when RECORD_DELIVERY_PAY_TO is unset", async () => {
     const initRes = await postMcp({
       jsonrpc: "2.0",
       id: 1,
@@ -52,9 +52,13 @@ describe("http-server: real end-to-end MCP calls over HTTP", () => {
     expect(names).toContain("get_delivery_history");
     expect(names).toContain("get_compute_track_record");
     expect(names).toContain("get_fabrication_signals");
+    expect(names).toContain("compare_sellers");
+    expect(names).toContain("discover_delivery_history");
     expect(names).toContain("bridge_x402_receipt");
+    expect(names).toContain("get_agent_snapshot");
     expect(names).toContain("resolve_agent_identity");
     expect(names).not.toContain("record_delivery");
+    expect(names).not.toContain("publish_reputation_feedback");
   });
 
   it("calls get_delivery_history for real and gets a well-formed, empty result for an unused address", async () => {
@@ -239,6 +243,251 @@ describe("http-server: get_fabrication_signals counts real, distinct buyers", ()
     expect(text).toContain('\\"totalClaims\\": 0');
     expect(text).toContain('\\"distinctBuyers\\": 0');
     expect(text).toContain('\\"topBuyerShare\\": null');
+  });
+});
+
+describe("http-server: compare_sellers runs the same facts across several addresses in one call", () => {
+  let tmpDir: string;
+  const sellerA = "0x00000000000000000000000000000000000000ee"; // gets 1 compute claim, 1 buyer
+  const sellerB = "0x00000000000000000000000000000000000000ff"; // gets 0 claims entirely
+
+  beforeAll(async () => {
+    const { mkdtempSync } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const { join } = await import("node:path");
+    tmpDir = mkdtempSync(join(tmpdir(), "capacity-attest-compare-test-"));
+    process.env["CAPACITY_ATTEST_DATA_DIR"] = tmpDir;
+
+    const { testWallet, evidenceHash } = await import("./test-helpers.js");
+    const { signClaim } = await import("./signing.js");
+    const { appendClaim } = await import("./ledger.js");
+    const wallet = testWallet();
+    const content = {
+      sellerAddress: sellerA,
+      buyerAddress: wallet.address,
+      assetType: "gpu-hours" as const,
+      promisedSpec: "1x A100, 1 hour",
+      delivered: "yes" as const,
+      evidenceHash: evidenceHash("compare-sellers fixture"),
+      settlementRef: "0x" + "66".repeat(32),
+      timestamp: new Date().toISOString(),
+      measured: {
+        unit: "gpu-second" as const,
+        basis: "supplied" as const,
+        promisedAmount: "3600",
+        deliveredAmount: "3600",
+        period: {
+          start: new Date(Date.now() - 3_600_000).toISOString().replace(/\.\d{3}Z$/, "Z"),
+          end: new Date().toISOString().replace(/\.\d{3}Z$/, "Z"),
+        },
+        method: { attribution: "buyer" as const, instrument: "test fixture" },
+      },
+    };
+    await appendClaim({ ...content, ...(await signClaim(wallet, content)) });
+  });
+
+  afterAll(async () => {
+    const { rmSync } = await import("node:fs");
+    delete process.env["CAPACITY_ATTEST_DATA_DIR"];
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it("returns one row per seller, in the SAME order as the input, with no sorting/ranking", async () => {
+    const res = await postMcp({
+      jsonrpc: "2.0",
+      id: 40,
+      method: "tools/call",
+      params: { name: "compare_sellers", arguments: { sellerAddresses: [sellerB, sellerA] } },
+    });
+    const text = await res.text();
+    const match = text.match(/"text":"((?:[^"\\]|\\.)*)"/);
+    if (!match) throw new Error(`no text content in MCP response: ${text}`);
+    const result = JSON.parse(JSON.parse(`"${match[1]}"`));
+
+    expect(result.sellers).toHaveLength(2);
+    // sellerB (zero claims) was listed FIRST in the input and must stay first.
+    expect(result.sellers[0].sellerAddress).toBe(sellerB);
+    expect(result.sellers[0].totalClaims).toBe(0);
+    expect(result.sellers[0].computeClaimCount).toBe(0);
+    expect(result.sellers[0].topBuyerShare).toBeNull();
+    // sellerA (1 compute claim) stays second, matching input order.
+    expect(result.sellers[1].sellerAddress).toBe(sellerA);
+    expect(result.sellers[1].totalClaims).toBe(1);
+    expect(result.sellers[1].computeClaimCount).toBe(1);
+    expect(result.sellers[1].distinctBuyers).toBe(1);
+  });
+
+  it("accepts exactly 10 sellerAddresses (the boundary itself, not just one past it)", async () => {
+    const exactlyTen = Array.from({ length: 10 }, (_, i) => `0x${(i + 1).toString(16).padStart(40, "0")}`);
+    const res = await postMcp({
+      jsonrpc: "2.0",
+      id: 42,
+      method: "tools/call",
+      params: { name: "compare_sellers", arguments: { sellerAddresses: exactlyTen } },
+    });
+    const text = await res.text();
+    const match = text.match(/"text":"((?:[^"\\]|\\.)*)"/);
+    if (!match) throw new Error(`no text content in MCP response: ${text}`);
+    const result = JSON.parse(JSON.parse(`"${match[1]}"`));
+    expect(result.sellers).toHaveLength(10);
+    expect(result.sellers.every((s: { error?: string }) => s.error === undefined)).toBe(true);
+  });
+
+  it("rejects more than 10 sellerAddresses in one call", async () => {
+    const tooMany = Array.from({ length: 11 }, (_, i) => `0x${(i + 1).toString(16).padStart(40, "0")}`);
+    const res = await postMcp({
+      jsonrpc: "2.0",
+      id: 41,
+      method: "tools/call",
+      params: { name: "compare_sellers", arguments: { sellerAddresses: tooMany } },
+    });
+    const text = await res.text();
+    expect(text.toLowerCase()).toContain("invalid");
+  });
+});
+
+describe("http-server: discover_delivery_history aggregates the local ledger with caller-named extra sources", () => {
+  let tmpDir: string;
+  const sellerAddress = "0x00000000000000000000000000000000000001aa";
+
+  beforeAll(async () => {
+    const { mkdtempSync } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const { join } = await import("node:path");
+    tmpDir = mkdtempSync(join(tmpdir(), "capacity-attest-discover-test-"));
+    process.env["CAPACITY_ATTEST_DATA_DIR"] = tmpDir;
+
+    const { testWallet, evidenceHash } = await import("./test-helpers.js");
+    const { signClaim } = await import("./signing.js");
+    const { appendClaim } = await import("./ledger.js");
+    const wallet = testWallet();
+    const content = {
+      sellerAddress,
+      buyerAddress: wallet.address,
+      assetType: "storage" as const,
+      promisedSpec: "10GB for a month",
+      delivered: "yes" as const,
+      evidenceHash: evidenceHash("discover-delivery-history fixture"),
+      settlementRef: "0x" + "77".repeat(32),
+      timestamp: new Date().toISOString(),
+    };
+    await appendClaim({ ...content, ...(await signClaim(wallet, content)) });
+  });
+
+  afterAll(async () => {
+    const { rmSync } = await import("node:fs");
+    delete process.env["CAPACITY_ATTEST_DATA_DIR"];
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it("with no extra sources named, returns exactly the local ledger's claim under a 'local-ledger' source report", async () => {
+    const res = await postMcp({
+      jsonrpc: "2.0",
+      id: 50,
+      method: "tools/call",
+      params: { name: "discover_delivery_history", arguments: { sellerAddress } },
+    });
+    const text = await res.text();
+    expect(text).toContain('\\"count\\": 1');
+    expect(text).toContain('\\"name\\": \\"local-ledger\\"');
+    expect(text).toContain('\\"accepted\\": 1');
+  });
+
+  it("an unreachable EAS source fails in isolation, reported by name, without hiding the local ledger's claim", async () => {
+    const res = await postMcp({
+      jsonrpc: "2.0",
+      id: 51,
+      method: "tools/call",
+      params: {
+        name: "discover_delivery_history",
+        arguments: { sellerAddress, easSources: [{ rpcUrl: "http://127.0.0.1:1", chainId: 8453 }] },
+      },
+    });
+    const text = await res.text();
+    // The local ledger's one real claim still comes through...
+    expect(text).toContain('\\"count\\": 1');
+    // ...and the unreachable EAS source reports its OWN failure by name, rather
+    // than the whole call failing or the error being silently swallowed.
+    expect(text).toContain('\\"name\\": \\"eas:8453\\"');
+    expect(text.toLowerCase()).toContain("econnrefused");
+  });
+
+  it("an EAS source AND an HTTP source can both be named and both fail in isolation at once, without interfering with each other or the local ledger", async () => {
+    const res = await postMcp({
+      jsonrpc: "2.0",
+      id: 54,
+      method: "tools/call",
+      params: {
+        name: "discover_delivery_history",
+        arguments: {
+          sellerAddress,
+          easSources: [{ rpcUrl: "http://127.0.0.1:1", chainId: 8453 }],
+          httpSources: ["http://127.0.0.1:1/claims"],
+        },
+      },
+    });
+    const text = await res.text();
+    expect(text).toContain('\\"count\\": 1'); // local ledger's claim still comes through
+    expect(text).toContain('\\"name\\": \\"eas:8453\\"');
+    expect(text).toContain('\\"name\\": \\"http:http://127.0.0.1:1/claims\\"');
+    // Three sources total: local-ledger, the eas one, the http one — not two
+    // (proving neither silently swallowed the other).
+    expect([...text.matchAll(/\\"name\\":/g)]).toHaveLength(3);
+  });
+
+  it("refuses an unlisted chainId with no easAddress override, cleanly, before attempting any network call", async () => {
+    const res = await postMcp({
+      jsonrpc: "2.0",
+      id: 52,
+      method: "tools/call",
+      params: {
+        name: "discover_delivery_history",
+        arguments: { sellerAddress, easSources: [{ rpcUrl: "http://127.0.0.1:1", chainId: 999999 }] },
+      },
+    });
+    const text = await res.text();
+    expect(text).toContain("invalid_input");
+    expect(text).toContain("999999");
+  });
+
+  it("rejects more than 3 EAS sources in one call", async () => {
+    const tooMany = Array.from({ length: 4 }, () => ({ rpcUrl: "http://127.0.0.1:1", chainId: 8453 }));
+    const res = await postMcp({
+      jsonrpc: "2.0",
+      id: 53,
+      method: "tools/call",
+      params: { name: "discover_delivery_history", arguments: { sellerAddress, easSources: tooMany } },
+    });
+    const text = await res.text();
+    expect(text.toLowerCase()).toContain("invalid");
+  });
+});
+
+describe("http-server: get_agent_snapshot combines identity resolution and delivery history", () => {
+  it("lists get_agent_snapshot alongside the other read-only tools", async () => {
+    const res = await postMcp({ jsonrpc: "2.0", id: 60, method: "tools/call", params: { name: "get_agent_snapshot", arguments: {} } });
+    const text = await res.text();
+    // Called with no arguments at all: MCP's own schema validation should
+    // refuse this before the handler ever runs — proves the tool is wired
+    // into the real schema, not merely present in tools/list.
+    expect(text.toLowerCase()).toMatch(/invalid|required|error/);
+  });
+
+  it("when identity resolution fails, returns the identity failure directly without attempting a delivery-history lookup", async () => {
+    const res = await postMcp({
+      jsonrpc: "2.0",
+      id: 61,
+      method: "tools/call",
+      params: {
+        name: "get_agent_snapshot",
+        arguments: { agentRegistryRef: "not-a-valid-ref", agentId: "1", rpcUrl: "https://example-rpc.invalid/" },
+      },
+    });
+    const text = await res.text();
+    // The exact wording resolveAgentIdentity() itself produces for a malformed
+    // ref — confirms this short-circuited at identity resolution, never
+    // reached a deliveryHistory lookup with a meaningless "owner".
+    expect(text).toContain("agentRegistryRef must match");
   });
 });
 

@@ -1303,3 +1303,103 @@ alleen op "bouw service 3 af".
 
 **Status:** alle drie gebouwd, getest, in PR #26. Zie `http-server.test.ts` voor de drie nieuwe
 describe-blokken.
+
+### Trigger-criterium hierboven ALSNOG gehaald, zelfde dag, 2026-10-21 23:00-23:30
+
+De koning kreeg het dreigingsmodel voorgelegd (server-gehouden sleutel, echte gasuitgaven, wie
+stort wat, welk bedrag = maximaal verlies) en koos expliciet: "ja is goed toch dan doen we dat
+toch is toch gee orblem voor ons... zullen we die ook dan bouwen?", daarna concreet "Allebei
+tegelijk" op de vraag welke rem (vaste vergoeding EN hard maximum per uur), en daarna expliciet
+"ik wil dat jij dit allemaal autonoom afrond... ik ben er niet, jij moet mij niks vragen... je mag
+een paar uur non stop te werk blijven" met een harde grens van 3 uur (start 23:22).
+
+**Gebouwd:** `publish_reputation_feedback`, een NIEUWE betaalde MCP-tool op `http-server.ts`, naast
+`record_delivery`. Wraps het bestaande, al zwaar adversarieel geteste `publishReputationFeedback()`
+(`erc8004-reputation.ts`, D-014, 20+ test-cases) met een DOOR DE SERVER ZELF GEHOUDEN sleutel
+(`REPUTATION_PUBLISHER_PRIVATE_KEY`) in plaats van een door de aanroeper meegebrachte, zodat een
+agent zonder eigen on-chain aanwezigheid toch een `delivered`-feit als ERC-8004-feedback kan laten
+publiceren. Twee onafhankelijke remmen, precies zoals gekozen:
+
+1. **Vaste vergoeding** (`PUBLISH_FEEDBACK_PRICE`, default $0,05) — zelfde x402-rails als
+   `record_delivery`.
+2. **Globale uur-cap** (`PUBLISH_FEEDBACK_MAX_PER_HOUR`, default 20) — NIET per IP zoals de
+   bestaande RATE_LIMIT, want wat hier beschermd wordt is de eigen portemonnee, niet eerlijkheid
+   tussen aanroepers. Gepeekt (alleen gelezen) in de handler VOOR betaling, pas verbruikt in
+   `hooks.onAfterSettlement` NA een bevestigde betaling — exact dezelfde "nooit iets onomkeerbaars
+   voor afrekening"-discipline als de `record_delivery`-bugfix eerder vandaag, nu bewust meteen
+   goed toegepast in plaats van pas na een gevonden bug.
+
+**Echt gemeten, niet geschat, voor het bedrag-gesprek met de koning (2026-10-21 23:xx):** live
+Base-gasprijs + ETH-koers opgevraagd. Resultaat: 1 publicatie kost op dat moment tussen de 0,15 en
+0,75 dollarcent, ruim onder 1 cent. 20 dollar aan ETH dekt dus waarschijnlijk duizenden
+publicaties, niet honderden.
+
+**Niet gelukt, eerlijk vastgelegd:** een live testnet-dry-run (Base Sepolia) kon niet worden
+afgerond. De ERC-8004 Reputation Registry staat niet op dat adres op Base Sepolia (`eth_getCode`
+gaf `0x`, leeg). Coinbase CDP's eigen testnet-faucet-API gaf `401 Unauthorized` met de bestaande
+"x402-facilitator"-sleutel (waarschijnlijk een sleutel die wel voor betalingen maar niet voor
+faucet-verzoeken is gescoped — niet verder uitgezocht, secundair aan de hoofdtaak). In plaats
+daarvan: een zuivere, netwerkloze sleutel-controle (laad de private key, onderteken een bericht,
+herstel het adres) bevestigt dat de sleutel-laadroute zelf werkt, en `publishReputationFeedback()`
+zelf heeft al een echte, geslaagde mainnet-precedent (zie eerder in dit bestand, tx
+`0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0`, 10 dagen oud op het moment
+van bouwen).
+
+**Het ENE stuk dat niet autonoom kon: echt geld storten.** Nieuw, apart gegenereerde portemonnee
+voor deze ene functie (adres en saldo-status in de PR-/sessie-rapportage aan de koning, nooit de
+private key zelf). Geen mechanisme gevonden om dit zelf te doen: de bestaande OKX-sleutel heeft
+gedocumenteerde rechten Lezen+Handelen, GEEN Opnemen, is IP-vergrendeld aan een specifieke VPS
+(niet deze machine), en een opname naar een gloednieuw, nooit eerder gebruikt adres vereist bij
+de meeste beurzen sowieso een handmatige whitelist-bevestiging (e-mail/2FA) die niet zonder de
+koning zelf kan. Dit is bewust NIET geforceerd via een omweg. De portemonnee is verder volledig
+gebouwd, getest en klaar; het storten van een klein, echt bedrag is de ene overgebleven
+handeling, voor de koning zelf, zodra hij terug is.
+
+**Status:** gebouwd, getest (`http-server-publish-feedback.test.ts`, 5 nieuwe tests, 697/697 totaal
+groen), eigen branch/PR (apart van PR #26, andere risicoklasse). Mainnet-sleutel bestaat, nog
+ongefinancierd.
+
+**CORRECTIE (2026-10-22): financier de hieronder genoemde testsleutel NIET.** Die sleutel bestaat
+alleen in een tijdelijke sessie-scratchpad, niet duurzaam opgeslagen. De juiste volgorde (eerst
+mergen/deployen, dan op de ECHTE server een nieuwe sleutel genereren, dan storten) staat volledig
+uitgewerkt in het geheugen:
+`tokenizen-autonome-nacht-publish-reputation-feedback-2026-10-21.md`.
+
+### Twee EXTRA services, zelfde autonome nacht, matrix-aanpak op koning-verzoek
+
+Na `publish_reputation_feedback` vroeg de koning expliciet: denk in matrices wat AI-agents nog meer
+nodig hebben (nu of binnenkort), bouw en test dat ook, blijf non-stop bezig, vraag niets (hij was
+niet bereikbaar, harde grens 3 uur vanaf 23:22). Matrix opgesteld (idee x hergebruik-bestaande-code
+x risico-zonder-koning-aanwezig x dient-een-concrete-nabije-behoefte x bouwbaar-binnen-resttijd),
+vijf ideeën gewogen (batch-vergelijken, EAS-brug, versheid-check, notify/webhook-abonnement,
+generieke tx-lookup). Twee gekozen: hoogste score, laagste risico (beide read-only, geen nieuwe
+sleutel, geen nieuw schrijfpad), notify/webhook afgevallen (nieuwe infra, groter misbruik-
+oppervlak, te groot voor vannacht zonder koning-review).
+
+1. **`compare_sellers`** — `get_compute_track_record` en `get_fabrication_signals`'s logica
+   hergebruikt (gerefactord naar gedeelde pure helpers, `filterComputeClaims`/
+   `fabricationSignalsFromClaims`, exact dezelfde getallen, 0 regressie) over tot 10
+   sellerAddresses in EEN aanroep. Rijen in INVOERVOLGORDE, nooit gesorteerd op een getal — expres,
+   zodat dit nooit voor een rangschikker kan worden aangezien (D-004).
+2. **`discover_delivery_history`** — ontsluit `discoverDeliveryHistory()`/`localLedgerSource()`/
+   `easSource()`/`rpcAttestationReader()`/`httpClaimSource()` (discovery.ts, eas.ts, http-source.ts),
+   ALLEMAAL al bestaande, al geteste bibliotheekcode, NOOIT eerder over MCP ontsloten — zelfde
+   patroon als `bridge_x402_receipt` eerder vannacht. Altijd het lokale grootboek, optioneel tot 3
+   EAS-bronnen en tot 3 HTTP-bronnen van andere installaties erbij, elke bron apart
+   fout-geïsoleerd en elke claim apart geherverifieerd (een bron kan niets injecteren, hoogstens
+   niets bijdragen). Bewust GEEN nieuwe blootstelling-categorie: `resolve_agent_identity` accepteert
+   al een door de aanroeper opgegeven rpcUrl en doet al een uitgaande netwerkaanroep; dit volgt
+   exact hetzelfde, al geaccepteerde patroon, alleen tot 6 bronnen per aanroep in plaats van 1
+   (vandaar de max-3-per-type-grens en de vermelding in de tool-beschrijving dat latency meeschaalt).
+
+**Status:** beide gebouwd, getest (`http-server.test.ts`, 8 nieuwe tests samen, 703/703 totaal
+groen), zelfde branch/PR als `publish_reputation_feedback` (read-only, dus eigenlijk dezelfde
+risicoklasse als PR #26's drie — apart vermeld zodat de koning ze bij het beoordelen correct kan
+groeperen, ook al zitten ze qua branch achter de betaalde feature aan).
+
+**Derde extra, zelfde nacht: `get_agent_snapshot`.** Combineert `resolve_agent_identity` en
+`get_delivery_history` in een aanroep: de eerste levert het eigenaar-adres dat de tweede als
+sellerAddress nodig heeft, een echte volgorde-afhankelijkheid, niet alleen gemaksbesparing. Faalt
+de identiteitsresolutie, dan wordt deliveryHistory nooit geprobeerd (geen zinvol adres om op te
+zoeken) en komt de identiteitsfout apart terug. Puur samenstelling van twee al bestaande, al
+geteste functies, read-only, geen nieuw risico. Getest (2 nieuwe tests, 705/705 totaal groen).
