@@ -35,6 +35,16 @@ jobs:
         working-directory: .
         run: npm ci
 
+      # x402-lint imports tokenizen-net-guard. Its dist/ is gitignored build
+      # output, not checked in, so a fresh checkout has no dist/ for npm's
+      # workspace link to point at until net-guard builds itself first. This
+      # exact class of bug (ci.yml's own comment history: self-check-server
+      # vs trust-attest-server, then net-guard itself) already happened twice
+      # in ci.yml before this workflow existed — same fix, same reason.
+      - name: Build tokenizen-net-guard first (x402-lint imports its dist/)
+        working-directory: .
+        run: npm run build -w tokenizen-net-guard
+
       - name: Typecheck
         run: npm run typecheck
 
