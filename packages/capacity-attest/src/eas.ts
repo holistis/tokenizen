@@ -308,7 +308,13 @@ export function blockWindows(fromBlock: number, latest: number, blockRange: numb
  * easAddress tells it WHERE on that chain the EAS contract lives.
  */
 export function rpcAttestationReader(
-  rpcUrl: string,
+  // Widened 2026-10-22 to also accept an ethers.FetchRequest, with no
+  // behavior change for an existing plain-string caller: ethers.JsonRpcProvider's
+  // own constructor already accepts either (this is how net-guard's
+  // guardedEthersFetchRequest() plugs in for a server that takes the rpcUrl
+  // from an anonymous caller — see that function's own doc comment). A
+  // direct library caller on their own machine keeps passing a plain string.
+  rpcUrl: string | ethers.FetchRequest,
   opts: { fromBlock?: number; schemaUID?: string; blockRange?: number; concurrency?: number; easAddress?: string } = {},
 ): AttestationReader {
   const provider = new ethers.JsonRpcProvider(rpcUrl);

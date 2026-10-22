@@ -119,6 +119,7 @@ import { publishReputationFeedback, PublishReputationFeedbackInputSchema } from 
 import { discoverDeliveryHistory, localLedgerSource } from "./discovery.js";
 import { easSource, rpcAttestationReader, EAS_DEPLOYMENTS } from "./eas.js";
 import { httpClaimSource } from "./http-source.js";
+import { guardedFetch, guardedEthersFetchRequest } from "tokenizen-net-guard";
 
 const PORT = Number(process.env.PORT ?? 8402);
 const MAX_BODY_BYTES = 64 * 1024; // generous for an MCP JSON-RPC call, small enough to bound memory per request
@@ -528,7 +529,7 @@ function buildServer(): McpServer {
       title: "Discover a seller's delivery history across the local ledger AND other sources (read-only, public HTTP endpoint)",
       description:
         "Niche #5 of this session's five. get_delivery_history only ever reads THIS deployment's own local " +
-        "ledger — honestly documented as such. This tool wires up discoverDeliveryHistory() (discovery.ts), " +
+        "ledger — honestly documented as such. This tool wires up the existing discovery.ts aggregation logic, " +
         "already-built, already-tested, multi-source aggregation logic that was never exposed over MCP before " +
         "today: it ALWAYS includes the local ledger, and additionally checks any EAS deployments and/or other " +
         "capacity-attest HTTP deployments the caller names, so a claim another buyer published somewhere else " +
@@ -577,12 +578,22 @@ function buildServer(): McpServer {
             `invalid_input: could not resolve an easAddress for chainId ${s.chainId} — pass easAddress explicitly for a deployment not in EAS_DEPLOYMENTS`,
           );
         }
-        sources.push(easSource(rpcAttestationReader(s.rpcUrl, { easAddress, schemaUID: s.schemaUID }), `eas:${s.chainId ?? easAddress}`));
+        // guarded: easSources' rpcUrl comes from an anonymous MCP caller, so
+        // it is routed through net-guard's guardedEthersFetchRequest rather
+        // than the plain string eas.ts's own library callers use directly.
+        sources.push(
+          easSource(rpcAttestationReader(guardedEthersFetchRequest(s.rpcUrl), { easAddress, schemaUID: s.schemaUID }), `eas:${s.chainId ?? easAddress}`),
+        );
       }
       for (const url of httpSources ?? []) {
-        sources.push(httpClaimSource(url, { name: `http:${url}` }));
+        // guarded: same reasoning as easSources above, via httpClaimSource's
+        // own fetchImpl seam.
+        sources.push(httpClaimSource(url, { name: `http:${url}`, fetchImpl: guardedFetch }));
       }
       try {
+        // guarded: every EAS/HTTP source already pushed above was built with
+        // a guarded fetch/provider; localLedgerSource() never leaves this
+        // machine. Nothing here calls the network directly.
         return textResult(await discoverDeliveryHistory(sellerAddress, sources));
       } catch (e) {
         return errorResult((e as Error).message);

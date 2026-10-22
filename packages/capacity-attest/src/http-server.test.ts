@@ -393,7 +393,7 @@ describe("http-server: discover_delivery_history aggregates the local ledger wit
     expect(text).toContain('\\"accepted\\": 1');
   });
 
-  it("an unreachable EAS source fails in isolation, reported by name, without hiding the local ledger's claim", async () => {
+  it("a loopback EAS source is refused by the SSRF guard in isolation, reported by name, without hiding the local ledger's claim", async () => {
     const res = await postMcp({
       jsonrpc: "2.0",
       id: 51,
@@ -406,10 +406,14 @@ describe("http-server: discover_delivery_history aggregates the local ledger wit
     const text = await res.text();
     // The local ledger's one real claim still comes through...
     expect(text).toContain('\\"count\\": 1');
-    // ...and the unreachable EAS source reports its OWN failure by name, rather
-    // than the whole call failing or the error being silently swallowed.
+    // ...and net-guard refuses this loopback address BEFORE any connection
+    // attempt (guardedEthersFetchRequest, wired in 2026-10-22 after this
+    // exact easSources path was found to make an unguarded outbound call to
+    // a caller-supplied rpcUrl), reported as its own source error by name,
+    // never silently swallowed and never allowed to touch the loopback host.
     expect(text).toContain('\\"name\\": \\"eas:8453\\"');
-    expect(text.toLowerCase()).toContain("econnrefused");
+    expect(text.toLowerCase()).toContain("loopback");
+    expect(text.toLowerCase()).not.toContain("econnrefused");
   });
 
   it("an EAS source AND an HTTP source can both be named and both fail in isolation at once, without interfering with each other or the local ledger", async () => {
@@ -433,6 +437,11 @@ describe("http-server: discover_delivery_history aggregates the local ledger wit
     // Three sources total: local-ledger, the eas one, the http one — not two
     // (proving neither silently swallowed the other).
     expect([...text.matchAll(/\\"name\\":/g)]).toHaveLength(3);
+    // BOTH the EAS and HTTP source are refused by the SSRF guard, not merely
+    // a coincidental connection failure on this loopback port — see the
+    // single-EAS-source test above for why "econnrefused" would mean the
+    // guard was bypassed.
+    expect([...text.toLowerCase().matchAll(/loopback/g)]).toHaveLength(2);
   });
 
   it("refuses an unlisted chainId with no easAddress override, cleanly, before attempting any network call", async () => {

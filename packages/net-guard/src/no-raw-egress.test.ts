@@ -12,13 +12,23 @@
 // note): the SSRF threat is "an anonymous visitor supplies the URL". That is
 // true for the public servers (trust-attest-server, self-check-server) and
 // for endpoint-attest's ownership verification. It is NOT true for
-// capacity-attest, a published library whose caller supplies its own RPC URL
-// on its own machine — changing its defaults would break real users to close
-// a hole none of them have. So capacity-attest is NOT scanned for raw egress;
-// instead, IF a server package ever calls one of capacity-attest's network
-// entry points, that call must pass a guarded factory/fetch (the second rule
-// below). Today there are no such call sites, so that rule is vacuous and
-// documents the requirement for whoever adds the first one.
+// capacity-attest's LIBRARY surface (index.ts, the examples/ scripts), a
+// published library whose caller supplies its own RPC URL on its own
+// machine — changing its defaults would break real users to close a hole
+// none of them have. So capacity-attest's library files stay unscanned for
+// raw egress.
+//
+// 2026-10-22: the "today there are no such call sites" note above stopped
+// being true the moment capacity-attest grew its OWN embedded server
+// (http-server.ts, discover_delivery_history) that takes a CALLER-supplied
+// rpcUrl/httpSources from an anonymous MCP caller — exactly the threat model
+// this file's rule 2 was written for, just arriving a level down from where
+// this comment expected a "server package" to live. http-server*.ts is
+// therefore scanned under CAPACITY_ATTEST_SERVER_FILES below, for rule 2
+// only (MUST_BE_GUARDED) — never rule 1 (FORBIDDEN), because http-server.ts
+// itself has no raw fetch/ethers calls; it calls capacity-attest's own
+// higher-level functions, and THOSE calls are what must carry a guarded
+// factory nearby.
 //
 // Two rules:
 //  1. In the guarded packages, a raw outbound primitive (global fetch
@@ -40,6 +50,12 @@ const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", ".."
 // net-guard (the guard itself), capacity-attest (a library, see header) and
 // the browser-only website are intentionally not here.
 const GUARDED_PACKAGES = ["trust-attest-server", "self-check-server", "endpoint-attest"];
+
+// capacity-attest's OWN embedded server files — see the header comment.
+// Scanned for rule 2 (MUST_BE_GUARDED) only, never rule 1, and matched by
+// filename prefix rather than listed by hand so a future http-server-*.ts
+// split file is covered without anyone remembering to update this list.
+const CAPACITY_ATTEST_SERVER_FILE_PREFIX = "http-server";
 
 // A production source file. Tests, benches and fixtures are not the SSRF
 // surface — they hit the network only against their own stubs or on purpose.
@@ -115,6 +131,37 @@ describe("no raw egress outside net-guard", () => {
         for (const { label, re } of FORBIDDEN) {
           if (re.test(line)) offenders.push(`${rel}:${i + 1}  [FORBIDDEN: ${label}]  ${line.trim().slice(0, 100)}`);
         }
+        for (const { label, re } of MUST_BE_GUARDED) {
+          if (!re.test(line)) continue;
+          const from = Math.max(0, i - WINDOW);
+          const to = Math.min(lines.length - 1, i + WINDOW);
+          const near = lines.slice(from, to + 1).join("\n");
+          if (!GUARD_NEARBY.test(near)) {
+            offenders.push(`${rel}:${i + 1}  [UNBOUND: ${label}]  ${line.trim().slice(0, 100)}`);
+          }
+        }
+      });
+    }
+  }
+
+  // Second pass: capacity-attest's own http-server*.ts files, rule 2 only —
+  // see the header comment for why this package's library files stay out of
+  // the loop above while these specific, server-facing files do not.
+  {
+    const srcDir = join(REPO_ROOT, "packages", "capacity-attest", "src");
+    let files: string[] = [];
+    try {
+      files = walk(srcDir);
+    } catch {
+      files = [];
+    }
+    for (const full of files) {
+      if (!isProductionSource(full)) continue;
+      if (!full.split(sep).pop()!.startsWith(CAPACITY_ATTEST_SERVER_FILE_PREFIX)) continue;
+      const rel = relative(join(REPO_ROOT, "packages"), full);
+      const lines = readFileSync(full, "utf8").split(/\r?\n/);
+      lines.forEach((line, i) => {
+        if (isCommentLine(line)) return;
         for (const { label, re } of MUST_BE_GUARDED) {
           if (!re.test(line)) continue;
           const from = Math.max(0, i - WINDOW);

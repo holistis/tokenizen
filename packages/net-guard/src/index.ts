@@ -12,3 +12,4 @@ export {
   type ResolveTxtDeps,
   type RoutableHostDeps,
 } from "./dns.js";
+export { guardedEthersFetchRequest } from "./guarded-ethers.js";
