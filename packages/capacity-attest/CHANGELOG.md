@@ -2,6 +2,17 @@
 
 Alle noemenswaardige wijzigingen aan dit package worden hier bijgehouden.
 
+## 0.9.0
+
+**Optionele bazaar-discovery voor `record_delivery` en `publish_reputation_feedback`, nieuwe env-vlag `CAPACITY_ATTEST_BAZAAR`.**
+
+Beide betaalde tools draaien al via `facilitator.payai.network`, een facilitator die daadwerkelijk een index bijhoudt (20.840 bronnen, gemeten 18 oktober), maar declareerden tot nu toe nooit de bazaar-extensie zelf. x402's eigen spec is daar duidelijk over: een betaling zonder declaratie catalogiseert niets, en een declaratie zonder een indexerende facilitator ook niet. Beide helften stonden hier los van elkaar.
+
+- Standaard UIT (`CAPACITY_ATTEST_BAZAAR=1` om aan te zetten), zelfde reden als elke andere vlag hier: dit verandert de bytes van een live 402-antwoord, dus aanzetten is een besluit op een datum, geen neveneffect van een deploy.
+- MCP-vorm, niet de REST/HTTP-vorm: `@x402/extensions/bazaar` kent twee declaratievormen. Gemeten in de library zelf dat `bazaarResourceServerExtension`'s eigen HTTP-aanvulling (methode, routepatroon) zich expliciet terugtrekt zodra de declaratie `info.input.type === "mcp"` is — dit pakket gebruikt dus moedwillig de MCP-vorm, niet een omweg.
+- Het invoerschema komt rechtstreeks van `z.toJSONSchema(...)` op de ECHTE zod-schemas (`DeliveryClaimObject`, `PublishReputationFeedbackInputSchema`), niet met de hand overgetypt — zodat een veld dat daar verandert hier nooit kan verslappen. `io: "input"` is nodig omdat beide schemas via `sellerAddress`/`buyerAddress` een `.transform(toLowerCase)` meenemen, wat JSON Schema's eigen "output"-modus niet kan weergeven.
+- Getest tegen de ECHTE validator (`validateDiscoveryExtension` uit `@x402/extensions/bazaar`), niet alleen een eigen vorm-check, en wel tegen het daadwerkelijk UITGESERVEERDE 402-antwoord, niet alleen de declare-functie in isolatie — zelf-check-server's eigen `x402-seller.ts` documenteert precies dit gat (een declaratie die op zichzelf goed oogt maar de server nooit bereikte omdat `.registerExtension()` ontbrak, pas gevonden door de test, niet door te lezen).
+
 ## 0.8.0
 
 **Nieuw, optioneel veld `offerReceiptHash`: de koperhelft aan de verkoperhelft knopen.**
