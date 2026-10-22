@@ -1411,6 +1411,47 @@ logica) staat al apart, grondig getest (de 697/697 unit-tests met een nagebouwde
 nu ook live bewezen voor het signer-gedeelte. Status van dit ene smalle gat: open, laag risico,
 voor een volgende sessie met frisse blik.
 
+### VOLLEDIG OPGELOST, ZELFDE NACHT, NA KONING-VRAAG "hoe zorgen we dat dit gewoon goed werkt"
+
+De koning accepteerde "dat is andermans software" niet als eindantwoord en vroeg logisch,
+matrix-gewijs en creatief na te denken. Dat was terecht: het was NOOIT andermans software.
+Twee echte, eigen bugs, gevonden door `@x402/core`'s eigen clientcode te LEZEN in plaats van te
+gokken, allebei bevestigd door de fix tijdelijk terug te draaien en de nieuwe regressietest te
+zien falen met hun eigen foutmelding, en daarna weer te herstellen:
+
+1. **`serviceName` te lang.** `ResourceInfoSchema` in `@x402/core` staat maximaal 32 tekens toe;
+   onze `record_delivery` (53 tekens) en `publish_reputation_feedback` (71 tekens) overschreden
+   dat ruim. Elke standaard-conforme client's eigen `PaymentRequiredSchema.safeParse()` faalde
+   daardoor STIL op ons betaalverzoek — geen foutmelding, gewoon `paymentMade:false`. Verkort naar
+   `capacity-attest:delivery` / `capacity-attest:reputation`.
+2. **De server-sleutel had geen provider.** `new ethers.Wallet(privateKey)` zonder provider
+   ondertekent prima, maar gooit `missing provider (sendTransaction, UNSUPPORTED_OPERATION)` zodra
+   `publishReputationFeedback()` daadwerkelijk een transactie wil versturen — en dat gebeurt pas
+   NA een echte, betaalde afrekening. Gevonden via de echte serverlog nadat een echte koper al
+   echt 0,05 USDC had betaald. Opgelost met een nieuwe, geteste `buildReputationPublisherSigner()`
+   die een echte provider aan de sleutel hangt (`REPUTATION_PUBLISHER_RPC_URL`).
+
+**Volledig, onafhankelijk herbewezen na BEIDE fixes, met de bestaande koper-sleutel
+(`X402_TEST_CLIENT_KEY`, echte 0,86+ USDC) via de ECHTE, officiele client-bibliotheek
+(`wrapMCPClientWithPayment` uit `@x402/mcp`, niet een omweg):** een koper betaalde echt 0,05
+USDC (afrekening-tx `0x039e7b39438bbbe9b6f1e9d0a0256b3427d3087591993d7a435a96cbeae809a6`), onze
+server reageerde met `ok:true`, en de ECHTE on-chain feedback-transactie
+(`0x8eaf127c1328b39da62b6e0707bd025e76fd2d12287782b82c596998e7f16c26`,
+https://basescan.org/tx/0x8eaf127c1328b39da62b6e0707bd025e76fd2d12287782b82c596998e7f16c26)
+onafhankelijk teruggevonden via `eth_getLogs` op een publieke RPC, niet via onze eigen code
+nagekeken. Dit is het volledige, eerlijke bewijs dat een willekeurige AI-agent, met de gewone,
+officiele x402-bibliotheek, deze dienst NU echt kan gebruiken.
+
+**Twee nieuwe regressietests, allebei bewezen-falend tegen de oude code voor ze bewezen-slagend
+werden tegen de fix:** een test die onze eigen betaalrespons door `@x402/core`'s echte
+`parsePaymentRequired()` haalt (per betaalde tool), en een test die bevestigt dat de
+server-signer echt een provider heeft (via `estimateGas`, niet alleen een null-check).
+
+**Les voor de toekomst, breder dan deze twee bugs:** "het ligt aan hun bibliotheek" is nooit het
+eindantwoord zolang de broncode van die bibliotheek leesbaar is. Beide bugs waren binnen een uur
+te vinden door de ECHTE schema's/foutpaden te lezen in plaats van een eerste mislukte poging als
+een onoplosbaar, extern probleem te bestempelen.
+
 ### Twee EXTRA services, zelfde autonome nacht, matrix-aanpak op koning-verzoek
 
 Na `publish_reputation_feedback` vroeg de koning expliciet: denk in matrices wat AI-agents nog meer
