@@ -30,6 +30,12 @@
 // higher-level functions, and THOSE calls are what must carry a guarded
 // factory nearby.
 //
+// Also 2026-10-22: x402-lint is the opposite case from capacity-attest. Its
+// ENTIRE purpose, not a secondary feature grafted onto a library, is taking
+// a caller-supplied resourceUrl from an anonymous MCP/CLI caller and fetching
+// it — the exact threat model rule 1 exists for. It goes straight into
+// GUARDED_PACKAGES, full rule 1, below.
+//
 // Two rules:
 //  1. In the guarded packages, a raw outbound primitive (global fetch
 //     fallback, bare fetch, raw ethers JsonRpcProvider, direct node:dns) is
@@ -49,7 +55,7 @@ const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", ".."
 // The packages whose production code faces anonymous, attacker-supplied URLs.
 // net-guard (the guard itself), capacity-attest (a library, see header) and
 // the browser-only website are intentionally not here.
-const GUARDED_PACKAGES = ["trust-attest-server", "self-check-server", "endpoint-attest"];
+const GUARDED_PACKAGES = ["trust-attest-server", "self-check-server", "endpoint-attest", "x402-lint"];
 
 // capacity-attest's OWN embedded server files — see the header comment.
 // Scanned for rule 2 (MUST_BE_GUARDED) only, never rule 1, and matched by
