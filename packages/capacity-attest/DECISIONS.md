@@ -1359,6 +1359,12 @@ handeling, voor de koning zelf, zodra hij terug is.
 groen), eigen branch/PR (apart van PR #26, andere risicoklasse). Mainnet-sleutel bestaat, nog
 ongefinancierd.
 
+**CORRECTIE (2026-10-22): financier de hieronder genoemde testsleutel NIET.** Die sleutel bestaat
+alleen in een tijdelijke sessie-scratchpad, niet duurzaam opgeslagen. De juiste volgorde (eerst
+mergen/deployen, dan op de ECHTE server een nieuwe sleutel genereren, dan storten) staat volledig
+uitgewerkt in het geheugen:
+`tokenizen-autonome-nacht-publish-reputation-feedback-2026-10-21.md`.
+
 ### Twee EXTRA services, zelfde autonome nacht, matrix-aanpak op koning-verzoek
 
 Na `publish_reputation_feedback` vroeg de koning expliciet: denk in matrices wat AI-agents nog meer
