@@ -6,8 +6,17 @@ const GITHUB_URL = "https://github.com/holistis/tokenizen";
 const MAINTAINER_URL = "https://github.com/holistis";
 const CONTACT_EMAIL = "info@tokenizen.nl";
 
+// The three coloured dots explain the coloured rules in the "limits" section of
+// the homepage. On any other page (the blog, the self-check) there is no such
+// section, so the legend there is a row of dots that explains nothing.
+export function showsRuleLegend(pathname?: string): boolean {
+  const path = (pathname ?? (typeof window === "undefined" ? "/" : window.location.pathname)).replace(/\/+$/, "") || "/";
+  return path === "/" || path === "/en";
+}
+
 export function Footer() {
   const { t } = useLocale();
+  const legend = showsRuleLegend();
 
   return (
     <footer id="contact" className="scroll-mt-16 border-t border-border py-12">
@@ -52,14 +61,16 @@ export function Footer() {
         <div className="flex flex-col gap-4 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="font-mono text-xs text-muted-foreground">{t.footer.copyright}</p>
 
-          <ul className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            {t.footer.legend.map((item) => (
-              <li key={item.label} className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-                <span className={`size-2 rounded-full ${item.dot}`} aria-hidden="true" />
-                {item.label}
-              </li>
-            ))}
-          </ul>
+          {legend ? (
+            <ul className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              {t.footer.legend.map((item) => (
+                <li key={item.label} className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
+                  <span className={`size-2 rounded-full ${item.dot}`} aria-hidden="true" />
+                  {item.label}
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </div>
       </div>
     </footer>
