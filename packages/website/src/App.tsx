@@ -18,6 +18,8 @@ import { NotesIndex } from "@/components/pages/notes-index";
 import { ZeroOf600Article } from "@/components/pages/zero-of-600-article";
 import { ReceiptCannotNameArticle } from "@/components/pages/receipt-cannot-name-article";
 import { RevocationsArticle } from "@/components/pages/revocations-article";
+import { BlogPostPage } from "@/components/blog/blog-post-page";
+import { findPostByPath } from "@/data/blog-posts";
 
 // Engelstalig-only stukken: geen NL-versie. De taalwissel-knop in de header
 // bouwt zijn href door het /en-voorvoegsel te strippen (i18n/context.tsx),
@@ -25,6 +27,8 @@ import { RevocationsArticle } from "@/components/pages/revocations-article";
 // homepage in plaats van het artikel te tonen.
 const ARTICLES: Record<string, () => JSX.Element> = {
   "/notes": NotesIndex,
+  // The blog and the notes are one place. /blog is the name people will guess.
+  "/blog": NotesIndex,
   "/notes/a-signed-receipt-that-cannot-name-its-own-payment": ReceiptCannotNameArticle,
   "/notes/733203-attestations-were-taken-back": RevocationsArticle,
   "/notes/zero-of-600-x402-services-sign-a-receipt": ZeroOf600Article,
@@ -35,8 +39,14 @@ const ARTICLES: Record<string, () => JSX.Element> = {
 };
 
 function articleForPath(path: string): (() => JSX.Element) | null {
-  const slug = path.startsWith("/en") ? path.slice(3) : path;
-  return ARTICLES[slug] ?? null;
+  const withoutLocale = path === "/en" || path.startsWith("/en/") ? path.slice(3) : path;
+  // A trailing slash is the same page. Without this /notes/ fell through to the homepage.
+  const slug = withoutLocale.replace(/\/+$/, "");
+  const fixed = ARTICLES[slug];
+  if (fixed) return fixed;
+  // Posts that are data in blog-posts.ts get their route from their slug.
+  const post = findPostByPath(slug);
+  return post ? () => <BlogPostPage post={post} /> : null;
 }
 
 export default function App() {

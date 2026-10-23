@@ -4,7 +4,8 @@
 // and wrong twice: every future piece would cost the same conversion, and a
 // hand-conversion is where a typo silently changes a quoted command. This takes
 // the article text as written and renders the handful of constructs the notes
-// actually use: headings, paragraphs, fenced code, inline code, links.
+// actually use: headings, paragraphs, flat bullet lists, fenced code, inline
+// code, links.
 //
 // Deliberately not a markdown parser. No tables, no images, no nested lists, no
 // emphasis. If a note needs one of those, add it here with a test rather than
@@ -91,13 +92,33 @@ export function MarkdownLite({ source }: { source: string }): JSX.Element {
       continue;
     }
 
-    // A paragraph runs until a blank line, a fence, or a heading.
+    // A flat bullet list: consecutive lines that start with "- ". Before this,
+    // such lines were joined into one paragraph with the dashes still in it.
+    if (line.startsWith("- ")) {
+      const items: string[] = [];
+      while (i < lines.length && lines[i]!.startsWith("- ")) {
+        items.push(lines[i]!.slice(2).trim());
+        i += 1;
+      }
+      const listKey = `b${key++}`;
+      blocks.push(
+        <ul key={listKey} className="mt-5 list-disc space-y-2 pl-6 text-base leading-relaxed text-muted-foreground">
+          {items.map((item, n) => (
+            <li key={`${listKey}-${n}`}>{renderInline(item, `${listKey}-${n}`)}</li>
+          ))}
+        </ul>,
+      );
+      continue;
+    }
+
+    // A paragraph runs until a blank line, a fence, a heading or a bullet list.
     const para: string[] = [];
     while (
       i < lines.length &&
       lines[i]!.trim() !== "" &&
       !lines[i]!.startsWith("```") &&
-      !lines[i]!.startsWith("## ")
+      !lines[i]!.startsWith("## ") &&
+      !lines[i]!.startsWith("- ")
     ) {
       para.push(lines[i]!);
       i += 1;

@@ -49,7 +49,7 @@ export const en: Dictionary = {
       },
       {
         "href": "/notes",
-        "label": "Notes"
+        "label": "Blog"
       }
     ],
     "github": "GitHub",
