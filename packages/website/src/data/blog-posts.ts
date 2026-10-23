@@ -42,6 +42,8 @@ export interface BlogPost {
   description: string;
   tags: string[];
   readMinutes: number;
+  /** Shown first on the index, whatever its date. For the post a newcomer should read first. */
+  pinned?: boolean;
   blocks: PostBlock[];
 }
 
@@ -66,6 +68,7 @@ export const BLOG_POSTS: BlogPost[] = [
       "One real AI-agent payment on Base mainnet: check the tool, pay through x402, prove it from the chain. Open tools, real transactions, the commands to repeat it.",
     tags: ["Tools", "Measurements"],
     readMinutes: 4,
+    pinned: true,
     blocks: [
       {
         type: "md",
@@ -190,6 +193,43 @@ Money is starting to move between machines. The people who build those machines 
           { label: "capacity-attest", href: "https://github.com/holistis/tokenizen/tree/main/packages/capacity-attest" },
           { label: "Open an issue", href: "https://github.com/holistis/agent-receipt-verify/issues" },
         ],
+      },
+    ],
+  },
+  {
+    slug: "official-sources",
+    date: "2026-10-24",
+    title: "Official sources and payment addresses",
+    dek: "Where our paid service lives and where its payments go, so a buyer or an agent can check an address before paying.",
+    description:
+      "The official repository, endpoint and payment address of Bug Bounty Intelligence, and the one command that lets you check them yourself.",
+    tags: ["Official"],
+    readMinutes: 1,
+    blocks: [
+      {
+        type: "md",
+        text: `Earlier this month a third party listed our project with a different payment address. The listing request was withdrawn after we pointed it out. This page exists so that nobody has to take our word, or anyone else's, for where the money goes.
+
+## Bug Bounty Intelligence
+
+- Repository: [holistis/bug-bounty-intelligence-mcp](https://github.com/holistis/bug-bounty-intelligence-mcp)
+- Payment request: \`https://x402.tokenizen.nl/api/bug-intel\`
+- Price: 5 USDC per full-repo scan, on Base (eip155:8453), through x402
+- Payment address: \`0x015Eb036560216B3051339061FF68A207E0fe88f\`
+
+## Check it yourself
+
+The endpoint states its own payment address. This prints it, and you compare it with the line above and with the README of the repository:
+
+\`\`\`
+npx -y agent-receipt-verify https://x402.tokenizen.nl/api/bug-intel
+\`\`\`
+
+If a listing, a reply or a website gives another address for Bug Bounty Intelligence, it is not ours. Do not pay it.
+
+## What this list is not
+
+It covers only the service named above. It does not vouch for any other address, and it changes only through a pull request in the open repository, so its history is public.`,
       },
     ],
   },

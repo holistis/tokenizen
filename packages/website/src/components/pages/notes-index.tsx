@@ -29,6 +29,7 @@ interface NoteEntry {
   blurb: string;
   tags?: readonly string[];
   readMinutes?: number;
+  pinned?: boolean;
 }
 
 const NOTES: NoteEntry[] = [
@@ -76,11 +77,14 @@ const POST_ENTRIES: NoteEntry[] = BLOG_POSTS.map((post) => ({
   blurb: post.dek,
   tags: post.tags,
   readMinutes: post.readMinutes,
+  pinned: post.pinned,
 }));
 
-// Newest first. On the same date the data-driven posts come first, because they
-// are the ones written after the hand-listed notes.
-const ENTRIES: NoteEntry[] = [...POST_ENTRIES, ...NOTES].sort((a, b) => b.date.localeCompare(a.date));
+// A pinned post first, then newest first. On the same date the data-driven posts
+// come first, because they are the ones written after the hand-listed notes.
+const ENTRIES: NoteEntry[] = [...POST_ENTRIES, ...NOTES].sort(
+  (a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || b.date.localeCompare(a.date),
+);
 
 const COPY = {
   en: {
@@ -91,7 +95,7 @@ const COPY = {
     languageNote: null as string | null,
     back: "Back to the main page",
     readMore: "Read",
-    latest: "Latest",
+    latest: "Start here",
     earlier: "Earlier notes",
     minutes: "min read",
   },
@@ -104,7 +108,7 @@ const COPY = {
       "De artikelen zelf staan in het Engels. Ze zijn geschreven voor mensen die tegen een specificatie aan bouwen die zelf Engels is, en een tweede versie zou betekenen dat elke correctie twee keer moet.",
     back: "Terug naar de hoofdpagina",
     readMore: "Lezen",
-    latest: "Nieuwste",
+    latest: "Begin hier",
     earlier: "Eerdere notities",
     minutes: "min lezen",
   },

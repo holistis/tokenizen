@@ -83,7 +83,7 @@ describe("NotesIndex as the blog", () => {
     expect(html).toContain(post.title);
     expect(html).toContain("/en/notes/check-pay-prove");
     expect(html).toContain(MISSION.headline);
-    expect(html).toContain("Latest");
+    expect(html).toContain("Start here");
   });
 
   it("still lists the earlier notes", () => {
