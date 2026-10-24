@@ -131,7 +131,7 @@ Eight checks read it back from the chain. The video shows four: the rater is the
           },
           {
             value: "8 of 8",
-            label: "Checks passed on a real payment on Base mainnet, then re-checked from a public node by a third party.",
+            label: "Checks passed on a real payment on Base mainnet. A third party re-checked four of them through Base's public endpoint.",
             href: "https://github.com/erc-8004/erc-8004-contracts/issues/99#issuecomment-6372783904",
             hrefLabel: "The re-check",
           },
