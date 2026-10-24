@@ -334,8 +334,8 @@ We also found a mistake in our own measurement after we published it. The copy w
       {
         type: "image",
         src: "/media/we-measured-our-scan-2.webp",
-        alt: "A crystal prism splits one beam of light into eight colored beams that fall on a stack of translucent pages, with a sealed vault glowing in the background.",
-        caption: "One beam, eight lenses: the idea we test for the next version, reading all of the code through different lenses. It is not proven yet. Illustration generated with AI.",
+        alt: "A crystal prism splits one beam of light into colored beams that fall on a stack of translucent pages, with a sealed vault glowing in the background.",
+        caption: "A prism over a sealed vault: the next version is in development and not proven yet. Illustration generated with AI.",
         width: 1376,
         height: 768,
       },
@@ -363,6 +363,7 @@ The split can be recomputed with the script in the repository, and the tests of 
         heading: "Read the pre-registration and the results",
         text: "Everything the test needs is in the repository, including the prediction we wrote before the baseline ran.",
         links: [
+          { label: "The open scoreboard", href: "https://tokenizen.nl/en/scoreboard" },
           { label: "Pre-registration of the new test", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/PREREGISTRATION-v3-2026-10-24.md" },
           { label: "Results of version 2", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/RESULTS-v2-2026-10-24.md" },
           { label: "The repository", href: "https://github.com/holistis/bug-bounty-intelligence-mcp" },

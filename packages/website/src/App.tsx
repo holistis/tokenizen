@@ -15,6 +15,7 @@ import { HierarchyOfAgentTrustArticle } from "@/components/pages/hierarchy-of-ag
 import { TrustRadarPage } from "@/components/pages/trust-radar-page";
 import { SelfCheckPage } from "@/components/pages/self-check-page";
 import { X402CheckPage } from "@/components/pages/x402-check-page";
+import { ScoreboardPage } from "@/components/pages/scoreboard-page";
 import { BlogIndex, NotesIndex } from "@/components/pages/notes-index";
 import { ZeroOf600Article } from "@/components/pages/zero-of-600-article";
 import { ReceiptCannotNameArticle } from "@/components/pages/receipt-cannot-name-article";
@@ -38,6 +39,7 @@ const ARTICLES: Record<string, () => JSX.Element> = {
   "/trust-radar": TrustRadarPage,
   "/check": SelfCheckPage,
   "/x402-check": X402CheckPage,
+  "/scoreboard": ScoreboardPage,
 };
 
 function articleForPath(path: string): (() => JSX.Element) | null {
