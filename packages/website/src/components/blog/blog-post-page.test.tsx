@@ -22,6 +22,36 @@ const renderIndex = (locale: Locale) =>
     </LocaleProvider>,
   );
 
+
+describe("BlogPostPage images", () => {
+  const metBeelden = BLOG_POSTS.find((p) => p.blocks.some((b) => b.type === "image"))!;
+  const html = renderToStaticMarkup(
+    <LocaleProvider locale="en">
+      <BlogPostPage post={metBeelden} />
+    </LocaleProvider>,
+  );
+
+  it("renders every image with alt text, a caption, fixed dimensions and lazy loading", () => {
+    const beelden = metBeelden.blocks.filter((b) => b.type === "image") as Array<{ src: string; alt: string; caption: string; width: number; height: number }>;
+    expect(beelden.length).toBeGreaterThanOrEqual(2);
+    for (const b of beelden) {
+      expect(html).toContain(b.src);
+      expect(html).toContain(b.alt);
+      expect(html).toContain(b.caption);
+      expect(b.alt.length).toBeGreaterThan(30);
+      expect(b.src.startsWith("/media/")).toBe(true);
+      expect(b.width).toBeGreaterThan(0);
+      expect(b.height).toBeGreaterThan(0);
+    }
+    expect(html).toContain('loading="lazy"');
+    expect(html).toContain('width="1376"');
+  });
+
+  it("says in the caption that an illustration was generated with AI", () => {
+    for (const b of metBeelden.blocks) if (b.type === "image") expect(b.caption).toMatch(/generated with AI/);
+  });
+});
+
 describe("BlogPostPage", () => {
   it("shows the title, the dek, the date and the read time", () => {
     const html = renderPost("en");

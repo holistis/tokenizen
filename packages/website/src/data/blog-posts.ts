@@ -26,6 +26,7 @@ export interface FactItem {
 export type PostBlock =
   | { type: "md"; text: string }
   | { type: "video"; src: string; poster: string; caption: string; transcript: string[] }
+  | { type: "image"; src: string; alt: string; caption: string; width: number; height: number }
   | { type: "facts"; heading: string; intro: string; items: FactItem[] }
   | { type: "mission" }
   | { type: "cta"; heading: string; text: string; links: Array<{ label: string; href: string }> };
@@ -252,6 +253,14 @@ It also says nothing about how good the scan is. The scan reads the files most l
 The result is below, with the misses, and so is the test that comes next. We wrote that test down before running it.`,
       },
       {
+        type: "image",
+        src: "/media/we-measured-our-scan-1.webp",
+        alt: "A glass and brass envelope closed with a glowing hexagonal wax seal, resting on a balance scale, with thin bars of light and small glowing cubes behind it.",
+        caption: "A sealed envelope on a scale: the test is committed with a hash before anyone sees a result. Illustration generated with AI.",
+        width: 1376,
+        height: 768,
+      },
+      {
         type: "facts",
         heading: "The numbers",
         intro: "Five numbers, each with the place where you can check it.",
@@ -308,7 +317,19 @@ We also found a mistake in our own measurement after we published it. The copy w
 - Every report carries a SHA-256 fingerprint, so a buyer can see that it was not changed afterwards.
 - A file that is a link to something else on the server is never read. We found that the first version followed such links.
 
-## How the next test is built so that we cannot bend it
+`,
+      },
+      {
+        type: "image",
+        src: "/media/we-measured-our-scan-2.webp",
+        alt: "A crystal prism splits one beam of light into eight colored beams that fall on a stack of translucent pages, with a sealed vault glowing in the background.",
+        caption: "One beam, eight lenses: the idea we test for the next version, reading all of the code through different lenses. It is not proven yet. Illustration generated with AI.",
+        width: 1376,
+        height: 768,
+      },
+      {
+        type: "md",
+        text: `## How the next test is built so that we cannot bend it
 
 The known findings come from the final reports of Sherlock contests, one entry per unique valid finding, with the number of wardens who found it as the measure of difficulty. A rule picks the eligible contests, and the hash of a Base block that nobody here could choose splits them into a development set and a sealed set. We commit to the sealed set with a hash and do not tune on it.
 
