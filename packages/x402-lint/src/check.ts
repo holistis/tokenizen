@@ -65,6 +65,11 @@ export interface ConformanceReport {
   issues: ConformanceIssue[];
   /** The exact payment-required JSON object this report actually validated, for a caller who wants to inspect it directly rather than trust this report alone. Null if none could be extracted. */
   rawPaymentRequired: unknown | null;
+  /**
+   * Where the payment-required object was read from on the REST transport: the Payment-Required header (x402 v2 sellers,
+   * whose body is often just {}) or the response body (v1 style). Absent on the MCP transport and when nothing was read.
+   */
+  source?: "header" | "body";
 }
 
 export interface CheckOptions {
@@ -111,6 +116,28 @@ function errorReport(
   };
 }
 
+/**
+ * The payment-required object from a Payment-Required header: base64 of JSON, or plain JSON.
+ * Returns null for anything else rather than throwing, so a garbage header falls back to the body.
+ *
+ * ADDED 2026-10-24 after a measurement against our own live paid route: an x402 v2 seller keeps its
+ * requirements in this header and answers with a body of {}. Reading only the body made this tool call
+ * a working v2 endpoint schema-invalid ("x402Version: Invalid discriminator value"), and the hosted
+ * x402-lint service told every v2 seller that for as long as it ran the older code.
+ */
+function decodePaymentRequiredHeader(value: string | null): unknown | null {
+  if (!value) return null;
+  for (const text of [() => Buffer.from(value, "base64").toString("utf8"), () => value]) {
+    try {
+      const parsed: unknown = JSON.parse(text());
+      if (parsed !== null && typeof parsed === "object") return parsed;
+    } catch {
+      // try the next reading
+    }
+  }
+  return null;
+}
+
 /** Extracts the JSON payload from an MCP transport response, which may be plain JSON or SSE-framed ("event: message\ndata: {...}\n\n"). */
 function extractMcpEnvelope(rawText: string): unknown {
   const dataLine = rawText.split("\n").find((l) => l.startsWith("data:"));
@@ -149,14 +176,26 @@ async function checkRest(resourceUrl: string, fetchImpl: typeof fetch): Promise<
     return report;
   }
 
+  // The header first: it is where a v2 seller puts its requirements, and its body may be just {}.
+  const fromHeader = decodePaymentRequiredHeader(res.headers.get("payment-required"));
+  if (fromHeader !== null) {
+    return { ...finishReport(resourceUrl, "rest", res.status, fromHeader), source: "header" };
+  }
+
   let body: unknown;
   try {
     body = JSON.parse(rawText);
   } catch {
-    return errorReport(resourceUrl, "rest", res.status, "body", "response body is not valid JSON");
+    return errorReport(
+      resourceUrl,
+      "rest",
+      res.status,
+      "body",
+      "no readable payment requirements: the Payment-Required header is missing or unreadable and the response body is not valid JSON",
+    );
   }
 
-  return finishReport(resourceUrl, "rest", res.status, body);
+  return { ...finishReport(resourceUrl, "rest", res.status, body), source: "body" };
 }
 
 async function checkMcp(

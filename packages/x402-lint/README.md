@@ -41,9 +41,14 @@ npm run start:http
 
 ## What it checks
 
+- **Where it reads the requirements from** — the `Payment-Required` header first, then the body. An x402 v2 seller keeps its requirements in that header and often answers with a body of `{}`; the report says which one it used (`source`).
 - **Schema validity** — the real, unmodified `parsePaymentRequired()` from `@x402/core`. If this fails, no spec-compliant client will ever pay, regardless of how reasonable the response looks.
 - **Address shape** (warning, not a schema violation) — `accepts[].asset` and `accepts[].payTo` should look like a real `0x`-prefixed 20-byte address.
 - **Resource URL match** (warning) — a v2 response's `resource.url` should match the URL actually tested, or a careful client may refuse it as resource-mismatched.
+
+## Erratum (found 2026-10-24)
+
+Up to and including 0.1.0 this tool read only the response body. Measured against our own live paid route, which is a v2 seller with its requirements in the header and a body of `{}`, it reported `x402Version: Invalid discriminator value`: a working endpoint called broken. The hosted tool at x402-lint.tokenizen.nl did the same until it was updated. If you were told your v2 endpoint failed the schema by an earlier version, run it again; a result that names the `body` as its `source` was not affected. Fixed in 0.1.1, with tests that fail on the old code.
 
 ## Honest limits
 
