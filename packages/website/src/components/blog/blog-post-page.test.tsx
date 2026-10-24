@@ -122,7 +122,12 @@ describe("BlogIndex", () => {
     expect(html).not.toContain("733,203 attestations were taken back");
     expect(html).not.toContain("The hierarchy of agent trust");
     expect(html).not.toContain("Official sources and payment addresses");
-    expect(html).not.toContain("We measured our scan");
+  });
+
+  it("lists the second blog below the pinned one", () => {
+    const html = renderIndex("en");
+    expect(html).toContain("We measured our scan");
+    expect(html.indexOf("Check. Pay. Prove.")).toBeLessThan(html.indexOf("We measured our scan"));
   });
 
   it("is called Blog in both languages", () => {
