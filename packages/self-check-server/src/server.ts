@@ -39,9 +39,15 @@ async function main(): Promise<void> {
   const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",").map((s) => s.trim()).filter(Boolean);
   const trustProxy = parseTrustProxy(process.env.TRUST_PROXY);
   const app = createApp({ trustProxy, ...(allowedOrigins ? { allowedOrigins } : {}) });
-  app.listen(port, () => {
-    console.log(`self-check-server listening on http://localhost:${port} (trust proxy: ${JSON.stringify(trustProxy)})`);
-  });
+  // HOST narrows the interface it listens on. Unset keeps the old behaviour (all interfaces). Behind a
+  // proxy that sets X-Forwarded-For, set HOST=127.0.0.1 so nobody can reach the port directly and send
+  // that header themselves: the per-IP rate limit keys on it when TRUST_PROXY is set.
+  const host = process.env.HOST?.trim() || undefined;
+  const onListening = () => {
+    console.log(`self-check-server listening on ${host ?? "all interfaces"}:${port} (trust proxy: ${JSON.stringify(trustProxy)})`);
+  };
+  if (host) app.listen(port, host, onListening);
+  else app.listen(port, onListening);
 }
 
 // Same guard pattern as trust-attest-server/src/server.ts — importing this

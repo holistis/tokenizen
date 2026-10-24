@@ -7,6 +7,10 @@
 // made. That is the cheapest distribution there is, and in this corner nobody does
 // it yet.
 //
+// SINCE 2026-10-24 there is also a live twin, x402-check.ts (POST /api/x402/check), which does measure
+// the visitor's own endpoint on request, behind per-host, global and per-IP limits. The reasoning below
+// still holds for the badge, which goes on other people's pages and must not re-measure on every view.
+//
 // THE ONE HARD DESIGN CHOICE: this never measures live. It answers from a dated,
 // bundled measurement and nothing else. Two reasons, the second being the heavier:
 //  - measuring on request would let anyone use this server to probe arbitrary hosts,

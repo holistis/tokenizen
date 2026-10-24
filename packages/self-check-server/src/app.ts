@@ -64,6 +64,7 @@ import { readSellerConfig, buildPaymentMiddleware, type SellerConfig } from "./x
 import { createRateLimiter } from "./rate-limit.js";
 import { handleConformance } from "./x402-conformance.js";
 import { handleBadge, handleBadgeJson } from "./x402-badge.js";
+import { createX402Checker, handleX402Check, type X402CheckerOptions } from "./x402-check.js";
 
 const DEFAULT_ALLOWED_ORIGINS = ["http://localhost:5173", "https://tokenizen.nl", "https://www.tokenizen.nl"];
 
@@ -115,6 +116,12 @@ export interface CreateAppOptions {
   paidRateLimit?: { windowMs: number; max: number };
   /** Rate limit for the (no network I/O) challenge route. Defaults to 30 requests / 5 minutes per IP — looser, since it is pure local HMAC, same posture trust-attest-server's own comments describe for get_ownership_challenge. */
   challengeRateLimit?: { windowMs: number; max: number };
+  /**
+   * The free live x402 check (POST /api/x402/check). `rateLimit` is the per-IP limit, 8 requests / 10 minutes
+   * by default; the rest are the checker's own cache and per-host/global budgets, and the injectable egress
+   * that tests use instead of the network. See x402-check.ts for why this route exists next to the badge.
+   */
+  x402Check?: X402CheckerOptions & { rateLimit?: { windowMs: number; max: number } };
 }
 
 const ChallengeBody = z.object({
@@ -280,6 +287,13 @@ export function createApp(options: CreateAppOptions = {}): Express {
     max: options.paidRateLimit?.max ?? options.verifyRateLimit?.max ?? 10,
   });
 
+  const { rateLimit: x402CheckRateLimit, ...x402CheckerOptions } = options.x402Check ?? {};
+  const x402CheckLimiter = createRateLimiter({
+    windowMs: x402CheckRateLimit?.windowMs ?? 10 * 60 * 1000,
+    max: x402CheckRateLimit?.max ?? 8,
+  });
+  const x402Checker = createX402Checker({ routableHostDeps: options.routableHostDeps, ...x402CheckerOptions });
+
   const app = express();
   app.disable("x-powered-by");
   // Decides how req.ip (the rate-limit key) is resolved. Default false; behind
@@ -312,6 +326,11 @@ export function createApp(options: CreateAppOptions = {}): Express {
   // x402-badge.ts for why the caller's url never reaches the rendered svg.
   app.get("/api/x402/badge", challengeLimiter, handleBadge);
   app.get("/api/x402/badge.json", challengeLimiter, handleBadgeJson);
+
+  // The live twin of the badge: measures the visitor's own endpoint now. It is the one place that
+  // reverses the badge's "never measure live" rule, on purpose and behind its own limiter plus the
+  // per-host and global budgets inside the checker. See the header of x402-check.ts.
+  app.post("/api/x402/check", x402CheckLimiter, handleX402Check(x402Checker));
 
   app.post("/api/challenge", challengeLimiter, async (req: Request, res: Response) => {
     const parsed = ChallengeBody.safeParse(req.body);
@@ -479,6 +498,19 @@ export function createApp(options: CreateAppOptions = {}): Express {
         });
     });
   }
+
+  // A request the body parser refuses (malformed JSON, a body over the limit) is the caller's mistake,
+  // not ours: answer it as such and log nothing. Falling through to the handler below logged the error
+  // object, and the body parser's error carries the raw request body, which here is a URL that may hold
+  // a secret in its query string. It also ran before any rate limit, so it was an unmetered log flood.
+  app.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
+    const status = (err as { status?: unknown } | null)?.status;
+    if (typeof status === "number" && status >= 400 && status < 500) {
+      res.status(status).json({ ok: false, error: status === 413 ? "request body too large" : "request could not be read" });
+      return;
+    }
+    next(err);
+  });
 
   // Last resort: a route handler throwing (a bug, an unexpected rejection)
   // must never leak a stack trace to the caller (exposure-check) — respond
