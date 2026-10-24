@@ -49,6 +49,11 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/blog" />
   </url>
   <url>
+    <loc>https://tokenizen.nl/en/x402-check</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://tokenizen.nl/en/notes/check-pay-prove</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>

@@ -35,7 +35,7 @@ export type VerifyResult =
 
 class CheckApiError extends Error {}
 
-async function postJson<T>(path: string, body: unknown): Promise<T> {
+async function postJson<T>(path: string, body: unknown, options: { keepRateLimitBody?: boolean } = {}): Promise<T> {
   let response: Response;
   try {
     response = await fetch(`${API_BASE}${path}`, {
@@ -54,6 +54,11 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
     throw new CheckApiError(`The check service returned an unreadable response (HTTP ${response.status}).`);
   }
 
+  // The x402 check has two different 429s (this connection, or the host being checked) and the server
+  // says which one, so that route keeps the server's own sentence instead of the generic one below.
+  if (response.status === 429 && options.keepRateLimitBody && (parsed as ApiError).ok === false) {
+    return parsed as T;
+  }
   if (response.status === 429) {
     throw new CheckApiError("Too many attempts from this connection. Please wait a few minutes and try again.");
   }
@@ -73,6 +78,48 @@ export async function verifyOwnership(
   method: OwnershipMethod,
 ): Promise<VerifyResult | ApiError> {
   return postJson<VerifyResult | ApiError>("/api/verify-ownership", { endpoint, ownerAddress, method });
+}
+
+export type X402Status = "pass" | "fail" | "not_measured";
+
+export interface X402BuyerCheck {
+  status: X402Status;
+  httpStatus: number | null;
+  source: "header" | "body" | null;
+  x402Version: number | null;
+  problems: string[];
+  warnings: string[];
+}
+
+export interface X402Level {
+  level: number;
+  name: string;
+  requirement: string;
+  status: X402Status | "not_evaluated";
+  evidence: string;
+}
+
+export interface X402CheckResult {
+  ok: true;
+  cached: boolean;
+  url: string;
+  method: "GET" | "POST";
+  measuredAt: string;
+  summary: string;
+  buyerCheck: X402BuyerCheck;
+  ladder: {
+    highestLevel: number;
+    levels: X402Level[];
+    methodRetried: { from: string; to: string; firstStatus: number } | null;
+    definition: string;
+  };
+  requestsMade: number;
+  limits: string[];
+}
+
+/** One live look at an x402 endpoint. Free, never pays, see packages/self-check-server/src/x402-check.ts. */
+export async function checkX402Endpoint(url: string, method: "GET" | "POST"): Promise<X402CheckResult | ApiError> {
+  return postJson<X402CheckResult | ApiError>("/api/x402/check", { url, method }, { keepRateLimitBody: true });
 }
 
 export { CheckApiError };
