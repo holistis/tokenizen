@@ -1,6 +1,6 @@
 {
   "name": "@alghanima/x402-lint",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Checks an x402 seller's own payment-required (402) response against the REAL client-side schema from @x402/core, catching the exact class of bug where a response looks fine to its own author but silently fails every real buyer's own validation (found live, 2026-10-22: a serviceName field 53/71 characters long against the client schema's 32-character limit). Free, read-only, no wallet involved.",
   "keywords": [
     "x402",

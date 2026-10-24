@@ -10,7 +10,7 @@ import { checkX402Conformance } from "./check.js";
 
 let server: Server;
 let baseUrl: string;
-let mode: "rest" | "mcp-payment-required" | "mcp-no-payment-required" | "mcp-input-error" | "non-402" | "bad-json" = "rest";
+let mode: "rest" | "rest-header" | "rest-header-and-bad-body" | "mcp-payment-required" | "mcp-no-payment-required" | "mcp-input-error" | "non-402" | "bad-json" = "rest";
 let restBody: unknown = null;
 let mcpPaymentRequiredBody: unknown = null;
 
@@ -42,6 +42,13 @@ beforeAll(async () => {
   server = createServer(async (req, res) => {
     if (mode === "rest") {
       res.writeHead(402, { "content-type": "application/json" }).end(JSON.stringify(restBody));
+      return;
+    }
+    // A v2 seller keeps its requirements in the Payment-Required HEADER and answers with a body of {}.
+    if (mode === "rest-header" || mode === "rest-header-and-bad-body") {
+      res
+        .writeHead(402, { "content-type": "application/json", "payment-required": Buffer.from(JSON.stringify(restBody)).toString("base64") })
+        .end(mode === "rest-header" ? "{}" : "not json at all");
       return;
     }
     if (mode === "non-402") {
@@ -117,6 +124,42 @@ describe("checkX402Conformance, REST transport, against a local fake server", ()
     const report = await checkX402Conformance(`${baseUrl}/rest-route`, { fetchImpl: fetch });
     expect(report.schemaValid).toBe(true);
     expect(report.issues.some((i) => i.field === "resource.url")).toBe(true);
+  });
+
+  // FOUND 2026-10-24 on our own live paid route: a v2 seller that keeps its requirements in the
+  // Payment-Required header and answers with a body of {} was reported as schema-invalid
+  // ("x402Version: Invalid discriminator value"), because only the body was read. These two tests
+  // fail on that old code and pass on the fix.
+  it("reads the requirements from the Payment-Required header when the body is only {}", async () => {
+    mode = "rest-header";
+    restBody = validV2Response();
+    const report = await checkX402Conformance(`${baseUrl}/rest-route`, { fetchImpl: fetch });
+    expect(report.schemaValid).toBe(true);
+    expect(report.ok).toBe(true);
+    expect(report.source).toBe("header");
+  });
+
+  it("still catches a schema problem that sits in the header, and says where it read it from", async () => {
+    mode = "rest-header";
+    restBody = validV2Response({ serviceName: "x".repeat(53) });
+    const report = await checkX402Conformance(`${baseUrl}/rest-route`, { fetchImpl: fetch });
+    expect(report.schemaValid).toBe(false);
+    expect(report.schemaErrors.join(" ")).toContain("serviceName");
+    expect(report.source).toBe("header");
+  });
+
+  it("does not need the body at all when the header is good", async () => {
+    mode = "rest-header-and-bad-body";
+    restBody = validV2Response();
+    const report = await checkX402Conformance(`${baseUrl}/rest-route`, { fetchImpl: fetch });
+    expect(report.ok).toBe(true);
+  });
+
+  it("reports the body as the source for a v1 style seller", async () => {
+    mode = "rest";
+    restBody = validV2Response();
+    const report = await checkX402Conformance(`${baseUrl}/rest-route`, { fetchImpl: fetch });
+    expect(report.source).toBe("body");
   });
 
   it("reports a clean error, not a crash, when the body is not valid JSON", async () => {
