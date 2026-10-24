@@ -214,7 +214,7 @@ Money is starting to move between machines. The people who build those machines 
 
 - Repository: [holistis/bug-bounty-intelligence-mcp](https://github.com/holistis/bug-bounty-intelligence-mcp)
 - Payment request: \`https://x402.tokenizen.nl/api/bug-intel\`
-- Price: 5 USDC per full-repo scan, on Base (eip155:8453), through x402
+- Price: 5 USDC per scan, on Base (eip155:8453), through x402
 - Payment address: \`0x015Eb036560216B3051339061FF68A207E0fe88f\`
 
 ## Check it yourself
@@ -229,7 +229,9 @@ If a listing, a reply or a website gives another address for Bug Bounty Intellig
 
 ## What this list is not
 
-It covers only the service named above. It does not vouch for any other address, and it changes only through a pull request in the open repository, so its history is public.`,
+It covers only the service named above. It does not vouch for any other address, and it changes only through a pull request in the open repository, so its history is public.
+
+It also says nothing about how good the scan is. The scan sends only part of a repository to its analysis step and returns raw hypotheses. The limits, with measured numbers, are at the top of the repository README, and a test on closed audit contests is pre-registered there.`,
       },
     ],
   },
