@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import { BlogPostPage } from "@/components/blog/blog-post-page";
-import { NotesIndex } from "@/components/pages/notes-index";
+import { BlogIndex } from "@/components/pages/notes-index";
 import { BLOG_POSTS, MISSION } from "@/data/blog-posts";
 import { LocaleProvider, type Locale } from "@/i18n/context";
 
@@ -18,7 +18,7 @@ const renderPost = (locale: Locale) =>
 const renderIndex = (locale: Locale) =>
   renderToStaticMarkup(
     <LocaleProvider locale={locale}>
-      <NotesIndex />
+      <BlogIndex />
     </LocaleProvider>,
   );
 
@@ -102,24 +102,27 @@ describe("BlogPostPage", () => {
   it("keeps internal links in the reader's language", () => {
     expect(renderPost("en")).toContain('href="/en/notes/zero-of-600-x402-services-sign-a-receipt"');
     expect(renderPost("nl")).toContain('href="/notes/zero-of-600-x402-services-sign-a-receipt"');
-    expect(renderPost("en")).toContain('href="/en/notes"');
-    expect(renderPost("nl")).toContain('href="/notes"');
+    // The post is a blog, so its way back leads to the blog and not to the notes.
+    expect(renderPost("en")).toContain('href="/en/blog"');
+    expect(renderPost("nl")).toContain('href="/blog"');
   });
 });
 
-describe("NotesIndex as the blog", () => {
-  it("features the newest post and shows the mission", () => {
+describe("BlogIndex", () => {
+  it("features the pinned blog and shows no mission", () => {
     const html = renderIndex("en");
     expect(html).toContain(post.title);
     expect(html).toContain("/en/notes/check-pay-prove");
-    expect(html).toContain(MISSION.headline);
-    expect(html).toContain("Start here");
+    expect(html).not.toContain(MISSION.headline);
+    expect(html).toContain("Pinned");
   });
 
-  it("still lists the earlier notes", () => {
+  it("does not list the notes", () => {
     const html = renderIndex("en");
-    expect(html).toContain("733,203 attestations were taken back");
-    expect(html).toContain("The hierarchy of agent trust");
+    expect(html).not.toContain("733,203 attestations were taken back");
+    expect(html).not.toContain("The hierarchy of agent trust");
+    expect(html).not.toContain("Official sources and payment addresses");
+    expect(html).not.toContain("We measured our scan");
   });
 
   it("is called Blog in both languages", () => {

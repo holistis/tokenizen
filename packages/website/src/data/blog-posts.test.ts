@@ -99,6 +99,15 @@ describe("BLOG_POSTS", () => {
     }
   });
 
+  // A blog is a decision of the owner, not a default. The default for new work is a note, and only a
+  // blog may be pinned, so a working note can never end up at the top of the blog by accident.
+  it("gives every post a kind, and lets only a blog be pinned", () => {
+    for (const post of BLOG_POSTS) {
+      expect(["blog", "note"], post.slug).toContain(post.kind);
+      if (post.pinned) expect(post.kind, post.slug).toBe("blog");
+    }
+  });
+
   it("finds a post by its path and nothing else", () => {
     const first = BLOG_POSTS[0]!;
     expect(findPostByPath(postPath(first.slug))).toBe(first);
