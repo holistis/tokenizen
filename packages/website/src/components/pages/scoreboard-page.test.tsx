@@ -15,11 +15,13 @@ describe("ScoreboardPage", () => {
     expect(html).toContain("0 of 40");
     expect(html).toContain("7 of 85");
     expect(html).toContain("1 of 85");
+    expect(html).toContain("4 of 105");
+    expect(html).toContain("1 of 105");
   });
 
   it("says Not measured yet for the rows that have no result, and never invents one", () => {
     const pending = SCORE_RUNS.filter((r) => r.status === "pending");
-    expect(pending.length).toBeGreaterThanOrEqual(2);
+    expect(pending.length).toBeGreaterThanOrEqual(1);
     for (const run of pending) expect(resultText(run)).toBe("Not measured yet");
     expect(html.split("Not measured yet").length - 1).toBe(pending.length);
   });

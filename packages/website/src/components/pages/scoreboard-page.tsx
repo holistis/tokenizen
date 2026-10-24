@@ -110,7 +110,8 @@ export function ScoreboardPage() {
               <li>
                 The contests were split into a development set and a sealed set by sorting them on a hash that includes the hash of
                 Base block {SEED_BLOCK.number}, which nobody here could choose. The sealed set is committed with the hash{" "}
-                <span className="break-all font-mono text-xs">{SEALED_SET_HASH}</span> and has not been run.
+                <span className="break-all font-mono text-xs">{SEALED_SET_HASH}</span> and was run once, on 24 October 2026. The
+                set is published now, so anyone can recompute that hash.
               </li>
             </ul>
           </CardContent>
@@ -121,7 +122,7 @@ export function ScoreboardPage() {
           <CardDescription>Five steps, in the order we take them.</CardDescription>
           <CardContent>
             <ol className="list-decimal space-y-2 pl-5 text-sm leading-relaxed">
-              <li>The sealed run: contests nobody here has seen, with the decision rule fixed in advance.</li>
+              <li>The sealed run: contests nobody here has seen, with the decision rule fixed in advance. Done on 24 October 2026; the bar was not met.</li>
               <li>Contests that appear after today, with the hash of our report committed before the results are published.</li>
               <li>A test that makes each reported flaw actually happen, so a finding does not rest on anyone's word.</li>
               <li>A flaw that a real owner confirms.</li>
@@ -139,8 +140,8 @@ export function ScoreboardPage() {
                 judge statement. Anyone can re-score them.
               </li>
               <li>
-                Private: how the scan finds things. Before the sealed run we publish the SHA-256 of the files it uses, so they
-                cannot change afterwards.
+                Private: how the scan finds things. Before the sealed run we published the SHA-256 of the files it uses, so they
+                could not change afterwards.
               </li>
             </ul>
           </CardContent>
