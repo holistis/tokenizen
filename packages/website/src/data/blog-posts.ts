@@ -243,7 +243,7 @@ If a listing, a reply or a website gives another address for Bug Bounty Intellig
 
 It covers only the service named above. It does not vouch for any other address, and it changes only through a pull request in the open repository, so its history is public.
 
-It also says nothing about how good the scan is. The scan reads the files most likely to move funds first, in at most six parts, and returns AI-generated hypotheses to review by hand. In a pre-registered test on seven closed audit contests it found none of the 40 known High and Medium findings, with 29 percent of the in-scope code read. The results, with the misses, are in the repository README.`,
+It also says nothing about how good the scan is. The scan returns AI-generated hypotheses to review by hand. In a pre-registered test on 8 sealed audit contests the version in production found 1 of 105 known High and Medium findings, and a newer version, not in production, found 4. The results, with the misses, are in the repository.`,
       },
     ],
   },
@@ -251,121 +251,119 @@ It also says nothing about how good the scan is. The scan reads the files most l
     slug: "we-measured-our-scan",
     kind: "blog",
     date: "2026-10-24",
-    title: "We measured our scan. It found 0 of 40.",
-    dek: "What we measured on closed audit contests, what we changed, and how the next test is sealed so that we cannot bend it.",
+    title: "We measured our scan. It found 4 of 105.",
+    dek: "The first measurement found 0 of 40. This one was written down before it ran, on contests nobody here had touched. It missed its own bar, and we are publishing it anyway.",
     description:
-      "Our smart contract scan found none of 40 known findings. What we measured, what we changed, and a sealed, pre-registered test that we cannot bend.",
+      "On 8 sealed audit contests our scan in production found 1 of 105 known findings, a new version 4. Our bar was 5 more, so production stays as it is.",
     tags: ["Measurements", "Tools"],
     readMinutes: 4,
     blocks: [
       {
         type: "md",
-        text: `Bug Bounty Intelligence reads the Solidity of a public repository and returns a list of hypotheses to check by hand. We sell it for 5 USDC through x402. It is not an audit. Until this week we had not measured how often it finds what auditors find, and parts of our own description were stronger than the code behind them. We corrected the description, then measured.
+        text: `Bug Bounty Intelligence reads the Solidity of a public repository and returns a list of hypotheses to check by hand. We sell it for 5 USDC through x402. It is not an audit.
 
-The result is below, with the misses, and so is the test that comes next. We wrote that test down before running it.`,
+The first time we measured it, it found none of 40 known findings. We changed it, wrote down a test before running it, and ran that test once on 8 contests that nobody here had run anything on. The version in production found 1 of 105 known findings. The new version found 4. Our own bar was 5 more than production, and it found 3 more. We missed it, so production stays as it is.`,
       },
       {
         type: "image",
         src: "/media/we-measured-our-scan-1.webp",
         alt: "A glass and brass envelope closed with a glowing hexagonal wax seal, resting on a balance scale, with thin bars of light and small glowing cubes behind it.",
-        caption: "A sealed envelope on a scale: the test is committed with a hash before anyone sees a result. Illustration generated with AI.",
+        caption: "A sealed envelope on a scale: the test was committed with a hash before anyone saw a result. Illustration generated with AI.",
         width: 1376,
         height: 768,
       },
       {
         type: "facts",
         heading: "The numbers",
-        intro: "Five numbers, each with the place where you can check it.",
+        intro: "Each with the place where you can check it.",
         items: [
           {
-            value: "0 of 40",
-            label:
-              "Known High and Medium findings found by version 2 of the scan: 0 of 31 on four contests it was tuned on and 0 of 9 on three new ones, with 29 percent of the in-scope code read.",
-            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/RESULTS-v2-2026-10-24.md",
-            hrefLabel: "The results page",
+            value: "4 of 105",
+            label: "Known High and Medium findings found by the new version on the sealed set, counted only where two judges of different model families agree.",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-10-24-sealed/README.md",
+            hrefLabel: "The results",
           },
           {
-            value: "15 of 40",
-            label: "Known findings that sat in a file the scan did read. None of those was found either. The other 25 sat in files it never read.",
-            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/RESULTS-v2-2026-10-24.md",
-            hrefLabel: "The tables",
+            value: "1 of 105",
+            label: "The same count for the scan as it runs in production, on the same contests.",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-10-24-sealed/README.md",
+            hrefLabel: "The results",
           },
           {
-            value: "14 contests",
-            label:
-              "Eligible Sherlock contests of 2025, chosen by a rule. Six are for development and eight are sealed, split with the hash of Base block 53022890 as the seed.",
-            href: "https://basescan.org/block/53022890",
-            hrefLabel: "The seed block",
-          },
-          {
-            value: "de1a23a4",
-            label:
-              "The first characters of the SHA-256 of the sealed set: 8 contests and 105 known findings. The names stay private until the sealed run.",
+            value: "3 of 5",
+            label: "Findings the new version found that production did not, against the 5 our rule required. The rule was written before the run.",
             href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/PREREGISTRATION-v3-2026-10-24.md",
             hrefLabel: "The pre-registration",
           },
           {
-            value: "23 of 23",
-            label:
-              "How often each of two judges matched a known finding to itself, and matched a finding of another contest to nothing, before they were allowed to measure anything.",
-            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/bench/kalibratie.json",
-            hrefLabel: "The check of the judges",
+            value: "about a minute",
+            label: "46 to 105 seconds and at most 0.064 dollar per scan, against 2.7 to 8.6 minutes for production.",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-10-24-sealed/README.md",
+            hrefLabel: "Time and cost per scan",
+          },
+          {
+            value: "de1a23a4",
+            label: "The first characters of the SHA-256 of the sealed set, committed before the run. The set is published now, so anyone can recompute it.",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/bench/verzegelde-set.json",
+            hrefLabel: "The set",
           },
         ],
       },
       {
         type: "md",
-        text: `## What the first measurement showed
+        text: `## What the number means
 
-Version 2 read 29 percent of the in-scope code and found none of the known findings. Most of the misses were in files it never reached, because it reads at most six parts. On the 15 findings whose file it did read, it found none either. When the answer was empty, our own rule asked a weaker model for a second attempt, and that produced a list that looked like a checklist. We have written all of this on the results page, together with the failures of the model sources behind the scan.
+Four of 105 is a small number. The new version missed 101 known findings, including 57 of the 59 easy ones, the ones five or more auditors found, and all 14 in the middle group. It found two of the 32 that only one or two auditors found. Nobody should read this as a scan that finds what a human audit finds.
 
-We also found a mistake in our own measurement after we published it. The copy we measured did not have the folder with historical patterns that production uses, so the measured prompts lacked that block. The results page now carries a correction above its tables.
+It is still the first number we can defend. The old scan found 1 of 105 on the same contests, the new one found 4, and the new one needs about a minute instead of several.
 
-## What we changed before measuring again
+## The bar we missed
 
-- Git submodules are fetched when they point to github.com, and dependencies, tests, mocks, scripts and interfaces are left out.
-- Every report states how much of the code was read, and a scan with no hypotheses is delivered as that, not as a normal report.
-- A free precheck says before payment whether the scan counts any Solidity in the repository.
-- Every report carries a SHA-256 fingerprint, so a buyer can see that it was not changed afterwards.
-- A file that is a link to something else on the server is never read. We found that the first version followed such links.
+Before the run we wrote that the new version would replace the running one only if it found at least 5 known findings that the running one does not, at least twice as many as it loses, with precision not more than 2 points lower and at most 1 dollar and 20 minutes per scan. It met every part except the first: 3 instead of 5.
 
-`,
+After the run we read the two cases where the judges disagreed. Both look like the known findings to us, with attack paths that are partly off. Counted, the new version would have reached 5. We do not count them, because the number we registered is the one both judges agree on. Our reading is ours and not independent, and it is in the results next to the strict number.
+
+## What happens now
+
+Production stays as it is, as the rule says. We keep working on the next version. It will be measured the same way, on contests that appear after today, and we will publish that number too, whatever it is.
+
+How the scan finds things stays private, because that is the product. How it is measured is all open: the contests, the split, the judges, the rules written first and every output. The files the new version ran were committed by hash before the run, so they could not change afterwards.`,
       },
       {
         type: "image",
         src: "/media/we-measured-our-scan-2.webp",
         alt: "A crystal prism splits one beam of light into colored beams that fall on a stack of translucent pages, with a sealed vault glowing in the background.",
-        caption: "A prism over a sealed vault: the next version is in development and not proven yet. Illustration generated with AI.",
+        caption: "A prism over a sealed vault: one measurement is not proof. Illustration generated with AI.",
         width: 1376,
         height: 768,
       },
       {
         type: "md",
-        text: `## How the next test is built so that we cannot bend it
+        text: `## How the test was built so that we could not bend it
 
-The known findings come from the final reports of Sherlock contests, one entry per unique valid finding, with the number of wardens who found it as the measure of difficulty. A rule picks the eligible contests, and the hash of a Base block that nobody here could choose splits them into a development set and a sealed set. We commit to the sealed set with a hash and do not tune on it.
+The known findings come from the final reports of Sherlock contests, one entry per unique valid finding, with the number of wardens who found it as the measure of difficulty. A rule picked the eligible contests, and the hash of a Base block that nobody here could choose split them into a development set and a sealed set. We committed to the sealed set with a hash and did not tune on it.
 
-Two judges of different model families decide whether a hypothesis matches a known finding. A hit counts only when both name the same finding. A person reads every disagreement. The decision rule is fixed in advance: a new version replaces the running one only if it finds clearly more than the running one on the sealed set, at a cost and speed we also fixed. If it does not, we say so and the running version stays.
+Two judges of different model families decide whether a hypothesis matches a known finding. A hit counts only when both name the same finding. A person reads every disagreement and the hits. The decision rule was fixed in advance.
 
 ## What we do not claim
 
-- That the scan finds vulnerabilities. It has not been shown to.
-- That these contests are outside the models' training data. They may not be, so absolute numbers can be too high. Comparisons between versions on the same contests are paired, and contests that appear after today will give a clean test.
+- That the scan finds vulnerabilities in general. Four of 105 does not show that.
+- That these contests are outside the models' training data. They may not be, so absolute numbers can be too high. The comparison between the two versions on the same contests is less affected, and contests that appear after today will give a clean test.
 - The judges are language models, and we have a stake in the result. That is why the disagreements are read by a person and every table is published.
 - None of this is an audit, an approval or a certification.
 
 ## Check it yourself
 
-The split can be recomputed with the script in the repository, and the tests of the judges run with node. If you find a mistake in how we measure, open an issue. We correct it in public.`,
+The split can be recomputed with the script in the repository, the set hash from the published set, and the scores with the open judges and an OpenRouter key. If you find a mistake in how we measure, open an issue. We correct it in public.`,
       },
       {
         type: "cta",
-        heading: "Read the pre-registration and the results",
+        heading: "Read the results and the rule",
         text: "Everything the test needs is in the repository, including the prediction we wrote before the baseline ran.",
         links: [
           { label: "The open scoreboard", href: "https://tokenizen.nl/en/scoreboard" },
-          { label: "Pre-registration of the new test", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/PREREGISTRATION-v3-2026-10-24.md" },
-          { label: "Results of version 2", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/RESULTS-v2-2026-10-24.md" },
+          { label: "The sealed results", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-10-24-sealed/README.md" },
+          { label: "The pre-registration and its addendum", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/PREREGISTRATION-v3-2026-10-24.md" },
           { label: "The repository", href: "https://github.com/holistis/bug-bounty-intelligence-mcp" },
         ],
       },

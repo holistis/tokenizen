@@ -51,9 +51,17 @@ describe("SCORE_RUNS", () => {
     expect(SCORE_RUNS.find((r) => r.id === "baseline-dev-set")?.tunedOn).toBe("yes");
   });
 
-  it("keeps the sealed run pending until it exists, and names its set by hash only", () => {
-    const sealed = SCORE_RUNS.find((r) => r.id === "sealed-run")!;
-    expect(sealed.status).toBe("pending");
+  it("records the sealed run for both systems, on a set nobody tuned on, and keeps the registered numbers", () => {
+    const v3 = SCORE_RUNS.find((r) => r.id === "sealed-v3")!;
+    const s0 = SCORE_RUNS.find((r) => r.id === "sealed-s0")!;
+    for (const run of [v3, s0]) {
+      expect(run.status, run.id).toBe("measured");
+      expect(run.known, run.id).toBe(105);
+      expect(run.tunedOn, run.id).toBe("no");
+    }
+    expect(v3.found).toBe(4);
+    expect(s0.found).toBe(1);
+    expect(v3.note).toContain("not met");
     expect(SEALED_SET_HASH).toMatch(/^[0-9a-f]{64}$/);
   });
 
