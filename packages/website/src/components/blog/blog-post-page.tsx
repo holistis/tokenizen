@@ -173,11 +173,11 @@ export function BlogPostPage({ post }: { post: BlogPost }) {
     <article className="border-t border-border py-16 md:py-24">
       <div className="container max-w-3xl">
         <a
-          href={`${prefix}/notes`}
+          href={`${prefix}${post.kind === "blog" ? "/blog" : "/notes"}`}
           className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="size-4" aria-hidden="true" />
-          Blog
+          {post.kind === "blog" ? "Blog" : "Notes"}
         </a>
 
         <p className="mt-10 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">

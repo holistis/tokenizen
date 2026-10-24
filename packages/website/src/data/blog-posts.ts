@@ -31,6 +31,13 @@ export type PostBlock =
   | { type: "mission" }
   | { type: "cta"; heading: string; text: string; links: Array<{ label: string; href: string }> };
 
+/**
+ * A blog is a decision, not a default. Only a piece the owner has called a blog gets kind "blog"; everything
+ * else is a note, and the default for new work is "note". Changing a post to "blog" is done when the owner
+ * says "make this a blog", never on our own initiative.
+ */
+export type PostKind = "blog" | "note";
+
 export interface BlogPost {
   /** The part after /notes/ . Lowercase words and dashes. */
   slug: string;
@@ -45,6 +52,8 @@ export interface BlogPost {
   readMinutes: number;
   /** Shown first on the index, whatever its date. For the post a newcomer should read first. */
   pinned?: boolean;
+  /** Which index lists it: /blog for "blog", /notes for "note". */
+  kind: PostKind;
   blocks: PostBlock[];
 }
 
@@ -70,6 +79,7 @@ export const BLOG_POSTS: BlogPost[] = [
     tags: ["Tools", "Measurements"],
     readMinutes: 4,
     pinned: true,
+    kind: "blog",
     blocks: [
       {
         type: "md",
@@ -199,6 +209,7 @@ Money is starting to move between machines. The people who build those machines 
   },
   {
     slug: "official-sources",
+    kind: "note",
     date: "2026-10-24",
     title: "Official sources and payment addresses",
     dek: "Where our paid service lives and where its payments go, so a buyer or an agent can check an address before paying.",
@@ -238,6 +249,7 @@ It also says nothing about how good the scan is. The scan reads the files most l
   },
   {
     slug: "we-measured-our-scan",
+    kind: "note",
     date: "2026-10-24",
     title: "We measured our scan. It found 0 of 40.",
     dek: "What we measured on closed audit contests, what we changed, and how the next test is sealed so that we cannot bend it.",
