@@ -231,7 +231,7 @@ If a listing, a reply or a website gives another address for Bug Bounty Intellig
 
 It covers only the service named above. It does not vouch for any other address, and it changes only through a pull request in the open repository, so its history is public.
 
-It also says nothing about how good the scan is. The scan sends only part of a repository to its analysis step and returns raw hypotheses. The limits, with measured numbers, are at the top of the repository README, and a test on closed audit contests is pre-registered there.`,
+It also says nothing about how good the scan is. The scan reads the files most likely to move funds first, in at most six parts, and returns AI-generated hypotheses to review by hand. In a pre-registered test on seven closed audit contests it found none of the 40 known High and Medium findings, with 29 percent of the in-scope code read. The results, with the misses, are in the repository README.`,
       },
     ],
   },
