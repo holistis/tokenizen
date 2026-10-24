@@ -69,6 +69,23 @@ function VideoBlock({ block }: { block: Extract<PostBlock, { type: "video" }> })
   );
 }
 
+function ImageBlock({ block }: { block: Extract<PostBlock, { type: "image" }> }) {
+  return (
+    <figure className="mt-10">
+      <img
+        src={block.src}
+        alt={block.alt}
+        width={block.width}
+        height={block.height}
+        loading="lazy"
+        decoding="async"
+        className="h-auto w-full rounded-lg border border-border bg-card"
+      />
+      <figcaption className="mt-3 text-sm text-muted-foreground">{block.caption}</figcaption>
+    </figure>
+  );
+}
+
 function FactsBlock({ block, prefix }: { block: Extract<PostBlock, { type: "facts" }>; prefix: string }) {
   return (
     <section className="mt-12">
@@ -124,6 +141,8 @@ function renderBlock(block: PostBlock, index: number, prefix: string): JSX.Eleme
       return <MarkdownLite key={index} source={block.text} />;
     case "video":
       return <VideoBlock key={index} block={block} />;
+    case "image":
+      return <ImageBlock key={index} block={block} />;
     case "facts":
       return <FactsBlock key={index} block={block} prefix={prefix} />;
     case "mission":
