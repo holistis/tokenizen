@@ -33,7 +33,7 @@
     "@x402/evm": "^2.28.0",
     "@x402/express": "^2.28.0",
     "@x402/extensions": "^2.28.0",
-    "agent-receipt-verify": "github:holistis/agent-receipt-verify#3423a7871a983598a3a51481fadfe96c81048864",
+    "agent-receipt-verify": "0.2.9",
     "capacity-attest": "^0.9.0",
     "cors": "^2.8.5",
     "endpoint-attest": "^0.1.0",
