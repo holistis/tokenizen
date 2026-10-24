@@ -249,7 +249,7 @@ It also says nothing about how good the scan is. The scan reads the files most l
   },
   {
     slug: "we-measured-our-scan",
-    kind: "note",
+    kind: "blog",
     date: "2026-10-24",
     title: "We measured our scan. It found 0 of 40.",
     dek: "What we measured on closed audit contests, what we changed, and how the next test is sealed so that we cannot bend it.",
