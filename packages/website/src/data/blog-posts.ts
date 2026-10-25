@@ -208,6 +208,69 @@ Money is starting to move between machines. The people who build those machines 
     ],
   },
   {
+    slug: "free-tools-same-contests",
+    kind: "note",
+    date: "2026-10-25",
+    title: "Two free tools found none of the known findings on the same contests",
+    dek: "We ran Slither and Aderyn with default settings on the contests where our scan was measured. Neither matched a known High or Medium finding. What that says and what it does not.",
+    description:
+      "Slither found 0 of 34 and Aderyn 0 of 70 known findings on the same Code4rena contests, judged like our scan. Static tools are not built for contest logic bugs.",
+    tags: ["Measurements", "Tools"],
+    readMinutes: 2,
+    blocks: [
+      {
+        type: "md",
+        text: `We wanted to know how our scan compares with free tools people already use, on the same contests and with the same two judges. We ran Slither 0.11.6 and Aderyn 0.6.8 with default settings and turned each finding into a hypothesis. The plan was written down with a hash before the judges saw anything.
+
+Neither tool matched a known High or Medium finding. Slither found 0 of 34 on the contests where it ran, and Aderyn 0 of 70. On the same contests our scan found 6 of 34 and 10 of 70 in its first 15 hypotheses. On the four newer contests, which our scan was not built on, it was 3 of 15 against 0 of 15 for each tool.
+
+## What this does not say
+
+- Static tools are not built to find the business-logic flaws that audit contests reward. They are free and fast and find other things, such as patterns and missing checks. A finding of theirs can be a valid Low remark that is not on the list of High and Medium findings.
+- The tools ran on only part of the contests in our setup. Slither ran on 8 of 15 and Aderyn on 10 of 15, and the reasons for the others are listed. A user with a working project setup would get results on more.
+- The older contests may be in the training data of the model behind our scan; the tools do not have that. The judges are language models and this is our own measurement.
+- Small numbers. Read it as a description, not a ranking.
+
+## What you can check
+
+The hypotheses as the judges saw them, every judgement, the list of runs that did not work and the plan file are in [the results folder](https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-10-25-free-tools/README.md), and both tools have a row on the [scoreboard](https://tokenizen.nl/en/scoreboard). The same procedure can be applied to the output of any other tool on the same contests.`,
+      },
+    ],
+  },
+  {
+    slug: "quick-scan-standard-clients",
+    kind: "note",
+    date: "2026-10-25",
+    title: "A standard x402 client can now buy the scan, and a quick scan costs 1 dollar",
+    dek: "The scan endpoint could not be bought by a standard x402 client. That is fixed and checked with two real purchases. The official client also refuses payments above 1 dollar, so there is now a quick scan for exactly that.",
+    description:
+      "A standard x402 client can now buy our scan, checked with real purchases on Base. The official client caps payments at 1 dollar, hence a quick scan for 1.",
+    tags: ["x402", "Tools"],
+    readMinutes: 3,
+    blocks: [
+      {
+        type: "md",
+        text: `Until today the paid scan endpoint accepted only a transaction hash from a payment you had made by hand. It answered 400 to the signed authorization that a standard x402 client such as @x402/fetch sends, although its own 402 answer said that would work. We found this by testing and fixed it.
+
+## Checked with real purchases
+
+A throwaway address bought the full scan (5 dollars) with @x402/fetch 2.28.0 and got a signed receipt back. The six checks on the receipt pass: the signature, the signer of the live offer, the DNS record that binds the signer to the domain, the transaction on Base, the USDC transfer to our payment address, and the payer. It was a self test with our own money, so it is not a customer.
+
+## The 1 dollar cap
+
+The official x402 client refuses a payment above 1 dollar per request unless its owner raises the limit. The scan costs 5 dollars, so a default agent will refuse it. There is now a quick scan for exactly 1 dollar that returns the 15 hypotheses the model is most confident about; the full scan adds 15 more with lower confidence. A second throwaway address bought the quick scan with the default limit left in place, and the same six checks pass.
+
+## What this does not show
+
+- Two purchases, both by us. Nobody else has used it yet.
+- A receipt says that the service saw a payment. It says nothing about how good the report is.
+- The hit rates we published (8 of 105 and 5 of 66) are for the first 15 hypotheses, so they are the numbers of the quick scan.
+
+The transactions, the answers, the delivered reports and the scripts are in the [full scan folder](https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-10-25-v31/standard-client-purchase/README.md) and the [quick scan folder](https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-10-25-v31/quick-scan-purchase/README.md).`,
+      },
+    ],
+  },
+  {
     slug: "scan-newer-contests",
     kind: "note",
     date: "2026-10-25",
