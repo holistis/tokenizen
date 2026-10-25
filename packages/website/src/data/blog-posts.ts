@@ -208,6 +208,83 @@ Money is starting to move between machines. The people who build those machines 
     ],
   },
   {
+    slug: "scan-newer-contests",
+    kind: "note",
+    date: "2026-10-25",
+    title: "The scan held its rate on nine newer contests",
+    dek: "We ran the scan once on nine Code4rena contests from the last year. The first 15 hypotheses held 5 of 66 known findings, the same rate as before. What that says, and a second list in reports.",
+    description:
+      "Our scan found 5 of 66 known findings in its first 15 hypotheses on nine newer Code4rena contests (7.6 percent), the same rate as on Sherlock.",
+    tags: ["Measurements", "Tools"],
+    readMinutes: 3,
+    blocks: [
+      {
+        type: "md",
+        text: `Earlier today we published a run of the scan on 8 Sherlock contests: 8 of 105 known High and Medium findings. Those contests were no longer secret, so the open question was whether the rate holds on contests the scan was not built on.
+
+We ran the scan once on 9 Code4rena contests from September 2025 to March 2026 and had the same two judges compare the results with the known findings in the public final reports. The rule for reading the result was written before the run: 5 percent or more of the known findings in the first 15 hypotheses means it holds.
+
+The first 15 hypotheses held 5 of the 66 known findings (7.6 percent). The first 30 held 8 (12.1 percent). That is the same rate as on Sherlock, so by our own rule it holds.
+
+## What this does not say
+
+- 58 of the 66 known findings were not in the first 15. This is not a scan that finds what a human audit finds.
+- Small numbers and one run per contest. A repeat could land somewhere else.
+- Code4rena reports list the findings that were kept after merging duplicates and removing low ones, so the known list is a different kind of list than on Sherlock.
+- Contests from early 2026 may be in the training data of a model. We do not know the cut-off dates.
+- The Olas contest is bigger than the scan reads, so it read 38 percent of it. The report says so for every scan.
+- The judges are language models. This is our own measurement, not an independent one.
+
+## A second list in reports
+
+A report can now show up to 30 hypotheses, in two lists: the 15 the model is most confident about, and 15 more with lower confidence. On the stored lists the second list held 8 known findings that the first list did not, at a slightly lower precision: about 3 in 100 hypotheses matched a known finding in the second list, against about 4 in 100 in the first. We chose this after seeing the numbers, so it is a product choice and not a pre-registered test.
+
+## One thing we tried and dropped
+
+A free language model that reads the code and picks the best 15 from the whole list did not beat the scan's own ordering. On four held-out sets it matched 5, 6, 7 and 4 known findings against 7, 8, 8 and 7 (some calls failed and count as zero, as the plan said, and we stopped the run before the last few finished). We do not use it.
+
+## What you can check
+
+The judgements of both judges, the whole lists, the plan file with its hash and the limits are in [the results folder](https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-10-25-c4-fresh/README.md), and the row is on the [scoreboard](https://tokenizen.nl/en/scoreboard). How the scan finds things stays private.`,
+      },
+    ],
+  },
+  {
+    slug: "scan-signs-its-offer",
+    kind: "note",
+    date: "2026-10-25",
+    title: "The scan signs its offer, and we paid it once to see the receipt",
+    dek: "The paid scan endpoint now signs its x402 offer, binds the key to its domain in DNS, and returns a signed receipt. We tested it with one real payment of our own.",
+    description:
+      "The scan endpoint signs its x402 offer and returns a signed receipt. One self test on Base mainnet, with a script that checks every step.",
+    tags: ["x402", "Tools"],
+    readMinutes: 3,
+    blocks: [
+      {
+        type: "md",
+        text: `Our paid scan endpoint now declares the offer-receipt extension of x402: the 402 answer carries a signed offer, and the answer to a paid request carries a signed receipt for the payment transaction.
+
+## Check the offer without paying
+
+\`npx -y agent-receipt-verify https://x402.tokenizen.nl/api/bug-intel\` reaches level 2: it asks for payment the way x402 says, declares the extension, and the signature of the offer verifies. The signer is 0xf30b0706E78b3166745E6a2f351992321088058f, a key that only signs and holds no funds. It is bound to the service domain in DNS, as section 4.5.1 of the extension describes: the TXT record at _controllers.x402.tokenizen.nl lists it as a controller.
+
+## One real payment
+
+We paid the endpoint once with 5.1 USDC on Base mainnet, from our own address to our own payment address. That was a self test, so it is not a customer. The service queued the scan, delivered the report 35 seconds later and returned the receipt in the body and in the PAYMENT-RESPONSE header. A script checks six things: the receipt signature recovers to an address, the live offer is signed by the same address, that address is a controller in DNS, the transaction exists on Base, it is a USDC transfer to our payment address, and the payer in the receipt is the sender. All six pass.
+
+## What it does not show
+
+- It shows that the service saw this payment and signed a receipt for it. It says nothing about how good the report is.
+- It is one payment, by us, to ourselves. Nobody else has used the receipt yet.
+- The DNS record was set about 15 minutes after that receipt was issued, and DNS keeps no history.
+- It is a version 1 receipt. The salted commitment of version 2 waits for the specification.
+- The conformance checker still shows level 3 as not measured, because it checks without paying.
+
+The transaction, the answer, the delivered report and the script are in [the evidence folder](https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-10-25-v31/first-real-payment/README.md).`,
+      },
+    ],
+  },
+  {
     slug: "scan-version-3-1",
     kind: "note",
     date: "2026-10-25",
