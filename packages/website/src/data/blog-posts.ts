@@ -208,6 +208,38 @@ Money is starting to move between machines. The people who build those machines 
     ],
   },
   {
+    slug: "scan-version-3-1",
+    kind: "note",
+    date: "2026-10-25",
+    title: "The scan now finds 8 of 105 on the same contests",
+    dek: "A newer version of the scan is live. On the 8 contests of our sealed run it found 8 of 105 known findings, up from 4. What that means and what it does not.",
+    description:
+      "Version 3.1 of our scan found 8 of 105 known findings on the same 8 contests, against 4 and 1 before. Two changes at once, one run.",
+    tags: ["Measurements", "Tools"],
+    readMinutes: 2,
+    blocks: [
+      {
+        type: "md",
+        text: `On 24 October we published a run of our scan on 8 Sherlock contests nobody here had touched. The scan in production found 1 of 105 known High and Medium findings, a newer version 4. Since the evening of 25 October the newer version, V3.1, is what paid scans run on.
+
+We ran it once on the same 8 contests. It found 8 of 105 (7.6 percent). Precision went from 5.0 to 7.5 percent. A scan takes about 20 to 45 seconds and costs us 0.02 to 0.15 dollar.
+
+## What this does not say
+
+- Two things changed at once, a newer model and a fix of which files count, so we cannot say which one did the work.
+- Those contests are no longer secret, and the models may have seen them.
+- It is one run, so a repeat could land anywhere from about 6 to 10.
+- 97 of the 105 known findings were still not found. This is not a scan that finds what a human audit finds.
+
+Before the run we wrote down, in our own notes, how we would read the result: 8 or more is a clear gain. It landed exactly on that line. Those notes are not public and carry no hash, so this is less verifiable than the sealed run.
+
+## What you can check
+
+The judgements of both judges, the hypotheses and the hashes are in [the results folder](https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-10-25-v31/README.md), and the row is on the [scoreboard](https://tokenizen.nl/en/scoreboard). How the scan finds things stays private. The next test that no model can have seen is the contests that appear after today, scored when their results are published. The scoreboard has that row waiting.`,
+      },
+    ],
+  },
+  {
     slug: "official-sources",
     kind: "note",
     date: "2026-10-24",
@@ -260,7 +292,9 @@ It also says nothing about how good the scan is. The scan returns AI-generated h
     blocks: [
       {
         type: "md",
-        text: `Bug Bounty Intelligence reads the Solidity of a public repository and returns a list of hypotheses to check by hand. We sell it for 5 USDC through x402. It is not an audit.
+        text: `Update, 25 October: a newer version of the scan is live and found 8 of 105 on the same contests. See [the note](/notes/scan-version-3-1).
+
+Bug Bounty Intelligence reads the Solidity of a public repository and returns a list of hypotheses to check by hand. We sell it for 5 USDC through x402. It is not an audit.
 
 The first time we measured it, it found none of 40 known findings. We changed it, wrote down a test before running it, and ran that test once on 8 contests that nobody here had run anything on. The version in production found 1 of 105 known findings. The new version found 4. Our own bar was 5 more than production, and it found 3 more. We missed it, so production stays as it is.`,
       },

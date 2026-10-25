@@ -64,6 +64,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://tokenizen.nl/en/notes/scan-version-3-1</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://tokenizen.nl/en/notes/official-sources</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

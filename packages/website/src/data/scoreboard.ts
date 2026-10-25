@@ -52,7 +52,7 @@ export interface ScoreRun {
   links: RunLink[];
 }
 
-export const SCORE_UPDATED = "2026-10-24";
+export const SCORE_UPDATED = "2026-10-25";
 
 export const SEALED_SET_HASH = "de1a23a4aabc17def5145229c8ee4b4b216e25e8a5ec990e0c5bb37620b61ca1";
 export const SEED_BLOCK = { number: 53022890, hash: "0x91b7371d9902f60b3515633ffda7f89f7537bcce9a132a62fef21694f54ddd1d" };
@@ -71,6 +71,20 @@ export const SCORE_RUNS: ScoreRun[] = [
     tunedOn: "not applicable",
     note: "The cleanest test, because no model can have seen the answers. The hash of a system's report is committed before the contest results are published, and scored afterwards with the same two judges. Takes weeks, since results arrive per contest.",
     links: [{ label: "How the judges decide", href: `${REPO}/PREREGISTRATION-v3-2026-10-24.md` }],
+  },
+  {
+    id: "v31-same-eight",
+    date: "2026-10-25",
+    title: "Version 3.1 on the same eight contests",
+    system: "Version 3.1 of the scan, live since the evening of 25 October",
+    set: "The 8 contests of the sealed run, 105 known findings. No longer secret: their results were published on 24 October",
+    status: "measured",
+    known: 105,
+    found: 8,
+    hypotheses: 120,
+    tunedOn: "no",
+    note: "6 of 59 easy findings, 1 of 14 middle, 1 of 32 hard. Precision 7.5 percent, about 20 to 45 seconds and 0.02 to 0.15 dollar per scan. Two things changed at once, a newer model and a fix of which files count, so we cannot say which one did the work. One run, so a repeat could land between about 6 and 10. The models may have seen these contests. 97 of 105 known findings were still not found. The rule for reading the result was written in our own notes before the run, which are not public, so this row is less verifiable than the sealed run.",
+    links: [{ label: "The results, judgements and hashes", href: `${REPO}/results/2026-10-25-v31/README.md` }],
   },
   {
     id: "sealed-v3",
@@ -94,7 +108,7 @@ export const SCORE_RUNS: ScoreRun[] = [
     id: "sealed-s0",
     date: "2026-10-24",
     title: "The sealed run: the scan as it runs",
-    system: "Version 2.1 of the scan, the one in production, with the pattern block",
+    system: "Version 2.1 of the scan, the one in production until the evening of 25 October, with the pattern block",
     set: "Sealed set: 8 contests, 105 known findings",
     status: "measured",
     known: 105,
