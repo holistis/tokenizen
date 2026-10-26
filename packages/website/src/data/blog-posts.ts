@@ -39,7 +39,7 @@ export interface MatrixRow {
 export type PostBlock =
   | { type: "md"; text: string }
   | { type: "video"; src: string; poster: string; caption: string; transcript: string[] }
-  | { type: "image"; src: string; alt: string; caption: string; width: number; height: number }
+  | { type: "image"; src: string; alt: string; caption?: string; width: number; height: number }
   | { type: "facts"; heading: string; intro: string; items: FactItem[] }
   | { type: "matrix"; heading: string; intro: string; columns: string[]; rows: MatrixRow[]; note: string }
   | { type: "mission" }
@@ -625,7 +625,6 @@ So a report that lists everything can score high. A recall ruler measures recall
         type: "image",
         src: "/media/ruler-and-the-misses-3.webp",
         alt: "A dark industrial control hall with a wall of glass tiles in six rows and seven columns, one whole row glowing steady green, two small silhouettes watching from a gantry.",
-        caption: "Everything dim except the one row that is lit, which is what each vendor puts on the table. Illustration generated with AI.",
         width: 1376,
         height: 768,
       },

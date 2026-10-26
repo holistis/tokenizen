@@ -81,7 +81,7 @@ function ImageBlock({ block }: { block: Extract<PostBlock, { type: "image" }> })
         decoding="async"
         className="h-auto w-full rounded-lg border border-border bg-card"
       />
-      <figcaption className="mt-3 text-sm text-muted-foreground">{block.caption}</figcaption>
+      {block.caption ? <figcaption className="mt-3 text-sm text-muted-foreground">{block.caption}</figcaption> : null}
     </figure>
   );
 }

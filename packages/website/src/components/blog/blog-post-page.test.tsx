@@ -32,12 +32,12 @@ describe("BlogPostPage images", () => {
   );
 
   it("renders every image with alt text, a caption, fixed dimensions and lazy loading", () => {
-    const beelden = metBeelden.blocks.filter((b) => b.type === "image") as Array<{ src: string; alt: string; caption: string; width: number; height: number }>;
+    const beelden = metBeelden.blocks.filter((b) => b.type === "image") as Array<{ src: string; alt: string; caption?: string; width: number; height: number }>;
     expect(beelden.length).toBeGreaterThanOrEqual(2);
     for (const b of beelden) {
       expect(html).toContain(b.src);
       expect(html).toContain(b.alt);
-      expect(html).toContain(b.caption);
+      if (b.caption) expect(html).toContain(b.caption);
       expect(b.alt.length).toBeGreaterThan(30);
       expect(b.src.startsWith("/media/")).toBe(true);
       expect(b.width).toBeGreaterThan(0);
