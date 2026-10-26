@@ -760,6 +760,8 @@ The first runs every test vector for that section and prints a verdict for each.
 
 ## Why we publish the misses
 
+On 26 October three people outside our team ran the recompute script from a fresh clone and got the same totals as ours: ruiruii, AgenticFinanceGraph and Tom Smart (smartflowproai-lang) ([issue 41](https://github.com/holistis/bug-bounty-intelligence-mcp/issues/41)). They checked the arithmetic from the verdict files to the table. They did not check whether the judges were right, and nobody has checked the 117 against the benchmark own configs yet.
+
 We publish what lets you check instead of trust: the price on the page, the raw output, both verdicts, the receipt, the DNS record, the script that recomputes the totals, and the misses. If you find an error, send it. We correct it in public.
 
 For engineers who build scanners, facilitators or agents: the ruler is public, the grader is public, and the verdict files here are a template you can copy.`,
