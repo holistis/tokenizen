@@ -438,7 +438,7 @@ It also says nothing about how good the scan is. The scan returns AI-generated h
     kind: "blog",
     date: "2026-10-24",
     title: "We measured our scan. It found 4 of 105.",
-    dek: "The first measurement found 0 of 40. This one was written down before it ran, on contests nobody here had touched. It missed its own bar, and we are publishing it anyway.",
+    dek: "The first two measurements found nothing, 0 of 31 and then 0 of 40. This one was written down before it ran, on contests nobody here had touched. It missed its own bar, and we are publishing it anyway.",
     description:
       "On 8 sealed audit contests our scan in production found 1 of 105 known findings, a new version 4. Our bar was 5 more, so production stays as it is.",
     tags: ["Measurements", "Tools"],
@@ -446,11 +446,13 @@ It also says nothing about how good the scan is. The scan returns AI-generated h
     blocks: [
       {
         type: "md",
-        text: `Update, 25 October: a newer version of the scan is live and found 8 of 105 on the same contests. See [the note](/notes/scan-version-3-1).
+        text: `Correction, 26 October: this note first said that the first measurement found 0 of 40, and that the scan found none of 40 the first time. The first measurement found 0 of 31. The 0 of 40 is version 2, which added 9 findings from three new contests to those 31. The numbers in the result files were right, the note mixed them. See [the errata](https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/ERRATA.md).
+
+Update, 25 October: a newer version of the scan is live and found 8 of 105 on the same contests. See [the note](/notes/scan-version-3-1).
 
 Bug Bounty Intelligence reads the Solidity of a public repository and returns a list of hypotheses to check by hand. We sell it for 5 USDC through x402. It is not an audit.
 
-The first time we measured it, it found none of 40 known findings. We changed it, wrote down a test before running it, and ran that test once on 8 contests that nobody here had run anything on. The version in production found 1 of 105 known findings. The new version found 4. Our own bar was 5 more than production, and it found 3 more. We missed it, so production stays as it is.`,
+The first two times we measured it, it found none of the known findings, 0 of 31 and then 0 of 40. We changed it, wrote down a test before running it, and ran that test once on 8 contests that nobody here had run anything on. The version in production found 1 of 105 known findings. The new version found 4. Our own bar was 5 more than production, and it found 3 more. We missed it, so production stays as it is.`,
       },
       {
         type: "image",
