@@ -10,7 +10,7 @@ function allText(post: BlogPost): string[] {
   for (const block of post.blocks as PostBlock[]) {
     if (block.type === "md") out.push(block.text);
     if (block.type === "video") out.push(block.caption, ...block.transcript);
-    if (block.type === "image") out.push(block.alt, block.caption);
+    if (block.type === "image") out.push(block.alt, ...(block.caption ? [block.caption] : []));
     if (block.type === "facts") {
       out.push(block.heading, block.intro);
       for (const item of block.items) out.push(item.value, item.label, item.hrefLabel);
