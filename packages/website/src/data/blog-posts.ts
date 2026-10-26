@@ -572,7 +572,7 @@ The split can be recomputed with the script in the repository, the set hash from
         type: "md",
         text: `Some vendors of AI audit tools quote one number, 67 percent or 97 percent. Most of the public pages we read do not say how many wrong findings came with it, and we found none that lets you recompute the result from its outputs.
 
-We ran our scan once on the public benchmark everyone quotes, with no tuning for this run, and published all of it: the precision next to the recall, the 18 audits where nothing passed both judges, and the verdict of both judges on every one of 1,537 hypotheses. Below: what we found, what the ruler cannot see, and how the scan has changed from one version to the next.`,
+Our scan found 29 of the 117 known findings on the public benchmark everyone quotes. Of the 1,537 hypotheses it wrote, 45 matched one, and in 18 of the 40 audits nothing passed both judges. We ran it once, with no tuning for this run, and published all of it: the raw output, the verdict of both judges on every hypothesis, and the script that recomputes the totals. Below: what the ruler cannot see, who else shows what, and how the scan has changed from one version to the next.`,
       },
       {
         type: "image",
@@ -625,7 +625,7 @@ So a report that lists everything can score high. A recall ruler measures recall
         type: "image",
         src: "/media/ruler-and-the-misses-3.webp",
         alt: "A dark industrial control hall with a wall of glass tiles in six rows and seven columns, one whole row glowing steady green, two small silhouettes watching from a gantry.",
-        caption: "Everything dim except the row that is lit: what each vendor puts on the table. Illustration generated with AI.",
+        caption: "Everything dim except the one row that is lit, which is what each vendor puts on the table. Illustration generated with AI.",
         width: 1376,
         height: 768,
       },
@@ -700,6 +700,14 @@ So a report that lists everything can score high. A recall ruler measures recall
       },
       {
         type: "md",
+        text: `Count the green cells in the first row. Then check how many of the other four rows you could recompute yourself.
+
+## Put your row in the table
+
+If you build or sell a scanner, run it on this ruler and publish your raw output and your verdicts. Open an issue on [the results repository](https://github.com/holistis/bug-bounty-intelligence-mcp/issues/new) with the link. We add your row to this table as you give it, with your numbers and your name, and we run the same recompute script over your files. A row we cannot check stays grey, and we write what we looked for.`,
+      },
+      {
+        type: "md",
         text: `## Getting better, in public
 
 Scans say they learn. This is our version history, on the same eight Sherlock contests and the same two judges, strict, 105 known findings ([the results](https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-10-25-v31/README.md)):
@@ -708,11 +716,21 @@ Scans say they learn. This is our version history, on the same eight Sherlock co
 - The first run of the next version: 4 of 105.
 - Version 3.1, live since the evening of 25 October: 8 of 105.
 
-Then the same version on nine fresh Code4rena contests from the last year: 5 of 66 in the first 15 hypotheses and 8 of 66 in the first 30 ([the results](https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-10-25-c4-fresh/README.md)). On this ruler, High findings only, it is 23 of 117 in the first 15 hypotheses and 29 in the first 30. That is a different count from the steps above, not the next step.
+Then the same version on nine fresh Code4rena contests from the last year: 5 of 66 in the first 15 hypotheses and 8 of 66 in the first 30 ([the results](https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-10-25-c4-fresh/README.md)). On this ruler, High findings only, it is 23 of 117 in the first 15 hypotheses and 29 in the first 30. It is a different count from the steps above and not the next step.
 
 We also tried four ways of ranking the list better. None cleared the bar we had set, so the scan stays at 3.1. Those notes are not published yet. From now on a version replaces the last one only if it beats it on a fresh set under a rule written first. Version 3.1 was promoted on the same eight Sherlock contests, and the fresh Code4rena check came after it went live. The first time we measured the scan it found nothing ([that note](/notes/we-measured-our-scan)). We changed it and wrote it up.
 
 For version 3 the bar was committed to the repository before the run, and you can read the history ([the pre-registration](https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/PREREGISTRATION-v3-2026-10-24.md)). For 3.1 and for this ruler it was written in our own notes, so for those you have our word for the order.`,
+      },
+      {
+        type: "md",
+        text: `## The counting rule has a name
+
+We call our way of counting the Two-Judge Strict Rule. A hypothesis counts only if two judges from different model families name the same known finding, and a valid hypothesis that is missing from the known list counts as wrong. The eight items are in one file ([the rule](https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/MEASUREMENT-RULE-two-judge-strict.md)). Anyone can report a result under the name, or say which item they depart from.
+
+The next measurement is fixed before it runs. It uses the first eight Code4rena contests whose final report appears after 1 November 2026, in order of publication, so nobody picks them. Version 3.1 is measured on them, and a candidate version replaces it only if it finds more and is not less precise. We publish the result whatever it is ([the pre-registration](https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/PREREGISTRATION-next-run-2026-10-26.md)).
+
+Both files were stamped on Bitcoin with OpenTimestamps before we committed them, and the proof files sit next to them. A stamp stays pending until a Bitcoin block includes it, which usually takes a few hours, so verify the proof again later with the OpenTimestamps tool.`,
       },
       {
         type: "image",
@@ -728,7 +746,7 @@ For version 3 the bar was committed to the repository before the run, and you ca
 
 The scan pays and proves through x402, the open standard that lets software agents pay for an HTTP resource. While we measured, three things happened around the x402 specification that we did not plan. The author of an open pull request for a new section (ruiruii, [the thread](https://github.com/x402-foundation/x402/pull/3776)) closed three points from our review within hours, and the draft links our test vectors as their interim location. It is still a draft and not a decision of the maintainers. On 26 October we reviewed those vectors ourselves, with AI reviewers that had not written them, and found real defects in our own checker: one let a collapsed identity pass, one read a Latin-1 body as windows-1252. We fixed them, released the fix as version 0.2.20 and said so in the same thread. The set is now 62 vectors over twelve clauses. Fourteen of them are known answers for seven inputs, each a right value and a wrong one, and we computed the right values twice, in JavaScript and in Python, with the same result. We wrote both, so the check by someone else is still to come, and we asked the section author to run theirs.
 
-The third: smartflowproai-lang, who builds a community x402 validator and is not part of our team, added our endpoint to their table as an observed row, and added a finality field after we closed the gap they had named in our checking tool. Later they read our DNS record through four resolvers and marked the signer as bound to our domain ([the thread](https://github.com/x402-foundation/x402/issues/3396)). That is one person's tool, not a review by the specification.
+The third: smartflowproai-lang, who builds a community x402 validator and is not part of our team, added our endpoint to their table as an observed row, and added a finality field after we closed the gap they had named in our checking tool. Later they read our DNS record through four resolvers and marked the signer as bound to our domain ([the thread](https://github.com/x402-foundation/x402/issues/3396)). This is one person's tool and not a review by the specification.
 
 You can run the checks yourself, with no account and no key:
 
@@ -748,7 +766,7 @@ For engineers who build scanners, facilitators or agents: the ruler is public, t
       {
         type: "image",
         src: "/media/ruler-and-the-misses-2.webp",
-        alt: "An open ledger whose pages are clear glass, lines of light visible through every page, a brass stamp pressing a glowing hexagonal seal into it, thin beams running to a small brass balance beside it.",
+        alt: "An open ledger on an old oak desk beside a window, sheets of clear glass lying over its ruled pages so the figures show through, a brass handstamp and a small brass balance resting on the page, a stack of thread-bound papers behind.",
         caption: "A ledger you can see through, stamped and weighed. Illustration generated with AI.",
         width: 1376,
         height: 768,
@@ -760,13 +778,13 @@ For engineers who build scanners, facilitators or agents: the ruler is public, t
 - This is not an audit. The scan missed 88 of the 117 known findings, and in 18 of the 40 audits it found nothing both judges accept.
 - The ruler counts only high severity findings. The 29 older audits (2023 and 2024) are public and may be in the training data of the models behind the scan and the judges. The 7 newest audits are the cleanest and the smallest sample: 4 of 14.
 - Our counting is not the benchmark's. It asks, per known finding, whether the whole report describes it. We ask, per hypothesis, whether it matches a known finding, with two judges. Our one judge number of 41 of 117 is therefore not comparable to a vendor's 67 percent.
-- The precision of 2.9 percent is a floor. A hypothesis that is valid but is not in the known list counts as wrong, and we did not measure how many of those there are.
+- Precision of 2.9 percent is a floor. A hypothesis that is valid but is not in the known list counts as wrong, and we did not measure how many of those there are.
 - Each audit was run once, so we cannot give a spread. Both judges are language models, and their verdicts are published so that you can check them.
 - 4 of the 40 audits overlap contests we tuned on earlier. Without them the scan found 27 of 110 in its first 30 hypotheses.
-- The public configs of the benchmark list 117 findings and its paper says 120. We used the 117 that can be checked.
-- The rules for this run were written in our notes before the scan. We anchored them on Bitcoin only after the run, so the anchor does not prove the order. From now on we anchor before.
+- Public configs of the benchmark list 117 findings and its paper says 120. We used the 117 that can be checked.
+- Our rules for this run were written in our notes before the scan. We anchored them on Bitcoin only after the run, so the anchor does not prove the order for this measurement. For the next one the order is provable, because the rule and the pre-registration were stamped before we committed them.
 - 3 of the 3,074 judge answers could not be read and count as no match.
-- The matrix shows what we read on public pages on one day, not what a vendor may show its customers.`,
+- Matrix cells show what we read on public pages on one day, not what a vendor may show its customers.`,
       },
       {
         type: "cta",
@@ -774,6 +792,8 @@ For engineers who build scanners, facilitators or agents: the ruler is public, t
         text: "Recompute the totals, read the misses, run the checks. If you find a mistake, we correct it in public.",
         links: [
           { label: "The results and the script", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-10-26-evmbench" },
+          { label: "The next measurement, fixed in advance", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/PREREGISTRATION-next-run-2026-10-26.md" },
+          { label: "Put your row in the table", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/issues/new" },
           { label: "The x402 section (open pull request)", href: "https://github.com/x402-foundation/x402/pull/3776" },
           { label: "The checks", href: "https://github.com/holistis/agent-receipt-verify" },
         ],
