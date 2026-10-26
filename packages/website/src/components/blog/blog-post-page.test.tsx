@@ -135,3 +135,30 @@ describe("BlogIndex", () => {
     expect(renderIndex("nl")).toContain(">Blog<");
   });
 });
+
+describe("BlogPostPage matrix", () => {
+  const withMatrix = BLOG_POSTS.find((p) => p.slug === "the-ruler-and-the-misses")!;
+  const html = renderToStaticMarkup(
+    <LocaleProvider locale="en">
+      <BlogPostPage post={withMatrix} />
+    </LocaleProvider>,
+  );
+  const matrix = withMatrix.blocks.find((b) => b.type === "matrix") as Extract<(typeof withMatrix.blocks)[number], { type: "matrix" }>;
+
+  it("renders one table with a header cell per column and a row header per vendor", () => {
+    expect(html.match(/<table/g)?.length).toBe(1);
+    for (const column of matrix.columns) expect(html).toContain(column);
+    for (const row of matrix.rows) expect(html).toContain(row.label);
+    expect((html.match(/scope="row"/g) ?? []).length).toBe(matrix.rows.length);
+  });
+
+  it("says each cell's tone in words for readers who do not see colour", () => {
+    expect(html).toContain("yes: ");
+    expect(html).toContain("partly: ");
+    expect(html).toContain("no: ");
+  });
+
+  it("links every vendor row to a page a stranger can open", () => {
+    for (const row of matrix.rows) expect(html).toContain(row.href);
+  });
+});

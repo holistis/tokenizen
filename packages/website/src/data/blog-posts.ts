@@ -23,11 +23,25 @@ export interface FactItem {
   hrefLabel: string;
 }
 
+/** One cell of a comparison matrix. The tone is also written out in words for readers who do not see colour. */
+export interface MatrixCell {
+  text: string;
+  tone: "yes" | "partial" | "no";
+}
+
+export interface MatrixRow {
+  label: string;
+  /** Where a stranger can check what the row says. */
+  href: string;
+  cells: MatrixCell[];
+}
+
 export type PostBlock =
   | { type: "md"; text: string }
   | { type: "video"; src: string; poster: string; caption: string; transcript: string[] }
   | { type: "image"; src: string; alt: string; caption: string; width: number; height: number }
   | { type: "facts"; heading: string; intro: string; items: FactItem[] }
+  | { type: "matrix"; heading: string; intro: string; columns: string[]; rows: MatrixRow[]; note: string }
   | { type: "mission" }
   | { type: "cta"; heading: string; text: string; links: Array<{ label: string; href: string }> };
 
@@ -539,6 +553,229 @@ The split can be recomputed with the script in the repository, the set hash from
           { label: "The sealed results", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-10-24-sealed/README.md" },
           { label: "The pre-registration and its addendum", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/PREREGISTRATION-v3-2026-10-24.md" },
           { label: "The repository", href: "https://github.com/holistis/bug-bounty-intelligence-mcp" },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "the-ruler-and-the-misses",
+    date: "2026-10-26",
+    title: "The ruler and the misses",
+    dek: "We put our smart contract scan on the public benchmark everyone quotes, published the precision and every miss next to the recall, and left the verdicts open so you can recompute the numbers in a minute.",
+    description:
+      "Our contract scan on the EVMbench ruler: 29 of 117 found, 2.9 percent precision, 18 audits with nothing. Every verdict is public. What the ruler cannot see.",
+    tags: ["benchmark", "evmbench", "measurement", "x402"],
+    readMinutes: 7,
+    kind: "blog",
+    blocks: [
+      {
+        type: "md",
+        text: `Some vendors of AI audit tools quote one number, 67 percent or 97 percent. Most of the public pages we read do not say how many wrong findings came with it, and we found none that lets you recompute the result from its outputs.
+
+We ran our scan once on the public benchmark everyone quotes, with no tuning for this run, and published all of it: the precision next to the recall, the 18 audits where nothing passed both judges, and the verdict of both judges on every one of 1,537 hypotheses. Below: what we found, what the ruler cannot see, and how the scan has changed from one version to the next.`,
+      },
+      {
+        type: "image",
+        src: "/media/ruler-and-the-misses-1.webp",
+        alt: "A long glass ruler with engraved brass ticks on a dark slate workbench, one glowing hexagonal wax seal resting on a single mark, crumpled paper reports piled at its far end.",
+        caption: "One ruler, one seal on one mark: the number is whatever it is. Illustration generated with AI.",
+        width: 1376,
+        height: 768,
+      },
+      {
+        type: "facts",
+        heading: "The numbers",
+        intro: "40 audits, 117 known high severity findings, one run each, two judges from different model families. Each number has the place where you can check it.",
+        items: [
+          {
+            value: "29 of 117",
+            label: "Known findings the scan found in its first 30 hypotheses, with both judges naming the same finding. The whole list holds the same 29.",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-10-26-evmbench/evmbench-40.json",
+            hrefLabel: "evmbench-40.json",
+          },
+          {
+            value: "41 of 117",
+            label: "The same list when one judge is enough, which is the closest we can get to how the benchmark counts. 49 of 117 on the whole list.",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-10-26-evmbench/judge",
+            hrefLabel: "the verdicts",
+          },
+          {
+            value: "2.9 percent",
+            label: "Precision, strict: 45 of the 1,537 hypotheses match a known finding, and several can hit the same one. The benchmark does not count this at all.",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-10-26-evmbench/totals.json",
+            hrefLabel: "totals.json",
+          },
+          {
+            value: "18 of 40",
+            label: "Audits where nothing the scan said was accepted by both judges. Every one of them is in the table, next to the audits where it worked.",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-10-26-evmbench/README.md",
+            hrefLabel: "the README",
+          },
+        ],
+      },
+      {
+        type: "md",
+        text: `## What the ruler cannot see
+
+EVMbench is a good public ruler: real audit contests, a fixed commit for each, a published grader. We read the grader. For every known finding it asks a language model whether the audit report describes it, and it adds up the yes answers. Nothing in it counts a finding that is wrong ([the grader code](https://github.com/openai/frontier-evals/blob/main/project/evmbench/evmbench/nano/grade/detect.py)). The authors of one of the tools measured on it say the same: the benchmark does not evaluate false positives ([their write-up](https://auditagent.nethermind.io/blog/auditagent-on-evmbench-40-repositories-120-vulnerabilities-no-repos-skipped)).
+
+So a report that lists everything can score high. A recall ruler measures recall and was never meant to count wrong findings. One recall number is therefore half a measurement, and the other half is the precision, the misses and the method. We put all of them on the table.`,
+      },
+      {
+        type: "image",
+        src: "/media/ruler-and-the-misses-3.webp",
+        alt: "A dark industrial control hall with a wall of glass tiles in six rows and seven columns, one whole row glowing steady green, two small silhouettes watching from a gantry.",
+        caption: "Everything dim except the row that is lit: what each vendor puts on the table. Illustration generated with AI.",
+        width: 1376,
+        height: 768,
+      },
+      {
+        type: "matrix",
+        heading: "Who shows what",
+        intro: "We read each public page on 26 October 2026. A grey cell means we did not find it there. That is not proof that it does not exist, and if we missed something, tell us and we will correct it in public. These columns are the ones we publish, and a vendor would pick others.",
+        columns: ["Price on the page", "Recall number", "Precision", "Outputs you can recompute", "Receipt you can verify", "Agent pays, no account"],
+        rows: [
+          {
+            label: "Us",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-10-26-evmbench",
+            cells: [
+              { text: "1 and 5 dollars, no account", tone: "yes" },
+              { text: "29 of 117 strict, 41 with one judge", tone: "yes" },
+              { text: "2.9 percent strict, a floor, because only known findings count", tone: "partial" },
+              { text: "Raw hypotheses, both verdicts, a script that recomputes the totals", tone: "yes" },
+              { text: "Signed offer and receipt, the signer bound to our domain in DNS", tone: "yes" },
+              { text: "USDC on Base through x402", tone: "yes" },
+            ],
+          },
+          {
+            label: "Nethermind AuditAgent",
+            href: "https://auditagent.nethermind.io/blog/auditagent-on-evmbench-40-repositories-120-vulnerabilities-no-repos-skipped",
+            cells: [
+              { text: "Not found. A 50 dollar credit offer is linked.", tone: "no" },
+              { text: "67 percent, 80 of 120, from their own run", tone: "partial" },
+              { text: "Not published", tone: "no" },
+              { text: "The benchmark and its grader are public. Their outputs are not linked.", tone: "partial" },
+              { text: "Not found", tone: "no" },
+              { text: "Not found", tone: "no" },
+            ],
+          },
+          {
+            label: "Octane",
+            href: "https://octane.security",
+            cells: [
+              { text: "Not found", tone: "no" },
+              { text: "A 97.4 percent true positive rate. No sample size or method on the page we read.", tone: "partial" },
+              { text: "Not published", tone: "no" },
+              { text: "Four CVEs are claimed by product name. The rate cannot be checked.", tone: "partial" },
+              { text: "Not found", tone: "no" },
+              { text: "Not found", tone: "no" },
+            ],
+          },
+          {
+            label: "Almanax",
+            href: "https://almanax.ai",
+            cells: [
+              { text: "Not found. A 7 day trial is offered.", tone: "no" },
+              { text: "None published", tone: "no" },
+              { text: "None published", tone: "no" },
+              { text: "SOC 2 Type II is claimed on the page. We found no accuracy figure.", tone: "partial" },
+              { text: "Not found", tone: "no" },
+              { text: "Not found", tone: "no" },
+            ],
+          },
+          {
+            label: "Sherlock AI",
+            href: "https://sherlock.xyz/post/controlled-benchmark-chatgpt-and-claude-vs-sherlock-ai",
+            cells: [
+              { text: "Not found", tone: "no" },
+              { text: "No recall published", tone: "no" },
+              { text: "About 55 percent on one project in their own test: 21 valid out of 38 reported", tone: "partial" },
+              { text: "The method is described. The triage sheet is not published.", tone: "partial" },
+              { text: "Not found", tone: "no" },
+              { text: "Not found", tone: "no" },
+            ],
+          },
+        ],
+        note: "Sources are the pages linked in the first column, read on 26 October 2026. Prices, numbers and tests change, and a vendor may show customers more than its public page does. Our recall counts high severity findings on our own basis, so 41 of 117 and a vendor's 67 percent are not comparable.",
+      },
+      {
+        type: "md",
+        text: `## Getting better, in public
+
+Scans say they learn. This is our version history, on the same eight Sherlock contests and the same two judges, strict, 105 known findings ([the results](https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-10-25-v31/README.md)):
+
+- The scan in production until 25 October: 1 of 105.
+- The first run of the next version: 4 of 105.
+- Version 3.1, live since the evening of 25 October: 8 of 105.
+
+Then the same version on nine fresh Code4rena contests from the last year: 5 of 66 in the first 15 hypotheses and 8 of 66 in the first 30 ([the results](https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-10-25-c4-fresh/README.md)). On this ruler, High findings only, it is 23 of 117 in the first 15 hypotheses and 29 in the first 30. That is a different count from the steps above, not the next step.
+
+We also tried four ways of ranking the list better. None cleared the bar we had set, so the scan stays at 3.1. Those notes are not published yet. From now on a version replaces the last one only if it beats it on a fresh set under a rule written first. Version 3.1 was promoted on the same eight Sherlock contests, and the fresh Code4rena check came after it went live. The first time we measured the scan it found nothing ([that note](/notes/we-measured-our-scan)). We changed it and wrote it up.
+
+For version 3 the bar was committed to the repository before the run, and you can read the history ([the pre-registration](https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/PREREGISTRATION-v3-2026-10-24.md)). For 3.1 and for this ruler it was written in our own notes, so for those you have our word for the order.`,
+      },
+      {
+        type: "image",
+        src: "/media/ruler-and-the-misses-4.webp",
+        alt: "A brass and glass orrery of nested rings, each ring a little larger and brighter than the last, a thin spiral of light moving outward across the rings, small glowing cubes resting on them.",
+        caption: "Each ring a version, each version measured against the last. Illustration generated with AI.",
+        width: 1376,
+        height: 768,
+      },
+      {
+        type: "md",
+        text: `## Next to the x402 specification
+
+The scan pays and proves through x402, the open standard that lets software agents pay for an HTTP resource. While we measured, three things happened around the x402 specification that we did not plan. The author of an open pull request for a new section (ruiruii, [the thread](https://github.com/x402-foundation/x402/pull/3776)) closed three points from our review within hours, and the draft links our test vectors as their interim location. It is still a draft and not a decision of the maintainers. On 26 October we reviewed those vectors ourselves, with AI reviewers that had not written them, and found real defects in our own checker: one let a collapsed identity pass, one read a Latin-1 body as windows-1252. We fixed them, released the fix as version 0.2.20 and said so in the same thread. The set is now 62 vectors over twelve clauses. Fourteen of them are known answers for seven inputs, each a right value and a wrong one, and we computed the right values twice, in JavaScript and in Python, with the same result. We wrote both, so the check by someone else is still to come, and we asked the section author to run theirs.
+
+The third: smartflowproai-lang, who builds a community x402 validator and is not part of our team, added our endpoint to their table as an observed row, and added a finality field after we closed the gap they had named in our checking tool. Later they read our DNS record through four resolvers and marked the signer as bound to our domain ([the thread](https://github.com/x402-foundation/x402/issues/3396)). That is one person's tool, not a review by the specification.
+
+You can run the checks yourself, with no account and no key:
+
+\`\`\`
+npx -y agent-receipt-verify attempt-identity
+npx -y agent-receipt-verify https://x402.tokenizen.nl/api/bug-intel-quick
+\`\`\`
+
+The first runs every test vector for that section and prints a verdict for each. The second asks the scan for payment without paying, and checks that the offer is signed. The signer is bound to our domain in DNS, as section 4.5.1 of the offer-and-receipt extension describes.
+
+## Why we publish the misses
+
+We publish what lets you check instead of trust: the price on the page, the raw output, both verdicts, the receipt, the DNS record, the script that recomputes the totals, and the misses. If you find an error, send it. We correct it in public.
+
+For engineers who build scanners, facilitators or agents: the ruler is public, the grader is public, and the verdict files here are a template you can copy.`,
+      },
+      {
+        type: "image",
+        src: "/media/ruler-and-the-misses-2.webp",
+        alt: "An open ledger whose pages are clear glass, lines of light visible through every page, a brass stamp pressing a glowing hexagonal seal into it, thin beams running to a small brass balance beside it.",
+        caption: "A ledger you can see through, stamped and weighed. Illustration generated with AI.",
+        width: 1376,
+        height: 768,
+      },
+      {
+        type: "md",
+        text: `## What we do not claim
+
+- This is not an audit. The scan missed 88 of the 117 known findings, and in 18 of the 40 audits it found nothing both judges accept.
+- The ruler counts only high severity findings. The 29 older audits (2023 and 2024) are public and may be in the training data of the models behind the scan and the judges. The 7 newest audits are the cleanest and the smallest sample: 4 of 14.
+- Our counting is not the benchmark's. It asks, per known finding, whether the whole report describes it. We ask, per hypothesis, whether it matches a known finding, with two judges. Our one judge number of 41 of 117 is therefore not comparable to a vendor's 67 percent.
+- The precision of 2.9 percent is a floor. A hypothesis that is valid but is not in the known list counts as wrong, and we did not measure how many of those there are.
+- Each audit was run once, so we cannot give a spread. Both judges are language models, and their verdicts are published so that you can check them.
+- 4 of the 40 audits overlap contests we tuned on earlier. Without them the scan found 27 of 110 in its first 30 hypotheses.
+- The public configs of the benchmark list 117 findings and its paper says 120. We used the 117 that can be checked.
+- The rules for this run were written in our notes before the scan. We anchored them on Bitcoin only after the run, so the anchor does not prove the order. From now on we anchor before.
+- 3 of the 3,074 judge answers could not be read and count as no match.
+- The matrix shows what we read on public pages on one day, not what a vendor may show its customers.`,
+      },
+      {
+        type: "cta",
+        heading: "Break our numbers",
+        text: "Recompute the totals, read the misses, run the checks. If you find a mistake, we correct it in public.",
+        links: [
+          { label: "The results and the script", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-10-26-evmbench" },
+          { label: "The x402 section (open pull request)", href: "https://github.com/x402-foundation/x402/pull/3776" },
+          { label: "The checks", href: "https://github.com/holistis/agent-receipt-verify" },
         ],
       },
     ],

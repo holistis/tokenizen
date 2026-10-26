@@ -15,6 +15,10 @@ function allText(post: BlogPost): string[] {
       out.push(block.heading, block.intro);
       for (const item of block.items) out.push(item.value, item.label, item.hrefLabel);
     }
+    if (block.type === "matrix") {
+      out.push(block.heading, block.intro, block.note, ...block.columns);
+      for (const row of block.rows) out.push(row.label, ...row.cells.map((c) => c.text));
+    }
     if (block.type === "cta") out.push(block.heading, block.text, ...block.links.map((l) => l.label));
   }
   out.push(MISSION.headline, MISSION.text, ...MISSION.promises.flatMap((p) => [p.name, p.text]));
@@ -28,6 +32,7 @@ function allHrefs(post: BlogPost): string[] {
       for (const m of block.text.matchAll(/\]\(([^)\s]+)\)/g)) hrefs.push(m[1]!);
     }
     if (block.type === "facts") hrefs.push(...block.items.map((i) => i.href));
+    if (block.type === "matrix") hrefs.push(...block.rows.map((r) => r.href));
     if (block.type === "cta") hrefs.push(...block.links.map((l) => l.href));
   }
   return hrefs;
@@ -123,6 +128,20 @@ describe("BLOG_POSTS", () => {
           expect(item.value.length).toBeGreaterThan(0);
           expect(item.label.length).toBeGreaterThan(20);
           expect(item.href.length).toBeGreaterThan(0);
+        }
+      }
+    }
+  });
+
+  it("gives every matrix row one cell per column and a link", () => {
+    for (const post of BLOG_POSTS) {
+      for (const block of post.blocks) {
+        if (block.type !== "matrix") continue;
+        expect(block.columns.length).toBeGreaterThan(1);
+        for (const row of block.rows) {
+          expect(row.cells.length).toBe(block.columns.length);
+          expect(row.href.length).toBeGreaterThan(0);
+          for (const cell of row.cells) expect(cell.text.length).toBeGreaterThan(0);
         }
       }
     }
