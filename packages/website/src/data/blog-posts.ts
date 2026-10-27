@@ -803,6 +803,37 @@ For engineers who build scanners, facilitators or agents: the ruler is public, t
       },
     ],
   },
+  {
+    slug: "x402-security-sellers-90-days",
+    kind: "note",
+    date: "2026-10-27",
+    title: "What x402 sellers that mention audits, security or smart contracts received in 90 days",
+    dek: "We read the Bazaar index and measured what 343 sellers with audit or security routes received in 90 days. The median seller got 1.85 USDC. Our own numbers are next to it.",
+    description:
+      "343 x402 sellers that mention audits, security or smart contracts: median 1.85 USDC in 90 days, 3,689 USDC in total, none above 1,000. Ours included.",
+    tags: ["Measurements", "x402"],
+    readMinutes: 2,
+    blocks: [
+      {
+        type: "md",
+        text: `We read 84,794 of the 84,795 resources in the Coinbase Bazaar discovery index on 27 October 2026 and kept the sellers whose first route description mentions smart contracts, audits, vulnerabilities, exploits, honeypots or security scans. That gave 348 payout addresses. We could measure 343 of them; the other five are Solana addresses. For each address we read the payments received in the last 90 days from the public x402scan API.
+
+Together the 343 received at least 3,689 USDC. The median seller received 1.85 USDC. The 90th percentile is 25.4 USDC. Eighty sellers received 10 USDC or more, seven received 100 USDC or more, and none reached 1,000 USDC in the payments we could read. The ten largest hold 39 percent of the total.
+
+The word audit alone pulls in sellers of SEC filing alerts, VAT number checks and accessibility audits, so most of the 343 are not security tools. If we only count sellers whose first route names security, vulnerabilities, smart contracts, exploits, bug bounties, rug pulls or honeypots, that is at least 120 sellers with at least 1,340 USDC in total and a median of 1.48 USDC. The count and the total are lower bounds, because we classified each seller on one route only.
+
+The three largest of the 343 were a website audit (369 USDC from 13 payers), a package vulnerability lookup (256 USDC from 13 payers) and a token honeypot check (at least 178 USDC from 31 payers). Among sellers whose description names a smart contract audit, the largest we found received 58 USDC from 8 payers.
+
+What we cannot know. x402scan only shows payments settled through facilitators it indexes, and we read only the first payment option of each route, so this is mostly a measurement on Base. For 50 sellers the data stops at 1,000 payments, so their totals are lower bounds. A payment can be a test by the seller itself, and linking a payout address to a seller is an estimate.
+
+Our own numbers. Our address is one of the 343 and is included in the totals above. x402scan shows 6.31 USDC received by our service in the same period. Of that, 6.0 USDC came from two test purchases we made ourselves on 25 October (5.00 and 1.00 USDC, with a standard x402 client from a throwaway address we created), 0.15 USDC came from our own test buyer, and 0.16 USDC came from the other 16 payers. We have not attributed those 16 to customers or to scanners.
+
+Method, so you can repeat it: read the index with limit 1000 and a growing offset until it ends, filter on the keywords, group by payout address, then ask x402scan for the transfers to each address over 90 days.
+
+We are Tokenizen (tokenizen.nl) and we sell on x402 ourselves, so we are not neutral here.`,
+      },
+    ],
+  },
 ];
 
 export function postPath(slug: string): string {
