@@ -23,6 +23,9 @@ export interface Dictionary {
     navLabel: string;
     mobileNavLabel: string;
     links: NavLink[];
+    /** The group of free tools. They are pages of their own, not sections of the homepage, so they get a heading in the menu. */
+    checksLabel: string;
+    checks: NavLink[];
     github: string;
     openMenu: string;
     closeMenu: string;

@@ -56,6 +56,21 @@ export const en: Dictionary = {
         "label": "Notes"
       }
     ],
+    "checksLabel": "Free checks",
+    "checks": [
+      {
+        "href": "/cra-check",
+        "label": "GitHub repository check (CRA)"
+      },
+      {
+        "href": "/x402-check",
+        "label": "x402 endpoint check"
+      },
+      {
+        "href": "/check",
+        "label": "Endpoint ownership check"
+      }
+    ],
     "github": "GitHub",
     "openMenu": "Open menu",
     "closeMenu": "Close menu"
