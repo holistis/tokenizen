@@ -2,6 +2,7 @@
   "name": "tokenizen",
   "private": true,
   "description": "Monorepo root for tokenizen.nl packages.",
+  "version": "0.0.0",
   "workspaces": [
     "packages/*"
   ],
