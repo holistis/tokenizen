@@ -29,6 +29,12 @@ export const nl: Dictionary = {
       { href: "/blog", label: "Blog" },
       { href: "/notes", label: "Notities" },
     ],
+    checksLabel: "Gratis checks",
+    checks: [
+      { href: "/cra-check", label: "GitHub-repository controleren (CRA)" },
+      { href: "/x402-check", label: "x402-endpoint controleren" },
+      { href: "/check", label: "Eigenaarschap van je endpoint" },
+    ],
     github: "GitHub",
     openMenu: "Open menu",
     closeMenu: "Sluit menu",
