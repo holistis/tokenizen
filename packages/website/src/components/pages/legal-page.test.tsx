@@ -1,3 +1,4 @@
+import { isValidElement, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
@@ -11,6 +12,11 @@ import llms from "../../../public/llms.txt?raw";
 import sitemap from "../../../public/sitemap.xml?raw";
 
 const TEXTS = { "signal-log": signalLog, terms, privacy };
+
+interface LinkProps {
+  href: string;
+  children: string;
+}
 
 // Company data the king gave on 28 October 2026 and the Chamber of Commerce number he confirmed.
 const KVK = "86816632";
@@ -107,10 +113,12 @@ describe("parseLegalText", () => {
 
 describe("linkify", () => {
   it("turns site addresses and the email address into links and leaves the words alone", () => {
-    const html = renderToStaticMarkup(<p>{linkify("See tokenizen.nl/en/terms or write to info@tokenizen.nl.")}</p>);
-    expect(html).toContain('href="https://tokenizen.nl/en/terms"');
-    expect(html).toContain('href="mailto:info@tokenizen.nl"');
-    expect(html.replace(/<[^>]+>/g, "")).toBe("See tokenizen.nl/en/terms or write to info@tokenizen.nl.");
+    const text = "See tokenizen.nl/en/terms or write to info@tokenizen.nl.";
+    const parts = linkify(text);
+    const links = parts.filter((p): p is ReactElement<LinkProps> => isValidElement(p));
+    expect(links.map((l) => l.props.href)).toEqual(["https://tokenizen.nl/en/terms", "mailto:info@tokenizen.nl"]);
+    const words = parts.map((p) => (isValidElement(p) ? (p as ReactElement<LinkProps>).props.children : p)).join("");
+    expect(words).toBe(text);
   });
 });
 
