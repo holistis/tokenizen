@@ -158,13 +158,19 @@ function PostIndex({ kind }: { kind: PostKind }) {
   // the Dutch page without saying so.
   const prefix = locale === "en" ? "/en" : "";
 
+  // The description is the page's own intro, in the reader's language. Without it the page kept the
+  // homepage's description (in Dutch, from index.html), which told a search engine nothing about the list.
   useEffect(() => {
     const previous = document.title;
     document.title = `${copy.heading} | tokenizen`;
+    const descriptionTag = document.head.querySelector('meta[name="description"]');
+    const previousDescription = descriptionTag?.getAttribute("content") ?? null;
+    descriptionTag?.setAttribute("content", copy.intro);
     return () => {
       document.title = previous;
+      if (previousDescription !== null) descriptionTag?.setAttribute("content", previousDescription);
     };
-  }, [copy.heading]);
+  }, [copy.heading, copy.intro]);
 
   const [featured, ...rest] = entriesOfKind(kind);
 
