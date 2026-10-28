@@ -68,14 +68,31 @@ const LOCKED_MANIFESTS = ["package.json", "Cargo.toml", "pyproject.toml", "requi
 /** Manifests of ecosystems where versions are normally pinned in the build file itself, so a missing lockfile says little. */
 const PINNED_IN_BUILD_FILE = ["pom.xml", "build.gradle", "build.gradle.kts", "go.mod", "*.csproj"];
 const SBOM_FILE = /(^|\/)(sbom|bom)(\.[a-z0-9-]+)*\.(json|xml)$|\.(spdx|cdx)(\.json)?$|cyclonedx|\.spdx\.json$/i;
-const SBOM_WORKFLOW = /(anchore\/sbom-action|cyclonedx|syft\b|spdx-sbom-generator|trivy[^\n]*sbom|npm sbom|cdxgen|sbom-tool|advanced-security\/spdx)/i;
+const SBOM_WORKFLOW = /(anchore\/sbom-action|cyclonedx|syft\b|spdx-sbom-generator|trivy[^\n]{0,200}sbom|npm sbom|cdxgen|sbom-tool|advanced-security\/spdx)/i;
 const PROVENANCE_FILE = /\.(sig|asc|minisig|sigstore|intoto\.jsonl|attestation)$|\.sigstore\.json$|\.cosign\.bundle$/i;
-const PROVENANCE_WORKFLOW = /(attest-build-provenance|actions\/attest|slsa-framework|cosign|sigstore|--provenance|npm publish[^\n]*provenance|gpg --detach|minisign)/i;
+const PROVENANCE_WORKFLOW = /(attest-build-provenance|actions\/attest|slsa-framework|cosign|sigstore|--provenance|npm publish[^\n]{0,200}provenance|gpg --detach|minisign)/i;
 const SCAN_WORKFLOW = /(codeql|semgrep|trivy|grype|osv-scanner|snyk|gitleaks|trufflehog|scorecard|npm audit|pip-audit|cargo audit|govulncheck|bandit|brakeman|sonarcloud|sonarqube|dependency-review)/i;
 const POLICY_FILE = /(^|\/)SECURITY\.(md|txt|rst)$/i;
-const CONTACT = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}|https?:\/\/[^\s)>\]]+|security\/advisories|private vulnerability reporting|report a vulnerability/i;
+/** Every pattern here is bounded, and it is only ever run on one short line at a time: a repository owner chooses the text, and a regex that backtracks on a 200 KB line would stop the whole server. */
+const CONTACT = /\b[\w.%+-]{1,64}@[\w-]{1,63}(?:\.[\w-]{1,63}){1,4}\b|https?:\/\/[^\s)>\]]{1,200}|security\/advisories|private vulnerability reporting|report a vulnerability/i;
+const MAX_POLICY_CHARS = 16_384;
+const MAX_LINE_CHARS = 1_000;
+/** Workflow text that is looked at per file; a longer file counts as only partly read. */
+const MAX_WORKFLOW_CHARS = 65_536;
+
+/** Does the policy text name an email address or a reporting link? Badges and images do not count as a contact. */
+export function namesContact(text: string): boolean {
+  for (const line of text.slice(0, MAX_POLICY_CHARS).split("\n")) {
+    if (line.length > MAX_LINE_CHARS) continue;
+    if (/shields\.io|badge/i.test(line)) continue;
+    // a linked image ([![alt](image)](target)) is a button, not a contact: drop the whole construct, then look at what is left
+    const plain = line.replace(/\[!\[[^\]]{0,200}\]\([^)]{0,300}\)\]\([^)]{0,300}\)/g, " ").replace(/!\[[^\]]{0,200}\]\([^)]{0,300}\)/g, " ");
+    if (CONTACT.test(plain)) return true;
+  }
+  return false;
+}
 /** Workflow files that usually hold release, signing and scanning steps are read first, because only some of the files are read. */
-const WORKFLOW_PRIORITY = /release|publish|deploy|sign|sbom|attest|provenance|codeql|security|scan|audit|ci|build|test/i;
+const WORKFLOW_PRIORITY = /release|publish|deploy|sign|sbom|attest|provenance|codeql|security|scan|audit/i;
 
 /** Comments in a workflow are not steps. */
 function stripComments(yaml: string): string {
@@ -105,6 +122,10 @@ export interface RepoSignals {
   rateLimited?: boolean;
   /** The repository itself could not be read for a reason other than "not found". No report can be made. */
   failed?: boolean;
+  /** GitHub answered with a redirect: the repository was renamed or moved. We do not follow it. */
+  moved?: boolean;
+  /** False when the owner's .github repository could not be listed cleanly, so a policy kept there may have been missed. */
+  orgPolicyKnown: boolean;
   /** Reasons a part could not be read, in words for the log. Each of these makes the points that depend on it "not measured". */
   unknown: string[];
   filesKnown: boolean;
@@ -113,7 +134,7 @@ export interface RepoSignals {
   workflowState: WorkflowState;
   workflowTexts: Record<string, string>;
   /** Where the security policy was found, and whether it names a contact address or a reporting link (null: could not be read). */
-  policy: { where: "repository" | "organisation"; path: string; hasContact: boolean | null } | null;
+  policy: { where: "repository" | "owner"; path: string; hasContact: boolean | null } | null;
   releases: ReleaseFact[] | null;
   advisories: number | null;
   archived?: boolean;
@@ -143,6 +164,7 @@ interface Got {
   json?: unknown;
   text?: string;
   rateLimited?: boolean;
+  moved?: boolean;
   error?: string;
 }
 
@@ -180,11 +202,15 @@ async function get(url: string, options: FetchSignalsOptions, requested: string[
   const signals = [AbortSignal.timeout(REQUEST_TIMEOUT_MS), options.signal].filter((x): x is AbortSignal => x instanceof AbortSignal);
   let res: Response;
   try {
-    res = await options.fetchImpl(url, { headers, redirect: "error", signal: AbortSignal.any(signals) });
+    res = await options.fetchImpl(url, { headers, redirect: "manual", signal: AbortSignal.any(signals) });
   } catch {
     return { status: 0, error: "network" };
   }
   try {
+    if (res.status >= 300 && res.status < 400) {
+      await res.body?.cancel().catch(() => undefined);
+      return { status: res.status, moved: true, error: `HTTP ${res.status}` };
+    }
     if (res.status === 404) {
       await res.body?.cancel().catch(() => undefined);
       return { status: 404 };
@@ -232,7 +258,7 @@ const encodePath = (path: string) => path.split("/").map(encodeURIComponent).joi
 export async function fetchSignals(repo: string, options: FetchSignalsOptions): Promise<RepoSignals> {
   const now = options.now ?? Date.now();
   const s: RepoSignals = {
-    repo, now, unknown: [], filesKnown: false, files: [], workflows: [], workflowState: "unknown", workflowTexts: {},
+    repo, now, unknown: [], filesKnown: false, orgPolicyKnown: true, files: [], workflows: [], workflowState: "unknown", workflowTexts: {},
     policy: null, releases: null, advisories: null, requested: [],
   };
   const [owner, name] = repo.split("/");
@@ -252,6 +278,10 @@ export async function fetchSignals(repo: string, options: FetchSignalsOptions): 
   note(info);
   if (info.status === 404) {
     s.notFound = true;
+    return s;
+  }
+  if (info.moved) {
+    s.moved = true;
     return s;
   }
   const meta = asRecord(info.json);
@@ -291,21 +321,45 @@ export async function fetchSignals(repo: string, options: FetchSignalsOptions): 
     else s.unknown.push(`${dir} file list`);
   }
 
-  // The security policy: the file in this repository, or the one GitHub shows for every repository of the organisation.
+  // The security policy: the file in this repository, or the one GitHub shows for every repository of the owner (kept in the
+  // owner's ".github" repository, in its root, in .github/ or in docs/).
   const policyPath = s.files.find((f) => POLICY_FILE.test(f));
   if (policyPath) {
     const text = await get(`${rawBase}/${encodePath(policyPath)}`, options, s.requested, true);
     note(text);
-    s.policy = { where: "repository", path: policyPath, hasContact: text.text !== undefined ? CONTACT.test(text.text) : null };
+    s.policy = { where: "repository", path: policyPath, hasContact: text.text !== undefined ? namesContact(text.text) : null };
   } else if (s.filesKnown && name.toLowerCase() !== ".github") {
-    const orgRoot = await get(`https://api.github.com/repos/${o}/.github/contents`, options, s.requested, false);
-    note(orgRoot);
-    const orgList = asList(orgRoot.json);
-    const orgPolicy = orgList ? entryNames(orgList).find((f) => POLICY_FILE.test(f)) : undefined;
-    if (orgPolicy) {
-      const text = await get(`https://raw.githubusercontent.com/${o}/.github/HEAD/${encodePath(orgPolicy)}`, options, s.requested, true);
-      note(text);
-      s.policy = { where: "organisation", path: `${owner}/.github: ${orgPolicy}`, hasContact: text.text !== undefined ? CONTACT.test(text.text) : null };
+    const ownerBase = `https://api.github.com/repos/${o}/.github/contents`;
+    const ownerRoot = await get(ownerBase, options, s.requested, false);
+    note(ownerRoot);
+    const ownerList = asList(ownerRoot.json);
+    if (ownerRoot.status === 404) {
+      // no such repository, or not public: clean, there is no owner-level policy
+    } else if (!ownerList) {
+      s.orgPolicyKnown = false;
+      s.unknown.push("owner policy");
+    } else {
+      const rootNames = entryNames(ownerList);
+      const direct = rootNames.find((f) => POLICY_FILE.test(f));
+      let ownerPolicy: { path: string } | null = direct ? { path: direct } : null;
+      for (const dir of [".github", "docs"]) {
+        if (ownerPolicy || !rootNames.includes(`${dir}/`)) continue;
+        const sub = await get(`${ownerBase}/${dir}`, options, s.requested, false);
+        note(sub);
+        const subList = asList(sub.json);
+        if (!subList) {
+          s.orgPolicyKnown = false;
+          s.unknown.push("owner policy");
+          continue;
+        }
+        const hit = entryNames(subList).find((f) => POLICY_FILE.test(f));
+        if (hit) ownerPolicy = { path: `${dir}/${hit}` };
+      }
+      if (ownerPolicy) {
+        const text = await get(`https://raw.githubusercontent.com/${o}/.github/HEAD/${encodePath(ownerPolicy.path)}`, options, s.requested, true);
+        note(text);
+        s.policy = { where: "owner", path: `${owner}/.github: ${ownerPolicy.path}`, hasContact: text.text !== undefined ? namesContact(text.text) : null };
+      }
     }
   }
 
@@ -326,14 +380,17 @@ export async function fetchSignals(repo: string, options: FetchSignalsOptions): 
       const ordered = [...yamls].sort((a, b) => Number(WORKFLOW_PRIORITY.test(b)) - Number(WORKFLOW_PRIORITY.test(a)) || a.localeCompare(b));
       const toRead = ordered.slice(0, MAX_WORKFLOW_FILES);
       let failed = 0;
+      let tooLong = 0;
       for (const file of toRead) {
         const raw = await get(`${rawBase}/.github/workflows/${encodeURIComponent(file)}`, options, s.requested, true);
         note(raw);
-        if (raw.text !== undefined) s.workflowTexts[file] = stripComments(raw.text);
-        else failed++;
+        if (raw.text !== undefined) {
+          if (raw.text.length > MAX_WORKFLOW_CHARS) tooLong++;
+          s.workflowTexts[file] = stripComments(raw.text.slice(0, MAX_WORKFLOW_CHARS));
+        } else failed++;
       }
-      s.workflowState = failed === 0 && yamls.length <= MAX_WORKFLOW_FILES ? "complete" : "partial";
-      if (s.workflowState === "partial") s.unknown.push(`workflow files: read ${toRead.length - failed} of ${yamls.length}`);
+      s.workflowState = failed === 0 && tooLong === 0 && yamls.length <= MAX_WORKFLOW_FILES ? "complete" : "partial";
+      if (s.workflowState === "partial") s.unknown.push(`workflow files: read ${toRead.length - failed - tooLong} of ${yamls.length}`);
     }
   }
 
@@ -411,8 +468,10 @@ export function assessRepo(s: RepoSignals): RepoReport {
   // 1. policy and a way to report
   const TOPIC1 = "Reporting channel and policy for vulnerabilities";
   if (s.policy) {
-    const where = s.policy.where === "organisation" ? `${s.policy.path} (the policy GitHub shows for every repository of the organisation)` : s.policy.path;
-    if (s.policy.hasContact === false) {
+    const where = s.policy.where === "owner" ? `${s.policy.path} (the policy GitHub shows for every repository of this owner)` : s.policy.path;
+    if (s.policy.hasContact === null) {
+      c.push(notMeasured("vulnerability-policy", TOPIC1, `A security policy file is there (${clean(where)}), but it could not be read to check whether it names a contact address.`));
+    } else if (s.policy.hasContact === false) {
       c.push(
         notVisible(
           "vulnerability-policy",
@@ -422,23 +481,16 @@ export function assessRepo(s: RepoSignals): RepoReport {
         ),
       );
     } else {
-      c.push(
-        visible(
-          "vulnerability-policy",
-          TOPIC1,
-          where,
-          s.policy.hasContact === null ? "A security policy file is there; we could not read it to check for a contact address." : "A security policy file is there and names a contact address or a reporting link.",
-        ),
-      );
+      c.push(visible("vulnerability-policy", TOPIC1, where, "A security policy file is there and names a contact address or a reporting link."));
     }
-  } else if (!s.filesKnown) {
-    c.push(notMeasured("vulnerability-policy", TOPIC1, "The file list of the repository could not be read."));
+  } else if (!s.filesKnown || s.unknown.includes(".github file list") || s.unknown.includes("docs file list") || !s.orgPolicyKnown) {
+    c.push(notMeasured("vulnerability-policy", TOPIC1, "A folder that can hold the policy, or the owner's .github repository, could not be listed, so we cannot say whether a policy is there."));
   } else {
     c.push(
       notVisible(
         "vulnerability-policy",
         TOPIC1,
-        "No SECURITY.md was found in the repository root, .github/ or docs/, nor in the organisation's .github repository. The CRA asks for a coordinated vulnerability disclosure policy and a contact address for reports. Private vulnerability reporting switched on in the settings is not visible from outside.",
+        "No SECURITY.md was found in the repository root, .github/ or docs/, nor in the owner's .github repository. The CRA asks for a coordinated vulnerability disclosure policy and a contact address for reports. Private vulnerability reporting switched on in the settings is not visible from outside.",
         "Add a SECURITY.md with a contact address, what you answer and within what time, and which versions are supported.",
       ),
     );
@@ -509,7 +561,7 @@ export function assessRepo(s: RepoSignals): RepoReport {
   const TOPIC5 = "Automatic updates of components";
   const updates = findFile(/(^|\/)(dependabot\.ya?ml|renovate\.json5?|\.renovaterc(\.json)?)$/i);
   if (updates) c.push(visible("dependency-updates", TOPIC5, updates, "A tool proposes new versions and flags vulnerable components."));
-  else if (!s.filesKnown) c.push(notMeasured("dependency-updates", TOPIC5, "The file list of the repository could not be read."));
+  else if (!s.filesKnown || s.unknown.includes(".github file list")) c.push(notMeasured("dependency-updates", TOPIC5, "The file list of the repository, or of its .github folder where the configuration usually lives, could not be read."));
   else
     c.push(
       notVisible(

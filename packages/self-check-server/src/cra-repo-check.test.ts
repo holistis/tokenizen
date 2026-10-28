@@ -3,7 +3,7 @@
 // Nothing here touches the network: GitHub is replaced by a fake that returns real Response objects.
 
 import { describe, expect, it } from "vitest";
-import { RULES_VERSION, assessRepo, clean, fetchSignals, isComplete, parseRepo, type RepoSignals } from "./cra-repo-check.js";
+import { RULES_VERSION, assessRepo, clean, fetchSignals, isComplete, namesContact, parseRepo, type RepoSignals } from "./cra-repo-check.js";
 
 const NOW = Date.parse("2026-10-28T12:00:00Z");
 const DAY = 86_400_000;
@@ -14,6 +14,7 @@ function good(): RepoSignals {
     now: NOW,
     unknown: [],
     filesKnown: true,
+    orgPolicyKnown: true,
     files: ["README.md", "SECURITY.md", "package.json", "package-lock.json", ".github/", ".github/dependabot.yml", ".github/workflows/"],
     workflows: ["ci.yml"],
     workflowState: "complete",
@@ -95,13 +96,13 @@ describe("assessRepo", () => {
     expect(statusOf(unreadReleases, "sbom")).toBe("not_measured");
   });
 
-  it("the security policy: needs a contact or reporting link, may live at organisation level, and an unreadable file is not held against it", () => {
+  it("the security policy: needs a contact or reporting link, may live at owner level, and an unreadable file is not held against it", () => {
     expect(statusOf(good(), "vulnerability-policy")).toBe("visible");
     const noContact = { ...good(), policy: { where: "repository" as const, path: "SECURITY.md", hasContact: false } };
     expect(control(noContact, "vulnerability-policy")?.status).toBe("not_visible");
     expect(control(noContact, "vulnerability-policy")?.explanation).toMatch(/contact address or a link/);
-    expect(statusOf({ ...good(), policy: { where: "repository", path: "SECURITY.md", hasContact: null } }, "vulnerability-policy")).toBe("visible");
-    const org = control({ ...good(), policy: { where: "organisation", path: "o/.github: SECURITY.md", hasContact: true } }, "vulnerability-policy");
+    expect(statusOf({ ...good(), policy: { where: "repository", path: "SECURITY.md", hasContact: null } }, "vulnerability-policy")).toBe("not_measured");
+    const org = control({ ...good(), policy: { where: "owner", path: "o/.github: SECURITY.md", hasContact: true } }, "vulnerability-policy");
     expect(org?.status).toBe("visible");
     expect(org?.evidence).toMatch(/o\/\.github/);
   });
@@ -226,7 +227,7 @@ describe("fetchSignals", () => {
     expect(s.workflowState).toBe("complete");
     for (const c of net.calls) {
       expect(c.url).toMatch(/^https:\/\/(api\.github\.com|raw\.githubusercontent\.com)\//);
-      expect(c.redirect).toBe("error");
+      expect(c.redirect).toBe("manual");
       expect(c.url).not.toMatch(/feat|%3F|%23/); // no text chosen by the repository owner (the branch name) is in an address
       const hasToken = Object.values(c.headers).some((v) => String(v).includes("ghp_test"));
       expect(hasToken, c.url).toBe(c.url.startsWith("https://api.github.com/"));
@@ -367,7 +368,7 @@ describe("fetchSignals", () => {
       ["/repos/o/r", json(repoMeta())],
     ]);
     const s = await fetchSignals("o/r", { fetchImpl: org.fetchImpl, now: NOW });
-    expect(s.policy).toEqual({ where: "organisation", path: "o/.github: SECURITY.md", hasContact: true });
+    expect(s.policy).toEqual({ where: "owner", path: "o/.github: SECURITY.md", hasContact: true });
     const itself = fakeGithub([["/contents", json([dirEntry("README.md")])], ["/repos/o/.github", json(repoMeta())]]);
     const t = await fetchSignals("o/.github", { fetchImpl: itself.fetchImpl, now: NOW });
     expect(t.policy).toBeNull();
@@ -376,6 +377,79 @@ describe("fetchSignals", () => {
     const u = await fetchSignals("o/r", { fetchImpl: unreadableFiles.fetchImpl, now: NOW });
     expect(u.policy).toBeNull();
     expect(unreadableFiles.calls.some((c) => c.url.includes("/repos/o/.github"))).toBe(false);
+  });
+
+  it("the owner policy is also found in .github/ and docs/ of the owner's .github repository", async () => {
+    for (const dir of [".github", "docs"]) {
+      const net = fakeGithub([
+        [`/repos/o/.github/contents/${dir}`, json([dirEntry("SECURITY.md")])],
+        ["/repos/o/.github/contents", json([dirEntry(dir, "dir"), dirEntry("README.md")])],
+        [`raw.githubusercontent.com/o/.github/HEAD/${dir}/SECURITY.md`, text("mail security@example.org")],
+        ["/contents", json([dirEntry("README.md")])],
+        ["/repos/o/r", json(repoMeta())],
+      ]);
+      const s = await fetchSignals("o/r", { fetchImpl: net.fetchImpl, now: NOW });
+      expect(s.policy, dir).toEqual({ where: "owner", path: `o/.github: ${dir}/SECURITY.md`, hasContact: true });
+    }
+  });
+
+  it("a failed look into the owner's .github repository, or into a folder that can hold the policy, is not measured and never not visible", async () => {
+    const ownerBroken = fakeGithub([["/repos/o/.github/contents", () => new Response("oops", { status: 500 })], ["/contents", json([dirEntry("README.md")])], ["/repos/o/r", json(repoMeta())]]);
+    const a = await fetchSignals("o/r", { fetchImpl: ownerBroken.fetchImpl, now: NOW });
+    expect(a.orgPolicyKnown).toBe(false);
+    expect(statusOf(a, "vulnerability-policy")).toBe("not_measured");
+    const ownerAbsent = fakeGithub([["/repos/o/.github/contents", json({}, 404)], ["/contents", json([dirEntry("README.md")])], ["/repos/o/r", json(repoMeta())]]);
+    const b = await fetchSignals("o/r", { fetchImpl: ownerAbsent.fetchImpl, now: NOW });
+    expect(b.orgPolicyKnown).toBe(true);
+    expect(statusOf(b, "vulnerability-policy")).toBe("not_visible");
+    const dotGithubBroken = fakeGithub([["/contents/.github", () => new Response("oops", { status: 500 })], ["/contents", json([dirEntry(".github", "dir")])], ["/repos/o/.github/contents", json({}, 404)], ["/repos/o/r", json(repoMeta())]]);
+    const c = await fetchSignals("o/r", { fetchImpl: dotGithubBroken.fetchImpl, now: NOW });
+    expect(statusOf(c, "vulnerability-policy")).toBe("not_measured");
+    expect(statusOf(c, "dependency-updates")).toBe("not_measured");
+    expect(statusOf(c, "security-scanning")).toBe("not_measured");
+  });
+
+  it("a renamed or moved repository is reported as moved, and the redirect is not followed", async () => {
+    const net = fakeGithub([["/repos/o/r", () => new Response(null, { status: 301, headers: { location: "https://api.github.com/repositories/1" } })]]);
+    const s = await fetchSignals("o/r", { fetchImpl: net.fetchImpl, now: NOW });
+    expect(s.moved).toBe(true);
+    expect(net.calls).toHaveLength(1);
+  });
+
+  it("a badge or an image is not a contact, a plain address or a reporting link is", async () => {
+    expect(namesContact("[![Security](https://img.shields.io/badge/security-ok-green)](https://example.org)")).toBe(false);
+    expect(namesContact("![logo](https://example.org/logo.png)")).toBe(false);
+    expect(namesContact("Mail us: security@example.org")).toBe(true);
+    expect(namesContact("Use https://github.com/o/r/security/advisories/new to report")).toBe(true);
+    expect(namesContact("We take security seriously.")).toBe(false);
+  });
+
+  it("HOSTILE TEXT CANNOT FREEZE THE SERVER: long lines in a policy or a workflow are handled in bounded time", async () => {
+    const hostile = [
+      "a".repeat(200_000),
+      "a@".repeat(100_000),
+      "a@" + "a.".repeat(100_000),
+      "trivy ".repeat(40_000),
+      "npm publish ".repeat(20_000),
+      "https://".repeat(25_000),
+    ];
+    for (const body of hostile) {
+      const t0 = performance.now();
+      namesContact(body);
+      expect(performance.now() - t0, body.slice(0, 12)).toBeLessThan(500);
+    }
+    const net = fakeGithub([
+      ["/contents/.github/workflows", json(Array.from({ length: 12 }, (_, i) => dirEntry(`w${i}.yml`)))],
+      ["/contents/.github", json([dirEntry("workflows", "dir")])],
+      ["/contents", json([dirEntry(".github", "dir")])],
+      ["raw.githubusercontent.com", text("trivy ".repeat(40_000))],
+      ["/repos/o/r", json(repoMeta())],
+    ]);
+    const t1 = performance.now();
+    const s = await fetchSignals("o/r", { fetchImpl: net.fetchImpl, now: NOW });
+    assessRepo(s);
+    expect(performance.now() - t1).toBeLessThan(2500);
+    expect(s.workflowState).toBe("partial"); // each file is longer than the 64 KB that is looked at
   });
 
   it("takes the date of the last commit on the default branch", async () => {

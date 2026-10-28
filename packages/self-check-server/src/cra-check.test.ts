@@ -161,7 +161,7 @@ describe("createCraChecker", () => {
     const small = createCraChecker({ fetchImpl: net.fetchImpl, now: () => NOW });
     const kinds: string[] = [];
     for (let i = 0; i < 8; i++) kinds.push((await small.check(`owner/r${i}`)).kind);
-    expect(kinds.filter((k) => k === "limited").length).toBe(2);
+    expect(kinds.filter((k) => k === "limited").length).toBe(3);
     const big = createCraChecker({ fetchImpl: net.fetchImpl, now: () => NOW, githubToken: "ghp_x" });
     const bigKinds: string[] = [];
     for (let i = 0; i < 8; i++) bigKinds.push((await big.check(`owner/r${i}`)).kind);
@@ -200,6 +200,14 @@ describe("createCraChecker", () => {
       const sent = Object.values(c.headers).some((v) => String(v).includes("ghp_secret"));
       expect(sent, c.url).toBe(c.url.startsWith("https://api.github.com/"));
     }
+  });
+
+  it("a repository that has moved is its own answer, nothing is cached, and the slot comes back", async () => {
+    const net = fakeGithub([["/repos/owner/old", () => new Response(null, { status: 301, headers: { location: "https://api.github.com/repositories/1" } })]]);
+    const checker = createCraChecker({ fetchImpl: net.fetchImpl, now: () => NOW, globalMax: 1 });
+    expect((await checker.check("owner/old")).kind).toBe("moved");
+    expect((await checker.check("owner/old")).kind).toBe("moved");
+    expect(net.calls).toHaveLength(2);
   });
 
   it("a checker that is switched off does nothing", async () => {
@@ -247,6 +255,14 @@ describe("POST /api/cra/check", () => {
     expect((await post({ repo: "not a repo" })).status).toBe(400);
     expect((await post({ repo: "owner/ghost" })).status).toBe(404);
     expect((await post({ repo: "owner/sick" })).status).toBe(502);
+  });
+
+  it("answers 404 with a clear sentence for a moved repository", async () => {
+    const net = fakeGithub([["/repos/owner/old", () => new Response(null, { status: 301, headers: { location: "https://api.github.com/repositories/1" } })]]);
+    await start({ fetchImpl: net.fetchImpl, now: () => NOW });
+    const res = await post({ repo: "owner/old" });
+    expect(res.status).toBe(404);
+    expect((await res.json()).error).toMatch(/renamed or moved/);
   });
 
   it("answers 429 with Retry-After when the budget is used up", async () => {

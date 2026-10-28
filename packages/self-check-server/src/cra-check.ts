@@ -9,7 +9,7 @@
 // and a redirect is refused outright (a public repository read never needs one).
 //
 // WHAT CAN STILL GO WRONG, and what stands in the way:
-//   - the GitHub allowance: one check costs up to nine API calls (the raw file reads are not counted by
+//   - the GitHub allowance: one check costs up to eleven API calls (the raw file reads are not counted by
 //     GitHub). Without a token the allowance is 60 calls an hour for this whole server, so the route is
 //     SWITCHED OFF unless a token (with NO permissions) is configured or anonymous use is switched on on
 //     purpose; with a token it is 5000. When GitHub says "slow down", the answer is a 429 and nothing is
@@ -38,8 +38,8 @@ const DEFAULT_NOT_FOUND_TTL_MS = 5 * 60 * 1000;
 const DEFAULT_DEADLINE_MS = 30_000;
 const DEFAULT_MAX_CONCURRENT = 6;
 const BUDGET_WINDOW_MS = 60 * 60 * 1000;
-/** Each check is up to nine API calls; stay well inside the allowance with and without a token. */
-const DEFAULT_GLOBAL_MAX_WITHOUT_TOKEN = 6;
+/** Each check is up to eleven API calls; stay well inside the allowance with and without a token. */
+const DEFAULT_GLOBAL_MAX_WITHOUT_TOKEN = 5;
 const DEFAULT_GLOBAL_MAX_WITH_TOKEN = 300;
 const NOT_FOUND_BUDGET_FACTOR = 4;
 const MAX_CACHE_ENTRIES = 1000;
@@ -62,10 +62,11 @@ export type CraOutcome =
   | { kind: "invalid"; error: string }
   | { kind: "limited"; error: string; retryAfterSeconds: number }
   | { kind: "not_found" }
+  | { kind: "moved" }
   | { kind: "failed" }
   | { kind: "done"; report: RepoReport; cached: boolean };
 
-type Measured = { kind: "report"; report: RepoReport; complete: boolean } | { kind: "not_found" } | { kind: "rate_limited" } | { kind: "failed" };
+type Measured = { kind: "report"; report: RepoReport; complete: boolean } | { kind: "not_found" } | { kind: "moved" } | { kind: "rate_limited" } | { kind: "failed" };
 
 export function createCraChecker(options: CraCheckerOptions = {}) {
   const base = options.fetchImpl ?? guardedFetch;
@@ -93,6 +94,7 @@ export function createCraChecker(options: CraCheckerOptions = {}) {
     try {
       const signals = await fetchSignals(repo, { fetchImpl: base, token, signal: controller.signal, now: now() });
       if (signals.rateLimited) return { kind: "rate_limited" };
+      if (signals.moved) return { kind: "moved" };
       if (signals.notFound) return { kind: "not_found" };
       if (signals.failed) return { kind: "failed" };
       return { kind: "report", report: assessRepo(signals), complete: isComplete(signals) };
@@ -104,6 +106,7 @@ export function createCraChecker(options: CraCheckerOptions = {}) {
   function fromMeasured(m: Measured, cached: boolean): CraOutcome {
     if (m.kind === "report") return { kind: "done", report: m.report, cached };
     if (m.kind === "not_found") return { kind: "not_found" };
+    if (m.kind === "moved") return { kind: "moved" };
     if (m.kind === "rate_limited") return githubUsedUp();
     return { kind: "failed" };
   }
@@ -148,9 +151,9 @@ export function createCraChecker(options: CraCheckerOptions = {}) {
         release();
         return githubUsedUp();
       }
-      if (result.kind === "failed") {
+      if (result.kind === "failed" || result.kind === "moved") {
         release();
-        return { kind: "failed" };
+        return fromMeasured(result, false);
       }
       if (result.kind === "not_found") {
         // One API call, so it gives its full slot back and draws on the larger not-found budget instead.
@@ -209,6 +212,9 @@ export function handleCraCheck(checker: CraChecker) {
         return;
       case "not_found":
         res.status(404).json({ ok: false, error: "that repository was not found, or it is not public" });
+        return;
+      case "moved":
+        res.status(404).json({ ok: false, error: "that repository has been renamed or moved, please use its current name" });
         return;
       case "failed":
         res.status(502).json({ ok: false, error: "the check could not be completed, please try again later" });
