@@ -1,6 +1,6 @@
 # Tokenizen
 
-> Security research, free checks and a log nobody can rewrite, by two brothers in Eindhoven (AO Services). We measure what others claim and publish the numbers, including our misses. Open-source tools for the seller side of the AI agent economy are one of the things we do; the best known is Capacity Attest: after an x402 payment for metered capacity, the paying agent leaves a signed, factual record of what was actually delivered, so other agents can check a seller's history before paying.
+> Security research, free checks and a log where any change to the past shows, by two brothers in Eindhoven (AO Services). We measure what others claim and publish the numbers, including our misses. Open-source tools for the seller side of the AI agent economy are one of the things we do; the best known is Capacity Attest: after an x402 payment for metered capacity, the paying agent leaves a signed, factual record of what was actually delivered, so other agents can check a seller's history before paying.
 
 ## What we offer
 

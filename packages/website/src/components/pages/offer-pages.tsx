@@ -311,7 +311,7 @@ export function ConsultancyPage() {
 }
 
 export function AboutPage() {
-  useMeta("Two brothers, one company | tokenizen", "Abdellah and Ahmed Ouadoudi run AO Services in Eindhoven: security research, free checks, a log nobody can rewrite.");
+  useMeta("Two brothers, one company | tokenizen", "Abdellah and Ahmed Ouadoudi run AO Services in Eindhoven: security research, free checks, a log where any change to the past shows.");
   return (
     <div className="border-t border-border">
       <Brothers locale="en" level={1} />

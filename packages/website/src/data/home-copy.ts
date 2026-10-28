@@ -195,7 +195,7 @@ export const HOME: Record<Locale, HomeCopy> = {
       eyebrow: "tokenizen.nl · Eindhoven · two brothers",
       h1a: "We find the leaks.",
       h1b: "We publish the numbers.",
-      body: "Security research, free checks and a log nobody can rewrite. Below you see 109 public repositories, measured on eight security signals. We publish our misses too.",
+      body: "Security research, free checks and a log where any change to the past shows. Below you see 109 public repositories, measured on eight security signals. We publish our misses too.",
       ctaPrimary: "Check your repository",
       ctaSecondary: "See what we offer",
       chips: [
@@ -268,7 +268,7 @@ export const HOME: Record<Locale, HomeCopy> = {
       eyebrow: "tokenizen.nl · Eindhoven · twee broers",
       h1a: "Wij vinden de lekken.",
       h1b: "Wij publiceren de cijfers.",
-      body: "Beveiligingsonderzoek, gratis checks en een logboek dat niemand kan herschrijven. Hieronder zie je 109 openbare repositories, gemeten op acht beveiligingssignalen. Onze missers publiceren we ook.",
+      body: "Beveiligingsonderzoek, gratis checks en een logboek waarin elke verandering van het verleden opvalt. Hieronder zie je 109 openbare repositories, gemeten op acht beveiligingssignalen. Onze missers publiceren we ook.",
       ctaPrimary: "Check jouw repository",
       ctaSecondary: "Bekijk ons aanbod",
       chips: [
