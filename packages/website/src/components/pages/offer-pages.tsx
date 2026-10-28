@@ -143,7 +143,7 @@ export function SecurityPage() {
   return (
     <OfferFrame
       chip="on request"
-      title="Security research, with receipts."
+      title="Security research. What we can show, and what we cannot yet."
       lead="We find the leaks. Some of what we found we may show, some we may not, and some will follow when the fix is out."
       metaTitle="Security research | tokenizen"
       metaDescription="Security research by two brothers in Eindhoven: a published High advisory, our own record including what was rejected, and how we will show the rest."
@@ -158,7 +158,7 @@ export function SecurityPage() {
       <Block label="The public example">
         <p>
           A published GitHub security advisory with severity High: prompt injection in an issue automation workflow could expose workflow credentials. Our account is
-          credited as the reporter. It opens without a login.
+          credited as the reporter. The severity is the one in the published advisory, set by the project, and it has no CVE. It opens without a login.
         </p>
         <p>
           <LinkOut href={ADVISORY_URL}>Open the advisory</LinkOut>
@@ -166,9 +166,9 @@ export function SecurityPage() {
       </Block>
       <Block label="The whole record">
         <p>
-          From our own records: we filed 81 reports so far and 7 were accepted as valid. The rest were rejected, were duplicates of earlier reports, were withdrawn
-          by us because our analysis was wrong, or are still waiting. Some reports were confirmed or triaged at four well-known technology companies; their names stay
-          private.
+          From our own records: we filed 81 reports so far. The receiver confirmed 5, from two known technology companies and three open-source projects, one of them
+          the advisory above. For 2 more the receiver acknowledged the report or fixed it without answering us. The rest were rejected, were duplicates of earlier
+          reports, were withdrawn by us because our analysis was wrong, have had no answer, or are still waiting. The names stay private.
         </p>
         <p className="text-sm text-muted-foreground">These are our own records. They are not an outside audit of us.</p>
       </Block>
@@ -198,7 +198,7 @@ export function ScanPage() {
       metaDescription="A smart contract scan with a public scoreboard that includes what it missed. Pay per scan over x402."
     >
       <Block label="What you get">
-        <p>A report of AI-generated hypotheses about your contract, to be reviewed by hand. You pay per scan over x402. A scan takes about 20 to 45 seconds.</p>
+        <p>A report of AI-generated hypotheses about your contract, to be reviewed by hand. The quick scan costs 1 dollar and returns the first 15 hypotheses; the full scan costs 5 dollars. You pay in USDC on Base over x402. A scan takes about 20 to 45 seconds.</p>
         <p>
           <LinkOut href="/en/notes/official-sources">Price and payment address: the official sources</LinkOut>
         </p>
@@ -206,7 +206,8 @@ export function ScanPage() {
       <Block label="How you check it">
         <p>
           The public scoreboard lists every run, each row linking to the rule written before the run and the result after it. Version 3.1 found 8 of 105 known
-          findings on a sealed set, in one run, with two changes made at once. Each square below is one known finding.
+          findings in its first 15 hypotheses, on the same eight contests as our sealed run, which were no longer secret by then, after two changes at once. In
+          the sealed run the earlier versions found 1 and 4. Each square below is one known finding.
         </p>
         <MissStrip label="8 of 105 known findings found, 97 missed" />
         <p>
@@ -311,7 +312,7 @@ export function ConsultancyPage() {
 }
 
 export function AboutPage() {
-  useMeta("Two brothers, one company | tokenizen", "Abdellah and Ahmed Ouadoudi run AO Services in Eindhoven: security research, free checks, a log where any change to the past shows.");
+  useMeta("Two brothers, one company | tokenizen", "Abdellah and Ahmed Ouadoudi run AO Services in Eindhoven: security research, free checks, a log with a timestamp outside our control.");
   return (
     <div className="border-t border-border">
       <Brothers locale="en" level={1} />

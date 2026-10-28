@@ -4,12 +4,12 @@ export const en: Dictionary = {
   "htmlLang": "en",
   "meta": {
     "title": "tokenizen | We find the leaks. We publish the numbers.",
-    "description": "Security research, free checks and a log where any change to the past shows, by two brothers in Eindhoven. We measured 109 public repositories on eight security signals and publish our misses too.",
+    "description": "Security research, free checks and a log with a timestamp outside our control, by two brothers in Eindhoven. We measured 109 public repositories on eight security signals and publish our misses too.",
     "ogLocale": "en_US",
     "ogTitle": "tokenizen | We find the leaks. We publish the numbers.",
-    "ogDescription": "Security research, free checks and a log where any change to the past shows, by two brothers in Eindhoven. We measured 109 public repositories on eight security signals and publish our misses too.",
+    "ogDescription": "Security research, free checks and a log with a timestamp outside our control, by two brothers in Eindhoven. We measured 109 public repositories on eight security signals and publish our misses too.",
     "twitterTitle": "tokenizen | We find the leaks. We publish the numbers.",
-    "twitterDescription": "Security research, free checks and a log where any change to the past shows. Two brothers in Eindhoven."
+    "twitterDescription": "Security research, free checks and a log with a timestamp outside our control. Two brothers in Eindhoven."
   },
   "header": {
     "navLabel": "Main navigation",
@@ -317,7 +317,7 @@ export const en: Dictionary = {
     }
   },
   "footer": {
-    "tagline": "Security research, free checks and a log where any change to the past shows. Two brothers in Eindhoven.",
+    "tagline": "Security research, free checks and a log with a timestamp outside our control. Two brothers in Eindhoven.",
     "maintainedBy": "Maintained by",
     "githubLabel": "github.com/holistis/tokenizen",
     "signalLogLabel": "Signal log",

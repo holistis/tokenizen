@@ -1,23 +1,33 @@
+import type { FormEvent } from "react";
 import { ArrowUpRight, Mail } from "lucide-react";
 
 import { ChainDemo } from "@/components/matrix/chain-demo";
 import { MissStrip, SCAN_FOUND, SCAN_KNOWN } from "@/components/matrix/miss-strip";
+import { repoFromHash } from "@/components/pages/cra-check-page";
 import { Portrait } from "@/components/portrait";
 import { Button } from "@/components/ui/button";
 import { CONTACT_EMAIL, HOME, type Locale } from "@/data/home-copy";
 
 const eyebrow = "mb-3 font-mono text-xs font-medium uppercase tracking-[0.15em] text-[color:var(--altitude)]";
 
-/** 10 m: the reader's own repository. A plain form: pressing the button opens the check page with the name filled in. */
+/** 10 m: the reader's own repository. Pressing the button opens the check page with the name filled in (through the address fragment). */
 export function CheckYours({ locale }: { locale: Locale }) {
   const c = HOME[locale].check;
+  // The name goes into the address fragment, which the browser never sends to a server. A form that submitted a query (?repo=) would put
+  // the name of every repository into a request to our host, and the privacy statement promises that the check does not do that.
+  function go(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const typed = String(new FormData(e.currentTarget).get("repo") ?? "").trim();
+    const repo = repoFromHash(`#repo=${encodeURIComponent(typed)}`);
+    if (repo) window.location.assign(`/en/cra-check#repo=${encodeURIComponent(repo)}`);
+  }
   return (
     <div className="border-t border-border py-16 md:py-24">
       <div className="container">
         <p className={eyebrow}>10 m</p>
         <h2 className="max-w-3xl font-display text-3xl leading-tight sm:text-4xl md:text-5xl">{c.heading}</h2>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">{c.body}</p>
-        <form action="/en/cra-check" method="get" className="mt-8 flex max-w-2xl flex-col gap-3 sm:flex-row">
+        <form onSubmit={go} className="mt-8 flex max-w-2xl flex-col gap-3 sm:flex-row">
           <label className="block flex-1">
             <span className="sr-only">{c.label}</span>
             <input

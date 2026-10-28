@@ -3,11 +3,11 @@ import { fileURLToPath } from "node:url";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import { HomePage } from "@/components/home/home-page";
+import { HomePage, legacyAnchorTarget } from "@/components/home/home-page";
 import { chainHashes, DEMO_LINES, firstBreak } from "@/components/matrix/chain-demo";
 import { gridCells, visibleShare } from "@/components/matrix/measure-grid";
 import { SCAN_FOUND, SCAN_KNOWN } from "@/components/matrix/miss-strip";
-import { repoFromSearch } from "@/components/pages/cra-check-page";
+import { repoFromHash } from "@/components/pages/cra-check-page";
 import { AboutPage, ChecksPage, ConsultancyPage, ScanPage, SecurityPage, ToolsPage } from "@/components/pages/offer-pages";
 import { BENCHMARK_REPOSITORIES, BENCHMARK_SIGNALS } from "@/data/cra-benchmark";
 import { ADVISORY_URL, HOME, OFFERS } from "@/data/home-copy";
@@ -115,16 +115,23 @@ describe("the pattern made from a text", () => {
   });
 });
 
-describe("the repository named in the address", () => {
+describe("the repository named in the address fragment", () => {
   it("takes over a plain owner/name or a github.com address and nothing else", () => {
-    expect(repoFromSearch("?repo=holistis/tokenizen")).toBe("holistis/tokenizen");
-    expect(repoFromSearch("?repo=https%3A%2F%2Fgithub.com%2Fholistis%2Ftokenizen")).toBe("https://github.com/holistis/tokenizen");
-    expect(repoFromSearch("")).toBe("");
-    expect(repoFromSearch("?repo=")).toBe("");
-    expect(repoFromSearch("?repo=javascript:alert(1)")).toBe("");
-    expect(repoFromSearch("?repo=a/b/c")).toBe("");
-    expect(repoFromSearch("?repo=https%3A%2F%2Fevil.example%2Fa%2Fb")).toBe("");
-    expect(repoFromSearch("?repo=" + "a".repeat(200) + "/b")).toBe("");
+    expect(repoFromHash("#repo=holistis/tokenizen")).toBe("holistis/tokenizen");
+    expect(repoFromHash("#repo=https%3A%2F%2Fgithub.com%2Fholistis%2Ftokenizen")).toBe("https://github.com/holistis/tokenizen");
+    expect(repoFromHash("")).toBe("");
+    expect(repoFromHash("#repo=")).toBe("");
+    expect(repoFromHash("#repo=javascript:alert(1)")).toBe("");
+    expect(repoFromHash("#repo=a/b/c")).toBe("");
+    expect(repoFromHash("#repo=https%3A%2F%2Fevil.example%2Fa%2Fb")).toBe("");
+    expect(repoFromHash("#repo=" + "a".repeat(200) + "/b")).toBe("");
+  });
+
+  // A query would put the name into a request to our host. The homepage must send it in the fragment and the check page must not read a query.
+  it("is the only way the name travels: no query anywhere", () => {
+    const home = page("en", <HomePage />);
+    expect(home).not.toContain('method="get"');
+    expect(home).not.toContain("?repo=");
   });
 });
 
@@ -146,6 +153,50 @@ describe("the words", () => {
     }
   });
 
+  // The red reader of 28 October 2026 found sentences that said more than we can show. They stay out.
+  it("keep out the claims that the red reader took out", () => {
+    const all = (
+      JSON.stringify([HOME, OFFERS]) +
+      page("en", <SecurityPage />) +
+      page("en", <ScanPage />) +
+      page("en", <HomePage />) +
+      page("nl", <HomePage />)
+    ).toLowerCase();
+    const forbidden = [
+      "nobody can",
+      "niemand kan",
+      "four well-known",
+      "vier bekende",
+      "same code",
+      "dezelfde code",
+      "with receipts",
+      "beveiligingsonderzoek, met bewijs",
+      "on a sealed set, in one run",
+      "any change to the past shows",
+      "pinned dependencies",
+    ];
+    for (const phrase of forbidden) expect(all.includes(phrase), phrase).toBe(false);
+  });
+
+  it("give the scan number together with its caveats and the prices", () => {
+    const en = OFFERS.en.find((o) => o.id === "scan");
+    const nl = OFFERS.nl.find((o) => o.id === "scan");
+    expect(en?.verify).toContain("8 of 105");
+    expect(en?.verify).toContain("first 15 hypotheses");
+    expect(en?.verify).toContain("no longer secret");
+    expect(en?.verify).toContain("two changes at once");
+    expect(nl?.verify).toContain("8 van de 105");
+    expect(nl?.verify).toContain("niet meer geheim");
+    expect(en?.price).toContain("1 dollar");
+    expect(en?.price).toContain("5 dollars");
+    for (const locale of ["en", "nl"] as const) {
+      for (const id of ["security", "talk"] as const) {
+        const offer = OFFERS[locale].find((o) => o.id === id);
+        expect(offer?.price, `${locale} ${id}`).toMatch(/No fixed offer yet|Nog geen vast aanbod/);
+      }
+    }
+  });
+
   it("name the same prices as the approved offer page", () => {
     const en = OFFERS.en.find((o) => o.id === "signal-log");
     expect(en?.price).toBe("9.95 or 29.95 euro per month, VAT included");
@@ -160,7 +211,7 @@ describe("the homepage", () => {
     expect(html.match(/id="aanbod-/g)).toHaveLength(6);
     expect(html).toContain(HOME[locale].hero.h1a);
     expect(html).toContain(ADVISORY_URL);
-    expect(html).toContain('action="/en/cra-check"');
+    expect(html).not.toContain('action="/en/cra-check"');
     expect(html).not.toMatch(LONG_DASH);
   });
 
@@ -169,6 +220,27 @@ describe("the homepage", () => {
     const at = ["top", "aanbod", "nagaan", "bewijs"].map((id) => html.indexOf(`id="${id}"`));
     expect(at.every((i) => i > -1)).toBe(true);
     expect([...at].sort((a, b) => a - b)).toEqual(at);
+  });
+});
+
+describe("links to the sections of the old homepage", () => {
+  it("lead to the same section on the tools page, in the reader's language", () => {
+    expect(legacyAnchorTarget("#hoe-het-werkt", "en")).toBe("/en/tools#hoe-het-werkt");
+    expect(legacyAnchorTarget("#status", "nl")).toBe("/tools#status");
+    for (const id of ["probleem", "waarom-nu", "product", "controle", "ontwerpgrenzen", "open-source"]) {
+      expect(legacyAnchorTarget(`#${id}`, "en"), id).toBe(`/en/tools#${id}`);
+    }
+  });
+
+  it("leave the anchors of the new homepage and anything else alone", () => {
+    for (const hash of ["", "#", "#top", "#aanbod", "#nagaan", "#bewijs", "#unknown", "#repo=a/b"]) expect(legacyAnchorTarget(hash, "en"), hash).toBeNull();
+  });
+
+  it("find every old id on the tools page", () => {
+    const html = page("en", <ToolsPage />);
+    for (const id of ["probleem", "waarom-nu", "product", "controle", "hoe-het-werkt", "ontwerpgrenzen", "open-source", "status"]) {
+      expect(html, id).toContain(`id="${id}"`);
+    }
   });
 });
 

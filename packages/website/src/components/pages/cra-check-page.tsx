@@ -95,8 +95,8 @@ export function CraCheckResultView({ result }: { result: CraCheckResult }) {
         <CardTitle>The eight signals</CardTitle>
         <CardDescription>
           Each signal relates to a topic in the Regulation around vulnerability handling and distribution of updates, or to general good
-          practice. "Not visible" means we did not find it in the places we looked (every file of the repository, its workflows and pipeline files, and its
-          latest releases), not that you do not do it. "Not measured" means we could not read enough to say.
+          practice. "Not visible" means we did not find it in the places we looked (the list of files in the repository, up to 12 workflow files and 6 pipeline files read in
+          full, and its latest releases), not that you do not do it. "Not measured" means we could not read enough to say.
         </CardDescription>
         <CardContent>
           <ul>
@@ -153,12 +153,13 @@ export function CraCheckResultView({ result }: { result: CraCheckResult }) {
 }
 
 /**
- * The repository named in the address (?repo=owner/name), for the field on the homepage that sends people here. Only a plain
+ * The repository named in the address fragment (#repo=owner/name), for the field on the homepage that sends people here. A fragment is
+ * never sent to a server, so the name of a repository does not appear in any request or log; a query (?repo=) would. Only a plain
  * owner/name or a github.com address is taken over; anything else leaves the field empty. It is only filled in, never sent: the check
  * runs when the person presses the button.
  */
-export function repoFromSearch(search: string): string {
-  const raw = new URLSearchParams(search).get("repo")?.trim() ?? "";
+export function repoFromHash(hash: string): string {
+  const raw = new URLSearchParams(hash.replace(/^#/, "")).get("repo")?.trim() ?? "";
   if (/^[A-Za-z0-9._-]{1,100}\/[A-Za-z0-9._-]{1,100}$/.test(raw)) return raw;
   if (/^https:\/\/github\.com\/[A-Za-z0-9._-]{1,100}\/[A-Za-z0-9._-]{1,100}\/?$/.test(raw)) return raw;
   return "";
@@ -167,7 +168,7 @@ export function repoFromSearch(search: string): string {
 export function CraCheckPage() {
   useArticleMeta();
 
-  const [repo, setRepo] = useState(() => (typeof window === "undefined" ? "" : repoFromSearch(window.location.search)));
+  const [repo, setRepo] = useState(() => (typeof window === "undefined" ? "" : repoFromHash(window.location.hash)));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CraCheckResult | null>(null);

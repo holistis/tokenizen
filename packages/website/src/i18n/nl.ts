@@ -5,14 +5,14 @@ export const nl: Dictionary = {
   meta: {
     title: "tokenizen | Wij vinden de lekken. Wij publiceren de cijfers.",
     description:
-      "Beveiligingsonderzoek, gratis checks en een logboek waarin elke verandering van het verleden opvalt, van twee broers in Eindhoven. We maten 109 openbare repositories op acht beveiligingssignalen en publiceren onze missers ook.",
+      "Beveiligingsonderzoek, gratis checks en een logboek met een tijdstempel buiten onze controle, van twee broers in Eindhoven. We maten 109 openbare repositories op acht beveiligingssignalen en publiceren onze missers ook.",
     ogLocale: "nl_NL",
     ogTitle: "tokenizen | Wij vinden de lekken. Wij publiceren de cijfers.",
     ogDescription:
-      "Beveiligingsonderzoek, gratis checks en een logboek waarin elke verandering van het verleden opvalt, van twee broers in Eindhoven. We maten 109 openbare repositories op acht beveiligingssignalen en publiceren onze missers ook.",
+      "Beveiligingsonderzoek, gratis checks en een logboek met een tijdstempel buiten onze controle, van twee broers in Eindhoven. We maten 109 openbare repositories op acht beveiligingssignalen en publiceren onze missers ook.",
     twitterTitle: "tokenizen | Wij vinden de lekken. Wij publiceren de cijfers.",
     twitterDescription:
-      "Beveiligingsonderzoek, gratis checks en een logboek waarin elke verandering van het verleden opvalt. Twee broers in Eindhoven.",
+      "Beveiligingsonderzoek, gratis checks en een logboek met een tijdstempel buiten onze controle. Twee broers in Eindhoven.",
   },
   header: {
     navLabel: "Hoofdnavigatie",
@@ -313,7 +313,7 @@ export const nl: Dictionary = {
     },
   },
   footer: {
-    tagline: "Beveiligingsonderzoek, gratis checks en een logboek waarin elke verandering van het verleden opvalt. Twee broers in Eindhoven.",
+    tagline: "Beveiligingsonderzoek, gratis checks en een logboek met een tijdstempel buiten onze controle. Twee broers in Eindhoven.",
     maintainedBy: "Onderhouden door",
     githubLabel: "github.com/holistis/tokenizen",
     signalLogLabel: "Signal log",
