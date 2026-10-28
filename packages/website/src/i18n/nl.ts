@@ -319,6 +319,9 @@ export const nl: Dictionary = {
     tagline: "Open-source infrastructuur voor de verkoperskant van de AI-agent-economie. Nieuw, in actieve ontwikkeling, met vaste ontwerpgrenzen.",
     maintainedBy: "Onderhouden door",
     githubLabel: "github.com/holistis/tokenizen",
+    signalLogLabel: "Signal log",
+    termsLabel: "Voorwaarden",
+    privacyLabel: "Privacy",
     copyright: "© 2026 tokenizen. Open source, MIT-licentie.",
     legend: [
       { dot: "bg-rule-green", label: "wel: bouwen we" },

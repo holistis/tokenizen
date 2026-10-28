@@ -1,0 +1,23 @@
+Signal log, early access
+
+A weekly record of the security signals of your public GitHub repositories, that you can check without us.
+
+What you get today
+Once a week, normally on Monday, we run the free check from tokenizen.nl/en/cra-check on the public repositories you name: up to 3 with Solo, up to 25 with Team. Each result becomes one line in a log file. Every line contains the hash of the line before it, so changing, removing or reordering an old line shows. The head of the log is timestamped with OpenTimestamps, which is outside our control, so the date can be checked without trusting us. A timestamp is pending at first and counts as confirmed only after Bitcoin has included it, usually some hours later. After each run we email you the updated log and the command to verify it. At this stage we run it ourselves, by hand.
+
+What is not included yet
+Email warnings when a signal that was visible is no longer visible. They are planned and are not part of what you buy today. There is also no public place where logs are published: your log is yours.
+
+What this is not
+The check looks at eight selected signals that are visible in a public repository, chosen with the EU Cyber Resilience Act in mind. It is not a compliance check, not a certificate and not legal advice. Not visible means not visible in the public repository and its GitHub releases; it may exist elsewhere. The limits are on the free check page and in our note about 109 repositories.
+
+Price, VAT included
+Solo: 9.95 euro per month or 99 euro per year, up to 3 repositories.
+Team: 29.95 euro per month or 299 euro per year, up to 25 repositories.
+You can cancel at any time in the customer portal; the subscription then ends at the end of the period you paid for. In the first 14 days you can ask for all your money back. If we do not deliver the weekly log in a billing period, you get that period back.
+
+How it starts
+After you subscribe, email the repositories as owner/name to info@tokenizen.nl. The first run is the next Monday.
+
+Who we are
+AO Services, KvK 86816632, BTW NL004319767B61, Lochemstraat 49, 5651 EL Eindhoven, info@tokenizen.nl. Terms: tokenizen.nl/en/terms. Privacy statement: tokenizen.nl/en/privacy.

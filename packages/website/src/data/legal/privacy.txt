@@ -1,0 +1,17 @@
+Privacy statement
+
+Who is responsible. AO Services, KvK 86816632, Lochemstraat 49, 5651 EL Eindhoven. Privacy questions: info@tokenizen.nl.
+
+The free checks on this site. We read public pages of the repository, address or domain that you type. Reports are not stored. An answer stays in server memory for up to an hour so that the same repository is not read twice, and the server does not log repository names. Our network provider (Cloudflare) and the server that runs the check process your IP address to deliver the page and to limit abuse.
+
+Cookies. We set no cookies and use no analytics or tracking. Your browser stores your theme choice (light, dark or system) in its local storage on your device.
+
+If you subscribe to the Signal log. We process your email address, the names of the repositories you send us, the measurements we make of them, and what Stripe tells us about your payment: your name, billing address, VAT number if you give one, and the brand and last digits of your card. We never see your full card number. The reasons are to deliver what you bought (the agreement), to keep the invoices and payment records that tax law requires (a legal obligation), and to answer you (our interest in running the service).
+
+Who gets it. Stripe processes payments and invoices. Our email provider sends you the logs. The head of your log, which is a hash without names, goes to the OpenTimestamps calendars to be timestamped. We do not sell personal data and do not use it for advertising.
+
+How long. Subscription data while your subscription runs and for 12 months after it ends, for questions and disputes. Invoices and payment records for 7 years, because tax law requires it.
+
+Your rights. You can ask us for access to your data, correction, deletion, restriction, a copy you can move to someone else, and you can object. Email info@tokenizen.nl; we answer within one month. You can complain to the Dutch Data Protection Authority (Autoriteit Persoonsgegevens).
+
+Last changed: 28 October 2026.
