@@ -28,6 +28,18 @@ Known limits, written down because an adversarial review (ours, not independent)
 
 Why the buyer check does not use x402-lint: x402-lint reads only the response body, and a v2 seller keeps its requirements in the Payment-Required header with a body of `{}`. Measured on 2026-10-24 against our own live paid route it reported "x402Version: Invalid discriminator value". Same schema, different place to read it from.
 
+## The free CRA readiness check
+
+- **`POST /api/cra/check`** (free, about seven read-only requests to GitHub) - body `{ repo }`, behind tokenizen.nl/cra-check. It answers with a dated list of eight points the EU Cyber Resilience Act (Regulation 2024/2847) asks around vulnerability handling and distribution of updates, each one `visible`, `not_visible` or `not_measured` for a PUBLIC GitHub repository: a security policy with a reporting address, a software bill of materials, signed releases or provenance, a lockfile, Dependabot or Renovate, a security scan in CI, maintenance in the last 90 days, a licence. Each point that is not visible comes with what would make it visible, and the answer lists the GitHub pages that were read so a reader can open the same ones.
+
+It is an indication from public data and says so in every answer (`notice`, `whatThisDoesNotMeasure`, `rules`). The mapping from each point to the Regulation is our own reading, built from secondary sources, not reviewed by a lawyer; the answer carries the rule set version so a dated result stays meaningful when the rules change. "Not visible" is never worded as "missing": signing or an SBOM done on a separate build server or a registry is not visible from the repository.
+
+What stands in the way of abuse, all in `src/cra-check.ts` and `src/cra-repo-check.ts`: the visitor chooses an `owner/repo` pair, never a host, and it must match a strict pattern before any address is built (every path segment is percent-encoded again); the only hosts ever asked for are api.github.com and raw.githubusercontent.com, through net-guard's `guardedFetch`, with redirects refused; every response is read with a byte cap (1 MB for the API, 200 KB for a workflow file, at most eight workflow files), because a repository owner chooses how big their files are; at most six checks busy at once, a 30 second deadline per check with the sockets aborted, a one hour cache per repository (a repository does not change by the minute) and a five minute cache for "not found", an hourly budget for the whole server (6 without a token, 300 with one) and 6 requests per 10 minutes per IP on top; text that came from a repository is cut and stripped of control characters, and the page renders it as text. Nothing is stored, the cache lives in memory, and no repository name is logged.
+
+**The GitHub allowance.** One check costs about seven API calls (the raw file reads are not counted by GitHub). Without a token the allowance is 60 calls an hour for the whole server, so set `CRA_CHECK_GITHUB_TOKEN` to a fine-grained token with NO permissions (public repositories, read only), made for this service only; it raises the allowance to 5000 and is sent to api.github.com only. Never a personal token. When GitHub says "slow down", the answer is a 429 and nothing is cached.
+
+Not independently reviewed: an adversarial review of our own is the only one this route has had.
+
 ## Usage
 
 ```bash

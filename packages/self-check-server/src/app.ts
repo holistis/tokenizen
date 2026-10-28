@@ -65,6 +65,7 @@ import { createRateLimiter } from "./rate-limit.js";
 import { handleConformance } from "./x402-conformance.js";
 import { handleBadge, handleBadgeJson } from "./x402-badge.js";
 import { createX402Checker, handleX402Check, type X402CheckerOptions } from "./x402-check.js";
+import { createCraChecker, handleCraCheck, type CraCheckerOptions } from "./cra-check.js";
 
 const DEFAULT_ALLOWED_ORIGINS = ["http://localhost:5173", "https://tokenizen.nl", "https://www.tokenizen.nl"];
 
@@ -122,6 +123,11 @@ export interface CreateAppOptions {
    * that tests use instead of the network. See x402-check.ts for why this route exists next to the badge.
    */
   x402Check?: X402CheckerOptions & { rateLimit?: { windowMs: number; max: number } };
+  /**
+   * The free CRA readiness check of a public GitHub repository (POST /api/cra/check). `rateLimit` is the per-IP
+   * limit, 6 requests / 10 minutes by default. See cra-check.ts for the limits that sit behind it.
+   */
+  craCheck?: CraCheckerOptions & { rateLimit?: { windowMs: number; max: number } };
 }
 
 const ChallengeBody = z.object({
@@ -294,6 +300,13 @@ export function createApp(options: CreateAppOptions = {}): Express {
   });
   const x402Checker = createX402Checker({ routableHostDeps: options.routableHostDeps, ...x402CheckerOptions });
 
+  const { rateLimit: craCheckRateLimit, ...craCheckerOptions } = options.craCheck ?? {};
+  const craCheckLimiter = createRateLimiter({
+    windowMs: craCheckRateLimit?.windowMs ?? 10 * 60 * 1000,
+    max: craCheckRateLimit?.max ?? 6,
+  });
+  const craChecker = createCraChecker(craCheckerOptions);
+
   const app = express();
   app.disable("x-powered-by");
   // Decides how req.ip (the rate-limit key) is resolved. Default false; behind
@@ -331,6 +344,11 @@ export function createApp(options: CreateAppOptions = {}): Express {
   // reverses the badge's "never measure live" rule, on purpose and behind its own limiter plus the
   // per-host and global budgets inside the checker. See the header of x402-check.ts.
   app.post("/api/x402/check", x402CheckLimiter, handleX402Check(x402Checker));
+
+  // The free CRA readiness check of a public GitHub repository. The visitor chooses an owner/repo pair, never
+  // a host, and the egress is the same net-guard fetch. Behind its own limiter plus a global hourly budget and
+  // a one hour cache inside the checker. See the header of cra-check.ts.
+  app.post("/api/cra/check", craCheckLimiter, handleCraCheck(craChecker));
 
   app.post("/api/challenge", challengeLimiter, async (req: Request, res: Response) => {
     const parsed = ChallengeBody.safeParse(req.body);

@@ -122,4 +122,34 @@ export async function checkX402Endpoint(url: string, method: "GET" | "POST"): Pr
   return postJson<X402CheckResult | ApiError>("/api/x402/check", { url, method }, { keepRateLimitBody: true });
 }
 
+export type CraStatus = "visible" | "not_visible" | "not_measured";
+
+export interface CraControl {
+  id: string;
+  topic: string;
+  status: CraStatus;
+  evidence?: string;
+  explanation: string;
+  fix?: string;
+}
+
+export interface CraCheckResult {
+  ok: true;
+  cached: boolean;
+  repo: string;
+  measuredAt: string;
+  rules: { version: string; reviewedOn: string; basis: string; regulation: string };
+  summary: { measured: number; visible: number; notVisible: number; notMeasured: number };
+  controls: CraControl[];
+  advisories: string;
+  whatThisDoesNotMeasure: string[];
+  notice: string;
+  sourcesRead: string[];
+}
+
+/** What is visible, in a public GitHub repository, of eight CRA points. Free, reads only, see packages/self-check-server/src/cra-check.ts. */
+export async function checkCraRepo(repo: string): Promise<CraCheckResult | ApiError> {
+  return postJson<CraCheckResult | ApiError>("/api/cra/check", { repo }, { keepRateLimitBody: true });
+}
+
 export { CheckApiError };

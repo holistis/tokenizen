@@ -38,7 +38,14 @@ async function main(): Promise<void> {
   const port = parsePort(process.env.PORT, 8787);
   const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",").map((s) => s.trim()).filter(Boolean);
   const trustProxy = parseTrustProxy(process.env.TRUST_PROXY);
-  const app = createApp({ trustProxy, ...(allowedOrigins ? { allowedOrigins } : {}) });
+  // A GitHub token WITHOUT any permissions, only to raise the hourly allowance for public reads (60 -> 5000).
+  // Never a personal token: this server is public and unauthenticated.
+  const githubToken = process.env.CRA_CHECK_GITHUB_TOKEN?.trim();
+  const app = createApp({
+    trustProxy,
+    ...(allowedOrigins ? { allowedOrigins } : {}),
+    ...(githubToken ? { craCheck: { githubToken } } : {}),
+  });
   // HOST narrows the interface it listens on. Unset keeps the old behaviour (all interfaces). Behind a
   // proxy that sets X-Forwarded-For, set HOST=127.0.0.1 so nobody can reach the port directly and send
   // that header themselves: the per-IP rate limit keys on it when TRUST_PROXY is set.
