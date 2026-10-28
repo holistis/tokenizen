@@ -259,6 +259,8 @@ describe("assessRepo", () => {
     expect(r.rules.basis).toMatch(/official text/);
     expect(r.rules.basis).toMatch(/not been reviewed by a lawyer/);
     expect(r.whatThisDoesNotMeasure.length).toBeGreaterThanOrEqual(4);
+    // found by looking at a "not visible" scan by hand: a Trivy scan that ran in a Jenkinsfile is not visible to a check that reads GitHub Actions only
+    expect(r.whatThisDoesNotMeasure.some((x) => /other than GitHub Actions/.test(x))).toBe(true);
     expect(r.notice).toMatch(/not a check against the legal requirements/);
     expect(r.notice).toMatch(/not legal advice/);
     expect(JSON.stringify(r)).not.toMatch(/complies with the CRA|is compliant|\bmissing\b/i);
