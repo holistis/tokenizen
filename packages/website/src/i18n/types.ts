@@ -139,6 +139,9 @@ export interface Dictionary {
     tagline: string;
     maintainedBy: string;
     githubLabel: string;
+    signalLogLabel: string;
+    termsLabel: string;
+    privacyLabel: string;
     copyright: string;
     legend: Array<{ dot: string; label: string }>;
   };

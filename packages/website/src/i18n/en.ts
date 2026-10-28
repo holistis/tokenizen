@@ -332,6 +332,9 @@ export const en: Dictionary = {
     "tagline": "Open-source infrastructure for the seller side of the AI agent economy. New, in active development, with fixed design limits.",
     "maintainedBy": "Maintained by",
     "githubLabel": "github.com/holistis/tokenizen",
+    "signalLogLabel": "Signal log",
+    "termsLabel": "Terms",
+    "privacyLabel": "Privacy",
     "copyright": "© 2026 tokenizen. Open source, MIT license.",
     "legend": [
       {

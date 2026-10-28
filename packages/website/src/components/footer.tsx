@@ -1,10 +1,13 @@
 import { Github, Mail } from "lucide-react";
 
 import { useLocale } from "@/i18n/context";
+import { resolveNavHref } from "@/components/header";
 
 const GITHUB_URL = "https://github.com/holistis/tokenizen";
 const MAINTAINER_URL = "https://github.com/holistis";
 const CONTACT_EMAIL = "info@tokenizen.nl";
+// The trader behind the paid service, shown on every page (a webshop must show it). The same data is in the terms and the privacy statement.
+export const BUSINESS_LINE = "AO Services · KvK 86816632 · BTW NL004319767B61 · Lochemstraat 49, 5651 EL Eindhoven";
 
 // The three coloured dots explain the coloured rules in the "limits" section of
 // the homepage. On any other page (the blog, the self-check) there is no such
@@ -15,7 +18,7 @@ export function showsRuleLegend(pathname?: string): boolean {
 }
 
 export function Footer() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const legend = showsRuleLegend();
 
   return (
@@ -59,7 +62,21 @@ export function Footer() {
         </div>
 
         <div className="flex flex-col gap-4 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="font-mono text-xs text-muted-foreground">{t.footer.copyright}</p>
+          <div className="space-y-2">
+            <p className="font-mono text-xs text-muted-foreground">{t.footer.copyright}</p>
+            <p className="break-words font-mono text-xs text-muted-foreground" data-testid="business-line">{BUSINESS_LINE}</p>
+            <p className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs">
+              {[
+                { href: "/signal-log", label: t.footer.signalLogLabel },
+                { href: "/terms", label: t.footer.termsLabel },
+                { href: "/privacy", label: t.footer.privacyLabel },
+              ].map((l) => (
+                <a key={l.href} href={resolveNavHref(l.href, locale)} className="text-foreground underline-offset-2 hover:underline">
+                  {l.label}
+                </a>
+              ))}
+            </p>
+          </div>
 
           {legend ? (
             <ul className="flex flex-wrap items-center gap-x-5 gap-y-2">

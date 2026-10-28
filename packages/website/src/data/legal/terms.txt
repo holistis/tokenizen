@@ -1,0 +1,23 @@
+Terms of the Signal log
+
+1. Who we are. AO Services, KvK 86816632, BTW NL004319767B61, Lochemstraat 49, 5651 EL Eindhoven, info@tokenizen.nl.
+
+2. What we sell. A subscription to the Signal log as described on tokenizen.nl/en/signal-log: a weekly measurement of the public GitHub repositories you name (up to 3 for Solo, up to 25 for Team), added to a hash-chained log with a timestamp outside our control, which we email to you. This is early access. What is not described there is not promised, and the email warnings are not included yet.
+
+3. Price and payment. Prices include VAT and are shown on the offer page. You pay through Stripe, monthly or yearly, in advance. A subscription renews until you cancel it. We tell you 30 days before a price changes; the new price applies from the next period, and you can cancel before it does.
+
+4. Cancelling and refunds. Cancel at any time in the customer portal; the subscription ends at the end of the period you paid for. In the first 14 days you can ask us by email for a full refund, and we pay it back. If we do not deliver the weekly log in a billing period, you get that period back. If we stop the service, you get back the unused part of the period.
+
+5. What you give us. The names of public repositories that you own or are allowed to monitor, and an email address. We only read public information. We never ask for access to your code.
+
+6. What we do not promise. The log shows that a measurement was not changed after it was written and, once its timestamp is confirmed, that it existed by that date. It does not show that a measurement is right. The signals are visible only in public places, so a signal that is not visible may exist elsewhere. Nothing we send is a compliance check, a certificate or legal advice.
+
+7. Liability. We are liable for damage caused by our intent or gross negligence. Otherwise our liability is limited to the amount you paid us in the 12 months before the event. This does not limit rights that you have by law as a consumer.
+
+8. Changes and ending. We may change the service for good reason and tell you in advance by email. We may end it with 30 days notice.
+
+9. Personal data. See tokenizen.nl/en/privacy.
+
+10. Law. Dutch law applies. A dispute goes to the court in Oost-Brabant, unless you are a consumer: then the court that the law gives you also applies.
+
+Questions: info@tokenizen.nl.
