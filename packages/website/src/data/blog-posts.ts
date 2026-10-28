@@ -834,6 +834,77 @@ We are Tokenizen (tokenizen.nl) and we sell on x402 ourselves, so we are not neu
       },
     ],
   },
+  {
+    slug: "eight-security-signals-109-repositories",
+    kind: "note",
+    date: "2026-10-28",
+    title: "Eight security signals in 109 public repositories of organisations in ten EU countries",
+    dek: "We ran our free check on 109 public repositories with a release. In 16 percent of them a security policy with a contact was visible, and in 4 percent an SBOM. What that says, and what it does not.",
+    description:
+      "Eight security signals on 109 public repositories with a release: policy with contact 16 percent, SBOM 4, provenance 5. Method, our own checks and limits.",
+    tags: ["Measurements", "CRA"],
+    readMinutes: 7,
+    blocks: [
+      {
+        type: "md",
+        text: `On 28 October 2026 we measured eight security signals on 109 public GitHub repositories, with the same code that runs behind our free check at tokenizen.nl/en/cra-check (rule set 2026-10-28.6). The eight signals are our own selection, made with the EU Cyber Resilience Act in mind: some relate to topics in Annex I part II of the Regulation, others are general good practice. They are not one signal for each legal requirement, and nothing here says whether anyone complies.
+
+The sample rule and our expected shares were written down before the run, in an internal file that is not public, so the date cannot be checked from outside. For ten EU countries (the Netherlands, Germany, France, Belgium, Sweden, Finland, Ireland, Spain, Italy and Denmark) we took the first 20 organisations of the GitHub search for organisations in that country, sorted by number of public repositories. For each organisation we took the most recently pushed repository, among its first ten, that is not a fork, not archived, not a template and has at least one published release. An organisation without such a repository dropped out and was not replaced: 89 of the 200 did. Two more were skipped because their repository was already in the sample from another country list. That left 109 repositories.
+
+The rules of the signals changed between our runs, and the requirement that a security policy names a contact was added after the sample rule was registered. Our expected shares were: security policy with a contact 40 to 65 percent, bill of materials 5 to 15, signed releases or provenance 5 to 20, lockfile 60 to 80, automatic updates 35 to 55, security scan 25 to 45, recent commit 70 to 90, licence 85 to 95. Five of the eight signals came in lower than that.
+
+For each signal we give how many repositories show it, out of the repositories where we could measure it. A signal we could not read completely is "not measured" and is left out of the second number.`,
+      },
+      {
+        type: "facts",
+        heading: "What was visible in the public repository",
+        intro: "109 repositories, measured on 28 October 2026. Each card links to the rules of that signal in the code.",
+        items: [
+          { value: "17 of 106", label: "show a security policy that names a contact address or a reporting link (16 percent)", href: "https://github.com/holistis/tokenizen/blob/main/packages/self-check-server/src/cra-repo-check.ts", hrefLabel: "The rules in the code" },
+          { value: "4 of 101", label: "show a software bill of materials, as a file or as a step that makes one (4 percent)", href: "https://github.com/holistis/tokenizen/blob/main/packages/self-check-server/src/cra-repo-check.ts", hrefLabel: "The rules in the code" },
+          { value: "5 of 101", label: "show signed releases or a provenance attestation (5 percent)", href: "https://github.com/holistis/tokenizen/blob/main/packages/self-check-server/src/cra-repo-check.ts", hrefLabel: "The rules in the code" },
+          { value: "56 of 80", label: "show a lockfile such as package-lock.json, Cargo.lock, poetry.lock or go.sum (70 percent). A requirements.txt with exact versions and pinned GitHub Actions are not counted. We did not assess 29 repositories (no package file we recognise, a Maven, Gradle, Go or .NET project without a lockfile, or a file tree we could not read completely), so they are not in the 80", href: "https://github.com/holistis/tokenizen/blob/main/packages/self-check-server/src/cra-repo-check.ts", hrefLabel: "The rules in the code" },
+          { value: "36 of 106", label: "show automatic dependency updates, Dependabot or Renovate (34 percent)", href: "https://github.com/holistis/tokenizen/blob/main/packages/self-check-server/src/cra-repo-check.ts", hrefLabel: "The rules in the code" },
+          { value: "15 of 104", label: "show a security scan in a GitHub Actions workflow (14 percent)", href: "https://github.com/holistis/tokenizen/blob/main/packages/self-check-server/src/cra-repo-check.ts", hrefLabel: "The rules in the code" },
+          { value: "88 of 109", label: "had a commit on the default branch in the last 90 days (81 percent)", href: "https://github.com/holistis/tokenizen/blob/main/packages/self-check-server/src/cra-repo-check.ts", hrefLabel: "The rules in the code" },
+          { value: "85 of 109", label: "declare a licence, in GitHub's licence field or in a licence file in the root (78 percent). Of the 24 without one, five have a licence file only in a subfolder, such as a font's or a bundled component's", href: "https://github.com/holistis/tokenizen/blob/main/packages/self-check-server/src/cra-repo-check.ts", hrefLabel: "The rules in the code" },
+        ],
+      },
+      {
+        type: "md",
+        text: `## What we do not claim
+
+This is not a sample of companies. Organisations with many public repositories are larger and more active than the long tail, and the list includes universities, communities and projects that are not companies, so the numbers probably say more about the active end than about a small software firm. We use the word organisations for that reason.
+
+"Not visible" means not visible in the public repository and its GitHub releases. A policy can sit on a website, a bill of materials on a build server, a scan in the repository settings. Of the CI systems only GitHub Actions is read, at most 12 workflow files per repository, so a scan that runs in Jenkins, GitLab CI or CircleCI is not seen: one of the cases we checked by hand was a Trivy scan in a Jenkinsfile. The Regulation applies to products with digital elements made available on the market in the course of a commercial activity (Articles 2 and 3(22) and recital 15). Free and open-source software that its manufacturer does not monetise is not treated as a commercial activity, and neither does the mere presence of regular releases make it one (recital 18), which matters here because every repository in this sample has a release. The sole act of hosting a product on an open repository does not make it available on the market (recital 20), so many repositories in this sample are probably outside the duties of manufacturers. Open-source stewards have a lighter regime of their own (recital 19 and Article 24).
+
+Some of our definitions are stricter than GitHub's. The policy signal needs a file that names an email address or a reporting link, so a file without one is not counted even though GitHub shows a policy: in the final run that excluded two repositories. A scanner that is only set up in the configuration file of another tool, without a workflow that runs it, is not counted. A workflow that installs a bill of materials tool is counted, and we cannot see whether it ran. Signed git tags are not checked, and the patterns can count a passing mention of a tool name in a workflow. Files are matched anywhere in the tree, so a lockfile or a bill of materials in a test folder counts. A signal can be called visible from a partial read but not visible only from a complete one, so leaving the repositories we could not measure out of the second number pushes the shares up slightly. The country comes from the free-text location field of an organisation's GitHub profile, so it is approximate. The numbers are a snapshot from one hour: GitHub search results shift, and a repeat gives a slightly different sample. We publish no repository or organisation names.
+
+## How we checked our own tool
+
+We ran the measurement seven times while fixing the tool, and only the last run counts. Checking found several faults of ours. A failed read was once reported as "not visible". A policy that wrote its address as "security AT example.org" was called "no contact". A Docker build that attaches a provenance attestation and a bill of materials to its image was called "not visible" for both. On the other side, a workflow that deleted the CodeQL cache counted as a security scan, a version number like braces@3.0.3 counted as an email address, and addresses in templates counted as contacts. All are fixed in the code on GitHub, and the measurement was repeated.
+
+For every repository where the policy signal was not visible (89) we asked GitHub itself, with its own detection. In the final run it agreed in 87 of the 89 cases. The two differences are policies that name no real contact, which we do not count: a template address on a .local domain, and a file without any address. The licence signal uses GitHub's own licence field, so there is nothing independent to compare it with.
+
+For the signals for a bill of materials, provenance, scans and automatic updates, and for recent commits, we read a seeded random sample of "not visible" findings, five for each of the first four and three for the last (23 cases), in three rounds on the last three runs, with a different method (the whole file tree, every workflow file, other CI systems and the releases). We also looked at every one of the 24 gaps each for the lockfile and the licence, in the whole file tree: all 24 had no lockfile anywhere, and 5 of the 24 licence gaps have a licence file only in a subfolder. The first round found one miss, the Docker case above. The second found none: three cases were flagged, two were false alarms of our own checking script and one was a scanner that is only configured in another tool's file, which we do not count. The third found one miss of coverage, the Jenkinsfile case above, and three flagged cases that were not misses. On the other side we read the line behind each of the 41 "visible" findings of the final run for the policy, bill of materials, provenance and scan signals. All showed what the signal asks for, but two bills of materials and one provenance case only install the tool, and one scan runs npm audit fix.
+
+This is our own checking, not an independent audit. Twenty-three cases per round says little about an error rate, and there may be faults we did not find.
+
+## Repeat it
+
+The sampling script is bench/cra-benchmark.mjs in github.com/holistis/tokenizen, and the three checks above are bench/cra-check-against-github.mjs, bench/cra-hand-check.mjs and bench/cra-visible-check.mjs next to it. They read public GitHub endpoints only, and a rerun gives a slightly different sample. We built the check these numbers come from, so we are not neutral here.`,
+      },
+      {
+        type: "cta",
+        heading: "Try it on your own repository",
+        text: "Name a public GitHub repository and see which of the eight signals are visible in it. It is free and nothing is stored.",
+        links: [
+          { label: "The free check", href: "https://tokenizen.nl/en/cra-check" },
+          { label: "The benchmark script", href: "https://github.com/holistis/tokenizen/blob/main/packages/self-check-server/bench/cra-benchmark.mjs" },
+        ],
+      },
+    ],
+  },
 ];
 
 export function postPath(slug: string): string {

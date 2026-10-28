@@ -40,6 +40,7 @@ New, but no longer unused. It has been run end to end against a real live paid e
 - [600 live x402 services, none signing a receipt](https://tokenizen.nl/en/notes/zero-of-600-x402-services-sign-a-receipt): a measured count of how many live x402 resources declare the offer-receipt extension, the commands to reproduce it, the limits of the number, and a live endpoint that does sign one
 - [Nine ways to fake a delivery claim](https://tokenizen.nl/en/notes/nine-ways-to-fake-a-delivery-claim): nine independent designs for making buyer-signed claims harder to fake, each built and broken against the real code, and the structural reason none of them fully worked
 - [The Hierarchy of Agent Trust](https://tokenizen.nl/en/notes/the-hierarchy-of-agent-trust): a plain-language story explaining why capacity-attest stops at evidence and deliberately never becomes a score or a judge
+- [Eight security signals in 109 public repositories of organisations in ten EU countries](https://tokenizen.nl/en/notes/eight-security-signals-109-repositories): eight security signals measured on 109 public repositories with a release, how often each is visible, how we checked our own tool and what the numbers do not say
 
 ## How to use it
 
