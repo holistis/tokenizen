@@ -28,7 +28,7 @@
 // (a branch name) ends up in an address. Every response is read with a size cap, because a repository owner chooses how big
 // the files in their repository are.
 
-export const RULES_VERSION = "2026-10-28.4";
+export const RULES_VERSION = "2026-10-28.5";
 export const RULES_REVIEWED_ON = "2026-10-28";
 
 const OWNER_RE = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/;
@@ -76,10 +76,12 @@ const LOCKFILES = [
 const LOCKED_MANIFESTS = ["package.json", "Cargo.toml", "pyproject.toml", "requirements.txt", "Pipfile", "Gemfile", "composer.json"];
 /** Manifests of ecosystems where versions are normally pinned in the build file itself, so a missing lockfile says little. */
 const PINNED_IN_BUILD_FILE = ["pom.xml", "build.gradle", "build.gradle.kts", "go.mod"];
+// docker/build-push-action attaches a provenance attestation and an SBOM to the image it pushes when asked to (provenance: mode=max, sbom: true):
+// found by checking a sample of "not visible" findings by hand, one repository did exactly that and was called "not visible" for both.
 const SBOM_FILE = /(^|\/)(sbom|bom)(\.[a-z0-9-]+)*\.(json|xml)$|\.(spdx|cdx)(\.json)?$|(^|\/)[^/]*cyclonedx[^/]*\.(json|xml)$/i;
-const SBOM_WORKFLOW = /(anchore\/sbom-action|cyclonedx|syft\b|spdx-sbom-generator|trivy[^\n]{0,200}sbom|npm sbom|cdxgen|sbom-tool|advanced-security\/spdx)/i;
+const SBOM_WORKFLOW = /(anchore\/sbom-action|cyclonedx|syft\b|spdx-sbom-generator|trivy[^\n]{0,200}sbom|npm sbom|cdxgen|sbom-tool|advanced-security\/spdx|\bsbom:\s*(?:true|generator=)|--sbom(?:=true)?(?![-\w]))/i;
 const PROVENANCE_FILE = /\.(sig|asc|minisig|sigstore|intoto\.jsonl|attestation)$|\.sigstore\.json$|\.cosign\.bundle$/i;
-const PROVENANCE_WORKFLOW = /(attest-build-provenance|actions\/attest|slsa-framework|cosign|sigstore|--provenance|npm publish[^\n]{0,200}provenance|gpg --detach|minisign)/i;
+const PROVENANCE_WORKFLOW = /(attest-build-provenance|actions\/attest|slsa-framework|cosign|sigstore|--provenance|npm publish[^\n]{0,200}provenance|gpg --detach|minisign|\bprovenance:\s*(?:true|mode=(?:min|max))\b)/i;
 const SCAN_WORKFLOW = /(codeql|semgrep|trivy|grype|osv-scanner|snyk|gitleaks|trufflehog|scorecard|npm audit|pip-audit|cargo audit|govulncheck|bandit|brakeman|sonarcloud|sonarqube|dependency-review)/i;
 /** The three places GitHub itself looks for a security policy. */
 const POLICY_FILE = /^(?:\.github\/|docs\/)?SECURITY\.(?:md|txt|rst)$/i;
