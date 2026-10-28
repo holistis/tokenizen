@@ -695,6 +695,7 @@ export function assessRepo(s: RepoSignals): RepoReport {
       "whether fixed vulnerabilities are made public, and whether vulnerabilities are really handled without delay during the support period (Annex I, part II)",
       "your internal process for notifying actively exploited vulnerabilities and severe incidents through the EU single reporting platform within 24 hours and 72 hours, and the final report (Article 14)",
       "technical documentation, the risk assessment and the EU declaration of conformity",
+      "builds, scans and signing that run in a CI system other than GitHub Actions (Jenkins, GitLab CI, CircleCI and similar): only GitHub Actions workflows are read",
       "private repositories, hosting other than GitHub, and anything that is not public",
     ],
     notice: "This is an indication from public data about eight selected signals. It is not a check against the legal requirements, not a conformity assessment and not legal advice.",
