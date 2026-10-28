@@ -187,10 +187,10 @@ export function CraCheckPage() {
         </h1>
         <div className="mt-5 space-y-4 text-base leading-relaxed text-foreground/90">
           <p>
-            Name a public GitHub repository. Our server reads a handful of its public pages, about seven requests, and tells you which of
-            eight points are visible: a security policy with a reporting address, a software bill of materials, signed releases, pinned
-            dependencies, automatic updates, security scans, maintenance and a licence. For each point that is not visible you get what
-            would make it visible.
+            Name a public GitHub repository. Our server reads a handful of its public pages, up to about twenty small requests, and tells
+            you which of eight points are visible: a security policy that names a contact, a software bill of materials, signed releases,
+            pinned dependencies, automatic updates, security scans, maintenance and a licence. For each point that is not visible you get
+            what would make it visible, and a point we could not read is marked as not measured, never as a gap.
           </p>
           <p>
             The EU Cyber Resilience Act (Regulation 2024/2847) puts duties on makers of software that is sold in the EU. The reporting

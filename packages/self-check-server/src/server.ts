@@ -41,10 +41,14 @@ async function main(): Promise<void> {
   // A GitHub token WITHOUT any permissions, only to raise the hourly allowance for public reads (60 -> 5000).
   // Never a personal token: this server is public and unauthenticated.
   const githubToken = process.env.CRA_CHECK_GITHUB_TOKEN?.trim();
+  // Without a token the whole server may read GitHub only about six times an hour, and one visitor could use that up for
+  // everybody, so the route stays OFF unless a token is set or anonymous use is switched on on purpose (CRA_CHECK_ALLOW_ANONYMOUS=1).
+  const craEnabled = Boolean(githubToken) || process.env.CRA_CHECK_ALLOW_ANONYMOUS === "1";
+  if (!craEnabled) console.warn("self-check-server: /api/cra/check is switched off (set CRA_CHECK_GITHUB_TOKEN to a token with no permissions to switch it on).");
   const app = createApp({
     trustProxy,
     ...(allowedOrigins ? { allowedOrigins } : {}),
-    ...(githubToken ? { craCheck: { githubToken } } : {}),
+    craCheck: { enabled: craEnabled, ...(githubToken ? { githubToken } : {}) },
   });
   // HOST narrows the interface it listens on. Unset keeps the old behaviour (all interfaces). Behind a
   // proxy that sets X-Forwarded-For, set HOST=127.0.0.1 so nobody can reach the port directly and send

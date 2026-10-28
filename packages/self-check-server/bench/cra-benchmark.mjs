@@ -14,7 +14,7 @@
 // Reading only: public GitHub endpoints. The token raises the allowance and is never printed or written.
 
 import { writeFileSync } from "node:fs";
-import { assessRepo, fetchSignals, RULES_VERSION } from "../dist/cra-repo-check.js";
+import { assessRepo, fetchSignals, isComplete, RULES_VERSION } from "../dist/cra-repo-check.js";
 
 const args = Object.fromEntries(process.argv.slice(2).map((a) => a.replace(/^--/, "").split("=")));
 const TOKEN = process.env.CRA_BENCH_TOKEN || undefined;
@@ -73,20 +73,32 @@ for (const country of COUNTRIES) {
   console.error(`${country}: ${picked.length} repositories so far`);
 }
 
+// The same time limit per repository as the server (cra-check.ts), so a number we publish cannot come from a slower, more patient run.
+const DEADLINE_MS = 30_000;
+const queue = picked.map((item) => ({ item, attempts: 0 }));
 const results = [];
-let next = 0;
+let failedReads = 0;
+let gaveUp = 0;
 async function worker() {
-  while (next < picked.length) {
-    const item = picked[next++];
-    const signals = await fetchSignals(item.repo, { fetchImpl: fetch, token: TOKEN, signal: AbortSignal.timeout(60_000) });
+  for (let job = queue.shift(); job; job = queue.shift()) {
+    const signals = await fetchSignals(job.item.repo, { fetchImpl: fetch, token: TOKEN, signal: AbortSignal.timeout(DEADLINE_MS) });
     if (signals.rateLimited) {
+      if (job.attempts >= 3) {
+        gaveUp++;
+        continue;
+      }
       console.error("rate limited during a measurement, waiting 60s");
       await sleep(60_000);
-      next--;
+      queue.push({ item: job.item, attempts: job.attempts + 1 });
       continue;
     }
     if (signals.notFound) continue;
-    results.push({ ...item, report: assessRepo(signals) });
+    // The repository itself could not be read: that is not a finding about the repository, so it is counted apart and left out.
+    if (signals.failed) {
+      failedReads++;
+      continue;
+    }
+    results.push({ ...job.item, report: assessRepo(signals), complete: isComplete(signals) });
     if (results.length % 20 === 0) console.error(`measured ${results.length}`);
   }
 }
@@ -116,6 +128,9 @@ const totals = {
   organisationsExamined: orgsSeen,
   organisationsWithoutQualifyingRepository: orgsDropped,
   repositoriesMeasured: results.length,
+  repositoriesWithAPartThatCouldNotBeRead: results.filter((r) => !r.complete).length,
+  repositoriesUnreadableAndLeftOut: failedReads,
+  repositoriesGivenUpAfterRateLimits: gaveUp,
   repositoriesPerCountry: perCountry,
   controls: perControl,
 };
