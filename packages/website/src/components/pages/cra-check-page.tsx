@@ -191,9 +191,9 @@ export function CraCheckPage() {
           tokenizen.nl
         </a>
 
-        <p className="mt-8 font-mono text-xs font-medium uppercase tracking-[0.15em] text-primary">cyber resilience act · free check</p>
+        <p className="mt-8 font-mono text-xs font-medium uppercase tracking-[0.15em] text-primary">eight selected signals · free check</p>
         <h1 className="mt-3 font-display text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
-          What can be seen of your CRA vulnerability handling? Free, live, a repository name is enough.
+          Which security signals can be seen in your GitHub repository? Free, live, a repository name is enough.
         </h1>
         <div className="mt-5 space-y-4 text-base leading-relaxed text-foreground/90">
           <p>

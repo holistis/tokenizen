@@ -183,6 +183,12 @@ describe("assessRepo", () => {
     expect(statusOf({ ...good(), lastCommit: null, lastPush: null }, "maintenance")).toBe("not_measured");
   });
 
+  it("a commit or release dated a little after our own clock is shown as 0 days ago, never as a negative number", () => {
+    const c = control({ ...good(), lastCommit: NOW + 20 * 60 * 60 * 1000, releases: [{ tag: "v1", date: NOW + DAY, draft: false, assets: [] }] }, "maintenance");
+    expect(c?.status).toBe("visible");
+    expect(c?.evidence).toBe("last commit on the default branch 0 days ago, last release 0 days ago");
+  });
+
   it("licence: GitHub's name counts, so does a licence file GitHub does not recognise, and an unreadable tree is not held against it", () => {
     expect(statusOf(good(), "license")).toBe("visible");
     const unrecognised = control(withFiles(["LICENSE.md", "README.md"], { license: null }), "license");

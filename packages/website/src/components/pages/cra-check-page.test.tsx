@@ -44,6 +44,11 @@ describe("CraCheckPage", () => {
     expect(html).toContain("11 June 2026");
   });
 
+  it("has a heading that promises signals in a repository, not a view on compliance", () => {
+    expect(html).toContain("Which security signals can be seen in your GitHub repository?");
+    expect(html).not.toContain("CRA vulnerability handling");
+  });
+
   it("offers a repository field", () => {
     expect(html).toContain('id="cra-repo"');
     expect(html).toContain("Check this repository");

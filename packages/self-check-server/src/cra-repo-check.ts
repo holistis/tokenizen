@@ -635,9 +635,9 @@ export function assessRepo(s: RepoSignals): RepoReport {
   const TOPIC7 = "Maintenance and updates";
   const lastChange = s.lastCommit ?? s.lastPush ?? null;
   const what = s.lastCommit ? "last commit on the default branch" : "last push to any branch";
-  const daysSince = lastChange ? Math.floor((s.now - lastChange) / DAY_MS) : null;
+  const daysSince = lastChange ? Math.max(0, Math.floor((s.now - lastChange) / DAY_MS)) : null;
   const lastRelease = (s.releases ?? []).filter((r) => !r.draft && r.date).sort((a, b) => (b.date ?? 0) - (a.date ?? 0))[0];
-  const daysSinceRelease = lastRelease?.date ? Math.floor((s.now - lastRelease.date) / DAY_MS) : null;
+  const daysSinceRelease = lastRelease?.date ? Math.max(0, Math.floor((s.now - lastRelease.date) / DAY_MS)) : null;
   if (s.archived) c.push(notVisible("maintenance", TOPIC7, "The repository is archived: no security updates will come from it.", "Say publicly who takes over maintenance, or that the product is no longer supported."));
   else if (daysSince === null) c.push(notMeasured("maintenance", TOPIC7, "No date of the last change was available."));
   else
