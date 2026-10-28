@@ -35,8 +35,19 @@ jobs:
       - name: Generate the SBOM from the installed tree
         run: npm sbom --sbom-format cyclonedx --omit dev --workspaces > sbom.cdx.json
 
-      - name: Check that the file is a CycloneDX document
-        run: node -e "const j=JSON.parse(require('fs').readFileSync('sbom.cdx.json','utf8')); if(j.bomFormat!=='CycloneDX') process.exit(1); console.log('components:', (j.components||[]).length)"
+      - name: Check the file before it is attached
+        # A document that parses is not enough: an empty SBOM, or one that leaves out a workspace package, must fail here.
+        run: |
+          node -e "
+          const j = JSON.parse(require('fs').readFileSync('sbom.cdx.json', 'utf8'));
+          const names = (j.components || []).map((c) => c.name);
+          if (j.bomFormat !== 'CycloneDX') { console.error('not a CycloneDX document'); process.exit(1); }
+          if (names.length < 50) { console.error('too few components:', names.length); process.exit(1); }
+          for (const w of ['self-check-server', 'capacity-attest', 'trust-attest-server']) {
+            if (!names.includes(w)) { console.error('workspace package missing from the SBOM:', w); process.exit(1); }
+          }
+          console.log('components:', names.length);
+          "
 
       - name: Attach to the release
         if: github.event_name == 'release'
