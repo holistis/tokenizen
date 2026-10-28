@@ -259,8 +259,8 @@ describe("assessRepo", () => {
     expect(r.rules.basis).toMatch(/official text/);
     expect(r.rules.basis).toMatch(/not been reviewed by a lawyer/);
     expect(r.whatThisDoesNotMeasure.length).toBeGreaterThanOrEqual(4);
-    // found by looking at a "not visible" scan by hand: a Trivy scan that ran in a Jenkinsfile is not visible to a check that reads GitHub Actions only
-    expect(r.whatThisDoesNotMeasure.some((x) => /other than GitHub Actions/.test(x))).toBe(true);
+    // found by looking at a "not visible" scan by hand: a Trivy scan that ran in a Jenkinsfile; the pipeline files of the other CI systems are read now, and the limit that remains is said
+    expect(r.whatThisDoesNotMeasure.some((x) => /pipeline file is not at the root/.test(x))).toBe(true);
     expect(r.notice).toMatch(/not a check against the legal requirements/);
     expect(r.notice).toMatch(/not legal advice/);
     expect(JSON.stringify(r)).not.toMatch(/complies with the CRA|is compliant|\bmissing\b/i);
@@ -453,6 +453,47 @@ describe("fetchSignals", () => {
     expect(Object.keys(s.workflowTexts)).toContain("zz-release.yml");
     expect(s.workflowState).toBe("partial");
     expect(statusOf(s, "security-scanning")).toBe("not_measured");
+  });
+
+  // Found by hand: a Trivy scan in a Jenkinsfile was called "not visible" because only GitHub Actions workflows were read.
+  it("reads the pipeline file of another CI system, at the root or in .circleci, and counts a scan in it", async () => {
+    for (const file of ["Jenkinsfile", ".gitlab-ci.yml", "azure-pipelines.yml", "bitbucket-pipelines.yml", ".travis.yml", ".drone.yml", ".circleci/config.yml", "Jenkinsfile.release"]) {
+      const net = fakeGithub([[TREE, tree([file, "package.json"])], ["raw.githubusercontent.com", text("sh 'trivy image --severity CRITICAL app'")], [OWNER_TREE, json({}, 404)], [META, json(repoMeta())]]);
+      const s = await fetchSignals("o/r", { fetchImpl: net.fetchImpl, now: NOW });
+      expect(s.workflowState, file).toBe("complete");
+      expect(Object.keys(s.workflowTexts), file).toEqual([file]);
+      expect(statusOf(s, "security-scanning"), file).toBe("visible");
+      expect(net.calls.some((c) => c.url === `https://raw.githubusercontent.com/o/r/HEAD/${file}`), file).toBe(true);
+    }
+  });
+
+  it("pipeline files elsewhere in the tree, or with another name, are not read", async () => {
+    const net = fakeGithub([[TREE, tree(["ci/Jenkinsfile", "docs/.gitlab-ci.yml", "Jenkinsfile-notes.txt", "package.json"])], [OWNER_TREE, json({}, 404)], [META, json(repoMeta())]]);
+    const s = await fetchSignals("o/r", { fetchImpl: net.fetchImpl, now: NOW });
+    expect(s.workflowState).toBe("none");
+    expect(s.workflowTexts).toEqual({});
+  });
+
+  it("a pipeline file that could not be read makes the reading partial, so a missing scan is not called not visible", async () => {
+    const net = fakeGithub([[TREE, tree(["Jenkinsfile"])], ["raw.githubusercontent.com", () => new Response("nope", { status: 500 })], [OWNER_TREE, json({}, 404)], [META, json(repoMeta())]]);
+    const s = await fetchSignals("o/r", { fetchImpl: net.fetchImpl, now: NOW });
+    expect(s.workflowState).toBe("partial");
+    expect(statusOf(s, "security-scanning")).toBe("not_measured");
+  });
+
+  it("reads at most six pipeline files of other CI systems and then says the reading was partial", async () => {
+    const names = ["Jenkinsfile", "Jenkinsfile.a", "Jenkinsfile.b", "Jenkinsfile.c", "Jenkinsfile.d", "Jenkinsfile.e", "Jenkinsfile.f", "Jenkinsfile.g"];
+    const net = fakeGithub([[TREE, tree(names)], ["raw.githubusercontent.com", text("sh 'echo hi'")], [OWNER_TREE, json({}, 404)], [META, json(repoMeta())]]);
+    const s = await fetchSignals("o/r", { fetchImpl: net.fetchImpl, now: NOW });
+    expect(Object.keys(s.workflowTexts)).toHaveLength(6);
+    expect(s.workflowState).toBe("partial");
+  });
+
+  it("a comment in a pipeline file is not a step", async () => {
+    const net = fakeGithub([[TREE, tree(["Jenkinsfile"])], ["raw.githubusercontent.com", text("# sh 'trivy fs .'\nsh 'echo hi'\n")], [OWNER_TREE, json({}, 404)], [META, json(repoMeta())]]);
+    const s = await fetchSignals("o/r", { fetchImpl: net.fetchImpl, now: NOW });
+    expect(s.workflowState).toBe("complete");
+    expect(statusOf(s, "security-scanning")).toBe("not_visible");
   });
 
   it("a workflow file that could not be read makes the folder partial", async () => {

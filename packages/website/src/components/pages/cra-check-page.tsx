@@ -95,7 +95,7 @@ export function CraCheckResultView({ result }: { result: CraCheckResult }) {
         <CardTitle>The eight signals</CardTitle>
         <CardDescription>
           Each signal relates to a topic in the Regulation around vulnerability handling and distribution of updates, or to general good
-          practice. "Not visible" means we did not find it in the places we looked (every file of the repository, its workflows and its
+          practice. "Not visible" means we did not find it in the places we looked (every file of the repository, its workflows and pipeline files, and its
           latest releases), not that you do not do it. "Not measured" means we could not read enough to say.
         </CardDescription>
         <CardContent>
@@ -197,7 +197,7 @@ export function CraCheckPage() {
         </h1>
         <div className="mt-5 space-y-4 text-base leading-relaxed text-foreground/90">
           <p>
-            Name a public GitHub repository. Our server reads a handful of its public pages, up to about twenty small requests, and tells
+            Name a public GitHub repository. Our server reads a handful of its public pages, up to about thirty small requests, and tells
             you which of eight selected signals are visible: a security policy that names a contact, a software bill of materials, signed
             releases, pinned dependencies, automatic updates, security scans, recent maintenance and a licence. For each signal that is not
             visible you get what would make it visible, and a signal we could not read completely is marked as not measured, never as a gap.
