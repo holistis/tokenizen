@@ -65,6 +65,27 @@ describe("namesContact", () => {
     expect(namesContact("We take security seriously.")).toBe(false);
   });
 
+  // Found by checking the benchmark against GitHub's own detection: a policy that wrote its address as "security AT example.org".
+  it("counts an address that is written to hide it from spam robots", () => {
+    expect(namesContact("please contact us by sending an email to security AT example.org")).toBe(true);
+    expect(namesContact("write to security [at] example.org")).toBe(true);
+    expect(namesContact("write to security (at) example.org")).toBe(true);
+    expect(namesContact("write to security{AT}example.org")).toBe(true);
+  });
+
+  it("does not take the ordinary word at for a hidden address", () => {
+    expect(namesContact("look at example.com for the manual")).toBe(false);
+    expect(namesContact("we are at home on example.com and at work")).toBe(false);
+    expect(namesContact("meet us at example.org")).toBe(false);
+  });
+
+  it("stays fast on a long line made of the characters the hidden-address pattern is built from", () => {
+    const line = "a.".repeat(400) + " AT " + "b-".repeat(400);
+    const started = Date.now();
+    namesContact(line);
+    expect(Date.now() - started).toBeLessThan(500);
+  });
+
   it("A CONTACT THAT WAS NOT EXAMINED IS NOT 'NO CONTACT': past 16 KB, on a very long line, or beyond the read cap the answer is unknown", () => {
     const pad = "Nothing to see here.\n".repeat(900); // about 19 KB, no contact
     expect(namesContact(pad)).toBeNull();
