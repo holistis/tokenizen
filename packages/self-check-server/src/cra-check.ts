@@ -9,7 +9,7 @@
 // and a redirect is refused outright (a public repository read never needs one).
 //
 // WHAT CAN STILL GO WRONG, and what stands in the way:
-//   - the GitHub allowance: one check costs up to eleven API calls (the raw file reads are not counted by
+//   - the GitHub allowance: one check costs up to six API calls (the raw file reads are not counted by
 //     GitHub). Without a token the allowance is 60 calls an hour for this whole server, so the route is
 //     SWITCHED OFF unless a token (with NO permissions) is configured or anonymous use is switched on on
 //     purpose; with a token it is 5000. When GitHub says "slow down", the answer is a 429 and nothing is
@@ -38,9 +38,9 @@ const DEFAULT_NOT_FOUND_TTL_MS = 5 * 60 * 1000;
 const DEFAULT_DEADLINE_MS = 30_000;
 const DEFAULT_MAX_CONCURRENT = 6;
 const BUDGET_WINDOW_MS = 60 * 60 * 1000;
-/** Each check is up to eleven API calls; stay well inside the allowance with and without a token. */
+/** Each check is up to six API calls (repository, file tree, releases, advisories, last commit, the owner policy tree); stay well inside the allowance with and without a token. */
 const DEFAULT_GLOBAL_MAX_WITHOUT_TOKEN = 5;
-const DEFAULT_GLOBAL_MAX_WITH_TOKEN = 300;
+const DEFAULT_GLOBAL_MAX_WITH_TOKEN = 250;
 const NOT_FOUND_BUDGET_FACTOR = 4;
 const MAX_CACHE_ENTRIES = 1000;
 

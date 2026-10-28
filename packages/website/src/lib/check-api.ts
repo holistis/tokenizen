@@ -144,7 +144,8 @@ export interface CraCheckResult {
   advisories: string;
   whatThisDoesNotMeasure: string[];
   notice: string;
-  sourcesRead: string[];
+  /** The pages the server asked for and what came of each. */
+  sources: Array<{ url: string; outcome: "read" | "partial" | "not_found" | "moved" | "failed" }>;
 }
 
 /** What is visible, in a public GitHub repository, of eight CRA points. Free, reads only, see packages/self-check-server/src/cra-check.ts. */

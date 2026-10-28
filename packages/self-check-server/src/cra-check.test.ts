@@ -28,7 +28,7 @@ const commit = json([{ commit: { committer: { date: new Date(NOW - 86_400_000).t
 /** Any repository of "owner" is found and reads cleanly. */
 const okRoutes = (): Route[] => [
   ["raw.githubusercontent.com", () => new Response("report to security@example.org")],
-  ["/contents", json([{ name: "SECURITY.md", type: "file" }, { name: "package.json", type: "file" }])],
+  ["/git/trees/", json({ truncated: false, tree: [{ path: "SECURITY.md", type: "blob" }, { path: "package.json", type: "blob" }] })],
   ["/commits", commit],
   ["/security-advisories", json([])],
   ["/releases", json([])],
@@ -126,7 +126,7 @@ describe("createCraChecker", () => {
 
   it("a report with a part that could not be read says so and is kept only a few minutes", async () => {
     let t = NOW;
-    const routes: Route[] = [["/contents", () => Promise.reject(new Error("boom"))], ...okRoutes().filter(([p]) => p !== "/contents")];
+    const routes: Route[] = [["/git/trees/", () => Promise.reject(new Error("boom"))], ...okRoutes().filter(([p]) => p !== "/git/trees/")];
     const net = fakeGithub(routes);
     const checker = createCraChecker({ fetchImpl: net.fetchImpl, now: () => t });
     const first = await checker.check("owner/repo");
@@ -185,9 +185,7 @@ describe("createCraChecker", () => {
 
   it("sends the token to api.github.com only", async () => {
     const net = fakeGithub([
-      ["/contents/.github/workflows", json([{ name: "ci.yml", type: "file" }])],
-      ["/contents/.github", json([{ name: "workflows", type: "dir" }])],
-      ["/contents", json([{ name: ".github", type: "dir" }])],
+      ["/git/trees/", json({ truncated: false, tree: [{ path: ".github", type: "tree" }, { path: ".github/workflows", type: "tree" }, { path: ".github/workflows/ci.yml", type: "blob" }, { path: "package.json", type: "blob" }] })],
       ["raw.githubusercontent.com", () => new Response("x")],
       ["/commits", commit],
       ["/security-advisories", json([])],
@@ -243,8 +241,8 @@ describe("POST /api/cra/check", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("cache-control")).toBe("no-store");
     const body = await res.json();
-    expect(body).toMatchObject({ ok: true, cached: false, repo: "Owner/Repo", rules: { version: "2026-10-28.2" } });
-    expect(Object.keys(body).sort()).toEqual(["advisories", "cached", "controls", "measuredAt", "notice", "ok", "repo", "rules", "sourcesRead", "summary", "whatThisDoesNotMeasure"]);
+    expect(body).toMatchObject({ ok: true, cached: false, repo: "Owner/Repo", rules: { version: "2026-10-28.3" } });
+    expect(Object.keys(body).sort()).toEqual(["advisories", "cached", "controls", "measuredAt", "notice", "ok", "repo", "rules", "sources", "summary", "whatThisDoesNotMeasure"]);
   });
 
   it("answers 400 for a bad body or a bad name, 404 for an unknown repository, 502 when GitHub cannot be read", async () => {

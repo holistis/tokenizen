@@ -12,7 +12,7 @@ function sample(overrides: Partial<CraCheckResult> = {}): CraCheckResult {
     cached: false,
     repo: "Owner/Repo",
     measuredAt: "2026-10-28T12:00:00.000Z",
-    rules: { version: "2026-10-28.1", reviewedOn: "2026-10-28", basis: "Our own reading, not reviewed by a lawyer.", regulation: "https://eur-lex.europa.eu/eli/reg/2024/2847/oj" },
+    rules: { version: "2026-10-28.3", reviewedOn: "2026-10-28", basis: "Eight selected signals, not one for each legal requirement. Our own reading, not reviewed by a lawyer.", regulation: "https://eur-lex.europa.eu/eli/reg/2024/2847/oj" },
     summary: { measured: 3, visible: 1, notVisible: 2, notMeasured: 1 },
     controls: [
       { id: "vulnerability-policy", topic: "Reporting channel and policy for vulnerabilities", status: "visible", evidence: "SECURITY.md", explanation: "A security policy file is in the repository." },
@@ -22,8 +22,8 @@ function sample(overrides: Partial<CraCheckResult> = {}): CraCheckResult {
     ],
     advisories: "0 published security advisories in this repository (a number says nothing about quality: zero does not mean safe)",
     whatThisDoesNotMeasure: ["private repositories"],
-    notice: "This is an indication from public data. It is not a conformity assessment and not legal advice.",
-    sourcesRead: ["https://api.github.com/repos/Owner/Repo", "https://example.com/not-github"],
+    notice: "This is an indication from public data about eight selected signals. It is not a check against the legal requirements, not a conformity assessment and not legal advice.",
+    sources: [{ url: "https://api.github.com/repos/Owner/Repo", outcome: "read" }, { url: "https://example.com/not-github", outcome: "failed" }],
     ...overrides,
   };
 }
@@ -31,9 +31,17 @@ function sample(overrides: Partial<CraCheckResult> = {}): CraCheckResult {
 describe("CraCheckPage", () => {
   const html = renderToStaticMarkup(<CraCheckPage />);
 
-  it("says up front that it stores nothing and only reads public repositories", () => {
-    expect(html).toContain("We store nothing");
+  it("says up front that it stores no reports, that the answer sits briefly in memory, and that it only reads public repositories", () => {
+    expect(html).toContain("We do not store reports");
+    expect(html).toContain("server memory");
     expect(html).toContain("Only public");
+  });
+
+  it("says that these are eight selected signals and not one for each legal requirement", () => {
+    expect(html).toContain("eight selected signals");
+    expect(html).toContain("not one signal for each legal requirement");
+    expect(html).toContain("do not tell you whether you comply");
+    expect(html).toContain("11 June 2026");
   });
 
   it("offers a repository field", () => {
@@ -52,12 +60,13 @@ describe("CraCheckPage", () => {
 describe("CraCheckResultView", () => {
   it("shows the counts, every point with its status, and what to do about the ones not visible", () => {
     const html = renderToStaticMarkup(<CraCheckResultView result={sample()} />);
-    expect(html).toContain("1 of the 3 points");
-    expect(html).toContain("2 are not");
-    expect(html).toContain("1 could not be measured");
+    expect(html).toContain("1 of the 3 public-repository signals");
+    expect(html).toContain("2 are not visible in the places we looked");
+    expect(html).toContain("1 could not be checked completely");
+    expect(html).toContain("not a compliance score");
     expect(html).toContain("not visible");
     expect(html).toContain("Let the build produce a CycloneDX file.");
-    expect(html).toContain("Rule set 2026-10-28.1");
+    expect(html).toContain("Rule set 2026-10-28.3");
     expect(html).not.toMatch(LONG_DASHES);
   });
 
@@ -69,15 +78,17 @@ describe("CraCheckResultView", () => {
     expect(html).toContain("&lt;script&gt;");
   });
 
-  it("links only the two GitHub hosts and shows any other address as plain text", () => {
+  it("shows what came of each page we asked for, and links only the two GitHub hosts", () => {
     const html = renderToStaticMarkup(<CraCheckResultView result={sample()} />);
     expect(html).toContain('href="https://api.github.com/repos/Owner/Repo"');
     expect(html).not.toContain('href="https://example.com/not-github"');
     expect(html).toContain("https://example.com/not-github");
+    expect(html).toContain(">read<");
+    expect(html).toContain(">failed<");
   });
 
   it("says when the answer came from the cache", () => {
-    expect(renderToStaticMarkup(<CraCheckResultView result={sample({ cached: true })} />)).toContain("one hour cache");
-    expect(renderToStaticMarkup(<CraCheckResultView result={sample({ cached: false })} />)).not.toContain("one hour cache");
+    expect(renderToStaticMarkup(<CraCheckResultView result={sample({ cached: true })} />)).toContain("short cache kept in server memory");
+    expect(renderToStaticMarkup(<CraCheckResultView result={sample({ cached: false })} />)).not.toContain("short cache");
   });
 });
