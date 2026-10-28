@@ -4,6 +4,7 @@
 //
 //   node bench/cra-hand-check.mjs <raw.json> <seed> [perSignal=5]     (needs the GitHub CLI, gh, logged in)
 //
+// The lockfile and licence signals have few gaps, so for those two EVERY gap is looked at (a lockfile or licence file anywhere in the tree).
 // It prints one line per case: CONFIRMED (nothing found anywhere) or POSSIBLE MISS (with what was found). The patterns here are
 // deliberately broader than the module's, so a POSSIBLE MISS is a reason to read the repository, not a verdict: in our runs a flagged case
 // was a real miss of the module, a false alarm of this script (the word "bearer" in a file name), or a definition we keep (a scanner
@@ -50,7 +51,10 @@ const patterns = {
   "release-provenance": /\.(sig|asc|minisig|sigstore|intoto\.jsonl|attestation)$|sigstore|cosign|attest|provenance|slsa|gpg --detach|minisign|goreleaser/i,
   "security-scanning": /codeql|semgrep|trivy|grype|osv-scanner|snyk|gitleaks|trufflehog|scorecard|npm audit|pip-audit|cargo audit|cargo-audit|cargo deny|govulncheck|bandit|brakeman|sonar|dependency-review|safety check|checkov|tfsec|kics|bearer|devskim|hadolint|zizmor|clair|veracode|fossa|whitesource|mend|dependabot-alerts/i,
 };
-const botFiles = /^(\.github\/dependabot\.ya?ml|(\.github\/|\.gitlab\/)?renovate\.json5?|\.renovaterc(\.json5?)?|\.dependabot\/config\.ya?ml|\.pyup\.ya?ml|greenkeeper\.json|\.snyk|\.whitesource)$/i;
+// Lockfiles and licence files are looked for ANYWHERE in the tree (the module takes a lockfile from anywhere, a licence file from the root only).
+const lockfiles = /(^|\/)(package-lock\.json|yarn\.lock|pnpm-lock\.yaml|npm-shrinkwrap\.json|bun\.lockb?|Cargo\.lock|poetry\.lock|Pipfile\.lock|uv\.lock|pdm\.lock|go\.sum|Gemfile\.lock|composer\.lock|gradle\.lockfile|packages\.lock\.json|mix\.lock|pubspec\.lock|Podfile\.lock|conan\.lock)$/i;
+const licenceFiles = /(^|\/)(LICEN[CS]E|COPYING|UNLICENSE)([._-][A-Za-z0-9._-]*)?$/i;
+const botFiles =/^(\.github\/dependabot\.ya?ml|(\.github\/|\.gitlab\/)?renovate\.json5?|\.renovaterc(\.json5?)?|\.dependabot\/config\.ya?ml|\.pyup\.ya?ml|greenkeeper\.json|\.snyk|\.whitesource)$/i;
 
 const unique = [...new Map(raw.results.map((r) => [r.repo.toLowerCase(), r])).values()];
 const gapsOf = (control) => unique.filter((r) => r.controls.find((c) => c.id === control)?.status === "not_visible");
@@ -72,6 +76,11 @@ function check(repo, control) {
   const files = (tree?.tree ?? []).filter((x) => x.type === "blob").map((x) => x.path);
   const found = [];
   if (tree?.truncated) found.push("(tree cut off)");
+  if (control === "pinned-dependencies" || control === "license") {
+    const rx2 = control === "license" ? licenceFiles : lockfiles;
+    found.push(...files.filter((f) => rx2.test(f)).slice(0, 4));
+    return { verdict: found.length ? "POSSIBLE MISS" : "CONFIRMED", detail: found.join(" | ") || `${files.length} files, none matches anywhere in the tree` };
+  }
   if (control === "dependency-updates") {
     found.push(...files.filter((f) => botFiles.test(f)).slice(0, 4));
     const pkg = rawText(repo, "package.json");
@@ -101,9 +110,10 @@ function check(repo, control) {
 
 let confirmed = 0;
 let possible = 0;
-for (const control of ["sbom", "release-provenance", "security-scanning", "dependency-updates", "maintenance"]) {
+for (const control of ["sbom", "release-provenance", "security-scanning", "dependency-updates", "maintenance", "pinned-dependencies", "license"]) {
   const gaps = gapsOf(control);
-  const sample = pick(gaps, control === "maintenance" ? 3 : PER);
+  // the lockfile and licence gaps are few and cheap to look at, so every one is looked at
+  const sample = control === "pinned-dependencies" || control === "license" ? gaps : pick(gaps, control === "maintenance" ? 3 : PER);
   console.log(`\n== ${control}: ${gaps.length} unique gaps, ${sample.length} checked`);
   for (const r of sample) {
     const out = check(r.repo, control);
