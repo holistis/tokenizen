@@ -141,6 +141,11 @@ describe("assessRepo", () => {
     expect(statusOf(withFiles(["packages/x/bom.json"], nothing), "sbom")).toBe("visible");
     expect(statusOf(withFiles(["README.md"], { workflowTexts: {}, releases: [{ tag: "v1", date: NOW, draft: false, assets: ["bom.cdx.json"] }] }), "sbom")).toBe("visible");
     expect(statusOf(withFiles(["README.md"], { ...nothing, workflowTexts: { "x.yml": "echo sbomb" } }), "sbom")).toBe("not_visible");
+    // a Docker build that is told to attach an SBOM to the image counts, one that says no does not
+    expect(statusOf(withFiles(["README.md"], { ...nothing, workflowTexts: { "x.yml": "uses: docker/build-push-action@v6\n with:\n  push: true\n  sbom: true" } }), "sbom")).toBe("visible");
+    expect(statusOf(withFiles(["README.md"], { ...nothing, workflowTexts: { "x.yml": "docker buildx build --sbom=true ." } }), "sbom")).toBe("visible");
+    expect(statusOf(withFiles(["README.md"], { ...nothing, workflowTexts: { "x.yml": "with:\n  sbom: false" } }), "sbom")).toBe("not_visible");
+    expect(statusOf(withFiles(["README.md"], { ...nothing, workflowTexts: { "x.yml": "run: echo --sbom-format-is-not-a-step" } }), "sbom")).toBe("not_visible");
     expect(statusOf(withFiles(["README.md"], { ...nothing, releases: null }), "sbom")).toBe("not_measured");
     expect(statusOf(withFiles(["vendor/cyclonedx-lib/README.md"], nothing), "sbom")).toBe("not_visible");
   });
@@ -185,6 +190,9 @@ describe("assessRepo", () => {
     expect(statusOf({ ...base, releases: [{ tag: "v1", date: NOW, draft: false, assets: ["ca.pem"] }] }, "release-provenance")).toBe("not_visible");
     expect(statusOf({ ...base, releases: [{ tag: "v1", date: NOW, draft: false, assets: ["app.tgz.sig"] }] }, "release-provenance")).toBe("visible");
     expect(statusOf({ ...base, releases: [{ tag: "v1", date: NOW, draft: false, assets: ["app.sigstore.json"] }] }, "release-provenance")).toBe("visible");
+    expect(statusOf({ ...base, releases: [{ tag: "v1", date: NOW, draft: false, assets: [] }], workflowTexts: { "x.yml": "uses: docker/build-push-action@v6\n with:\n  provenance: mode=max" } }, "release-provenance")).toBe("visible");
+    expect(statusOf({ ...base, releases: [{ tag: "v1", date: NOW, draft: false, assets: [] }], workflowTexts: { "x.yml": "with:\n  provenance: true" } }, "release-provenance")).toBe("visible");
+    expect(statusOf({ ...base, releases: [{ tag: "v1", date: NOW, draft: false, assets: [] }], workflowTexts: { "x.yml": "with:\n  provenance: false" } }, "release-provenance")).toBe("not_visible");
     expect(statusOf({ ...base, releases: null }, "release-provenance")).toBe("not_measured");
   });
 
