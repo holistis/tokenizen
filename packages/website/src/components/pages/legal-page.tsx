@@ -55,7 +55,7 @@ export function linkify(text: string): ReactNode[] {
   });
 }
 
-function useMeta(title: string, description: string) {
+export function useMeta(title: string, description: string) {
   useEffect(() => {
     const previousTitle = document.title;
     document.title = title;

@@ -1,6 +1,16 @@
 # Tokenizen
 
-> Open-source infrastructure for the seller side of the AI agent economy. The main project is Capacity Attest: after an x402 payment for metered capacity, the paying agent leaves a signed, factual record of what was actually delivered, so other agents can check a seller's history before paying.
+> Security research, free checks and a log nobody can rewrite, by two brothers in Eindhoven (AO Services). We measure what others claim and publish the numbers, including our misses. Open-source tools for the seller side of the AI agent economy are one of the things we do; the best known is Capacity Attest: after an x402 payment for metered capacity, the paying agent leaves a signed, factual record of what was actually delivered, so other agents can check a seller's history before paying.
+
+## What we offer
+
+- [Free checks](https://tokenizen.nl/en/checks): three free checks (eight security signals in a public GitHub repository, an x402 endpoint check, proof that you own an endpoint), each saying what it cannot tell you
+- [Signal log](https://tokenizen.nl/en/signal-log): early access, a weekly measurement of those eight signals for the public repositories you name, written to a hash-chained log with a timestamp you can check without us
+- [Security research](https://tokenizen.nl/en/security): on request; a published GitHub advisory with severity High and our account credited as reporter, our own record including what was rejected, and how we plan to show the rest
+- [Smart contract scan](https://tokenizen.nl/en/scan): pay per scan over x402, with a public scoreboard that includes what it missed (8 of 105 known findings in the run of version 3.1)
+- [Open-source tools](https://tokenizen.nl/en/tools): capacity-attest, agent-receipt-verify, x402-lint and muraqib-agent-watch
+- [Talk to Ahmed](https://tokenizen.nl/en/consultancy): a conversation about security, the EU Cyber Resilience Act or payments between agents
+- [Two brothers, one company](https://tokenizen.nl/en/about): Abdellah Ouadoudi does the technical work and the measuring, Ahmed Ouadoudi does the consultancy and communication
 
 Site language is Dutch. Source, package documentation and the specification are in a mix of Dutch and English. This file is English so agents can read it without translation.
 

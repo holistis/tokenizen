@@ -3,31 +3,28 @@ import type { Dictionary } from "./types";
 export const nl: Dictionary = {
   htmlLang: "nl",
   meta: {
-    title: "Tokenizen | Bewijs van levering voor de AI-agent-economie",
+    title: "tokenizen | Wij vinden de lekken. Wij publiceren de cijfers.",
     description:
-      "Tokenizen bouwt open-source infrastructuur voor de verkoperskant van de AI-agent-economie. Capacity Attest laat na een x402-betaling een ondertekende, feitelijke leveringsclaim achter, zodat de volgende koper de geschiedenis van een verkoper kan checken vóór hij zelf betaalt. Geen token, geen rente, geen lening.",
+      "Beveiligingsonderzoek, gratis checks en een logboek dat niemand kan herschrijven, van twee broers in Eindhoven. We maten 109 openbare repositories op acht beveiligingssignalen en publiceren onze missers ook.",
     ogLocale: "nl_NL",
-    ogTitle: "Tokenizen | Bewijs van levering voor de AI-agent-economie",
+    ogTitle: "tokenizen | Wij vinden de lekken. Wij publiceren de cijfers.",
     ogDescription:
-      "Iedereen bouwt de koperskant van de AI-agent-economie (identiteit, spend-limits, betaalrails). Tokenizen bouwt de verkoperskant: een ondertekend, feitelijk bewijs dat het geleverde overeenkomt met wat beloofd was.",
-    twitterTitle: "Tokenizen | Bewijs van levering voor de AI-agent-economie",
+      "Beveiligingsonderzoek, gratis checks en een logboek dat niemand kan herschrijven, van twee broers in Eindhoven. We maten 109 openbare repositories op acht beveiligingssignalen en publiceren onze missers ook.",
+    twitterTitle: "tokenizen | Wij vinden de lekken. Wij publiceren de cijfers.",
     twitterDescription:
-      "Open-source infrastructuur voor de verkoperskant van de AI-agent-economie: een ondertekende, feitelijke leveringsclaim na elke x402-betaling.",
+      "Beveiligingsonderzoek, gratis checks en een logboek dat niemand kan herschrijven. Twee broers in Eindhoven.",
   },
   header: {
     navLabel: "Hoofdnavigatie",
     mobileNavLabel: "Mobiele navigatie",
     links: [
-      { href: "#probleem", label: "Probleem" },
-      { href: "#waarom-nu", label: "Waarom nu" },
-      { href: "#product", label: "Product" },
-      { href: "#controle", label: "Controle" },
-      { href: "#hoe-het-werkt", label: "Hoe het werkt" },
-      { href: "#ontwerpgrenzen", label: "Grenzen" },
-      { href: "#open-source", label: "Open source" },
-      { href: "#status", label: "Status" },
-      { href: "/blog", label: "Blog" },
+      { href: "/signal-log", label: "Signal log" },
+      { href: "/scan", label: "Scan" },
+      { href: "/security", label: "Beveiliging" },
+      { href: "/tools", label: "Gereedschap" },
       { href: "/notes", label: "Notities" },
+      { href: "/blog", label: "Blog" },
+      { href: "/about", label: "Over ons" },
     ],
     checksLabel: "Gratis checks",
     checks: [

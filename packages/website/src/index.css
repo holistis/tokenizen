@@ -69,7 +69,7 @@
 
   --rule-green: #3f6b4a;
   --rule-green-soft: #e7eee6;
-  --rule-yellow: #8c6d22;
+  --rule-yellow: #7d6119;
   --rule-yellow-soft: #f2ecda;
   --rule-red: #8b4a3c;
   --rule-red-soft: #f3e7e3;
@@ -192,5 +192,124 @@
       padding-left: 2.5rem;
       padding-right: 2.5rem;
     }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   De Hoogtemeter: meetraster, cockpit-vlak en hoogtebalk.
+   Betekenis zit in vorm (vierkant, ring, streepje), nooit alleen in kleur.
+   --------------------------------------------------------------------------- */
+:root {
+  --altitude: #0a5c7a;
+  --cell-visible: var(--rule-green);
+  --cell-hidden: var(--rule-yellow);
+  --cell-none: #6b665b;
+  --cell-you: var(--altitude);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --altitude: #6cc4e0;
+    --cell-none: #8f897a;
+  }
+}
+
+:root.dark {
+  --altitude: #6cc4e0;
+  --cell-none: #8f897a;
+}
+
+/* Het cockpit-vlak is in beide thema's donker: het overzicht vanaf 1000 meter. De tokens worden hier overschreven,
+   dus alle gewone klassen (text-foreground, border-border, ...) binnen het vlak lezen de donkere waarden. */
+.panel {
+  --background: #0c1011;
+  --foreground: #ede8db;
+  --muted: #151b1c;
+  --muted-foreground: #b3ac9a;
+  --border: #26302f;
+  --primary: #6cc4e0;
+  --primary-foreground: #0c1011;
+  --ring: #6cc4e0;
+  --altitude: #6cc4e0;
+  --cell-visible: #7fae8a;
+  --cell-hidden: #d2ae5c;
+  --cell-none: #8f897a;
+  --cell-you: #6cc4e0;
+  --rule-green: #7fae8a;
+  --rule-yellow: #d2ae5c;
+  color: var(--foreground);
+  background-color: var(--background);
+  background-image:
+    linear-gradient(rgba(108, 196, 224, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(108, 196, 224, 0.07) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.cell-visible {
+  fill: var(--cell-visible);
+}
+.cell-hidden {
+  fill: none;
+  stroke: var(--cell-hidden);
+  stroke-width: 1.5;
+}
+.cell-none {
+  stroke: var(--cell-none);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+.cell-you {
+  fill: none;
+  stroke: var(--cell-you);
+  stroke-width: 1.2;
+  stroke-dasharray: 2 1.6;
+}
+
+/* De golf: elke cel komt een keer binnen als het raster in beeld komt. Zonder JavaScript en bij reduced-motion staat alles direct. */
+.grid-wave[data-armed="true"]:not([data-in="true"]) .cell {
+  opacity: 0;
+}
+.grid-wave[data-in="true"] .cell {
+  animation: cell-in 520ms ease-out both;
+  animation-delay: calc(var(--i) * 8ms);
+}
+.grid-wave .cell-you {
+  animation: you-pulse 2.8s ease-in-out infinite;
+}
+
+@keyframes cell-in {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes you-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.cell {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grid-wave[data-armed="true"]:not([data-in="true"]) .cell {
+    opacity: 1;
+  }
+  .grid-wave[data-in="true"] .cell,
+  .grid-wave .cell-you {
+    animation: none;
+    opacity: 1;
   }
 }

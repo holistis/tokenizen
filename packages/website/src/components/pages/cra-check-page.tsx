@@ -152,10 +152,22 @@ export function CraCheckResultView({ result }: { result: CraCheckResult }) {
   );
 }
 
+/**
+ * The repository named in the address (?repo=owner/name), for the field on the homepage that sends people here. Only a plain
+ * owner/name or a github.com address is taken over; anything else leaves the field empty. It is only filled in, never sent: the check
+ * runs when the person presses the button.
+ */
+export function repoFromSearch(search: string): string {
+  const raw = new URLSearchParams(search).get("repo")?.trim() ?? "";
+  if (/^[A-Za-z0-9._-]{1,100}\/[A-Za-z0-9._-]{1,100}$/.test(raw)) return raw;
+  if (/^https:\/\/github\.com\/[A-Za-z0-9._-]{1,100}\/[A-Za-z0-9._-]{1,100}\/?$/.test(raw)) return raw;
+  return "";
+}
+
 export function CraCheckPage() {
   useArticleMeta();
 
-  const [repo, setRepo] = useState("");
+  const [repo, setRepo] = useState(() => (typeof window === "undefined" ? "" : repoFromSearch(window.location.search)));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CraCheckResult | null>(null);

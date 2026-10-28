@@ -1,16 +1,9 @@
 import { ThemeProvider } from "@/hooks/use-theme";
 import { usePageHead } from "@/i18n/context";
 import { Header } from "@/components/header";
+import { HomePage } from "@/components/home/home-page";
+import { AboutPage, ChecksPage, ConsultancyPage, ScanPage, SecurityPage, ToolsPage } from "@/components/pages/offer-pages";
 import { Footer } from "@/components/footer";
-import { Hero } from "@/components/sections/hero";
-import { Problem } from "@/components/sections/problem";
-import { WhyNow } from "@/components/sections/why-now";
-import { Product } from "@/components/sections/product";
-import { SecondPillar } from "@/components/sections/second-pillar";
-import { HowItWorks } from "@/components/sections/how-it-works";
-import { Boundaries } from "@/components/sections/boundaries";
-import { OpenSource } from "@/components/sections/open-source";
-import { Status } from "@/components/sections/status";
 import { NineWaysArticle } from "@/components/pages/nine-ways-article";
 import { HierarchyOfAgentTrustArticle } from "@/components/pages/hierarchy-of-agent-trust-article";
 import { TrustRadarPage } from "@/components/pages/trust-radar-page";
@@ -47,6 +40,12 @@ const ARTICLES: Record<string, () => JSX.Element> = {
   "/terms": TermsPage,
   "/privacy": PrivacyPage,
   "/scoreboard": ScoreboardPage,
+  "/checks": ChecksPage,
+  "/security": SecurityPage,
+  "/scan": ScanPage,
+  "/tools": ToolsPage,
+  "/consultancy": ConsultancyPage,
+  "/about": AboutPage,
 };
 
 function articleForPath(path: string): (() => JSX.Element) | null {
@@ -72,17 +71,7 @@ export default function App() {
           {ArticleComponent ? (
             <ArticleComponent />
           ) : (
-            <>
-              <Hero />
-              <Problem />
-              <WhyNow />
-              <Product />
-              <SecondPillar />
-              <HowItWorks />
-              <Boundaries />
-              <OpenSource />
-              <Status />
-            </>
+            <HomePage />
           )}
         </main>
         <Footer />

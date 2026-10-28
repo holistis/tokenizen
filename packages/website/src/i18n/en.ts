@@ -3,57 +3,45 @@ import type { Dictionary } from "./types";
 export const en: Dictionary = {
   "htmlLang": "en",
   "meta": {
-    "title": "Tokenizen | Proof of delivery for the AI agent economy",
-    "description": "Tokenizen builds open-source infrastructure for the seller side of the AI agent economy. After an x402 payment, Capacity Attest leaves a signed, factual delivery claim, so the next buyer can check a seller's history before paying themselves. No token, no interest, no loan.",
+    "title": "tokenizen | We find the leaks. We publish the numbers.",
+    "description": "Security research, free checks and a log nobody can rewrite, by two brothers in Eindhoven. We measured 109 public repositories on eight security signals and publish our misses too.",
     "ogLocale": "en_US",
-    "ogTitle": "Tokenizen | Proof of delivery for the AI agent economy",
-    "ogDescription": "Everyone is building the buyer side of the AI agent economy (identity, spend limits, payment rails). Tokenizen builds the seller side: signed, factual proof that what was delivered matches what was promised.",
-    "twitterTitle": "Tokenizen | Proof of delivery for the AI agent economy",
-    "twitterDescription": "Open-source infrastructure for the seller side of the AI agent economy: a signed, factual delivery claim after every x402 payment."
+    "ogTitle": "tokenizen | We find the leaks. We publish the numbers.",
+    "ogDescription": "Security research, free checks and a log nobody can rewrite, by two brothers in Eindhoven. We measured 109 public repositories on eight security signals and publish our misses too.",
+    "twitterTitle": "tokenizen | We find the leaks. We publish the numbers.",
+    "twitterDescription": "Security research, free checks and a log nobody can rewrite. Two brothers in Eindhoven."
   },
   "header": {
     "navLabel": "Main navigation",
     "mobileNavLabel": "Mobile navigation",
     "links": [
       {
-        "href": "#probleem",
-        "label": "Problem"
+        "href": "/signal-log",
+        "label": "Signal log"
       },
       {
-        "href": "#waarom-nu",
-        "label": "Why now"
+        "href": "/scan",
+        "label": "Scan"
       },
       {
-        "href": "#product",
-        "label": "Product"
+        "href": "/security",
+        "label": "Security"
       },
       {
-        "href": "#controle",
-        "label": "Inspection"
+        "href": "/tools",
+        "label": "Tools"
       },
       {
-        "href": "#hoe-het-werkt",
-        "label": "How it works"
-      },
-      {
-        "href": "#ontwerpgrenzen",
-        "label": "Limits"
-      },
-      {
-        "href": "#open-source",
-        "label": "Open source"
-      },
-      {
-        "href": "#status",
-        "label": "Status"
+        "href": "/notes",
+        "label": "Notes"
       },
       {
         "href": "/blog",
         "label": "Blog"
       },
       {
-        "href": "/notes",
-        "label": "Notes"
+        "href": "/about",
+        "label": "About"
       }
     ],
     "checksLabel": "Free checks",

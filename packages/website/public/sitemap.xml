@@ -79,6 +79,36 @@
     <priority>0.3</priority>
   </url>
   <url>
+    <loc>https://tokenizen.nl/en/checks</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/en/security</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/en/scan</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/en/tools</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/en/consultancy</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/en/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://tokenizen.nl/en/notes/check-pay-prove</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
