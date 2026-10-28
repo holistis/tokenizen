@@ -1,4 +1,5 @@
 import { ThemeProvider } from "@/hooks/use-theme";
+import { usePageHead } from "@/i18n/context";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Hero } from "@/components/sections/hero";
@@ -57,6 +58,7 @@ function articleForPath(path: string): (() => JSX.Element) | null {
 
 export default function App() {
   const ArticleComponent = articleForPath(window.location.pathname);
+  usePageHead(ArticleComponent !== null);
 
   return (
     <ThemeProvider>

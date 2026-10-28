@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useMemo, type ReactNode } from "r
 import { nl } from "./nl";
 import { en } from "./en";
 import type { Dictionary } from "./types";
+import { applyHeadPlan, headPlan } from "@/lib/page-head";
 
 export type Locale = "nl" | "en";
 
@@ -42,25 +43,13 @@ export function LocaleProvider({ children, locale: forcedLocale }: { children: R
   const t = DICTIONARIES[locale];
   const otherLocale: Locale = locale === "nl" ? "en" : "nl";
 
+  // Only what is true for every page: the language. The title, description and address of a page
+  // belong to that page (see usePageHead); this effect runs after the page's own effect and used to
+  // overwrite them with the homepage's.
   useEffect(() => {
     document.documentElement.lang = t.htmlLang;
-    document.title = t.meta.title;
-
-    const setMeta = (selector: string, attr: string, value: string) => {
-      const el = document.head.querySelector(selector);
-      if (el) el.setAttribute(attr, value);
-    };
-    setMeta('meta[name="description"]', "content", t.meta.description);
-    setMeta('meta[property="og:locale"]', "content", t.meta.ogLocale);
-    setMeta('meta[property="og:title"]', "content", t.meta.ogTitle);
-    setMeta('meta[property="og:description"]', "content", t.meta.ogDescription);
-    setMeta('meta[property="og:url"]', "content", window.location.origin + (locale === "en" ? "/en" : "/"));
-    setMeta('meta[name="twitter:title"]', "content", t.meta.twitterTitle);
-    setMeta('meta[name="twitter:description"]', "content", t.meta.twitterDescription);
-
-    const canonical = document.head.querySelector('link[rel="canonical"]');
-    if (canonical) canonical.setAttribute("href", window.location.origin + (locale === "en" ? "/en" : "/") + "");
-  }, [locale, t]);
+    document.head.querySelector('meta[property="og:locale"]')?.setAttribute("content", t.meta.ogLocale);
+  }, [t]);
 
   const switchLocaleHref = () => {
     const restOfPath = stripLocalePrefix(window.location.pathname);
@@ -78,4 +67,38 @@ export function useLocale(): LocaleContextValue {
   const ctx = useContext(LocaleContext);
   if (!ctx) throw new Error("useLocale moet binnen een LocaleProvider gebruikt worden");
   return ctx;
+}
+
+/**
+ * Called once by the app. `known` says whether the app has a page of its own for this path; any other
+ * path shows the homepage. Every page gets its own canonical address, og:url and language alternates.
+ * The title and descriptions are the homepage's only on the homepage: any other page sets its own,
+ * and this effect, which runs after the page's, must leave them alone.
+ */
+export function usePageHead(known: boolean): void {
+  const { t } = useLocale();
+
+  useEffect(() => {
+    applyHeadPlan(document, headPlan(window.location.origin, window.location.pathname, known));
+    const setMeta = (selector: string, value: string) => document.head.querySelector(selector)?.setAttribute("content", value);
+
+    if (known) {
+      // The page has set its own title and description (its effect ran first). The sharing tags say the same.
+      const description = document.head.querySelector('meta[name="description"]')?.getAttribute("content");
+      setMeta('meta[property="og:title"]', document.title);
+      setMeta('meta[name="twitter:title"]', document.title);
+      if (description) {
+        setMeta('meta[property="og:description"]', description);
+        setMeta('meta[name="twitter:description"]', description);
+      }
+      return;
+    }
+
+    document.title = t.meta.title;
+    setMeta('meta[name="description"]', t.meta.description);
+    setMeta('meta[property="og:title"]', t.meta.ogTitle);
+    setMeta('meta[property="og:description"]', t.meta.ogDescription);
+    setMeta('meta[name="twitter:title"]', t.meta.twitterTitle);
+    setMeta('meta[name="twitter:description"]', t.meta.twitterDescription);
+  }, [known, t]);
 }
