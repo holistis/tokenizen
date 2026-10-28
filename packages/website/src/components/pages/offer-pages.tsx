@@ -40,7 +40,7 @@ export function OfferFrame({
       <div className="container">
         <div className="grid gap-8 lg:grid-cols-[1fr_9rem] lg:items-start">
           <div>
-            <a href="/en" className="font-mono text-xs uppercase tracking-wide text-muted-foreground hover:text-foreground">
+            <a href="/en" className="block w-fit font-mono text-xs uppercase tracking-wide text-muted-foreground hover:text-foreground">
               tokenizen.nl
             </a>
             <p className="mt-6 inline-flex rounded-sm border border-border px-2 py-0.5 font-mono text-[11px] uppercase tracking-wide text-primary">{chip}</p>
