@@ -28,7 +28,7 @@
 // (a branch name) ends up in an address. Every response is read with a size cap, because a repository owner chooses how big
 // the files in their repository are.
 
-export const RULES_VERSION = "2026-10-28.3";
+export const RULES_VERSION = "2026-10-28.4";
 export const RULES_REVIEWED_ON = "2026-10-28";
 
 const OWNER_RE = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/;
@@ -100,6 +100,13 @@ const CONTACT = new RegExp(
   `\\b[\\w.%+-]{1,64}@[\\w-]{1,63}(?:\\.[\\w-]{1,63}){1,4}\\b|https?:\\/\\/[^\\s)>\\]]{0,150}(?:${CONTACT_WORDS})[^\\s)>\\]]{0,150}|security\\/advisories|private vulnerability reporting|report a vulnerability`,
   "i",
 );
+/**
+ * An address written so that a spam robot does not read it: "security AT example.org", "security [at] example.org", "security (at) example.org".
+ * Found by checking the benchmark against GitHub's own detection: one policy that said "please contact us by sending an email to
+ * security AT cozycloud.cc" was called "no contact". Case matters on purpose: a plain lower case "at" is an ordinary word ("look at example.com"),
+ * so only the capital AT and the bracketed forms count. Bounded, like the pattern above, because it is run on lines an owner wrote.
+ */
+const OBFUSCATED_ADDRESS = /\b[\w.%+-]{1,64}\s{0,2}(?:\[(?:at|AT)\]|\((?:at|AT)\)|\{(?:at|AT)\}|AT)\s{0,2}[\w-]{1,63}(?:\.[\w-]{1,63}){1,4}\b/;
 const MAX_POLICY_CHARS = 16_384;
 const MAX_LINE_CHARS = 1_000;
 /** Workflow text that is looked at per file; a longer file counts as only partly read. */
@@ -120,7 +127,7 @@ export function namesContact(text: string, readTruncated = false): boolean | nul
     if (/shields\.io|badge/i.test(line)) continue;
     // a linked image ([![alt](image)](target)) is a button, not a contact: drop the whole construct, then look at what is left
     const plain = line.replace(/\[!\[[^\]]{0,200}\]\([^)]{0,300}\)\]\([^)]{0,300}\)/g, " ").replace(/!\[[^\]]{0,200}\]\([^)]{0,300}\)/g, " ");
-    if (CONTACT.test(plain)) return true;
+    if (CONTACT.test(plain) || OBFUSCATED_ADDRESS.test(plain)) return true;
   }
   return skipped ? null : false;
 }
