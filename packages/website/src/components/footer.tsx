@@ -14,7 +14,8 @@ export const BUSINESS_LINE = "AO Services · KvK 86816632 · BTW NL004319767B61 
 // section, so the legend there is a row of dots that explains nothing.
 export function showsRuleLegend(pathname?: string): boolean {
   const path = (pathname ?? (typeof window === "undefined" ? "/" : window.location.pathname)).replace(/\/+$/, "") || "/";
-  return path === "/" || path === "/en";
+  // The dots explain the coloured limits of the section on the tools page (Capacity Attest). The homepage has no such section any more.
+  return path === "/tools" || path === "/en/tools";
 }
 
 export function Footer() {

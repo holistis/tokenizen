@@ -67,7 +67,7 @@ export function AltitudeRail({ locale }: { locale: "en" | "nl" }) {
     <>
       <nav
         aria-label={locale === "nl" ? "Hoogte op de pagina" : "Altitude on the page"}
-        className="fixed right-4 top-1/2 z-30 hidden -translate-y-1/2 rounded-md border border-border bg-background/85 px-3 py-3 backdrop-blur lg:block"
+        className="fixed right-4 top-1/2 z-30 hidden -translate-y-1/2 rounded-md border border-border bg-background/85 px-3 py-3 backdrop-blur 2xl:block"
       >
         <ol className="flex flex-col gap-3">
           {ALTITUDES.map((a) => {
@@ -94,7 +94,7 @@ export function AltitudeRail({ locale }: { locale: "en" | "nl" }) {
       </nav>
       <p
         aria-hidden="true"
-        className="fixed bottom-4 left-4 z-30 rounded-md border border-border bg-background/85 px-3 py-1.5 font-signage text-lg font-bold leading-none text-[color:var(--altitude)] backdrop-blur lg:hidden"
+        className="fixed bottom-4 left-4 z-30 rounded-md border border-border bg-background/85 px-3 py-1.5 font-signage text-lg font-bold leading-none text-[color:var(--altitude)] backdrop-blur 2xl:hidden"
       >
         {now.meters} m
       </p>

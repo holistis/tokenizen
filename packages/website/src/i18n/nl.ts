@@ -313,7 +313,7 @@ export const nl: Dictionary = {
     },
   },
   footer: {
-    tagline: "Open-source infrastructuur voor de verkoperskant van de AI-agent-economie. Nieuw, in actieve ontwikkeling, met vaste ontwerpgrenzen.",
+    tagline: "Beveiligingsonderzoek, gratis checks en een logboek dat niemand kan herschrijven. Twee broers in Eindhoven.",
     maintainedBy: "Onderhouden door",
     githubLabel: "github.com/holistis/tokenizen",
     signalLogLabel: "Signal log",

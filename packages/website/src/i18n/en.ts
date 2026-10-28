@@ -317,7 +317,7 @@ export const en: Dictionary = {
     }
   },
   "footer": {
-    "tagline": "Open-source infrastructure for the seller side of the AI agent economy. New, in active development, with fixed design limits.",
+    "tagline": "Security research, free checks and a log nobody can rewrite. Two brothers in Eindhoven.",
     "maintainedBy": "Maintained by",
     "githubLabel": "github.com/holistis/tokenizen",
     "signalLogLabel": "Signal log",
