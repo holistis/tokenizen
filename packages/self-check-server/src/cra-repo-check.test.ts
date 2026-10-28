@@ -3,7 +3,7 @@
 // Nothing here touches the network: GitHub is replaced by a fake that returns real Response objects.
 
 import { describe, expect, it } from "vitest";
-import { RULES_VERSION, assessRepo, clean, fetchSignals, isComplete, namesContact, parseRepo, type RepoSignals } from "./cra-repo-check.js";
+import { RULES_VERSION, assessRepo, clean, fetchSignals, isComplete, namesContact, parseRepo, stripComments, type RepoSignals } from "./cra-repo-check.js";
 
 const NOW = Date.parse("2026-10-28T12:00:00Z");
 const DAY = 86_400_000;
@@ -55,7 +55,7 @@ describe("parseRepo", () => {
 
 describe("namesContact", () => {
   it("a plain address or a reporting link counts, a badge or a project homepage does not", () => {
-    expect(namesContact("Mail us: security@example.org")).toBe(true);
+    expect(namesContact("Mail us: security@acme-corp.eu")).toBe(true);
     expect(namesContact("Use https://github.com/o/r/security/advisories/new to report")).toBe(true);
     expect(namesContact("Report it at https://example.org/psirt")).toBe(true);
     expect(namesContact("Our bounty runs on https://hackerone.com/example")).toBe(true);
@@ -65,12 +65,25 @@ describe("namesContact", () => {
     expect(namesContact("We take security seriously.")).toBe(false);
   });
 
-  // Found by checking the benchmark against GitHub's own detection: a policy that wrote its address as "security AT example.org".
+  // Found by checking the benchmark against GitHub's own detection: a policy that wrote its address as "security AT acme-corp.eu".
   it("counts an address that is written to hide it from spam robots", () => {
-    expect(namesContact("please contact us by sending an email to security AT example.org")).toBe(true);
-    expect(namesContact("write to security [at] example.org")).toBe(true);
-    expect(namesContact("write to security (at) example.org")).toBe(true);
-    expect(namesContact("write to security{AT}example.org")).toBe(true);
+    expect(namesContact("please contact us by sending an email to security AT acme-corp.eu")).toBe(true);
+    expect(namesContact("write to security [at] acme-corp.eu")).toBe(true);
+    expect(namesContact("write to security (at) acme-corp.eu")).toBe(true);
+    expect(namesContact("write to security{AT}acme-corp.eu")).toBe(true);
+  });
+
+  // Found by reading the "visible" policies by eye: a version number matched as an address, and one policy named an address on a .local domain.
+  it("does not take a version number, a template address or a word that only contains cert for a contact", () => {
+    expect(namesContact("`braces@3.0.3` remains listed under the advisory")).toBe(false);
+    expect(namesContact("Email agent@enrichment-center.local with details")).toBe(false);
+    expect(namesContact("mail security@example.com")).toBe(false);
+    expect(namesContact("mail security@mail.example.org")).toBe(false);
+    expect(namesContact("write to security AT example.org")).toBe(false);
+    expect(namesContact("see https://example.org/certificates")).toBe(false);
+    expect(namesContact("see https://cert.acme-corp.eu/")).toBe(true);
+    expect(namesContact("mail security@acme-corp.eu")).toBe(true);
+    expect(namesContact("mail security@acme-corp.co")).toBe(true);
   });
 
   it("does not take the ordinary word at for a hidden address", () => {
@@ -89,11 +102,11 @@ describe("namesContact", () => {
   it("A CONTACT THAT WAS NOT EXAMINED IS NOT 'NO CONTACT': past 16 KB, on a very long line, or beyond the read cap the answer is unknown", () => {
     const pad = "Nothing to see here.\n".repeat(900); // about 19 KB, no contact
     expect(namesContact(pad)).toBeNull();
-    expect(namesContact(pad + "security@example.org")).toBeNull(); // the address is past the part that is examined
+    expect(namesContact(pad + "security@acme-corp.eu")).toBeNull(); // the address is past the part that is examined
     expect(namesContact("x".repeat(1500) + "\nno contact in the short lines")).toBeNull();
-    expect(namesContact("x".repeat(1500) + "\nreport to security@example.org")).toBe(true);
+    expect(namesContact("x".repeat(1500) + "\nreport to security@acme-corp.eu")).toBe(true);
     expect(namesContact("short and clean, but the read was cut off", true)).toBeNull();
-    expect(namesContact("security@example.org first, then cut off", true)).toBe(true);
+    expect(namesContact("security@acme-corp.eu first, then cut off", true)).toBe(true);
   });
 
   it("HOSTILE TEXT CANNOT FREEZE THE SERVER: long lines are handled in bounded time", () => {
@@ -133,6 +146,16 @@ describe("assessRepo", () => {
     const s: RepoSignals = { ...good(), workflowState: "partial", workflowTexts: { "a.yml": "run: echo hi" }, files: ["README.md", "SECURITY.md"], releases: [{ tag: "v1", date: NOW, draft: false, assets: [] }] };
     for (const id of ["security-scanning", "sbom", "release-provenance"]) expect(statusOf(s, id), id).toBe("not_measured");
     expect(statusOf({ ...s, workflowTexts: { "a.yml": "uses: github/codeql-action/analyze@v3" } }, "security-scanning")).toBe("visible");
+  });
+
+  // Found by reading the "visible" scans by eye: a workflow that deleted the CodeQL cache to free disk space was counted as a CodeQL scan.
+  it("a line that deletes files, like a comment, is not a step that scans", () => {
+    const yaml = "- run: |\n    sudo rm -rf /opt/hostedtoolcache/CodeQL\n    rm -rf ~/.cache/trivy\n- uses: github/codeql-action/analyze@v3\n# uses: aquasecurity/trivy-action@v1";
+    const kept = stripComments(yaml);
+    expect(kept).toContain("github/codeql-action/analyze");
+    expect(kept).not.toContain("hostedtoolcache");
+    expect(kept).not.toContain("trivy");
+    expect(statusOf({ ...good(), workflowTexts: { "ci.yml": stripComments("run: sudo rm -rf /opt/hostedtoolcache/CodeQL") } }, "security-scanning")).toBe("not_visible");
   });
 
   it("an SBOM anywhere in the repository, in the releases or as a workflow step counts; loose text does not", () => {
@@ -456,12 +479,12 @@ describe("fetchSignals", () => {
       const net = fakeGithub([[TREE, tree(["SECURITY.md"])], ["raw.githubusercontent.com", body], [META, json(repoMeta())]]);
       return (await fetchSignals("o/r", { fetchImpl: net.fetchImpl, now: NOW })).policy;
     };
-    expect(await run(text("Please report to security@example.org"))).toEqual({ where: "repository", path: "SECURITY.md", hasContact: true });
+    expect(await run(text("Please report to security@acme-corp.eu"))).toEqual({ where: "repository", path: "SECURITY.md", hasContact: true });
     expect((await run(text("Use https://github.com/o/r/security/advisories/new")))?.hasContact).toBe(true);
     expect((await run(text("# Security\nWe take security seriously. See https://example.org")))?.hasContact).toBe(false);
     expect((await run(() => new Response("x", { status: 500 })))?.hasContact).toBeNull();
     // THE CASE THE OUTSIDE REVIEW FOUND: the address is there, but past the part that is examined
-    expect((await run(text("Nothing to see here.\n".repeat(900) + "security@example.org")))?.hasContact).toBeNull();
+    expect((await run(text("Nothing to see here.\n".repeat(900) + "security@acme-corp.eu")))?.hasContact).toBeNull();
     // ...or on a line that is far too long to examine
     expect((await run(text("x".repeat(2000) + "\nno contact here")))?.hasContact).toBeNull();
     // ...or the read itself was cut off at the cap
@@ -472,7 +495,7 @@ describe("fetchSignals", () => {
     for (const where of ["SECURITY.md", ".github/SECURITY.md", "docs/SECURITY.md"]) {
       const net = fakeGithub([
         [OWNER_TREE, tree([where, "README.md"])],
-        [`raw.githubusercontent.com/o/.github/head/${where.toLowerCase()}`, text("mail security@example.org")],
+        [`raw.githubusercontent.com/o/.github/head/${where.toLowerCase()}`, text("mail security@acme-corp.eu")],
         [TREE, tree(["README.md"])],
         [META, json(repoMeta())],
       ]);
@@ -480,7 +503,7 @@ describe("fetchSignals", () => {
       expect(s.policy, where).toEqual({ where: "owner", path: `o/.github: ${where}`, hasContact: true });
       expect(net.calls.filter((c) => c.url.includes("/o/.github/git/trees/"))).toHaveLength(1);
     }
-    const inRepo = fakeGithub([[TREE, tree([".github/", ".github/SECURITY.md"])], ["raw.githubusercontent.com/o/r/head/.github/security.md", text("mail security@example.org")], [META, json(repoMeta())]]);
+    const inRepo = fakeGithub([[TREE, tree([".github/", ".github/SECURITY.md"])], ["raw.githubusercontent.com/o/r/head/.github/security.md", text("mail security@acme-corp.eu")], [META, json(repoMeta())]]);
     expect((await fetchSignals("o/r", { fetchImpl: inRepo.fetchImpl, now: NOW })).policy?.where).toBe("repository");
     expect(inRepo.calls.some((c) => c.url.includes("/o/.github/"))).toBe(false); // the owner is only asked when the repository has none
   });
