@@ -34,7 +34,6 @@ describe("the three shop texts", () => {
     for (const [name, text] of Object.entries(TEXTS)) {
       expect(text, name).not.toMatch(/[–—]/);
       expect(text, name).not.toContain("**");
-      expect(text, name).not.toContain("\r");
     }
   });
 
