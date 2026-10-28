@@ -28,7 +28,7 @@
 // (a branch name) ends up in an address. Every response is read with a size cap, because a repository owner chooses how big
 // the files in their repository are.
 
-export const RULES_VERSION = "2026-10-28.6";
+export const RULES_VERSION = "2026-10-28.7";
 export const RULES_REVIEWED_ON = "2026-10-28";
 
 const OWNER_RE = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/;
@@ -38,6 +38,8 @@ const MAX_JSON_BYTES = 1_000_000;
 const MAX_TREE_BYTES = 3_000_000;
 const MAX_TREE_ENTRIES = 40_000;
 const MAX_WORKFLOW_FILES = 12;
+/** Pipeline files of other CI systems that are read, besides the workflow files. */
+const MAX_CI_FILES = 6;
 const REQUEST_TIMEOUT_MS = 15_000;
 const DAY_MS = 86_400_000;
 const MAX_SOURCES_LISTED = 40;
@@ -89,6 +91,12 @@ const DEPENDABOT_FILE = /^\.github\/dependabot\.ya?ml$/i;
 const RENOVATE_FILE = /^(?:(?:\.github|\.gitlab)\/)?renovate\.json5?$|^\.renovaterc(?:\.json5?)?$/i;
 const LICENCE_FILE = /^(?:LICEN[CS]E|COPYING|UNLICENSE)(?:[.-][A-Za-z0-9._-]{0,40})?$/i;
 const WORKFLOW_FILE = /^\.github\/workflows\/[^/]+\.ya?ml$/i;
+/**
+ * The pipeline file of another CI system, at the root of the repository (the CircleCI one in .circleci). Found by checking a sample
+ * of "not visible" findings by hand: a Trivy scan that ran in a Jenkinsfile was called "not visible". Files that a pipeline includes
+ * from elsewhere, and shared pipeline libraries, are not read.
+ */
+const OTHER_CI_FILE = /^(?:Jenkinsfile(?:\.[A-Za-z0-9_-]{1,40})?|\.gitlab-ci\.ya?ml|azure-pipelines\.ya?ml|bitbucket-pipelines\.ya?ml|\.travis\.ya?ml|\.drone\.ya?ml|\.circleci\/config\.ya?ml)$/;
 /** Workflow files that usually hold release, signing and scanning steps are read first, because only some of the files are read. */
 const WORKFLOW_PRIORITY = /release|publish|deploy|sign|sbom|attest|provenance|codeql|security|scan|audit/i;
 
@@ -410,12 +418,13 @@ export async function fetchSignals(repo: string, options: FetchSignalsOptions): 
     }
   }
 
-  // Workflow files come from the tree, not from a separate listing.
+  // Workflow files come from the tree, not from a separate listing. The pipeline files of other CI systems are read the same way.
   if (!s.filesKnown) {
     s.workflowState = "unknown";
   } else {
     const yamls = s.files.filter((f) => WORKFLOW_FILE.test(f)).map((f) => f.slice(".github/workflows/".length));
-    if (yamls.length === 0) {
+    const otherCi = s.files.filter((f) => OTHER_CI_FILE.test(f)).sort();
+    if (yamls.length === 0 && otherCi.length === 0) {
       s.workflowState = "none";
     } else {
       s.workflows = yamls;
@@ -431,8 +440,18 @@ export async function fetchSignals(repo: string, options: FetchSignalsOptions): 
           s.workflowTexts[file] = stripComments(raw.text.slice(0, MAX_WORKFLOW_CHARS));
         } else failed++;
       }
-      s.workflowState = failed === 0 && tooLong === 0 && yamls.length <= MAX_WORKFLOW_FILES ? "complete" : "partial";
-      if (s.workflowState === "partial") s.unknown.push(`workflow files: read ${toRead.length - failed - tooLong} of ${yamls.length}`);
+      const ciToRead = otherCi.slice(0, MAX_CI_FILES);
+      for (const file of ciToRead) {
+        const raw = await get(`${rawBase}/${encodePath(file)}`, options, s.requested, { raw: true });
+        note(raw);
+        if (raw.text !== undefined) {
+          if (raw.text.length > MAX_WORKFLOW_CHARS || raw.truncated) tooLong++;
+          s.workflowTexts[file] = stripComments(raw.text.slice(0, MAX_WORKFLOW_CHARS));
+        } else failed++;
+      }
+      const everyFileIsRead = yamls.length <= MAX_WORKFLOW_FILES && otherCi.length <= MAX_CI_FILES;
+      s.workflowState = failed === 0 && tooLong === 0 && everyFileIsRead ? "complete" : "partial";
+      if (s.workflowState === "partial") s.unknown.push(`workflow and pipeline files: read ${toRead.length + ciToRead.length - failed - tooLong} of ${yamls.length + otherCi.length}`);
     }
   }
 
@@ -636,7 +655,7 @@ export function assessRepo(s: RepoSignals): RepoReport {
       notVisible(
         "security-scanning",
         TOPIC6,
-        "No CI workflows were found. The CRA asks for effective and regular tests and reviews of the security of the product." + SETTINGS,
+        "No CI workflows or pipeline files were found. The CRA asks for effective and regular tests and reviews of the security of the product." + SETTINGS,
         "Add a workflow with a scanner (for example CodeQL, or a vulnerability scan of the dependencies).",
       ),
     );
@@ -645,7 +664,7 @@ export function assessRepo(s: RepoSignals): RepoReport {
       notVisible(
         "security-scanning",
         TOPIC6,
-        "There are workflows and all of them were read, but none shows a security scan (CodeQL, Semgrep, Trivy, OSV, audit)." + SETTINGS,
+        "There are CI workflows or pipeline files and all of them were read, but none shows a security scan (CodeQL, Semgrep, Trivy, OSV, audit)." + SETTINGS,
         "Add a scan step that runs on each change or weekly.",
       ),
     );
@@ -695,7 +714,7 @@ export function assessRepo(s: RepoSignals): RepoReport {
       "whether fixed vulnerabilities are made public, and whether vulnerabilities are really handled without delay during the support period (Annex I, part II)",
       "your internal process for notifying actively exploited vulnerabilities and severe incidents through the EU single reporting platform within 24 hours and 72 hours, and the final report (Article 14)",
       "technical documentation, the risk assessment and the EU declaration of conformity",
-      "builds, scans and signing that run in a CI system other than GitHub Actions (Jenkins, GitLab CI, CircleCI and similar): only GitHub Actions workflows are read",
+      "builds, scans and signing that run in a CI system whose pipeline file is not at the root of the repository: a Jenkinsfile, .gitlab-ci.yml, azure-pipelines.yml, bitbucket-pipelines.yml, .travis.yml, .drone.yml and .circleci/config.yml are read, files they include and shared pipeline libraries are not",
       "private repositories, hosting other than GitHub, and anything that is not public",
     ],
     notice: "This is an indication from public data about eight selected signals. It is not a check against the legal requirements, not a conformity assessment and not legal advice.",
