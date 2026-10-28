@@ -241,7 +241,7 @@ describe("POST /api/cra/check", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("cache-control")).toBe("no-store");
     const body = await res.json();
-    expect(body).toMatchObject({ ok: true, cached: false, repo: "Owner/Repo", rules: { version: "2026-10-28.5" } });
+    expect(body).toMatchObject({ ok: true, cached: false, repo: "Owner/Repo", rules: { version: "2026-10-28.6" } });
     expect(Object.keys(body).sort()).toEqual(["advisories", "cached", "controls", "measuredAt", "notice", "ok", "repo", "rules", "sources", "summary", "whatThisDoesNotMeasure"]);
   });
 

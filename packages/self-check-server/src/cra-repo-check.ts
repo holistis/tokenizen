@@ -28,7 +28,7 @@
 // (a branch name) ends up in an address. Every response is read with a size cap, because a repository owner chooses how big
 // the files in their repository are.
 
-export const RULES_VERSION = "2026-10-28.5";
+export const RULES_VERSION = "2026-10-28.6";
 export const RULES_REVIEWED_ON = "2026-10-28";
 
 const OWNER_RE = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/;
@@ -97,9 +97,9 @@ const WORKFLOW_PRIORITY = /release|publish|deploy|sign|sbom|attest|provenance|co
  * regex that backtracks on a 200 KB line would stop the whole server. A link only counts when it looks like a reporting channel
  * (security, advisories, report, disclosure, a bounty platform, contact): a project homepage is not a way to report a vulnerability.
  */
-const CONTACT_WORDS = "security|advis|report|disclos|vulnerab|psirt|csirt|cert|bounty|hackerone|bugcrowd|intigriti|yeswehack|contact";
+const CONTACT_WORDS = "security|advis|report|disclos|vulnerab|psirt|csirt|(?<![a-z])cert(?![a-z])|bounty|hackerone|bugcrowd|intigriti|yeswehack|contact";
 const CONTACT = new RegExp(
-  `\\b[\\w.%+-]{1,64}@[\\w-]{1,63}(?:\\.[\\w-]{1,63}){1,4}\\b|https?:\\/\\/[^\\s)>\\]]{0,150}(?:${CONTACT_WORDS})[^\\s)>\\]]{0,150}|security\\/advisories|private vulnerability reporting|report a vulnerability`,
+  `\\b[\\w.%+-]{1,64}@[\\w-]{1,63}(?:\\.[\\w-]{1,63}){0,3}\\.[A-Za-z]{2,24}\\b|https?:\\/\\/[^\\s)>\\]]{0,150}(?:${CONTACT_WORDS})[^\\s)>\\]]{0,150}|security\\/advisories|private vulnerability reporting|report a vulnerability`,
   "i",
 );
 /**
@@ -108,7 +108,12 @@ const CONTACT = new RegExp(
  * security AT cozycloud.cc" was called "no contact". Case matters on purpose: a plain lower case "at" is an ordinary word ("look at example.com"),
  * so only the capital AT and the bracketed forms count. Bounded, like the pattern above, because it is run on lines an owner wrote.
  */
-const OBFUSCATED_ADDRESS = /\b[\w.%+-]{1,64}\s{0,2}(?:\[(?:at|AT)\]|\((?:at|AT)\)|\{(?:at|AT)\}|AT)\s{0,2}[\w-]{1,63}(?:\.[\w-]{1,63}){1,4}\b/;
+const OBFUSCATED_ADDRESS = /\b[\w.%+-]{1,64}\s{0,2}(?:\[(?:at|AT)\]|\((?:at|AT)\)|\{(?:at|AT)\}|AT)\s{0,2}[\w-]{1,63}(?:\.[\w-]{1,63}){0,3}\.[A-Za-z]{2,24}\b/;
+/**
+ * An address in a template is not a contact: security@example.com, an address on a reserved test domain (.local, .test, .invalid, .example),
+ * written plainly or hidden. Found by reading the "visible" policies by eye: one named agent@something.local. Bounded like the patterns above.
+ */
+const PLACEHOLDER_ADDRESS = /[\w.%+-]{1,64}(?:@|\s{0,2}(?:\[(?:at|AT)\]|\((?:at|AT)\)|\{(?:at|AT)\}|AT)\s{0,2})(?:[\w-]{1,63}\.){0,3}(?:example\.(?:com|org|net)|[\w-]{1,63}\.(?:local|localhost|test|invalid|example))\b/gi;
 const MAX_POLICY_CHARS = 16_384;
 const MAX_LINE_CHARS = 1_000;
 /** Workflow text that is looked at per file; a longer file counts as only partly read. */
@@ -128,17 +133,22 @@ export function namesContact(text: string, readTruncated = false): boolean | nul
     }
     if (/shields\.io|badge/i.test(line)) continue;
     // a linked image ([![alt](image)](target)) is a button, not a contact: drop the whole construct, then look at what is left
-    const plain = line.replace(/\[!\[[^\]]{0,200}\]\([^)]{0,300}\)\]\([^)]{0,300}\)/g, " ").replace(/!\[[^\]]{0,200}\]\([^)]{0,300}\)/g, " ");
+    const plain = line.replace(/\[!\[[^\]]{0,200}\]\([^)]{0,300}\)\]\([^)]{0,300}\)/g, " ").replace(/!\[[^\]]{0,200}\]\([^)]{0,300}\)/g, " ")
+      .replace(PLACEHOLDER_ADDRESS, " ");
     if (CONTACT.test(plain) || OBFUSCATED_ADDRESS.test(plain)) return true;
   }
   return skipped ? null : false;
 }
 
-/** Comments in a workflow are not steps. */
-function stripComments(yaml: string): string {
+/**
+ * Comments in a workflow are not steps, and neither is a line that deletes files: a workflow that runs rm -rf on the CodeQL cache to free
+ * disk space (found by reading the "visible" scans by eye) does not scan anything.
+ */
+export function stripComments(yaml: string): string {
   return yaml
     .split("\n")
     .filter((line) => !/^\s*#/.test(line))
+    .filter((line) => !/(^|[\s;&|])(?:sudo\s+)?(?:rm|rmdir)\s+-/.test(line))
     .map((line) => line.replace(/\s#.*$/, ""))
     .join("\n");
 }
