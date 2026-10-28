@@ -8,6 +8,8 @@
 //   3. per organisation the most recently pushed repository (looking at the first 10) that is no fork, not archived, no template and has
 //      at least one published release. No such repository: the organisation drops out, no replacement.
 //   4. at most 200 repositories
+//   5. a repository that is already in the sample is counted once (an organisation can be on two country lists). The rule as first written
+//      said nothing about this; the first runs counted such a repository twice, and the published totals count it once.
 //
 // Usage:  CRA_BENCH_TOKEN=... node bench/cra-benchmark.mjs --raw=raw.json --totals=totals.json [--limit=200] [--per-country=20]
 // The raw file holds repository names and stays on the machine that ran this. Only the totals file is meant to leave it.
@@ -45,8 +47,10 @@ async function api(path) {
 }
 
 const picked = [];
+const seenRepos = new Set();
 let orgsSeen = 0;
 let orgsDropped = 0;
+let duplicatesSkipped = 0;
 
 for (const country of COUNTRIES) {
   if (picked.length >= LIMIT) break;
@@ -67,8 +71,15 @@ for (const country of COUNTRIES) {
         break;
       }
     }
-    if (chosen) picked.push({ country, org: org.login, repo: chosen });
-    else orgsDropped++;
+    if (chosen && seenRepos.has(chosen.toLowerCase())) {
+      // an organisation can be on two country lists; its repository is counted once, in the first list it appeared in
+      duplicatesSkipped++;
+      continue;
+    }
+    if (chosen) {
+      seenRepos.add(chosen.toLowerCase());
+      picked.push({ country, org: org.login, repo: chosen });
+    } else orgsDropped++;
   }
   console.error(`${country}: ${picked.length} repositories so far`);
 }
@@ -127,6 +138,7 @@ const totals = {
   sampleRule: "see 2026-10-28-cra-benchmark-voorspelling.md",
   organisationsExamined: orgsSeen,
   organisationsWithoutQualifyingRepository: orgsDropped,
+  organisationsWhoseRepositoryWasAlreadyInTheSample: duplicatesSkipped,
   repositoriesMeasured: results.length,
   repositoriesWithAPartThatCouldNotBeRead: results.filter((r) => !r.complete).length,
   repositoriesUnreadableAndLeftOut: failedReads,
