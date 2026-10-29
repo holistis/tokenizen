@@ -303,6 +303,74 @@ describe("the Dutch texts say the same as the English ones", () => {
   });
 });
 
+// The review of 29 October 2026 found sentences in the terms that promised more than the log can show, left a refund unclear, let a consumer's
+// yearly subscription renew for another year, and said nothing about which language counts. They are corrected in both languages, and stay so.
+describe("the terms are correct in both languages", () => {
+  const both = [
+    ["en", terms, signalLog, privacy],
+    ["nl", termsNl, signalLogNl, privacyNl],
+  ] as const;
+
+  it("no longer says that the log shows a measurement was not changed after it was written", () => {
+    expect(terms).not.toContain("shows that a measurement was not changed after it was written");
+    expect(termsNl).not.toContain("niet is veranderd nadat hij is geschreven");
+    expect(terms).toContain("Once a line of the log is covered by a confirmed timestamp");
+    expect(termsNl).toContain("Zodra een regel van het logboek is gedekt door een bevestigde tijdstempel");
+  });
+
+  it("says that a change of an old line shows when you compare with an earlier copy or a confirmed timestamp", () => {
+    expect(signalLog).toContain("when you compare the log with a copy you received earlier or with a confirmed timestamp");
+    expect(signalLogNl).toContain("wanneer je het logboek vergelijkt met een kopie die je eerder kreeg of met een bevestigde tijdstempel");
+  });
+
+  it("says in plain words what is refunded when a weekly run is missed, and not that you get a period back", () => {
+    for (const [taal, t, s] of both) {
+      expect(t, `${taal} terms`).not.toMatch(/you get that period back|krijg je die periode terug/);
+      expect(s, `${taal} offer`).not.toMatch(/you get that period back|krijg je die periode terug/);
+    }
+    expect(terms).toContain("we refund the share of the price for that month");
+    expect(termsNl).toContain("betalen we het aandeel van de prijs voor die maand terug");
+    expect(signalLog).toContain("we refund the share of the price for that month");
+    expect(signalLogNl).toContain("betalen we het aandeel van de prijs voor die maand terug");
+  });
+
+  it("lets a consumer's yearly subscription continue for an indefinite period instead of renewing for another year", () => {
+    expect(terms).toContain("it continues after the first year for an indefinite period");
+    expect(termsNl).toContain("loopt het na het eerste jaar door voor onbepaalde tijd");
+  });
+
+  it("gives a consumer the right to end the subscription when a change is to their disadvantage", () => {
+    expect(terms).toContain("If a change is to your disadvantage, you can end the subscription within 30 days");
+    expect(termsNl).toContain("Is een wijziging in je nadeel, dan kun je het abonnement binnen 30 dagen");
+  });
+
+  it("says which language counts, and what counts for a consumer", () => {
+    expect(terms).toContain("If the texts differ, the English text applies; if you are a consumer, the reading that is most favourable to you applies.");
+    expect(termsNl).toContain("Verschillen de teksten, dan geldt de Engelse tekst; ben je consument, dan geldt de lezing die voor jou het gunstigst is.");
+  });
+
+  it("starts the 14 days when you subscribe, in the terms and in the offer, in both languages", () => {
+    for (const [taal, t, s] of both) {
+      expect(t, `${taal} terms`).toMatch(/14 (days after you subscribe|dagen nadat je je hebt geabonneerd)/);
+      expect(s, `${taal} offer`).toMatch(/14 (days after you subscribe|dagen nadat je je hebt geabonneerd)/);
+    }
+  });
+
+  it("names the legal ground for the IP address, the cookies of the payment page and the transfer outside the EEA", () => {
+    expect(privacy).toContain("our legitimate interest in keeping the service safe");
+    expect(privacyNl).toContain("ons gerechtvaardigd belang bij een veilige dienst");
+    expect(privacy).toContain("The payment page is run by Stripe, which sets its own cookies there.");
+    expect(privacyNl).toContain("De betaalpagina wordt beheerd door Stripe, die daar eigen cookies plaatst.");
+    expect(privacy).toContain("outside the European Economic Area");
+    expect(privacyNl).toContain("buiten de Europese Economische Ruimte");
+  });
+
+  it("carries the same date of the last change in both languages", () => {
+    expect(privacy).toContain("Last changed: 29 October 2026.");
+    expect(privacyNl).toContain("Laatst gewijzigd: 29 oktober 2026.");
+  });
+});
+
 describe("the business line in the footer", () => {
   it("carries the same company data as the texts", () => {
     expect(BUSINESS_LINE).toContain("AO Services");

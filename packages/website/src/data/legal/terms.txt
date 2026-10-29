@@ -4,20 +4,20 @@ Terms of the Signal log
 
 2. What we sell. A subscription to the Signal log as described on tokenizen.nl/en/signal-log: a weekly measurement of the public GitHub repositories you name (up to 3 for Solo, up to 25 for Team), added to a hash-chained log with a timestamp outside our control, which we email to you. This is early access. What is not described there is not promised, and the email warnings are not included yet.
 
-3. Price and payment. Prices include VAT and are shown on the offer page. You pay through Stripe, monthly or yearly, in advance. A subscription renews until you cancel it. We tell you 30 days before a price changes; the new price applies from the next period, and you can cancel before it does.
+3. Price and payment. Prices include VAT and are shown on the offer page. You pay through Stripe, monthly or yearly, in advance. A subscription renews until you cancel it. If you are a consumer and your subscription is yearly, it continues after the first year for an indefinite period: you can then cancel at any time, and it ends at the end of the month in which you cancel, with a refund of the part of the yearly price for the months after that. We tell you 30 days before a price changes; the new price applies from the next period, and you can cancel before it does.
 
-4. Cancelling and refunds. Cancel at any time in the customer portal; the subscription ends at the end of the period you paid for. In the first 14 days you can ask us by email for a full refund, and we pay it back. If we do not deliver the weekly log in a billing period, you get that period back. If we stop the service, you get back the unused part of the period.
+4. Cancelling and refunds. Cancel at any time in the customer portal; the subscription ends at the end of the period you paid for. In the first 14 days after you subscribe you can ask us by email for a full refund, and we pay it back. If we miss a weekly run, we tell you and catch up within 7 days. If we cannot catch up, we refund the share of the price for that month. If we stop the service, we refund the unused part of the period you paid for.
 
 5. What you give us. The names of public repositories that you own or are allowed to monitor, and an email address. We only read public information. We never ask for access to your code.
 
-6. What we do not promise. The log shows that a measurement was not changed after it was written and, once its timestamp is confirmed, that it existed by that date. It does not show that a measurement is right. The signals are visible only in public places, so a signal that is not visible may exist elsewhere. Nothing we send is a compliance check, a certificate or legal advice.
+6. What we do not promise. Once a line of the log is covered by a confirmed timestamp, the log shows that this line has not changed since that date and that it existed by then. Newer lines are protected by the copies we have already emailed to you. The log does not show that a measurement is right. The signals are visible only in public places, so a signal that is not visible may exist elsewhere. Nothing we send is a compliance check, a certificate or legal advice.
 
 7. Liability. We are liable for damage caused by our intent or gross negligence. Otherwise our liability is limited to the amount you paid us in the 12 months before the event. This does not limit rights that you have by law as a consumer.
 
-8. Changes and ending. We may change the service for good reason and tell you in advance by email. We may end it with 30 days notice.
+8. Changes and ending. We may change the service for good reason and tell you in advance by email. If a change is to your disadvantage, you can end the subscription within 30 days after our message and get back the unused part of the period you paid for. We may end the service with 30 days notice.
 
 9. Personal data. See tokenizen.nl/en/privacy.
 
-10. Law. Dutch law applies. A dispute goes to the court in Oost-Brabant, unless you are a consumer: then the court that the law gives you also applies.
+10. Law. Dutch law applies. A dispute goes to the court in Oost-Brabant, unless you are a consumer: then the court that the law gives you also applies. These terms also exist in Dutch. If the texts differ, the English text applies; if you are a consumer, the reading that is most favourable to you applies.
 
 Questions: info@tokenizen.nl.

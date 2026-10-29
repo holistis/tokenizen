@@ -3,7 +3,7 @@ Signal log, vroege toegang
 Een wekelijkse vastlegging van de beveiligingssignalen van je openbare GitHub-repositories, die je zonder ons kunt controleren.
 
 Wat je vandaag krijgt
-Eén keer per week, meestal op maandag, draaien wij de gratis check van tokenizen.nl/nl/cra-check op de openbare repositories die je noemt: tot 3 bij Solo, tot 25 bij Team. Elke uitslag wordt één regel in een logbestand. Elke regel bevat de hash van de regel ervoor, dus een oude regel veranderen, weghalen of van volgorde veranderen valt op. De kop van het logboek krijgt een tijdstempel van OpenTimestamps, dat buiten onze controle staat, zodat de datum zonder ons te vertrouwen kan worden nagegaan. Een tijdstempel is eerst in behandeling en telt pas als bevestigd nadat Bitcoin hem heeft opgenomen, meestal enkele uren later. Na elke run mailen we je het bijgewerkte logboek en het commando om het te controleren. In deze fase draaien we het zelf, met de hand.
+Eén keer per week, meestal op maandag, draaien wij de gratis check van tokenizen.nl/nl/cra-check op de openbare repositories die je noemt: tot 3 bij Solo, tot 25 bij Team. Elke uitslag wordt één regel in een logbestand. Elke regel bevat de hash van de regel ervoor, dus een oude regel veranderen, weghalen of van volgorde veranderen valt op wanneer je het logboek vergelijkt met een kopie die je eerder kreeg of met een bevestigde tijdstempel. De kop van het logboek krijgt een tijdstempel van OpenTimestamps, dat buiten onze controle staat, zodat de datum zonder ons te vertrouwen kan worden nagegaan. Een tijdstempel is eerst in behandeling en telt pas als bevestigd nadat Bitcoin hem heeft opgenomen, meestal enkele uren later. Na elke run mailen we je het bijgewerkte logboek en het commando om het te controleren. In deze fase draaien we het zelf, met de hand.
 
 Wat nog niet is inbegrepen
 Waarschuwingsmails als een signaal dat zichtbaar was niet meer zichtbaar is. Die zijn gepland en horen niet bij wat je vandaag koopt. Er is ook geen openbare plek waar logboeken worden gepubliceerd: jouw logboek is van jou.
@@ -14,7 +14,7 @@ De check kijkt naar acht gekozen signalen die zichtbaar zijn in een openbare rep
 Prijs, inclusief btw
 Solo: 9,95 euro per maand of 99 euro per jaar, tot 3 repositories.
 Team: 29,95 euro per maand of 299 euro per jaar, tot 25 repositories.
-Je kunt op elk moment opzeggen in het klantenportaal; het abonnement eindigt dan aan het eind van de periode die je hebt betaald. In de eerste 14 dagen kun je al je geld terugvragen. Leveren we in een factureringsperiode het wekelijkse logboek niet, dan krijg je die periode terug.
+Je kunt op elk moment opzeggen in het klantenportaal; het abonnement eindigt dan aan het eind van de periode die je hebt betaald. In de eerste 14 dagen nadat je je hebt geabonneerd kun je al je geld terugvragen. Missen we een wekelijkse run, dan laten we het je weten en halen we hem binnen 7 dagen in; lukt dat niet, dan betalen we het aandeel van de prijs voor die maand terug.
 
 Hoe het begint
 Nadat je je hebt geabonneerd, mail je de repositories als owner/name naar info@tokenizen.nl. De eerste run is de eerstvolgende maandag.
