@@ -1,0 +1,1018 @@
+{
+  "pages": {
+    "/about": {
+      "lang": "en",
+      "title": "Two brothers, one company | tokenizen",
+      "description": "Abdellah and Ahmed Ouadoudi run AO Services in Eindhoven: security research, free checks, a log with a timestamp outside our control.",
+      "canonical": "https://tokenizen.nl/about",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/about",
+      "ogTitle": "Two brothers, one company | tokenizen",
+      "ogDescription": "Abdellah and Ahmed Ouadoudi run AO Services in Eindhoven: security research, free checks, a log with a timestamp outside our control.",
+      "twitterTitle": "Two brothers, one company | tokenizen",
+      "twitterDescription": "Abdellah and Ahmed Ouadoudi run AO Services in Eindhoven: security research, free checks, a log with a timestamp outside our control.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/about"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/about"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/about"
+        }
+      ]
+    },
+    "/blog": {
+      "lang": "en",
+      "title": "Blog | tokenizen",
+      "description": "Longer pieces with a story and a point of view. The measurements, tools and working notes are kept apart, under Notes.",
+      "canonical": "https://tokenizen.nl/blog",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/blog",
+      "ogTitle": "Blog | tokenizen",
+      "ogDescription": "Longer pieces with a story and a point of view. The measurements, tools and working notes are kept apart, under Notes.",
+      "twitterTitle": "Blog | tokenizen",
+      "twitterDescription": "Longer pieces with a story and a point of view. The measurements, tools and working notes are kept apart, under Notes.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/blog"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/blog"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/blog"
+        }
+      ]
+    },
+    "/check": {
+      "lang": "en",
+      "title": "Free endpoint ownership check | tokenizen",
+      "description": "Prove you control an endpoint with a free, live DNS or well-known-file check, the same ownership proof endpoint-attest uses, run directly in your browser.",
+      "canonical": "https://tokenizen.nl/check",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/check",
+      "ogTitle": "Free endpoint ownership check | tokenizen",
+      "ogDescription": "Prove you control an endpoint with a free, live DNS or well-known-file check, the same ownership proof endpoint-attest uses, run directly in your browser.",
+      "twitterTitle": "Free endpoint ownership check | tokenizen",
+      "twitterDescription": "Prove you control an endpoint with a free, live DNS or well-known-file check, the same ownership proof endpoint-attest uses, run directly in your browser.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/check"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/check"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/check"
+        }
+      ]
+    },
+    "/checks": {
+      "lang": "en",
+      "title": "Free checks | tokenizen",
+      "description": "Free checks of a public GitHub repository, an x402 payment endpoint and the ownership of an endpoint.",
+      "canonical": "https://tokenizen.nl/checks",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/checks",
+      "ogTitle": "Free checks | tokenizen",
+      "ogDescription": "Free checks of a public GitHub repository, an x402 payment endpoint and the ownership of an endpoint.",
+      "twitterTitle": "Free checks | tokenizen",
+      "twitterDescription": "Free checks of a public GitHub repository, an x402 payment endpoint and the ownership of an endpoint.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/checks"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/checks"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/checks"
+        }
+      ]
+    },
+    "/consultancy": {
+      "lang": "en",
+      "title": "Talk to Ahmed | tokenizen",
+      "description": "A conversation about security, the EU Cyber Resilience Act or payments between agents, with Ahmed Ouadoudi of AO Services in Eindhoven.",
+      "canonical": "https://tokenizen.nl/consultancy",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/consultancy",
+      "ogTitle": "Talk to Ahmed | tokenizen",
+      "ogDescription": "A conversation about security, the EU Cyber Resilience Act or payments between agents, with Ahmed Ouadoudi of AO Services in Eindhoven.",
+      "twitterTitle": "Talk to Ahmed | tokenizen",
+      "twitterDescription": "A conversation about security, the EU Cyber Resilience Act or payments between agents, with Ahmed Ouadoudi of AO Services in Eindhoven.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/consultancy"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/consultancy"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/consultancy"
+        }
+      ]
+    },
+    "/cra-check": {
+      "lang": "en",
+      "title": "Free check of eight security signals in a GitHub repository, related to the EU Cyber Resilience Act | tokenizen",
+      "description": "Name a public GitHub repository and see which of eight selected security signals, related to topics in the EU Cyber Resilience Act, are visible in it, and what would make the rest visible. An indication, not a compliance check. Free, read only, no reports stored.",
+      "canonical": "https://tokenizen.nl/cra-check",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/cra-check",
+      "ogTitle": "Free check of eight security signals in a GitHub repository, related to the EU Cyber Resilience Act | tokenizen",
+      "ogDescription": "Name a public GitHub repository and see which of eight selected security signals, related to topics in the EU Cyber Resilience Act, are visible in it, and what would make the rest visible. An indication, not a compliance check. Free, read only, no reports stored.",
+      "twitterTitle": "Free check of eight security signals in a GitHub repository, related to the EU Cyber Resilience Act | tokenizen",
+      "twitterDescription": "Name a public GitHub repository and see which of eight selected security signals, related to topics in the EU Cyber Resilience Act, are visible in it, and what would make the rest visible. An indication, not a compliance check. Free, read only, no reports stored.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/cra-check"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/cra-check"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/cra-check"
+        }
+      ]
+    },
+    "/nl": {
+      "lang": "nl",
+      "title": "tokenizen | Wij vinden de lekken. Wij publiceren de cijfers.",
+      "description": "Beveiligingsonderzoek, gratis checks en een logboek met een tijdstempel buiten onze controle, van twee broers in Eindhoven. We maten 109 openbare repositories op acht beveiligingssignalen en publiceren onze missers ook.",
+      "canonical": "https://tokenizen.nl/nl",
+      "ogLocale": "nl_NL",
+      "ogUrl": "https://tokenizen.nl/nl",
+      "ogTitle": "tokenizen | Wij vinden de lekken. Wij publiceren de cijfers.",
+      "ogDescription": "Beveiligingsonderzoek, gratis checks en een logboek met een tijdstempel buiten onze controle, van twee broers in Eindhoven. We maten 109 openbare repositories op acht beveiligingssignalen en publiceren onze missers ook.",
+      "twitterTitle": "tokenizen | Wij vinden de lekken. Wij publiceren de cijfers.",
+      "twitterDescription": "Beveiligingsonderzoek, gratis checks en een logboek met een tijdstempel buiten onze controle. Twee broers in Eindhoven.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/"
+        }
+      ]
+    },
+    "/nl/about": {
+      "lang": "nl",
+      "title": "Twee broers, één bedrijf | tokenizen",
+      "description": "Abdellah en Ahmed Ouadoudi runnen AO Services in Eindhoven: beveiligingsonderzoek, gratis checks, een logboek met een tijdstempel buiten onze controle.",
+      "canonical": "https://tokenizen.nl/nl/about",
+      "ogLocale": "nl_NL",
+      "ogUrl": "https://tokenizen.nl/nl/about",
+      "ogTitle": "Twee broers, één bedrijf | tokenizen",
+      "ogDescription": "Abdellah en Ahmed Ouadoudi runnen AO Services in Eindhoven: beveiligingsonderzoek, gratis checks, een logboek met een tijdstempel buiten onze controle.",
+      "twitterTitle": "Twee broers, één bedrijf | tokenizen",
+      "twitterDescription": "Abdellah en Ahmed Ouadoudi runnen AO Services in Eindhoven: beveiligingsonderzoek, gratis checks, een logboek met een tijdstempel buiten onze controle.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/about"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/about"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/about"
+        }
+      ]
+    },
+    "/nl/blog": {
+      "lang": "nl",
+      "title": "Blog | tokenizen",
+      "description": "Langere stukken met een verhaal en een standpunt. De metingen, tools en werknotities staan apart, onder Notities.",
+      "canonical": "https://tokenizen.nl/nl/blog",
+      "ogLocale": "nl_NL",
+      "ogUrl": "https://tokenizen.nl/nl/blog",
+      "ogTitle": "Blog | tokenizen",
+      "ogDescription": "Langere stukken met een verhaal en een standpunt. De metingen, tools en werknotities staan apart, onder Notities.",
+      "twitterTitle": "Blog | tokenizen",
+      "twitterDescription": "Langere stukken met een verhaal en een standpunt. De metingen, tools en werknotities staan apart, onder Notities.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/blog"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/blog"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/blog"
+        }
+      ]
+    },
+    "/nl/check": {
+      "lang": "nl",
+      "title": "Gratis check op eigenaarschap van een endpoint | tokenizen",
+      "description": "Bewijs dat je een endpoint beheert met een gratis, live check via DNS of een well-known-bestand: hetzelfde eigenaarschapsbewijs dat endpoint-attest gebruikt, direct vanuit je browser uitgevoerd.",
+      "canonical": "https://tokenizen.nl/nl/check",
+      "ogLocale": "nl_NL",
+      "ogUrl": "https://tokenizen.nl/nl/check",
+      "ogTitle": "Gratis check op eigenaarschap van een endpoint | tokenizen",
+      "ogDescription": "Bewijs dat je een endpoint beheert met een gratis, live check via DNS of een well-known-bestand: hetzelfde eigenaarschapsbewijs dat endpoint-attest gebruikt, direct vanuit je browser uitgevoerd.",
+      "twitterTitle": "Gratis check op eigenaarschap van een endpoint | tokenizen",
+      "twitterDescription": "Bewijs dat je een endpoint beheert met een gratis, live check via DNS of een well-known-bestand: hetzelfde eigenaarschapsbewijs dat endpoint-attest gebruikt, direct vanuit je browser uitgevoerd.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/check"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/check"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/check"
+        }
+      ]
+    },
+    "/nl/checks": {
+      "lang": "nl",
+      "title": "Gratis checks | tokenizen",
+      "description": "Gratis checks van een openbare GitHub-repository, een x402-betaalpunt en het eigenaarschap van een endpoint.",
+      "canonical": "https://tokenizen.nl/nl/checks",
+      "ogLocale": "nl_NL",
+      "ogUrl": "https://tokenizen.nl/nl/checks",
+      "ogTitle": "Gratis checks | tokenizen",
+      "ogDescription": "Gratis checks van een openbare GitHub-repository, een x402-betaalpunt en het eigenaarschap van een endpoint.",
+      "twitterTitle": "Gratis checks | tokenizen",
+      "twitterDescription": "Gratis checks van een openbare GitHub-repository, een x402-betaalpunt en het eigenaarschap van een endpoint.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/checks"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/checks"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/checks"
+        }
+      ]
+    },
+    "/nl/consultancy": {
+      "lang": "nl",
+      "title": "Praat met Ahmed | tokenizen",
+      "description": "Een gesprek over beveiliging, de Europese Cyber Resilience Act of betalingen tussen agenten, met Ahmed Ouadoudi van AO Services in Eindhoven.",
+      "canonical": "https://tokenizen.nl/nl/consultancy",
+      "ogLocale": "nl_NL",
+      "ogUrl": "https://tokenizen.nl/nl/consultancy",
+      "ogTitle": "Praat met Ahmed | tokenizen",
+      "ogDescription": "Een gesprek over beveiliging, de Europese Cyber Resilience Act of betalingen tussen agenten, met Ahmed Ouadoudi van AO Services in Eindhoven.",
+      "twitterTitle": "Praat met Ahmed | tokenizen",
+      "twitterDescription": "Een gesprek over beveiliging, de Europese Cyber Resilience Act of betalingen tussen agenten, met Ahmed Ouadoudi van AO Services in Eindhoven.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/consultancy"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/consultancy"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/consultancy"
+        }
+      ]
+    },
+    "/nl/cra-check": {
+      "lang": "nl",
+      "title": "Gratis check van acht beveiligingssignalen in een GitHub-repository, verwant aan de EU Cyber Resilience Act | tokenizen",
+      "description": "Geef een openbare GitHub-repository op en zie welke van acht gekozen beveiligingssignalen, verwant aan onderwerpen uit de EU Cyber Resilience Act, erin zichtbaar zijn en wat de rest zichtbaar zou maken. Een indicatie, geen toets op naleving. Gratis, alleen lezen, geen rapporten opgeslagen.",
+      "canonical": "https://tokenizen.nl/nl/cra-check",
+      "ogLocale": "nl_NL",
+      "ogUrl": "https://tokenizen.nl/nl/cra-check",
+      "ogTitle": "Gratis check van acht beveiligingssignalen in een GitHub-repository, verwant aan de EU Cyber Resilience Act | tokenizen",
+      "ogDescription": "Geef een openbare GitHub-repository op en zie welke van acht gekozen beveiligingssignalen, verwant aan onderwerpen uit de EU Cyber Resilience Act, erin zichtbaar zijn en wat de rest zichtbaar zou maken. Een indicatie, geen toets op naleving. Gratis, alleen lezen, geen rapporten opgeslagen.",
+      "twitterTitle": "Gratis check van acht beveiligingssignalen in een GitHub-repository, verwant aan de EU Cyber Resilience Act | tokenizen",
+      "twitterDescription": "Geef een openbare GitHub-repository op en zie welke van acht gekozen beveiligingssignalen, verwant aan onderwerpen uit de EU Cyber Resilience Act, erin zichtbaar zijn en wat de rest zichtbaar zou maken. Een indicatie, geen toets op naleving. Gratis, alleen lezen, geen rapporten opgeslagen.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/cra-check"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/cra-check"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/cra-check"
+        }
+      ]
+    },
+    "/nl/notes": {
+      "lang": "nl",
+      "title": "Notities | tokenizen",
+      "description": "Metingen, tools en werknotities voor engineers die bouwen met AI-agents die betalen. Staat er een getal, dan staan de commando's die het opleverden in de tekst, zodat je het zelf kunt natrekken en het op de feiten met ons oneens kunt zijn.",
+      "canonical": "https://tokenizen.nl/nl/notes",
+      "ogLocale": "nl_NL",
+      "ogUrl": "https://tokenizen.nl/nl/notes",
+      "ogTitle": "Notities | tokenizen",
+      "ogDescription": "Metingen, tools en werknotities voor engineers die bouwen met AI-agents die betalen. Staat er een getal, dan staan de commando's die het opleverden in de tekst, zodat je het zelf kunt natrekken en het op de feiten met ons oneens kunt zijn.",
+      "twitterTitle": "Notities | tokenizen",
+      "twitterDescription": "Metingen, tools en werknotities voor engineers die bouwen met AI-agents die betalen. Staat er een getal, dan staan de commando's die het opleverden in de tekst, zodat je het zelf kunt natrekken en het op de feiten met ons oneens kunt zijn.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/notes"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/notes"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/notes"
+        }
+      ]
+    },
+    "/nl/privacy": {
+      "lang": "nl",
+      "title": "Privacyverklaring | tokenizen",
+      "description": "Zo gaan de gratis checks en het Signal log om met persoonsgegevens.",
+      "canonical": "https://tokenizen.nl/nl/privacy",
+      "ogLocale": "nl_NL",
+      "ogUrl": "https://tokenizen.nl/nl/privacy",
+      "ogTitle": "Privacyverklaring | tokenizen",
+      "ogDescription": "Zo gaan de gratis checks en het Signal log om met persoonsgegevens.",
+      "twitterTitle": "Privacyverklaring | tokenizen",
+      "twitterDescription": "Zo gaan de gratis checks en het Signal log om met persoonsgegevens.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/privacy"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/privacy"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/privacy"
+        }
+      ]
+    },
+    "/nl/scan": {
+      "lang": "nl",
+      "title": "Smart-contractscan | tokenizen",
+      "description": "Een smart-contractscan met een openbaar scorebord dat ook laat zien wat hij miste. Betaal per scan via x402.",
+      "canonical": "https://tokenizen.nl/nl/scan",
+      "ogLocale": "nl_NL",
+      "ogUrl": "https://tokenizen.nl/nl/scan",
+      "ogTitle": "Smart-contractscan | tokenizen",
+      "ogDescription": "Een smart-contractscan met een openbaar scorebord dat ook laat zien wat hij miste. Betaal per scan via x402.",
+      "twitterTitle": "Smart-contractscan | tokenizen",
+      "twitterDescription": "Een smart-contractscan met een openbaar scorebord dat ook laat zien wat hij miste. Betaal per scan via x402.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/scan"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/scan"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/scan"
+        }
+      ]
+    },
+    "/nl/scoreboard": {
+      "lang": "nl",
+      "title": "Scorebord | tokenizen",
+      "description": "Hoeveel van de bevindingen die menselijke auditors al vonden in afgesloten wedstrijden onze smart-contractscan vindt. Rijen verwijzen naar hun uitslag en, waar die er is, naar de preregistratie die voor de run is opgeschreven. Versie 3.1 heeft geen openbare regel van vóór de run: hij staat alleen in onze eigen notities.",
+      "canonical": "https://tokenizen.nl/nl/scoreboard",
+      "ogLocale": "nl_NL",
+      "ogUrl": "https://tokenizen.nl/nl/scoreboard",
+      "ogTitle": "Scorebord | tokenizen",
+      "ogDescription": "Hoeveel van de bevindingen die menselijke auditors al vonden in afgesloten wedstrijden onze smart-contractscan vindt. Rijen verwijzen naar hun uitslag en, waar die er is, naar de preregistratie die voor de run is opgeschreven. Versie 3.1 heeft geen openbare regel van vóór de run: hij staat alleen in onze eigen notities.",
+      "twitterTitle": "Scorebord | tokenizen",
+      "twitterDescription": "Hoeveel van de bevindingen die menselijke auditors al vonden in afgesloten wedstrijden onze smart-contractscan vindt. Rijen verwijzen naar hun uitslag en, waar die er is, naar de preregistratie die voor de run is opgeschreven. Versie 3.1 heeft geen openbare regel van vóór de run: hij staat alleen in onze eigen notities.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/scoreboard"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/scoreboard"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/scoreboard"
+        }
+      ]
+    },
+    "/nl/security": {
+      "lang": "nl",
+      "title": "Beveiligingsonderzoek | tokenizen",
+      "description": "Beveiligingsonderzoek door twee broers in Eindhoven: een gepubliceerd advisory met ernst High, ons eigen dossier inclusief wat is afgewezen, en hoe we de rest gaan laten zien.",
+      "canonical": "https://tokenizen.nl/nl/security",
+      "ogLocale": "nl_NL",
+      "ogUrl": "https://tokenizen.nl/nl/security",
+      "ogTitle": "Beveiligingsonderzoek | tokenizen",
+      "ogDescription": "Beveiligingsonderzoek door twee broers in Eindhoven: een gepubliceerd advisory met ernst High, ons eigen dossier inclusief wat is afgewezen, en hoe we de rest gaan laten zien.",
+      "twitterTitle": "Beveiligingsonderzoek | tokenizen",
+      "twitterDescription": "Beveiligingsonderzoek door twee broers in Eindhoven: een gepubliceerd advisory met ernst High, ons eigen dossier inclusief wat is afgewezen, en hoe we de rest gaan laten zien.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/security"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/security"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/security"
+        }
+      ]
+    },
+    "/nl/signal-log": {
+      "lang": "nl",
+      "title": "Signal log in vroege toegang | tokenizen",
+      "description": "Een wekelijks logboek van de beveiligingssignalen van je openbare GitHub-repositories, dat je zonder ons kunt controleren. Vroege toegang.",
+      "canonical": "https://tokenizen.nl/nl/signal-log",
+      "ogLocale": "nl_NL",
+      "ogUrl": "https://tokenizen.nl/nl/signal-log",
+      "ogTitle": "Signal log in vroege toegang | tokenizen",
+      "ogDescription": "Een wekelijks logboek van de beveiligingssignalen van je openbare GitHub-repositories, dat je zonder ons kunt controleren. Vroege toegang.",
+      "twitterTitle": "Signal log in vroege toegang | tokenizen",
+      "twitterDescription": "Een wekelijks logboek van de beveiligingssignalen van je openbare GitHub-repositories, dat je zonder ons kunt controleren. Vroege toegang.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/signal-log"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/signal-log"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/signal-log"
+        }
+      ]
+    },
+    "/nl/terms": {
+      "lang": "nl",
+      "title": "Voorwaarden van het Signal log | tokenizen",
+      "description": "De voorwaarden voor het abonnement op het Signal log van AO Services.",
+      "canonical": "https://tokenizen.nl/nl/terms",
+      "ogLocale": "nl_NL",
+      "ogUrl": "https://tokenizen.nl/nl/terms",
+      "ogTitle": "Voorwaarden van het Signal log | tokenizen",
+      "ogDescription": "De voorwaarden voor het abonnement op het Signal log van AO Services.",
+      "twitterTitle": "Voorwaarden van het Signal log | tokenizen",
+      "twitterDescription": "De voorwaarden voor het abonnement op het Signal log van AO Services.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/terms"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/terms"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/terms"
+        }
+      ]
+    },
+    "/nl/tools": {
+      "lang": "nl",
+      "title": "Open-sourcegereedschap | tokenizen",
+      "description": "Open-sourcegereedschap voor betalingen tussen agenten: capacity-attest, agent-receipt-verify, x402-lint en muraqib-agent-watch.",
+      "canonical": "https://tokenizen.nl/nl/tools",
+      "ogLocale": "nl_NL",
+      "ogUrl": "https://tokenizen.nl/nl/tools",
+      "ogTitle": "Open-sourcegereedschap | tokenizen",
+      "ogDescription": "Open-sourcegereedschap voor betalingen tussen agenten: capacity-attest, agent-receipt-verify, x402-lint en muraqib-agent-watch.",
+      "twitterTitle": "Open-sourcegereedschap | tokenizen",
+      "twitterDescription": "Open-sourcegereedschap voor betalingen tussen agenten: capacity-attest, agent-receipt-verify, x402-lint en muraqib-agent-watch.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/tools"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/tools"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/tools"
+        }
+      ]
+    },
+    "/nl/x402-check": {
+      "lang": "nl",
+      "title": "Gratis x402-endpointcheck | tokenizen",
+      "description": "Plak de URL van een x402-route die je zelf draait en zie wat de client van een koper zou zien: of het betaalverzoek door het officiële schema komt en hoe hoog het op de receipt-ladder komt. Gratis, betaalt nooit, niets te installeren.",
+      "canonical": "https://tokenizen.nl/nl/x402-check",
+      "ogLocale": "nl_NL",
+      "ogUrl": "https://tokenizen.nl/nl/x402-check",
+      "ogTitle": "Gratis x402-endpointcheck | tokenizen",
+      "ogDescription": "Plak de URL van een x402-route die je zelf draait en zie wat de client van een koper zou zien: of het betaalverzoek door het officiële schema komt en hoe hoog het op de receipt-ladder komt. Gratis, betaalt nooit, niets te installeren.",
+      "twitterTitle": "Gratis x402-endpointcheck | tokenizen",
+      "twitterDescription": "Plak de URL van een x402-route die je zelf draait en zie wat de client van een koper zou zien: of het betaalverzoek door het officiële schema komt en hoe hoog het op de receipt-ladder komt. Gratis, betaalt nooit, niets te installeren.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/x402-check"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/x402-check"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/x402-check"
+        }
+      ]
+    },
+    "/notes": {
+      "lang": "en",
+      "title": "Notes | tokenizen",
+      "description": "Measurements, tools and working notes for engineers who build with AI agents that pay. Where there is a number, the commands that produced it are in the text, so you can get it yourself and disagree with us on the facts.",
+      "canonical": "https://tokenizen.nl/notes",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes",
+      "ogTitle": "Notes | tokenizen",
+      "ogDescription": "Measurements, tools and working notes for engineers who build with AI agents that pay. Where there is a number, the commands that produced it are in the text, so you can get it yourself and disagree with us on the facts.",
+      "twitterTitle": "Notes | tokenizen",
+      "twitterDescription": "Measurements, tools and working notes for engineers who build with AI agents that pay. Where there is a number, the commands that produced it are in the text, so you can get it yourself and disagree with us on the facts.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/notes"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/notes"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/notes"
+        }
+      ]
+    },
+    "/notes/733203-attestations-were-taken-back": {
+      "lang": "en",
+      "title": "733,203 attestations were taken back | tokenizen",
+      "description": "Every revocation in the three largest EAS indexers is an issuer withdrawing its own statement. What that measures, and what it cannot fix.",
+      "canonical": "https://tokenizen.nl/notes/733203-attestations-were-taken-back",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/733203-attestations-were-taken-back",
+      "ogTitle": "733,203 attestations were taken back | tokenizen",
+      "ogDescription": "Every revocation in the three largest EAS indexers is an issuer withdrawing its own statement. What that measures, and what it cannot fix.",
+      "twitterTitle": "733,203 attestations were taken back | tokenizen",
+      "twitterDescription": "Every revocation in the three largest EAS indexers is an issuer withdrawing its own statement. What that measures, and what it cannot fix.",
+      "alternates": []
+    },
+    "/notes/a-signed-receipt-that-cannot-name-its-own-payment": {
+      "lang": "en",
+      "title": "A signed receipt that cannot name its own payment | tokenizen",
+      "description": "A receipt that verifies, carries an authorized signature, and cannot tell you which payment it is about. What that costs, who caught the error in it, and what changed the same day.",
+      "canonical": "https://tokenizen.nl/notes/a-signed-receipt-that-cannot-name-its-own-payment",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/a-signed-receipt-that-cannot-name-its-own-payment",
+      "ogTitle": "A signed receipt that cannot name its own payment | tokenizen",
+      "ogDescription": "A receipt that verifies, carries an authorized signature, and cannot tell you which payment it is about. What that costs, who caught the error in it, and what changed the same day.",
+      "twitterTitle": "A signed receipt that cannot name its own payment | tokenizen",
+      "twitterDescription": "A receipt that verifies, carries an authorized signature, and cannot tell you which payment it is about. What that costs, who caught the error in it, and what changed the same day.",
+      "alternates": []
+    },
+    "/notes/check-pay-prove": {
+      "lang": "en",
+      "title": "Check. Pay. Prove. | tokenizen",
+      "description": "One real AI-agent payment on Base mainnet: check the tool, pay through x402, prove it from the chain. Open tools, real transactions, the commands to repeat it.",
+      "canonical": "https://tokenizen.nl/notes/check-pay-prove",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/check-pay-prove",
+      "ogTitle": "Check. Pay. Prove. | tokenizen",
+      "ogDescription": "One real AI-agent payment on Base mainnet: check the tool, pay through x402, prove it from the chain. Open tools, real transactions, the commands to repeat it.",
+      "twitterTitle": "Check. Pay. Prove. | tokenizen",
+      "twitterDescription": "One real AI-agent payment on Base mainnet: check the tool, pay through x402, prove it from the chain. Open tools, real transactions, the commands to repeat it.",
+      "alternates": []
+    },
+    "/notes/eight-security-signals-109-repositories": {
+      "lang": "en",
+      "title": "Eight security signals in 109 public repositories of organisations in ten EU countries | tokenizen",
+      "description": "Eight security signals on 109 public repositories with a release: policy with contact 16 percent, SBOM 4, provenance 5. Method, our own checks and limits.",
+      "canonical": "https://tokenizen.nl/notes/eight-security-signals-109-repositories",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/eight-security-signals-109-repositories",
+      "ogTitle": "Eight security signals in 109 public repositories of organisations in ten EU countries | tokenizen",
+      "ogDescription": "Eight security signals on 109 public repositories with a release: policy with contact 16 percent, SBOM 4, provenance 5. Method, our own checks and limits.",
+      "twitterTitle": "Eight security signals in 109 public repositories of organisations in ten EU countries | tokenizen",
+      "twitterDescription": "Eight security signals on 109 public repositories with a release: policy with contact 16 percent, SBOM 4, provenance 5. Method, our own checks and limits.",
+      "alternates": []
+    },
+    "/notes/free-tools-same-contests": {
+      "lang": "en",
+      "title": "Two free tools found none of the known findings on the same contests | tokenizen",
+      "description": "Slither found 0 of 34 and Aderyn 0 of 70 known findings on the same Code4rena contests, judged like our scan. Static tools are not built for contest logic bugs.",
+      "canonical": "https://tokenizen.nl/notes/free-tools-same-contests",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/free-tools-same-contests",
+      "ogTitle": "Two free tools found none of the known findings on the same contests | tokenizen",
+      "ogDescription": "Slither found 0 of 34 and Aderyn 0 of 70 known findings on the same Code4rena contests, judged like our scan. Static tools are not built for contest logic bugs.",
+      "twitterTitle": "Two free tools found none of the known findings on the same contests | tokenizen",
+      "twitterDescription": "Slither found 0 of 34 and Aderyn 0 of 70 known findings on the same Code4rena contests, judged like our scan. Static tools are not built for contest logic bugs.",
+      "alternates": []
+    },
+    "/notes/nine-ways-to-fake-a-delivery-claim": {
+      "lang": "en",
+      "title": "Nine ways to fake a delivery claim, and why none of them fully worked | tokenizen",
+      "description": "capacity-attest lets a buyer sign a factual claim after an x402 payment. The obvious hole: what stops the buyer from lying? Nine independent designs, each built and broken against the real code.",
+      "canonical": "https://tokenizen.nl/notes/nine-ways-to-fake-a-delivery-claim",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/nine-ways-to-fake-a-delivery-claim",
+      "ogTitle": "Nine ways to fake a delivery claim, and why none of them fully worked | tokenizen",
+      "ogDescription": "capacity-attest lets a buyer sign a factual claim after an x402 payment. The obvious hole: what stops the buyer from lying? Nine independent designs, each built and broken against the real code.",
+      "twitterTitle": "Nine ways to fake a delivery claim, and why none of them fully worked | tokenizen",
+      "twitterDescription": "capacity-attest lets a buyer sign a factual claim after an x402 payment. The obvious hole: what stops the buyer from lying? Nine independent designs, each built and broken against the real code.",
+      "alternates": []
+    },
+    "/notes/official-sources": {
+      "lang": "en",
+      "title": "Official sources and payment addresses | tokenizen",
+      "description": "The official repository, endpoint and payment address of Bug Bounty Intelligence, and the one command that lets you check them yourself.",
+      "canonical": "https://tokenizen.nl/notes/official-sources",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/official-sources",
+      "ogTitle": "Official sources and payment addresses | tokenizen",
+      "ogDescription": "The official repository, endpoint and payment address of Bug Bounty Intelligence, and the one command that lets you check them yourself.",
+      "twitterTitle": "Official sources and payment addresses | tokenizen",
+      "twitterDescription": "The official repository, endpoint and payment address of Bug Bounty Intelligence, and the one command that lets you check them yourself.",
+      "alternates": []
+    },
+    "/notes/quick-scan-standard-clients": {
+      "lang": "en",
+      "title": "A standard x402 client can now buy the scan, and a quick scan costs 1 dollar | tokenizen",
+      "description": "A standard x402 client can now buy our scan, checked with real purchases on Base. The official client caps payments at 1 dollar, hence a quick scan for 1.",
+      "canonical": "https://tokenizen.nl/notes/quick-scan-standard-clients",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/quick-scan-standard-clients",
+      "ogTitle": "A standard x402 client can now buy the scan, and a quick scan costs 1 dollar | tokenizen",
+      "ogDescription": "A standard x402 client can now buy our scan, checked with real purchases on Base. The official client caps payments at 1 dollar, hence a quick scan for 1.",
+      "twitterTitle": "A standard x402 client can now buy the scan, and a quick scan costs 1 dollar | tokenizen",
+      "twitterDescription": "A standard x402 client can now buy our scan, checked with real purchases on Base. The official client caps payments at 1 dollar, hence a quick scan for 1.",
+      "alternates": []
+    },
+    "/notes/scan-newer-contests": {
+      "lang": "en",
+      "title": "The scan held its rate on nine newer contests | tokenizen",
+      "description": "Our scan found 5 of 66 known findings in its first 15 hypotheses on nine newer Code4rena contests (7.6 percent), the same rate as on Sherlock.",
+      "canonical": "https://tokenizen.nl/notes/scan-newer-contests",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/scan-newer-contests",
+      "ogTitle": "The scan held its rate on nine newer contests | tokenizen",
+      "ogDescription": "Our scan found 5 of 66 known findings in its first 15 hypotheses on nine newer Code4rena contests (7.6 percent), the same rate as on Sherlock.",
+      "twitterTitle": "The scan held its rate on nine newer contests | tokenizen",
+      "twitterDescription": "Our scan found 5 of 66 known findings in its first 15 hypotheses on nine newer Code4rena contests (7.6 percent), the same rate as on Sherlock.",
+      "alternates": []
+    },
+    "/notes/scan-signs-its-offer": {
+      "lang": "en",
+      "title": "The scan signs its offer, and we paid it once to see the receipt | tokenizen",
+      "description": "The scan endpoint signs its x402 offer and returns a signed receipt. One self test on Base mainnet, with a script that checks every step.",
+      "canonical": "https://tokenizen.nl/notes/scan-signs-its-offer",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/scan-signs-its-offer",
+      "ogTitle": "The scan signs its offer, and we paid it once to see the receipt | tokenizen",
+      "ogDescription": "The scan endpoint signs its x402 offer and returns a signed receipt. One self test on Base mainnet, with a script that checks every step.",
+      "twitterTitle": "The scan signs its offer, and we paid it once to see the receipt | tokenizen",
+      "twitterDescription": "The scan endpoint signs its x402 offer and returns a signed receipt. One self test on Base mainnet, with a script that checks every step.",
+      "alternates": []
+    },
+    "/notes/scan-version-3-1": {
+      "lang": "en",
+      "title": "The scan now finds 8 of 105 on the same contests | tokenizen",
+      "description": "Version 3.1 of our scan found 8 of 105 known findings on the same 8 contests, against 4 and 1 before. Two changes at once, one run.",
+      "canonical": "https://tokenizen.nl/notes/scan-version-3-1",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/scan-version-3-1",
+      "ogTitle": "The scan now finds 8 of 105 on the same contests | tokenizen",
+      "ogDescription": "Version 3.1 of our scan found 8 of 105 known findings on the same 8 contests, against 4 and 1 before. Two changes at once, one run.",
+      "twitterTitle": "The scan now finds 8 of 105 on the same contests | tokenizen",
+      "twitterDescription": "Version 3.1 of our scan found 8 of 105 known findings on the same 8 contests, against 4 and 1 before. Two changes at once, one run.",
+      "alternates": []
+    },
+    "/notes/the-hierarchy-of-agent-trust": {
+      "lang": "en",
+      "title": "The Hierarchy of Agent Trust | tokenizen",
+      "description": "Some proof is better than other proof. A story about a mill, a board, a forgery, and why capacity-attest deliberately stops at evidence instead of judgment.",
+      "canonical": "https://tokenizen.nl/notes/the-hierarchy-of-agent-trust",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/the-hierarchy-of-agent-trust",
+      "ogTitle": "The Hierarchy of Agent Trust | tokenizen",
+      "ogDescription": "Some proof is better than other proof. A story about a mill, a board, a forgery, and why capacity-attest deliberately stops at evidence instead of judgment.",
+      "twitterTitle": "The Hierarchy of Agent Trust | tokenizen",
+      "twitterDescription": "Some proof is better than other proof. A story about a mill, a board, a forgery, and why capacity-attest deliberately stops at evidence instead of judgment.",
+      "alternates": []
+    },
+    "/notes/the-ruler-and-the-misses": {
+      "lang": "en",
+      "title": "The ruler and the misses | tokenizen",
+      "description": "Our contract scan on the EVMbench ruler: 29 of 117 found, 2.9 percent precision, 18 audits with nothing. Every verdict is public. What the ruler cannot see.",
+      "canonical": "https://tokenizen.nl/notes/the-ruler-and-the-misses",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/the-ruler-and-the-misses",
+      "ogTitle": "The ruler and the misses | tokenizen",
+      "ogDescription": "Our contract scan on the EVMbench ruler: 29 of 117 found, 2.9 percent precision, 18 audits with nothing. Every verdict is public. What the ruler cannot see.",
+      "twitterTitle": "The ruler and the misses | tokenizen",
+      "twitterDescription": "Our contract scan on the EVMbench ruler: 29 of 117 found, 2.9 percent precision, 18 audits with nothing. Every verdict is public. What the ruler cannot see.",
+      "alternates": []
+    },
+    "/notes/we-measured-our-scan": {
+      "lang": "en",
+      "title": "We measured our scan. It found 4 of 105. | tokenizen",
+      "description": "On 8 sealed audit contests our scan in production found 1 of 105 known findings, a new version 4. Our bar was 5 more, so production stays as it is.",
+      "canonical": "https://tokenizen.nl/notes/we-measured-our-scan",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/we-measured-our-scan",
+      "ogTitle": "We measured our scan. It found 4 of 105. | tokenizen",
+      "ogDescription": "On 8 sealed audit contests our scan in production found 1 of 105 known findings, a new version 4. Our bar was 5 more, so production stays as it is.",
+      "twitterTitle": "We measured our scan. It found 4 of 105. | tokenizen",
+      "twitterDescription": "On 8 sealed audit contests our scan in production found 1 of 105 known findings, a new version 4. Our bar was 5 more, so production stays as it is.",
+      "alternates": []
+    },
+    "/notes/x402-security-sellers-90-days": {
+      "lang": "en",
+      "title": "What x402 sellers that mention audits, security or smart contracts received in 90 days | tokenizen",
+      "description": "343 x402 sellers that mention audits, security or smart contracts: median 1.85 USDC in 90 days, 3,689 USDC in total, none above 1,000. Ours included.",
+      "canonical": "https://tokenizen.nl/notes/x402-security-sellers-90-days",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/x402-security-sellers-90-days",
+      "ogTitle": "What x402 sellers that mention audits, security or smart contracts received in 90 days | tokenizen",
+      "ogDescription": "343 x402 sellers that mention audits, security or smart contracts: median 1.85 USDC in 90 days, 3,689 USDC in total, none above 1,000. Ours included.",
+      "twitterTitle": "What x402 sellers that mention audits, security or smart contracts received in 90 days | tokenizen",
+      "twitterDescription": "343 x402 sellers that mention audits, security or smart contracts: median 1.85 USDC in 90 days, 3,689 USDC in total, none above 1,000. Ours included.",
+      "alternates": []
+    },
+    "/notes/zero-of-600-x402-services-sign-a-receipt": {
+      "lang": "en",
+      "title": "I checked 600 live x402 services. None of them signs a receipt. | tokenizen",
+      "description": "Six samples of a hundred across a facilitator index of 20,462 live x402 resources, and the offer-receipt extension appeared in none of them. The method, the commands, the limits of the number, and a live endpoint that does sign one.",
+      "canonical": "https://tokenizen.nl/notes/zero-of-600-x402-services-sign-a-receipt",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/zero-of-600-x402-services-sign-a-receipt",
+      "ogTitle": "I checked 600 live x402 services. None of them signs a receipt. | tokenizen",
+      "ogDescription": "Six samples of a hundred across a facilitator index of 20,462 live x402 resources, and the offer-receipt extension appeared in none of them. The method, the commands, the limits of the number, and a live endpoint that does sign one.",
+      "twitterTitle": "I checked 600 live x402 services. None of them signs a receipt. | tokenizen",
+      "twitterDescription": "Six samples of a hundred across a facilitator index of 20,462 live x402 resources, and the offer-receipt extension appeared in none of them. The method, the commands, the limits of the number, and a live endpoint that does sign one.",
+      "alternates": []
+    },
+    "/privacy": {
+      "lang": "en",
+      "title": "Privacy statement | tokenizen",
+      "description": "How the free checks and the Signal log handle personal data.",
+      "canonical": "https://tokenizen.nl/privacy",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/privacy",
+      "ogTitle": "Privacy statement | tokenizen",
+      "ogDescription": "How the free checks and the Signal log handle personal data.",
+      "twitterTitle": "Privacy statement | tokenizen",
+      "twitterDescription": "How the free checks and the Signal log handle personal data.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/privacy"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/privacy"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/privacy"
+        }
+      ]
+    },
+    "/scan": {
+      "lang": "en",
+      "title": "Smart contract scan | tokenizen",
+      "description": "A smart contract scan with a public scoreboard that includes what it missed. Pay per scan over x402.",
+      "canonical": "https://tokenizen.nl/scan",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/scan",
+      "ogTitle": "Smart contract scan | tokenizen",
+      "ogDescription": "A smart contract scan with a public scoreboard that includes what it missed. Pay per scan over x402.",
+      "twitterTitle": "Smart contract scan | tokenizen",
+      "twitterDescription": "A smart contract scan with a public scoreboard that includes what it missed. Pay per scan over x402.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/scan"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/scan"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/scan"
+        }
+      ]
+    },
+    "/scoreboard": {
+      "lang": "en",
+      "title": "Scoreboard | tokenizen",
+      "description": "How many of the findings that human auditors already found in closed contests our smart contract scan finds. Rows link to their results and, where one exists, to the pre-registration written before the run. Version 3.1 has no public rule from before the run: it is only in our own notes.",
+      "canonical": "https://tokenizen.nl/scoreboard",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/scoreboard",
+      "ogTitle": "Scoreboard | tokenizen",
+      "ogDescription": "How many of the findings that human auditors already found in closed contests our smart contract scan finds. Rows link to their results and, where one exists, to the pre-registration written before the run. Version 3.1 has no public rule from before the run: it is only in our own notes.",
+      "twitterTitle": "Scoreboard | tokenizen",
+      "twitterDescription": "How many of the findings that human auditors already found in closed contests our smart contract scan finds. Rows link to their results and, where one exists, to the pre-registration written before the run. Version 3.1 has no public rule from before the run: it is only in our own notes.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/scoreboard"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/scoreboard"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/scoreboard"
+        }
+      ]
+    },
+    "/security": {
+      "lang": "en",
+      "title": "Security research | tokenizen",
+      "description": "Security research by two brothers in Eindhoven: a published High advisory, our own record including what was rejected, and how we will show the rest.",
+      "canonical": "https://tokenizen.nl/security",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/security",
+      "ogTitle": "Security research | tokenizen",
+      "ogDescription": "Security research by two brothers in Eindhoven: a published High advisory, our own record including what was rejected, and how we will show the rest.",
+      "twitterTitle": "Security research | tokenizen",
+      "twitterDescription": "Security research by two brothers in Eindhoven: a published High advisory, our own record including what was rejected, and how we will show the rest.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/security"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/security"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/security"
+        }
+      ]
+    },
+    "/signal-log": {
+      "lang": "en",
+      "title": "Signal log, early access | tokenizen",
+      "description": "A weekly record of the security signals of your public GitHub repositories that you can check without us. Early access.",
+      "canonical": "https://tokenizen.nl/signal-log",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/signal-log",
+      "ogTitle": "Signal log, early access | tokenizen",
+      "ogDescription": "A weekly record of the security signals of your public GitHub repositories that you can check without us. Early access.",
+      "twitterTitle": "Signal log, early access | tokenizen",
+      "twitterDescription": "A weekly record of the security signals of your public GitHub repositories that you can check without us. Early access.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/signal-log"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/signal-log"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/signal-log"
+        }
+      ]
+    },
+    "/terms": {
+      "lang": "en",
+      "title": "Terms of the Signal log | tokenizen",
+      "description": "The terms of the Signal log subscription of AO Services.",
+      "canonical": "https://tokenizen.nl/terms",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/terms",
+      "ogTitle": "Terms of the Signal log | tokenizen",
+      "ogDescription": "The terms of the Signal log subscription of AO Services.",
+      "twitterTitle": "Terms of the Signal log | tokenizen",
+      "twitterDescription": "The terms of the Signal log subscription of AO Services.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/terms"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/terms"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/terms"
+        }
+      ]
+    },
+    "/tools": {
+      "lang": "en",
+      "title": "Open-source tools | tokenizen",
+      "description": "Open-source tools for payments between agents: capacity-attest, agent-receipt-verify, x402-lint and muraqib-agent-watch.",
+      "canonical": "https://tokenizen.nl/tools",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/tools",
+      "ogTitle": "Open-source tools | tokenizen",
+      "ogDescription": "Open-source tools for payments between agents: capacity-attest, agent-receipt-verify, x402-lint and muraqib-agent-watch.",
+      "twitterTitle": "Open-source tools | tokenizen",
+      "twitterDescription": "Open-source tools for payments between agents: capacity-attest, agent-receipt-verify, x402-lint and muraqib-agent-watch.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/tools"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/tools"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/tools"
+        }
+      ]
+    },
+    "/x402-check": {
+      "lang": "en",
+      "title": "Free x402 endpoint check | tokenizen",
+      "description": "Paste the URL of an x402 route you run and see what a buyer's client would see: whether the payment request passes the official schema, and how far up the receipt ladder it gets. Free, never pays, nothing to install.",
+      "canonical": "https://tokenizen.nl/x402-check",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/x402-check",
+      "ogTitle": "Free x402 endpoint check | tokenizen",
+      "ogDescription": "Paste the URL of an x402 route you run and see what a buyer's client would see: whether the payment request passes the official schema, and how far up the receipt ladder it gets. Free, never pays, nothing to install.",
+      "twitterTitle": "Free x402 endpoint check | tokenizen",
+      "twitterDescription": "Paste the URL of an x402 route you run and see what a buyer's client would see: whether the payment request passes the official schema, and how far up the receipt ladder it gets. Free, never pays, nothing to install.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/x402-check"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/x402-check"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/x402-check"
+        }
+      ]
+    }
+  }
+}
