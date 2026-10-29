@@ -25,7 +25,7 @@ function sample(overrides: Partial<X402CheckResult> = {}): X402CheckResult {
     buyerCheck: { status: "pass", httpStatus: 402, source: "header", x402Version: 2, problems: [], warnings: [] },
     ladder: { highestLevel: 0, levels: LEVELS, methodRetried: null, definition: "https://github.com/holistis/agent-receipt-verify/blob/main/CONFORMANCE.md" },
     requestsMade: 1,
-    limits: ["This check never pays.", "Nothing is stored on our side."],
+    limits: ["This check never pays.", "No result is stored on our side."],
     ...overrides,
   };
 }
@@ -46,7 +46,7 @@ describe("X402CheckPage", () => {
 
   it("says up front that it never pays and stores nothing", () => {
     expect(html).toContain("never pays");
-    expect(html).toContain("We store nothing");
+    expect(html).toContain("We do not store the result");
   });
 
   it("offers a URL field and both methods, POST first", () => {
@@ -83,7 +83,7 @@ describe("X402CheckPage in Dutch", () => {
 
   it("says up front that it never pays and stores nothing, as strongly as the English does", () => {
     expect(html).toContain("betaalt nooit");
-    expect(html).toContain("We slaan niets op");
+    expect(html).toContain("We slaan het resultaat niet op");
     expect(html).toContain("twee minuten in het geheugen");
     expect(html).toContain("een beperkt aantal keer per uur");
     expect(html).toContain("waarvoor je toestemming hebt om ze te testen");
@@ -118,7 +118,7 @@ describe("X402CheckPage in Dutch", () => {
   it("shows no English page text to a Dutch reader", () => {
     for (const english of [
       "Check your x402 endpoint",
-      "We store nothing",
+      "We do not store the result",
       "never pays",
       "Your route",
       "Endpoint URL",
