@@ -45,10 +45,28 @@ export function applyHead(template, entry) {
   return html;
 }
 
+/**
+ * Puts the text of a page inside the page itself. The app replaces it as soon as it starts, so a visitor sees no difference; a crawler or an AI
+ * agent that does not run JavaScript reads the page. While JavaScript runs the block is hidden off screen (index.html), without it the block is
+ * simply the page. The text comes from the same app (share-heads-capture.mjs), never from anything written by hand.
+ */
+export function applyBody(html, bodyHtml, path) {
+  if (typeof bodyHtml !== "string" || bodyHtml.length < 200 || !bodyHtml.includes("<h1>")) {
+    throw new Error(`prerender-heads: no usable text for ${path}; run share-heads-capture.mjs`);
+  }
+  let out = replaceOnce(html, /<div id="root"><\/div>/, `<div id="root"><div id="prerender">\n${bodyHtml}\n</div></div>`, '<div id="root"></div>');
+  // The generic "this site needs JavaScript" message in the body is replaced by the page itself.
+  out = replaceOnce(out, /<noscript>\s*<main[\s\S]*?<\/main>\s*<\/noscript>/, "", "the noscript message with a main element");
+  return out;
+}
+
 function main() {
   const root = fileURLToPath(new URL("../", import.meta.url));
   const template = readFileSync(join(root, "dist", "index.html"), "utf8");
   const { pages } = JSON.parse(readFileSync(join(root, "src", "data", "share-heads.json"), "utf8"));
+  const bodies = JSON.parse(readFileSync(join(root, "src", "data", "share-bodies.json"), "utf8")).pages;
+  // The homepage is dist/index.html itself: same head, plus its text.
+  writeFileSync(join(root, "dist", "index.html"), applyBody(template, bodies["/"], "/"));
   let count = 0;
   for (const [path, entry] of Object.entries(pages)) {
     if (!/^\/[a-z0-9/-]+$/.test(path)) throw new Error(`prerender-heads: refusing the path ${JSON.stringify(path)}`);
@@ -57,7 +75,7 @@ function main() {
     const parts = path.split("/").filter(Boolean);
     const file = join(root, "dist", ...parts.slice(0, -1), `${parts[parts.length - 1]}.html`);
     mkdirSync(dirname(file), { recursive: true });
-    writeFileSync(file, applyHead(template, entry));
+    writeFileSync(file, applyBody(applyHead(template, entry), bodies[path], path));
     count++;
   }
   console.log(`prerender-heads: wrote the head of ${count} pages`);

@@ -13,3 +13,4 @@ export interface ShareHead {
 }
 
 export function applyHead(template: string, entry: ShareHead): string;
+export function applyBody(html: string, bodyHtml: string, path: string): string;
