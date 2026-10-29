@@ -69,7 +69,9 @@ export function handleCraMcp(checker: CraChecker) {
       return;
     }
     const server = createCraMcpServer(checker);
-    const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+    // Plain JSON answers: nothing here streams, and a proxy in front has nothing to hold open.
+    const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
+    transport.onerror = (err) => console.error(`cra-mcp: transport error (${err instanceof Error ? err.name : "unknown"})`);
     res.on("close", () => {
       void transport.close();
       void server.close();
@@ -77,7 +79,8 @@ export function handleCraMcp(checker: CraChecker) {
     try {
       await server.connect(transport);
       await transport.handleRequest(req, res, req.body);
-    } catch {
+    } catch (err) {
+      console.error(`cra-mcp: request failed (${err instanceof Error ? err.name : "unknown"})`);
       if (!res.headersSent) res.status(500).json(jsonRpcError(-32603, "internal error"));
     }
   };
@@ -97,6 +100,28 @@ export function craMcpRejectBatch(req: ExpressRequest, res: ExpressResponse, nex
   if (Array.isArray(req.body)) {
     res.status(400).json(jsonRpcError(-32600, "Batch requests are not supported: send one message per request"));
     return;
+  }
+  next();
+}
+
+/**
+ * A tool call that the limiter turns away is answered as a tool result with isError and the wait in words, not as a bare HTTP 429: an MCP
+ * client turns a 429 into a thrown transport error and the agent never sees why or for how long. Everything else the limiter refuses keeps
+ * its plain 429. Must sit before the limiter.
+ */
+export function craMcpLimitedAsToolResult(req: ExpressRequest, res: ExpressResponse, next: () => void): void {
+  if (bodyCallsATool(req.body)) {
+    res.locals.onRateLimited = (info: { max: number; windowSeconds: number; retryAfterSeconds: number }) => {
+      const id = (req.body as { id?: unknown } | null)?.id ?? null;
+      res.status(200).json({
+        jsonrpc: "2.0",
+        id,
+        result: {
+          content: [{ type: "text", text: `rate limit exceeded: at most ${info.max} checks per ${Math.round(info.windowSeconds / 60)} minutes from one address; retry after about ${info.retryAfterSeconds} seconds` }],
+          isError: true,
+        },
+      });
+    };
   }
   next();
 }

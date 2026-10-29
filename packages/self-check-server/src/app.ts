@@ -67,7 +67,7 @@ import { handleBadge, handleBadgeJson } from "./x402-badge.js";
 import { createX402Checker, handleX402Check, type X402CheckerOptions } from "./x402-check.js";
 import { createCraChecker, handleCraCheck, type CraCheckerOptions } from "./cra-check.js";
 import { usageLog, type UsageWriter } from "./usage-log.js";
-import { bodyCallsATool, craMcpMethodNotAllowed, craMcpRejectBatch, handleCraMcp } from "./cra-mcp.js";
+import { bodyCallsATool, craMcpLimitedAsToolResult, craMcpMethodNotAllowed, craMcpRejectBatch, handleCraMcp } from "./cra-mcp.js";
 
 const DEFAULT_ALLOWED_ORIGINS = ["http://localhost:5173", "https://tokenizen.nl", "https://www.tokenizen.nl"];
 
@@ -365,7 +365,11 @@ export function createApp(options: CreateAppOptions = {}): Express {
   // a looser limiter so that one agent can connect and look around without using up its checks.
   const mcpOtherLimiter = createRateLimiter({ windowMs: 10 * 60 * 1000, max: 60 });
   const mcpLimiter: RequestHandler = (req, res, next) => (bodyCallsATool(req.body) ? craCheckLimiter : mcpOtherLimiter)(req, res, next);
-  app.post("/mcp", ...counted("mcp"), craMcpRejectBatch, mcpLimiter, handleCraMcp(craChecker));
+  // Only a tool call is counted as use: connecting, listing and pings are protocol traffic, four lines for one check would overstate it.
+  const countedToolCalls: RequestHandler[] = options.usageWriter
+    ? [(req, res, next) => (bodyCallsATool(req.body) ? usageLog("mcp", options.usageWriter!)(req, res, next) : next())]
+    : [];
+  app.post("/mcp", ...countedToolCalls, craMcpRejectBatch, craMcpLimitedAsToolResult, mcpLimiter, handleCraMcp(craChecker));
   app.get("/mcp", craMcpMethodNotAllowed);
   app.delete("/mcp", craMcpMethodNotAllowed);
 

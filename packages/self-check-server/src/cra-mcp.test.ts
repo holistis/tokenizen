@@ -38,13 +38,13 @@ describe("the CRA check as an MCP tool", () => {
   let githubCalls: string[] = [];
   const clients: Client[] = [];
 
-  async function start(opts: { max?: number; usage?: (line: string) => void } = {}) {
+  async function start(opts: { max?: number; usage?: (line: string) => void; enabled?: boolean } = {}) {
     const net = fakeGithub(okRoutes());
     githubCalls = net.calls;
     const app = createApp({
       identity: createAttesterIdentity(),
       seller: null,
-      craCheck: { fetchImpl: net.fetchImpl, now: () => NOW, rateLimit: { windowMs: 60_000, max: opts.max ?? 100 } },
+      craCheck: { fetchImpl: net.fetchImpl, now: () => NOW, rateLimit: { windowMs: 60_000, max: opts.max ?? 100 }, ...(opts.enabled === false ? { enabled: false } : {}) },
       ...(opts.usage ? { usageWriter: opts.usage } : {}),
     });
     server = createServer(app);
@@ -124,7 +124,45 @@ describe("the CRA check as an MCP tool", () => {
     for (let i = 0; i < 4; i++) await (await connect()).listTools();
     const client = await connect();
     expect((await client.callTool({ name: CRA_MCP_TOOL, arguments: { repo: "owner/repo" } })).isError).toBeUndefined();
-    await expect(client.callTool({ name: CRA_MCP_TOOL, arguments: { repo: "owner/repo" } })).rejects.toThrow();
+    // Over the limit: a tool result with isError and the wait in words, not a thrown transport error.
+    const limited = await client.callTool({ name: CRA_MCP_TOOL, arguments: { repo: "owner/repo" } });
+    expect(limited.isError).toBe(true);
+    expect(textOf(limited)).toMatch(/rate limit exceeded: at most 1 checks per 1 minutes from one address; retry after about [0-9]+ seconds/);
+  });
+
+  it("shares one bucket with the web route: a check over HTTP uses up the check of an MCP call", async () => {
+    await start({ max: 1 });
+    const http = await fetch(`${baseUrl}/api/cra/check`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ repo: "owner/repo" }) });
+    expect(http.status).toBe(200);
+    const limited = await (await connect()).callTool({ name: CRA_MCP_TOOL, arguments: { repo: "owner/repo" } });
+    expect(limited.isError).toBe(true);
+    expect(textOf(limited)).toContain("rate limit exceeded");
+  });
+
+  it("uses a looser limit of sixty per ten minutes for everything that is not a tool call", async () => {
+    await start();
+    const list = { jsonrpc: "2.0", id: 1, method: "tools/list" };
+    const post = () => fetch(`${baseUrl}/mcp`, { method: "POST", headers: { "content-type": "application/json", accept: "application/json, text/event-stream" }, body: JSON.stringify(list) });
+    const statuses: number[] = [];
+    for (let i = 0; i < 62; i++) statuses.push((await post()).status);
+    expect(statuses.slice(0, 60).every((s) => s === 200)).toBe(true);
+    expect(statuses.slice(60)).toEqual([429, 429]);
+  });
+
+  it("answers 503 when the check is switched off, and answers in plain JSON", async () => {
+    await start({ enabled: false });
+    const off = await fetch(`${baseUrl}/mcp`, { method: "POST", headers: { "content-type": "application/json", accept: "application/json, text/event-stream" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }) });
+    expect(off.status).toBe(503);
+  });
+
+  it("answers with application/json, and refuses a client that does not accept both kinds, as the protocol says", async () => {
+    await start();
+    const init = { jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "t", version: "0" } } };
+    const ok = await fetch(`${baseUrl}/mcp`, { method: "POST", headers: { "content-type": "application/json", accept: "application/json, text/event-stream" }, body: JSON.stringify(init) });
+    expect(ok.status).toBe(200);
+    expect(ok.headers.get("content-type")).toContain("application/json");
+    const narrow = await fetch(`${baseUrl}/mcp`, { method: "POST", headers: { "content-type": "application/json", accept: "application/json" }, body: JSON.stringify(init) });
+    expect(narrow.status).toBe(406);
   });
 
   it("is counted like the other free checks and writes no repository name", async () => {
@@ -132,7 +170,10 @@ describe("the CRA check as an MCP tool", () => {
     await start({ usage: (line) => lines.push(line) });
     await (await connect()).callTool({ name: CRA_MCP_TOOL, arguments: { repo: "secret-owner/secret-repo" } });
     await new Promise((resolve) => setTimeout(resolve, 50));
-    expect(lines.length).toBeGreaterThan(0);
+    // Connecting, the notification and listing are protocol traffic: one tool call is one line.
+    await (await connect()).listTools();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(lines).toHaveLength(1);
     for (const line of lines) expect(JSON.parse(line)).toMatchObject({ event: "free_check", route: "mcp", internal: false });
     const all = lines.join("\n");
     for (const forbidden of ["secret-owner", "secret-repo", "127.0.0.1"]) expect(all).not.toContain(forbidden);
