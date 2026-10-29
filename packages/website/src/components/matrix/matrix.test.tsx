@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
+import { BUSINESS_LINE } from "@/components/footer";
 import { HomePage, legacyAnchorTarget } from "@/components/home/home-page";
 import { chainHashes, DEMO_LINES, firstBreak } from "@/components/matrix/chain-demo";
 import { gridCells, visibleShare } from "@/components/matrix/measure-grid";
@@ -16,6 +17,9 @@ import { LocaleProvider, type Locale } from "@/i18n/context";
 import { cellPath, hashMarkCells } from "@/lib/hash-mark";
 
 import blogPosts from "@/data/blog-posts.ts?raw";
+import privacyText from "@/data/legal/privacy.txt?raw";
+import signalLogText from "@/data/legal/signal-log.txt?raw";
+import termsText from "@/data/legal/terms.txt?raw";
 import llms from "../../../public/llms.txt?raw";
 import sitemap from "../../../public/sitemap.xml?raw";
 
@@ -413,6 +417,17 @@ describe("the Dutch site", () => {
       const count = (locale: Locale) => (page(locale, <Page />).match(/<h2/g) ?? []).length;
       expect(count("nl"), name).toBe(count("en"));
     }
+  });
+});
+
+describe("the street address", () => {
+  // The owner ordered on 29 October 2026 that only the place and the country are named: no street, no house number, no postcode.
+  it("is nowhere on the site: only Eindhoven and the Netherlands are named", () => {
+    const corpus = [page("en", <AboutPage />), page("nl", <AboutPage />), BUSINESS_LINE, termsText, privacyText, signalLogText, llms, blogPosts].join(" ");
+    expect(corpus).not.toMatch(/Lochemstraat/i);
+    expect(corpus).not.toMatch(/\b5651\b/);
+    expect(page("en", <AboutPage />)).toContain("Eindhoven, the Netherlands");
+    expect(page("nl", <AboutPage />)).toContain("Eindhoven, Nederland");
   });
 });
 

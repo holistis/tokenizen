@@ -1,6 +1,6 @@
 Privacy statement
 
-Who is responsible. AO Services, KvK 86816632, Lochemstraat 49, 5651 EL Eindhoven. Privacy questions: info@tokenizen.nl.
+Who is responsible. AO Services, KvK 86816632, Eindhoven, the Netherlands. Privacy questions: info@tokenizen.nl.
 
 The free checks on this site. We read public pages of the repository, address or domain that you type. Reports are not stored. An answer stays in server memory for up to an hour so that the same repository is not read twice, and the server does not log repository names. Our network provider (Cloudflare) and the server that runs the check process your IP address to deliver the page and to limit abuse.
 

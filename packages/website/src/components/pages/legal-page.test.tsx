@@ -23,7 +23,8 @@ interface LinkProps {
 // Company data the king gave on 28 October 2026 and the Chamber of Commerce number he confirmed.
 const KVK = "86816632";
 const VAT = "NL004319767B61";
-const ADDRESS = "Lochemstraat 49, 5651 EL Eindhoven";
+// The street address left the site on the owner's order of 29 October 2026: the place is Eindhoven, the Netherlands, and nothing more precise.
+const ADDRESS = "Eindhoven, the Netherlands";
 
 describe("the three shop texts", () => {
   it("name the company, the KvK number and the address where a buyer looks for them", () => {
@@ -261,8 +262,7 @@ describe("the business line in the footer", () => {
     expect(BUSINESS_LINE).toContain("AO Services");
     expect(BUSINESS_LINE).toContain(KVK);
     expect(BUSINESS_LINE).toContain(VAT);
-    expect(BUSINESS_LINE).toContain("Lochemstraat 49");
-    expect(BUSINESS_LINE).toContain("5651 EL Eindhoven");
+    expect(BUSINESS_LINE).toContain("Eindhoven, Nederland");
     expect(BUSINESS_LINE).not.toMatch(/[–—]/);
   });
 });

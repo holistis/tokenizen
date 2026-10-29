@@ -564,7 +564,7 @@ export function AboutPage() {
       <section className="mt-12 border-t border-white/10 pt-8">
         <div className="max-w-3xl space-y-3 text-sm leading-relaxed text-[color:var(--soft)]">
           <p>
-            AO Services, Lochemstraat 49, 5651 EL Eindhoven. KvK 86816632. {loc === "nl" ? "BTW" : "VAT"} NL004319767B61.{" "}
+            {loc === "nl" ? "AO Services, Eindhoven, Nederland." : "AO Services, Eindhoven, the Netherlands."} KvK 86816632. {loc === "nl" ? "BTW" : "VAT"} NL004319767B61.{" "}
             <a className="underline underline-offset-2" href={`mailto:${CONTACT_EMAIL}`}>
               {CONTACT_EMAIL}
             </a>

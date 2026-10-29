@@ -1,6 +1,6 @@
 Terms of the Signal log
 
-1. Who we are. AO Services, KvK 86816632, BTW NL004319767B61, Lochemstraat 49, 5651 EL Eindhoven, info@tokenizen.nl.
+1. Who we are. AO Services, KvK 86816632, BTW NL004319767B61, Eindhoven, the Netherlands, info@tokenizen.nl.
 
 2. What we sell. A subscription to the Signal log as described on tokenizen.nl/en/signal-log: a weekly measurement of the public GitHub repositories you name (up to 3 for Solo, up to 25 for Team), added to a hash-chained log with a timestamp outside our control, which we email to you. This is early access. What is not described there is not promised, and the email warnings are not included yet.
 
