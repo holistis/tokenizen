@@ -5,7 +5,11 @@ import { SignalLogBuy } from "@/components/pages/signal-log-buy";
 import signalLogText from "@/data/legal/signal-log.txt?raw";
 import termsText from "@/data/legal/terms.txt?raw";
 import privacyText from "@/data/legal/privacy.txt?raw";
+import signalLogTextNl from "@/data/legal/signal-log.nl.txt?raw";
+import termsTextNl from "@/data/legal/terms.nl.txt?raw";
+import privacyTextNl from "@/data/legal/privacy.nl.txt?raw";
 import { useLocale } from "@/i18n/context";
+import { localePath } from "@/lib/locale-paths";
 
 // The three shop pages are rendered from the approved text files, so what is on the page is exactly what was approved.
 // The file is cut into blocks at blank lines. The first block is the title. A short first line without a full stop at the end is a
@@ -76,16 +80,21 @@ export function useMeta(title: string, description: string) {
   }, [title, description]);
 }
 
-/** What a Dutch reader reads above the English text. */
-const NOTICE_NL = "Deze pagina staat voorlopig alleen in het Engels. Een Nederlandse vertaling volgt nog. Vragen? Mail info@tokenizen.nl.";
+/** What a Dutch reader reads above the Dutch text. The English text is the one that was approved first and the one that counts. */
+export const NOTE_NL = "Dit is de Nederlandse tekst. Bij een verschil met de Engelse tekst geldt de Engelse tekst.";
+export const NOTE_NL_LINK = "Lees de Engelse tekst";
 
 export interface LegalPageProps {
-  /** The approved text file, exactly as it is on disk. */
+  /** The approved English text file, exactly as it is on disk. */
   raw: string;
+  /** The Dutch text file. It says the same as the English one; where they differ, the English one counts. */
+  rawNl: string;
+  /** The page without a language prefix, to link a Dutch reader to the English text. */
+  slug: string;
   /** English: the label in the head and what the browser tab and search results show. The title and lead come from the file. */
   en: { chip: string; metaTitle: string; metaDescription: string };
-  /** Dutch: everything the head and the browser tab say. The text below the head stays English. */
-  nl: { chip: string; title: string; lead: string; metaTitle: string; metaDescription: string };
+  /** Dutch: the label in the head and what the browser tab and search results show. The title and lead come from the Dutch file. */
+  nl: { chip: string; metaTitle: string; metaDescription: string };
   /** Something that belongs above the text, such as the way to subscribe. Not part of the approved wording. */
   extra?: ReactNode;
 }
@@ -97,18 +106,18 @@ function Block({ block }: { block: LegalBlock }) {
   return <p className="whitespace-pre-line break-words">{linkify(block.text)}</p>;
 }
 
-export function LegalPage({ raw, en, nl, extra }: LegalPageProps) {
+export function LegalPage({ raw, rawNl, slug, en, nl, extra }: LegalPageProps) {
   const { locale } = useLocale();
   const dutch = locale === "nl";
   const meta = dutch ? nl : en;
   useMeta(meta.metaTitle, meta.metaDescription);
 
-  const [fileTitle, ...rest] = parseLegalText(raw);
+  const [fileTitle, ...rest] = parseLegalText(dutch ? rawNl : raw);
   const first = rest[0];
-  // The first paragraph of the file is the lead of the English head. It is lifted out of the text below, so it is on the page once.
-  const lifted = !dutch && first?.kind === "paragraph" && !first.text.includes("\n") ? first.text : null;
-  const title = dutch ? nl.title : (fileTitle?.text ?? "");
-  const lead = dutch ? nl.lead : (lifted ?? "");
+  // The first paragraph of the file is the lead of the head. It is lifted out of the text below, so it is on the page once.
+  const lifted = first?.kind === "paragraph" && !first.text.includes("\n") ? first.text : null;
+  const title = fileTitle?.text ?? "";
+  const lead = lifted ?? "";
   const body = lifted === null ? rest : rest.slice(1);
 
   return (
@@ -117,11 +126,14 @@ export function LegalPage({ raw, en, nl, extra }: LegalPageProps) {
       <article className="max-w-2xl">
         {dutch ? (
           <p role="note" className="mb-8 rounded-lg border border-l-4 border-border border-l-primary bg-card px-5 py-4 text-base leading-relaxed text-foreground">
-            {linkify(NOTICE_NL)}
+            {NOTE_NL}{" "}
+            <a href={localePath("en", `/${slug}`)} className="underline underline-offset-2">
+              {NOTE_NL_LINK}
+            </a>
+            .
           </p>
         ) : null}
-        <div lang={dutch ? "en" : undefined} className="space-y-4 text-base leading-relaxed text-foreground/90">
-          {dutch && fileTitle ? <Block block={fileTitle} /> : null}
+        <div className="space-y-4 text-base leading-relaxed text-foreground/90">
           {body.map((b, i) => (
             <Block key={i} block={b} />
           ))}
@@ -135,6 +147,8 @@ export function LegalPage({ raw, en, nl, extra }: LegalPageProps) {
 export const LEGAL_PAGES = {
   "signal-log": {
     raw: signalLogText,
+    rawNl: signalLogTextNl,
+    slug: "signal-log",
     en: {
       chip: "early access",
       metaTitle: "Signal log, early access | tokenizen",
@@ -142,33 +156,31 @@ export const LEGAL_PAGES = {
     },
     nl: {
       chip: "vroege toegang",
-      title: "Signal log",
-      lead: "Het aanbod van het Signal log in vroege toegang: een wekelijks logboek van de beveiligingssignalen van je openbare GitHub-repositories, dat je zonder ons kunt controleren.",
       metaTitle: "Signal log in vroege toegang | tokenizen",
       metaDescription:
-        "Een wekelijks logboek van de beveiligingssignalen van je openbare GitHub-repositories, dat je zonder ons kunt controleren. Vroege toegang. De volledige tekst staat voorlopig alleen in het Engels.",
+        "Een wekelijks logboek van de beveiligingssignalen van je openbare GitHub-repositories, dat je zonder ons kunt controleren. Vroege toegang.",
     },
   },
   terms: {
     raw: termsText,
+    rawNl: termsTextNl,
+    slug: "terms",
     en: { chip: "terms", metaTitle: "Terms of the Signal log | tokenizen", metaDescription: "The terms of the Signal log subscription of AO Services." },
     nl: {
       chip: "voorwaarden",
-      title: "Voorwaarden van het Signal log",
-      lead: "De voorwaarden voor het abonnement op het Signal log van AO Services.",
       metaTitle: "Voorwaarden van het Signal log | tokenizen",
-      metaDescription: "De voorwaarden voor het abonnement op het Signal log van AO Services. De volledige tekst staat voorlopig alleen in het Engels.",
+      metaDescription: "De voorwaarden voor het abonnement op het Signal log van AO Services.",
     },
   },
   privacy: {
     raw: privacyText,
+    rawNl: privacyTextNl,
+    slug: "privacy",
     en: { chip: "privacy", metaTitle: "Privacy statement | tokenizen", metaDescription: "How the free checks and the Signal log handle personal data." },
     nl: {
       chip: "privacy",
-      title: "Privacyverklaring",
-      lead: "Zo gaan de gratis checks en het Signal log om met persoonsgegevens.",
       metaTitle: "Privacyverklaring | tokenizen",
-      metaDescription: "Zo gaan de gratis checks en het Signal log om met persoonsgegevens. De volledige tekst staat voorlopig alleen in het Engels.",
+      metaDescription: "Zo gaan de gratis checks en het Signal log om met persoonsgegevens.",
     },
   },
 } satisfies Record<string, LegalPageProps>;

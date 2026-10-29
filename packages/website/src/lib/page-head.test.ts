@@ -72,7 +72,7 @@ describe("canonicalPath", () => {
 
   it("points an English-only page under a Dutch path at its English address", () => {
     expect(canonicalPath("/nl/notes/check-pay-prove", true)).toBe("/notes/check-pay-prove");
-    expect(canonicalPath("/nl/terms", true)).toBe("/terms");
+    expect(canonicalPath("/nl/trust-radar", true)).toBe("/trust-radar");
     expect(canonicalPath("/notes/check-pay-prove", true)).toBe("/notes/check-pay-prove");
   });
 
@@ -113,7 +113,7 @@ describe("alternatePaths", () => {
   });
 
   it("gives an English-only page no alternates, so none of them points at the homepage", () => {
-    expect(alternatePaths("/terms", true)).toEqual([]);
+    expect(alternatePaths("/trust-radar", true)).toEqual([]);
     expect(alternatePaths("/notes/check-pay-prove", true)).toEqual([]);
   });
 
@@ -125,8 +125,8 @@ describe("alternatePaths", () => {
 
 describe("headPlan", () => {
   it("gives the address in full, with og:url equal to the canonical address", () => {
-    const plan = headPlan(ORIGIN, "/terms", true);
-    expect(plan.canonical).toBe("https://tokenizen.nl/terms");
+    const plan = headPlan(ORIGIN, "/trust-radar", true);
+    expect(plan.canonical).toBe("https://tokenizen.nl/trust-radar");
     expect(plan.ogUrl).toBe(plan.canonical);
     expect(plan.alternates).toEqual([]);
   });

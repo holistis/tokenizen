@@ -3,13 +3,16 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import { BUSINESS_LINE } from "@/components/footer";
-import { LEGAL_PAGES, LegalPage, PrivacyPage, SignalLogPage, TermsPage, linkify, parseLegalText } from "@/components/pages/legal-page";
+import { LEGAL_PAGES, LegalPage, NOTE_NL, NOTE_NL_LINK, PrivacyPage, SignalLogPage, TermsPage, linkify, parseLegalText } from "@/components/pages/legal-page";
 import { LocaleProvider, type Locale } from "@/i18n/context";
 import { readableText } from "@/test-utils/readable-text";
 
 import signalLog from "@/data/legal/signal-log.txt?raw";
 import terms from "@/data/legal/terms.txt?raw";
 import privacy from "@/data/legal/privacy.txt?raw";
+import signalLogNl from "@/data/legal/signal-log.nl.txt?raw";
+import termsNl from "@/data/legal/terms.nl.txt?raw";
+import privacyNl from "@/data/legal/privacy.nl.txt?raw";
 import llms from "../../../public/llms.txt?raw";
 import sitemap from "../../../public/sitemap.xml?raw";
 
@@ -141,7 +144,6 @@ const render = (Page: () => ReactElement, locale: Locale) =>
 /** What a reader reads: the markup without its tags (so a link in the middle of a sentence does not split it), the entities React writes turned back. */
 const readable = (html: string) => readableText(html, { gap: "", collapse: false });
 
-const NOTICE_NL = "Deze pagina staat voorlopig alleen in het Engels. Een Nederlandse vertaling volgt nog. Vragen? Mail info@tokenizen.nl.";
 
 describe("LegalPage", () => {
   const withProvider = (locale: Locale) =>
@@ -167,8 +169,8 @@ describe("the three pages in English", () => {
     it(`[${name}] has exactly one h1, the title of the file, and no Dutch notice`, () => {
       expect(html.match(/<h1/g)).toHaveLength(1);
       expect(readable(html.match(/<h1[^>]*>([^<]*)<\/h1>/)![1])).toBe(blocks[0].text);
-      expect(html).not.toContain(NOTICE_NL);
-      expect(html).not.toContain("Deze pagina staat voorlopig");
+      expect(html).not.toContain(NOTE_NL);
+      expect(html).not.toContain("Dit is de Nederlandse tekst");
       expect(html).not.toContain('lang="en"');
     });
 
@@ -197,45 +199,46 @@ describe("the three pages in English", () => {
   });
 });
 
+const TEXTS_NL = { "signal-log": signalLogNl, terms: termsNl, privacy: privacyNl };
+
 describe("the three pages in Dutch", () => {
-  for (const { name, Page, raw } of PAGES) {
+  for (const { name, Page } of PAGES) {
     const html = render(Page, "nl");
     const text = readable(html);
-    const blocks = parseLegalText(raw);
+    const blocks = parseLegalText(TEXTS_NL[name]);
     const dutch = LEGAL_PAGES[name].nl;
 
-    it(`[${name}] has exactly one h1, and it is the Dutch title`, () => {
+    it(`[${name}] has exactly one h1, and it is the title of the Dutch file`, () => {
       expect(html.match(/<h1/g)).toHaveLength(1);
-      expect(readable(html.match(/<h1[^>]*>([^<]*)<\/h1>/)![1])).toBe(dutch.title);
-      expect(text).toContain(dutch.lead);
+      expect(readable(html.match(/<h1[^>]*>([^<]*)<\/h1>/)![1])).toBe(blocks[0].text);
       expect(html).toContain(`>${dutch.chip}<`);
     });
 
-    it(`[${name}] says in a visible box that the text is English for now, with the email as a link`, () => {
-      expect(text).toContain(NOTICE_NL);
-      expect(html).toMatch(
-        /<p role="note"[^>]*>Deze pagina staat voorlopig alleen in het Engels\. Een Nederlandse vertaling volgt nog\. Vragen\? Mail <a [^>]*href="mailto:info@tokenizen\.nl"/,
-      );
-      expect(text.indexOf(NOTICE_NL)).toBeLessThan(text.indexOf(blocks[1].text));
+    it(`[${name}] says in a visible box that the English text counts, with a link to it`, () => {
+      expect(text).toContain(NOTE_NL);
+      expect(html).toContain(`href="/${LEGAL_PAGES[name].slug}"`);
+      expect(html).toContain(`>${NOTE_NL_LINK}<`);
+      expect(html).toMatch(/<p role="note"/);
     });
 
-    it(`[${name}] shows the English text below it unchanged, in order and once, marked as English`, () => {
-      expect(html).toContain('lang="en"');
-      let from = text.indexOf(NOTICE_NL);
-      for (const block of blocks) {
+    it(`[${name}] shows the Dutch text unchanged, in order and once, and none of the English text`, () => {
+      let from = 0;
+      for (const block of parseLegalText(TEXTS_NL[name]).slice(1)) {
         const at = text.indexOf(block.text, from);
         expect(at, `${name}: ${block.text.slice(0, 50)}`).toBeGreaterThanOrEqual(from);
-        expect(text.indexOf(block.text, at + block.text.length), `${name} twice: ${block.text.slice(0, 50)}`).toBe(-1);
         from = at;
       }
+      const english = parseLegalText(TEXTS[name]);
+      expect(text).not.toContain(english[1].text);
+      expect(html).not.toContain('lang="en"');
     });
 
-    it(`[${name}] has no long dashes in the Dutch words and never the formal u or uw`, () => {
-      const words = [dutch.chip, dutch.title, dutch.lead, dutch.metaTitle, dutch.metaDescription, NOTICE_NL];
+    it(`[${name}] has no long dashes, no markdown and never the formal u or uw`, () => {
+      const words = [TEXTS_NL[name], dutch.chip, dutch.metaTitle, dutch.metaDescription, NOTE_NL, NOTE_NL_LINK];
       for (const w of words) {
         expect(w).not.toMatch(/[–—]/);
         expect(w).not.toContain("**");
-        expect(w).not.toMatch(/\b(u|uw)\b/i);
+        expect(w).not.toMatch(/\b(u|uw|uzelf)\b/i);
       }
       expect(html).not.toMatch(/[–—]/);
     });
@@ -252,8 +255,51 @@ describe("the three pages in Dutch", () => {
       const { en, nl } = LEGAL_PAGES[name];
       expect(nl.metaTitle, name).not.toBe(en.metaTitle);
       expect(nl.metaDescription, name).not.toBe(en.metaDescription);
-      expect(nl.metaDescription, name).toContain("voorlopig alleen in het Engels");
     }
+  });
+});
+
+// "The Dutch says the same as the English" is a claim, so its basis is written down here. The basis is a count of what can be counted: the same
+// number of blocks, the same numbers, the same company data, the same addresses of other pages (in the Dutch language), the same email address.
+// What this does not prove is that every sentence means the same: that is for a reader of both languages (done once by our own review and by the
+// owner), and the Dutch page says that the English text counts where they differ.
+describe("the Dutch texts say the same as the English ones", () => {
+  const numbersIn = (t: string) => (t.match(/\d+(?:[.,]\d+)?/g) ?? []).map((n) => n.replace(",", "."));
+  const withoutDate = (t: string) => t.replace(/Last changed:[^\n]*/, "").replace(/Laatst gewijzigd:[^\n]*/, "");
+
+  for (const name of ["signal-log", "terms", "privacy"] as const) {
+    it(`[${name}] has the same number of blocks, with the same kind of block in the same place`, () => {
+      const en = parseLegalText(TEXTS[name]);
+      const nl = parseLegalText(TEXTS_NL[name]);
+      expect(nl.map((b) => b.kind)).toEqual(en.map((b) => b.kind));
+    });
+
+    it(`[${name}] has the same numbers in the same order`, () => {
+      expect(numbersIn(withoutDate(TEXTS_NL[name]))).toEqual(numbersIn(withoutDate(TEXTS[name])));
+    });
+
+    it(`[${name}] names the same company data and the same email address`, () => {
+      for (const fact of [KVK, "info@tokenizen.nl", "AO Services", "Eindhoven"]) {
+        expect(TEXTS[name].includes(fact), `en ${fact}`).toBe(TEXTS_NL[name].includes(fact));
+      }
+      expect(TEXTS_NL[name].includes(VAT)).toBe(TEXTS[name].includes(VAT));
+    });
+
+    it(`[${name}] links to the same pages, in the Dutch language`, () => {
+      const pages = (t: string, prefix: string) => [...t.matchAll(new RegExp(`tokenizen\\.nl/${prefix}/([a-z-]+)`, "g"))].map((m) => m[1]);
+      expect(pages(TEXTS_NL[name], "nl")).toEqual(pages(TEXTS[name], "en"));
+      expect(TEXTS_NL[name]).not.toMatch(/tokenizen\.nl\/en\//);
+    });
+  }
+
+  it("keeps the ten clauses of the Dutch terms in order", () => {
+    const clauses = parseLegalText(termsNl).filter((b) => /^\d+\. /.test(b.text));
+    expect(clauses.map((b) => b.text.match(/^(\d+)\./)![1])).toEqual(["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]);
+  });
+
+  it("states the same prices as the English offer", () => {
+    for (const price of ["9,95", "99", "29,95", "299"]) expect(signalLogNl).toContain(price);
+    expect(signalLogNl).toContain("14 dagen");
   });
 });
 
