@@ -77,3 +77,19 @@ Try it with the MCP Inspector in its default proxy mode: `npx @modelcontextproto
 
 ## The weekly run, by hand, on the server
 `bench/cra-weekly.sh repos.txt logdir` adds one line for every repository in `repos.txt`, writes the heads of all logs and stamps that file with OpenTimestamps; a few hours later `ots upgrade <file>.ots` makes the stamp confirmed. The Linux server has the client in `/opt/ots` (a Python virtual environment; remove the folder to undo it): `OTS=/opt/ots/bin/ots bench/cra-weekly.sh ...`. The client does not start on Windows (a missing library), so the run belongs on the server. The logs are customer data (repository names): keep the log folder outside the repository and out of backups that leave the server.
+
+## The public list of delivered scan reports (built, not live)
+
+A list of the scan reports we delivered, in which every line holds the hash of the line before it, and whose head is timestamped with OpenTimestamps. A buyer can check with one file that a report was delivered, with which outcome and coverage, and that it has not changed since. `src/scan-receipts.ts` is the chain (pure functions), `bench/scan-receipts.mjs` reads the feed and keeps the list, `bench/scan-receipts-daily.sh` runs it daily and stamps the head, and `packages/website/public/verify-scan-receipts.mjs` is the one-file checker (a test makes sure it judges exactly like the module).
+
+What a line holds: the SHA-256 of the job number, the SHA-256 of the report, the outcome, the coverage in percent, when it was delivered, when the line was written. No repository, no buyer, no report.
+
+Check your own report (job number and the report file you received):
+
+    curl -O https://tokenizen.nl/verify-scan-receipts.mjs
+    node verify-scan-receipts.mjs scan-receipts.jsonl <job number> report.html
+    ots verify <head file>.ots      # the date, from OpenTimestamps, outside our control
+
+What it does not prove: which version of the code was scanned (the job record holds no commit), that the report is right, or that the code is safe. A chain can be rebuilt from the start; only the timestamp of the head dates it, and a timestamp is not an anchor until Bitcoin has confirmed it.
+
+Not live yet: the feed route on the scan server is a proposed patch that waits for the owner's approval.
