@@ -40,7 +40,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@x402/core": "^2.28.0",
     "cors": "^2.8.5",
     "express": "^5.2.1",

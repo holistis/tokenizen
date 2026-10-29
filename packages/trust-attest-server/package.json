@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "endpoint-attest": "^0.1.0",
-    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "ethers": "^6.13.0",
     "zod": "^4.5.2",
     "tokenizen-net-guard": "^0.1.0"
