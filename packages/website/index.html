@@ -61,6 +61,25 @@
       />
     </noscript>
 
+    <!-- The page text inside #root (written at build time, see scripts/prerender-heads.mjs) is for readers that do not run JavaScript.
+         While JavaScript runs it stays off screen until the app replaces it; without JavaScript it is the page. -->
+    <script>
+      document.documentElement.className += " js";
+    </script>
+    <style>
+      .js #prerender {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    </style>
+
     <!-- Thema vóór eerste paint zetten (voorkomt flits van verkeerd thema) -->
     <script>
       (function () {
