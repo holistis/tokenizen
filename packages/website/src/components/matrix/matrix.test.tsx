@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
@@ -10,7 +10,7 @@ import { SCAN_FOUND, SCAN_KNOWN } from "@/components/matrix/miss-strip";
 import { repoFromHash } from "@/components/pages/cra-check-page";
 import { AboutPage, ChecksPage, ConsultancyPage, ScanPage, SecurityPage, ToolsPage } from "@/components/pages/offer-pages";
 import { BENCHMARK_REPOSITORIES, BENCHMARK_SIGNALS } from "@/data/cra-benchmark";
-import { ADVISORY_URL, HOME, OFFERS } from "@/data/home-copy";
+import { ADVISORY_URL, CINEMA, HOME, OFFERS } from "@/data/home-copy";
 import { SCORE_RUNS } from "@/data/scoreboard";
 import { LocaleProvider, type Locale } from "@/i18n/context";
 import { cellPath, hashMarkCells } from "@/lib/hash-mark";
@@ -137,7 +137,7 @@ describe("the repository named in the address fragment", () => {
 
 describe("the words", () => {
   it("contain no long dashes and no markdown in either language", () => {
-    const text = JSON.stringify([HOME, OFFERS]);
+    const text = JSON.stringify([HOME, OFFERS, CINEMA]);
     expect(text).not.toMatch(LONG_DASH);
     expect(text).not.toContain("**");
   });
@@ -156,7 +156,7 @@ describe("the words", () => {
   // The red reader of 28 October 2026 found sentences that said more than we can show. They stay out.
   it("keep out the claims that the red reader took out", () => {
     const all = (
-      JSON.stringify([HOME, OFFERS]) +
+      JSON.stringify([HOME, OFFERS, CINEMA]) +
       page("en", <SecurityPage />) +
       page("en", <ScanPage />) +
       page("en", <HomePage />) +
@@ -204,22 +204,68 @@ describe("the words", () => {
 });
 
 describe("the homepage", () => {
-  it.each(["en", "nl"] as const)("renders in %s with one h1, the eight grids and the six offers", (locale) => {
+  it.each(["en", "nl"] as const)("renders in %s with one h1, the six offers and the three pillars", (locale) => {
     const html = page(locale, <HomePage />);
     expect(html.match(/<h1/g)).toHaveLength(1);
-    expect(html.match(/<figure/g)).toHaveLength(8);
     expect(html.match(/id="aanbod-/g)).toHaveLength(6);
     expect(html).toContain(HOME[locale].hero.h1a);
     expect(html).toContain(ADVISORY_URL);
+    for (const pillar of CINEMA[locale].pillars) {
+      expect(html, pillar.id).toContain(pillar.title);
+      for (const point of pillar.points) expect(html, point).toContain(point.replace(/'/g, "&#x27;"));
+    }
     expect(html).not.toContain('action="/en/cra-check"');
     expect(html).not.toMatch(LONG_DASH);
   });
 
-  it("has the four altitudes in order", () => {
+  // The visitor asked for: reliability, technique, what is unique, mission and vision, all on the homepage, each with its own picture.
+  it("shows the pillars, security, mission and vision in order, between the offers and the conversation", () => {
     const html = page("en", <HomePage />);
-    const at = ["top", "aanbod", "nagaan", "bewijs"].map((id) => html.indexOf(`id="${id}"`));
+    const at = ["top", "aanbod", "betrouwbaarheid", "techniek", "uniek", "beveiliging", "missie", "nagaan", "onbekend", "praat"].map((id) => html.indexOf(`id="${id}"`));
     expect(at.every((i) => i > -1)).toBe(true);
     expect([...at].sort((a, b) => a - b)).toEqual(at);
+    expect(html).toContain(CINEMA.en.mission.mission.title);
+    expect(html).toContain(CINEMA.en.mission.vision.title);
+  });
+
+  // Who we are belongs on the About page. The homepage does not name the owners and shows no portrait.
+  it("does not name the two owners or show their portraits", () => {
+    for (const locale of ["en", "nl"] as const) {
+      const html = page(locale, <HomePage />);
+      expect(html, locale).not.toContain("Ouadoudi");
+      expect(html, locale).not.toContain("Abdellah");
+      expect(html, locale).not.toContain("Ahmed");
+      expect(html, locale).not.toContain("twee broers");
+      expect(html, locale).not.toContain("two brothers");
+    }
+    expect(page("en", <AboutPage />)).toContain("Ouadoudi");
+  });
+
+  it("uses only the pictures that exist, with a size, an empty alt, and the first one loaded at once", () => {
+    const html = page("en", <HomePage />);
+    const imgs = html.match(/<img [^>]*>/g) ?? [];
+    expect(imgs.length).toBeGreaterThanOrEqual(8);
+    imgs.forEach((tag, i) => {
+      expect(tag).toContain('alt=""');
+      expect(tag).toContain('width="1376"');
+      expect(tag).toContain('height="768"');
+      expect(tag).toMatch(/srcSet="[^"]*-768\.webp 768w/);
+      expect(tag.includes('loading="eager"')).toBe(i === 0);
+      expect(tag.includes('loading="lazy"')).toBe(i !== 0);
+      const file = tag.match(/src="\/media\/site\/([a-z0-9-]+\.webp)"/)?.[1];
+      expect(file, tag).toBeTruthy();
+      expect(existsSync(fileURLToPath(new URL(`../../../public/media/site/${file}`, import.meta.url))), `${file} exists`).toBe(true);
+    });
+  });
+
+  it("says that the pictures are illustrations made with AI, in both languages", () => {
+    expect(page("en", <HomePage />)).toContain("illustrations made with AI");
+    expect(page("nl", <HomePage />)).toContain("illustraties, met AI gemaakt");
+  });
+
+  it("keeps the moving parts behind the reduced-motion setting", () => {
+    expect(css).toMatch(/prefers-reduced-motion: reduce\)[\s\S]*\.hero-media[\s\S]*animation: none/);
+    expect(css).toMatch(/prefers-reduced-motion: no-preference\)[\s\S]*\.tilt/);
   });
 });
 
@@ -259,6 +305,14 @@ describe("the offer pages", () => {
     expect(html.match(/<h1/g)).toHaveLength(1);
     expect(html).not.toMatch(LONG_DASH);
     expect(html).not.toContain("**");
+  });
+
+  // The grids and the log demonstration left the homepage; they are the evidence behind the free checks.
+  it("shows the eight grids and the log demonstration on the checks page", () => {
+    const html = page("en", <ChecksPage />);
+    expect(html.match(/<figure/g)).toHaveLength(8);
+    expect(html).toContain("2026-10-28.6");
+    expect(html).toContain(HOME.en.proof.body);
   });
 
   it("names the public advisory on the security page and the contact on the conversation page", () => {

@@ -192,10 +192,10 @@ export interface HomeCopy {
 export const HOME: Record<Locale, HomeCopy> = {
   en: {
     hero: {
-      eyebrow: "tokenizen.nl · Eindhoven · two brothers",
+      eyebrow: "tokenizen.nl · Eindhoven",
       h1a: "We find the leaks.",
       h1b: "We publish the numbers.",
-      body: "Security research, free checks and a log with a timestamp outside our control. Below you see 109 public repositories, measured on eight security signals. We publish our misses too.",
+      body: "Security research, free checks and a log with a timestamp outside our control. We measured 109 public repositories on eight security signals, and we publish our misses too.",
       ctaPrimary: "Check your repository",
       ctaSecondary: "See what we offer",
       chips: [
@@ -217,7 +217,7 @@ export const HOME: Record<Locale, HomeCopy> = {
       body: "Type owner/name of a public GitHub repository and see which of the eight signals are visible in it.",
       placeholder: "owner/name",
       button: "Check it",
-      fine: "We read public pages only and store no report. The dashed square in every grid above is the place for yours.",
+      fine: "We read public pages only and store no report.",
       label: "Public GitHub repository",
     },
     proof: {
@@ -265,10 +265,10 @@ export const HOME: Record<Locale, HomeCopy> = {
   },
   nl: {
     hero: {
-      eyebrow: "tokenizen.nl · Eindhoven · twee broers",
+      eyebrow: "tokenizen.nl · Eindhoven",
       h1a: "Wij vinden de lekken.",
       h1b: "Wij publiceren de cijfers.",
-      body: "Beveiligingsonderzoek, gratis checks en een logboek met een tijdstempel buiten onze controle. Hieronder zie je 109 openbare repositories, gemeten op acht beveiligingssignalen. Onze missers publiceren we ook.",
+      body: "Beveiligingsonderzoek, gratis checks en een logboek met een tijdstempel buiten onze controle. We maten 109 openbare repositories op acht beveiligingssignalen, en onze missers publiceren we ook.",
       ctaPrimary: "Check jouw repository",
       ctaSecondary: "Bekijk ons aanbod",
       chips: [
@@ -290,7 +290,7 @@ export const HOME: Record<Locale, HomeCopy> = {
       body: "Typ owner/name van een openbare GitHub-repository en zie welke van de acht signalen erin zichtbaar zijn.",
       placeholder: "owner/name",
       button: "Check",
-      fine: "We lezen alleen openbare pagina's en bewaren geen rapport. Het gestippelde vierkant in elk raster hierboven is de plek voor de jouwe.",
+      fine: "We lezen alleen openbare pagina's en bewaren geen rapport.",
       label: "Openbare GitHub-repository",
     },
     proof: {
@@ -335,5 +335,163 @@ export const HOME: Record<Locale, HomeCopy> = {
       warnings: "De waarschuwingsmails van het Signal log zijn nog niet gebouwd.",
       scoreboard: "Scorebord met elke run",
     },
+  },
+};
+
+export interface Pillar {
+  id: "betrouwbaarheid" | "techniek" | "uniek";
+  label: string;
+  title: string;
+  points: string[];
+}
+
+export interface CinemaCopy {
+  offers: { heading: string; intro: string; open: string };
+  tilePrice: Record<Offer["id"], string>;
+  /** The homepage names no person; the conversation card is called by what it is. The offer page keeps its own name. */
+  tileName: Partial<Record<Offer["id"], string>>;
+  pillars: Pillar[];
+  mission: { label: string; mission: { label: string; title: string; text: string }; vision: { label: string; title: string; text: string } };
+  talk: { heading: string; body: string; button: string; secondary: string; subject: string };
+  note: string;
+}
+
+// The pillars say what the visitor can check. Every point repeats something that is on a page of ours with its source; nothing new is claimed here.
+export const CINEMA: Record<Locale, CinemaCopy> = {
+  en: {
+    offers: {
+      heading: "What we do.",
+      intro: "Six things. Each has its own page with what you get, how you check it and what it is not.",
+      open: "Open",
+    },
+    tilePrice: {
+      checks: "Free",
+      "signal-log": "9.95 or 29.95 euro per month, VAT included",
+      security: "No fixed offer yet",
+      scan: "From 1 dollar per scan",
+      tools: "Free",
+      talk: "No fixed offer yet",
+    },
+    tileName: { talk: "Talk to us" },
+    pillars: [
+      {
+        id: "betrouwbaarheid",
+        label: "Reliability",
+        title: "Every number says where to check it.",
+        points: [
+          "Each result lists the public pages that were asked for, and whether that worked.",
+          "The timestamp on our log can be checked without us.",
+          "Our misses sit on the same page as our hits.",
+        ],
+      },
+      {
+        id: "techniek",
+        label: "Technique",
+        title: "We measure first and claim after.",
+        points: [
+          "Eight security signals, measured over 109 public repositories on 28 October 2026. The method is in a published note.",
+          "A log in which every line holds the hash of the line before it, with a timestamp from OpenTimestamps.",
+          "Open-source tools on GitHub and npm: capacity-attest, agent-receipt-verify, x402-lint and muraqib-agent-watch.",
+        ],
+      },
+      {
+        id: "uniek",
+        label: "Unique",
+        title: "A history with dates we cannot move.",
+        points: [
+          "The timestamp of our log comes from OpenTimestamps, which is outside our control.",
+          "We publish what our scan missed: 97 of 105 known findings in that run.",
+        ],
+      },
+    ],
+    mission: {
+      label: "Mission and vision",
+      mission: {
+        label: "Mission",
+        title: "Make security claims that anyone can check.",
+        text: "We build checks, publish how they were made and publish where they fail.",
+      },
+      vision: {
+        label: "Vision",
+        title: "A web where every claim arrives with the way to check it.",
+        text: "Software, agents and payments that prove what they say, so that trust is something you measure.",
+      },
+    },
+    talk: {
+      heading: "Talk to us.",
+      body: "Start with a conversation about where you stand. Ask for our measurements and we show how each one was made.",
+      button: "Write to us",
+      secondary: "Who we are",
+      subject: "A conversation",
+    },
+    note: "The photographs on this page are illustrations made with AI.",
+  },
+  nl: {
+    offers: {
+      heading: "Wat wij doen.",
+      intro: "Zes dingen. Elk heeft een eigen pagina met wat je krijgt, hoe je het nagaat en wat het niet is.",
+      open: "Open",
+    },
+    tilePrice: {
+      checks: "Gratis",
+      "signal-log": "9,95 of 29,95 euro per maand, inclusief btw",
+      security: "Nog geen vast aanbod",
+      scan: "Vanaf 1 dollar per scan",
+      tools: "Gratis",
+      talk: "Nog geen vast aanbod",
+    },
+    tileName: { talk: "Praat met ons" },
+    pillars: [
+      {
+        id: "betrouwbaarheid",
+        label: "Betrouwbaarheid",
+        title: "Bij elk getal staat waar je het nagaat.",
+        points: [
+          "Elke uitslag noemt de openbare pagina's die zijn opgevraagd, en of dat lukte.",
+          "De tijdstempel op ons logboek is te controleren zonder ons.",
+          "Onze missers staan op dezelfde pagina als onze successen.",
+        ],
+      },
+      {
+        id: "techniek",
+        label: "Techniek",
+        title: "Eerst meten, dan pas iets beweren.",
+        points: [
+          "Acht beveiligingssignalen, gemeten bij 109 openbare repositories op 28 oktober 2026. De methode staat in een gepubliceerde notitie.",
+          "Een logboek waarin elke regel de hash van de regel ervoor bevat, met een tijdstempel van OpenTimestamps.",
+          "Open-sourcegereedschap op GitHub en npm: capacity-attest, agent-receipt-verify, x402-lint en muraqib-agent-watch.",
+        ],
+      },
+      {
+        id: "uniek",
+        label: "Uniek",
+        title: "Een geschiedenis met data die wij niet kunnen verschuiven.",
+        points: [
+          "De tijdstempel van ons logboek komt van OpenTimestamps, dat buiten onze controle staat.",
+          "Wij publiceren wat onze scan miste: 97 van de 105 bekende bevindingen in die run.",
+        ],
+      },
+    ],
+    mission: {
+      label: "Missie en visie",
+      mission: {
+        label: "Missie",
+        title: "Beveiligingsclaims zo maken dat iedereen ze kan nagaan.",
+        text: "Wij bouwen checks, publiceren hoe ze zijn gemaakt en publiceren waar ze falen.",
+      },
+      vision: {
+        label: "Visie",
+        title: "Een web waarin elke bewering komt met de manier om haar na te gaan.",
+        text: "Software, agenten en betalingen die bewijzen wat ze zeggen, zodat vertrouwen iets is wat je meet.",
+      },
+    },
+    talk: {
+      heading: "Praat met ons.",
+      body: "Begin met een gesprek over waar jij staat. Vraag naar onze metingen en we laten zien hoe elke is gemaakt.",
+      button: "Schrijf ons",
+      secondary: "Wie wij zijn",
+      subject: "Een gesprek",
+    },
+    note: "De foto's op deze pagina zijn illustraties, met AI gemaakt.",
   },
 };

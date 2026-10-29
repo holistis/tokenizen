@@ -2,11 +2,13 @@ import type { ReactNode } from "react";
 import { ArrowUpRight, Mail } from "lucide-react";
 
 import { Brothers } from "@/components/home/lower-sections";
+import { ChainDemo } from "@/components/matrix/chain-demo";
 import { HashMark } from "@/components/matrix/hash-mark";
+import { MeasureGrids } from "@/components/matrix/measure-grid";
 import { MissStrip } from "@/components/matrix/miss-strip";
 import { useMeta } from "@/components/pages/legal-page";
 import { Button } from "@/components/ui/button";
-import { ADVISORY_URL, CONTACT_EMAIL, GITHUB_URL } from "@/data/home-copy";
+import { ADVISORY_URL, CONTACT_EMAIL, GITHUB_URL, HOME } from "@/data/home-copy";
 import { Problem } from "@/components/sections/problem";
 import { WhyNow } from "@/components/sections/why-now";
 import { Product } from "@/components/sections/product";
@@ -122,6 +124,22 @@ export function ChecksPage() {
             </li>
           ))}
         </ul>
+      </Block>
+      <Block label="What we measured">
+        <p>
+          109 public repositories, eight signals each, measured on 28 October 2026. The grids come from rule set 2026-10-28.6; the check now runs a newer one that
+          also reads other CI systems, so a new run can give other numbers.
+        </p>
+        <div className="panel rounded-xl p-4 md:p-6">
+          <MeasureGrids locale="en" />
+        </div>
+      </Block>
+      <Block label="How a log you can verify works">
+        <p>{HOME.en.proof.body}</p>
+        <ChainDemo locale="en" />
+        <p>
+          {HOME.en.proof.sealed} <LinkOut href="/en/scoreboard">{HOME.en.proof.scoreboard}</LinkOut>
+        </p>
       </Block>
       <Block label="What they are not">
         <p>

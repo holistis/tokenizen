@@ -1,9 +1,7 @@
 import { useEffect } from "react";
 
-import { Altitude, AltitudeRail, ALTITUDES } from "@/components/matrix/altitude";
-import { HeroAltimeter } from "@/components/home/hero-altimeter";
-import { OfferMatrix } from "@/components/home/offer-matrix";
-import { Brothers, CheckYours, Proof, SecurityRecord, Unknowns } from "@/components/home/lower-sections";
+import { CheckScene, Hero, MissionScene, OfferTiles, PillarScene, SecurityScene, TalkScene, Unknowns } from "@/components/home/home-sections";
+import { CINEMA } from "@/data/home-copy";
 import { useLocale } from "@/i18n/context";
 
 // The sections of the old homepage now live on the tools page. A link from outside to one of them (tokenizen.nl/#hoe-het-werkt) would land on
@@ -16,11 +14,17 @@ export function legacyAnchorTarget(hash: string, locale: "en" | "nl"): string | 
   return `${locale === "nl" ? "" : "/en"}/tools#${id}`;
 }
 
-/** The homepage: four altitudes from above downwards, then the people, the record and the misses. */
+// The photograph behind each pillar, in the order of the pillars. Left and right alternate so the eye moves down the page.
+const PILLAR_STAGE = [
+  { image: "kluis", side: "left" },
+  { image: "techniek", side: "right" },
+  { image: "uniek", side: "left" },
+] as const;
+
+/** The homepage, one screen at a time: what we do, the three pillars, security, mission and vision, the free check, the misses, a conversation. */
 export function HomePage() {
   const { locale } = useLocale();
   const loc = locale === "nl" ? "nl" : "en";
-  const [top, aanbod, nagaan, bewijs] = ALTITUDES;
 
   useEffect(() => {
     const target = legacyAnchorTarget(window.location.hash, loc);
@@ -28,23 +32,17 @@ export function HomePage() {
   }, [loc]);
 
   return (
-    <>
-      <AltitudeRail locale={loc} />
-      <Altitude step={top} locale={loc} panel>
-        <HeroAltimeter locale={loc} />
-      </Altitude>
-      <Altitude step={aanbod} locale={loc}>
-        <OfferMatrix locale={loc} />
-      </Altitude>
-      <Altitude step={nagaan} locale={loc}>
-        <CheckYours locale={loc} />
-      </Altitude>
-      <Altitude step={bewijs} locale={loc}>
-        <Proof locale={loc} />
-      </Altitude>
-      <Brothers locale={loc} />
-      <SecurityRecord locale={loc} />
+    <div className="cinema">
+      <Hero locale={loc} />
+      <OfferTiles locale={loc} />
+      {CINEMA[loc].pillars.map((pillar, i) => (
+        <PillarScene key={pillar.id} pillar={pillar} image={PILLAR_STAGE[i].image} side={PILLAR_STAGE[i].side} />
+      ))}
+      <SecurityScene locale={loc} />
+      <MissionScene locale={loc} />
+      <CheckScene locale={loc} />
       <Unknowns locale={loc} />
-    </>
+      <TalkScene locale={loc} />
+    </div>
   );
 }
