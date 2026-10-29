@@ -65,6 +65,15 @@ describe("the way to subscribe to the Signal log", () => {
     expect(hrefs(en)).toHaveLength(4);
   });
 
+  it("offers the checker of the log as a download, in the language of the reader", () => {
+    const en = render(SignalLogPage, "en");
+    const nl = render(SignalLogPage, "nl");
+    expect(en).toContain('href="/verify-cra-log.mjs"');
+    expect(nl).toContain('href="/verify-cra-log.mjs"');
+    expect(en).toContain("Check a log without us");
+    expect(nl).toContain("Een logboek nagaan zonder ons");
+  });
+
   it("is only on the Signal log page, not on the terms or the privacy statement", () => {
     for (const locale of ["en", "nl"] as const) {
       expect(hrefs(render(TermsPage, locale)), `terms ${locale}`).toEqual([]);

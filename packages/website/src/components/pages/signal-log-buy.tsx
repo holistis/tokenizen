@@ -15,6 +15,9 @@ const COPY = {
     yearButton: "Subscribe yearly",
     portalLead: "Already subscribed?",
     portalLink: "Manage or cancel your subscription yourself",
+    verifyLead: "Check a log without us:",
+    verifyLink: "download the checker",
+    verifyNote: "one file, nothing to install, run it with Node",
   },
   nl: {
     heading: "Abonneren",
@@ -27,6 +30,9 @@ const COPY = {
     yearButton: "Abonneer per jaar",
     portalLead: "Al abonnee?",
     portalLink: "Beheer of zeg je abonnement zelf op",
+    verifyLead: "Een logboek nagaan zonder ons:",
+    verifyLink: "download de controle",
+    verifyNote: "één bestand, niets te installeren, draai het met Node",
   },
 };
 
@@ -58,6 +64,13 @@ export function SignalLogBuy() {
         <a href={SIGNAL_LOG_PORTAL} className="underline underline-offset-2 hover:text-foreground">
           {c.portalLink}
         </a>
+      </p>
+      <p className="mt-2 text-sm text-[color:var(--soft)]">
+        {c.verifyLead}{" "}
+        <a href="/verify-cra-log.mjs" download="verify-cra-log.mjs" className="underline underline-offset-2 hover:text-foreground">
+          {c.verifyLink}
+        </a>{" "}
+        ({c.verifyNote}).
       </p>
     </section>
   );
