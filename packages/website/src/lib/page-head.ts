@@ -26,6 +26,9 @@ export const BILINGUAL_PATHS = [
   "/x402-check",
   "/check",
   "/scoreboard",
+  "/signal-log",
+  "/terms",
+  "/privacy",
 ];
 
 export interface Alternate {

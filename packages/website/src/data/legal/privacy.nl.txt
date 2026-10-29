@@ -1,0 +1,17 @@
+Privacyverklaring
+
+Wie verantwoordelijk is (verwerkingsverantwoordelijke). AO Services, KvK 86816632, Eindhoven, Nederland. Privacyvragen: info@tokenizen.nl.
+
+De gratis checks op deze site. We lezen openbare pagina's van de repository, het adres of het domein dat je intypt. Rapporten worden niet bewaard. Een antwoord blijft maximaal een uur in het geheugen van de server, zodat dezelfde repository niet twee keer wordt gelezen, en de server logt geen repositorynamen. Onze netwerkleverancier (Cloudflare) en de server die de check draait verwerken je IP-adres om de pagina te leveren en misbruik te beperken (ons gerechtvaardigd belang bij een veilige dienst).
+
+Cookies. We plaatsen geen cookies en gebruiken geen analyse of tracking. Je browser bewaart je themakeuze (licht, donker of systeem) in de lokale opslag op je apparaat. De betaalpagina wordt beheerd door Stripe, die daar eigen cookies plaatst.
+
+Als je je abonneert op het Signal log. We verwerken je e-mailadres, de namen van de repositories die je ons stuurt, de metingen die we ervan doen, en wat Stripe ons vertelt over je betaling: je naam, factuuradres, btw-nummer als je dat opgeeft, en het merk en de laatste cijfers van je kaart. Je volledige kaartnummer zien we nooit. We gebruiken deze gegevens om te leveren wat je kocht (uitvoering van de overeenkomst), om de facturen en betalingsgegevens te bewaren die de fiscale wetgeving vereist (een wettelijke verplichting), en om je vragen te beantwoorden (ons gerechtvaardigd belang bij het goed laten werken van de dienst).
+
+Wie het krijgt. Stripe verwerkt betalingen en facturen. Onze e-mailleverancier stuurt je de logboeken. De kop van je logboek, een hash zonder namen, gaat naar de OpenTimestamps-kalenders om van een tijdstempel te worden voorzien. We verkopen geen persoonsgegevens en gebruiken ze niet voor reclame. Stripe, Cloudflare en onze e-mailleverancier verwerken gegevens mogelijk buiten de Europese Economische Ruimte, onder de standaardcontractbepalingen van de EU of het EU-VS Data Privacy Framework.
+
+Hoe lang. Abonnementsgegevens zolang je abonnement loopt en 12 maanden nadat het eindigt, voor vragen en geschillen. Facturen en betalingsgegevens 7 jaar, vanwege de fiscale bewaarplicht.
+
+Je rechten. Je kunt ons vragen om inzage in je gegevens, rectificatie, verwijdering, beperking van de verwerking en een kopie die je kunt meenemen naar een ander (gegevensoverdraagbaarheid), en je kunt bezwaar maken. Mail info@tokenizen.nl; we antwoorden binnen een maand. Je kunt een klacht indienen bij de Autoriteit Persoonsgegevens.
+
+Laatst gewijzigd: 29 oktober 2026.
