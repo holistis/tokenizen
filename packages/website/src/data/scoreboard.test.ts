@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import llms from "../../public/llms.txt?raw";
 import sitemap from "../../public/sitemap.xml?raw";
-import { SCORE_RUNS, SEALED_SET_HASH, TUNED_LABEL } from "./scoreboard";
+import { SCORE_RUNS, SCORE_RUNS_NL, SEALED_SET_HASH, TUNED_LABEL } from "./scoreboard";
 
 const LONG_DASHES = /[–—]/;
 
@@ -84,5 +84,16 @@ describe("SCORE_RUNS", () => {
   it("is listed in the sitemap and in llms.txt", () => {
     expect(sitemap).toContain("https://tokenizen.nl/scoreboard");
     expect(llms).toContain("https://tokenizen.nl/scoreboard");
+  });
+
+  // 5 of the 66 were found in the first 15 hypotheses, so 61 were missed there. 58 is the number missed in the first 30. The second review
+  // of 29 October 2026 found the wrong one in the note, in both languages.
+  it("counts the findings missed in the first 15 hypotheses of the nine newer contests as 61 of 66, in both languages", () => {
+    const en = SCORE_RUNS.find((r) => r.note.includes("the first 30 held 8 of 66"));
+    expect(en?.note).toContain("61 of 66 known findings were not");
+    expect(en?.note).not.toContain("58 of 66");
+    const nl = Object.values(SCORE_RUNS_NL).find((r) => r.note?.includes("de eerste 30 bevatten er 8 van de 66"));
+    expect(nl?.note).toContain("61 van de 66 bekende bevindingen");
+    expect(nl?.note).not.toContain("58 van de 66");
   });
 });

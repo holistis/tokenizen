@@ -160,7 +160,13 @@ describe("the words", () => {
       page("en", <SecurityPage />) +
       page("en", <ScanPage />) +
       page("en", <HomePage />) +
-      page("nl", <HomePage />)
+      page("nl", <HomePage />) +
+      page("en", <ChecksPage />) +
+      page("nl", <ChecksPage />) +
+      page("en", <ToolsPage />) +
+      page("nl", <ToolsPage />) +
+      page("nl", <SecurityPage />) +
+      page("nl", <ScanPage />)
     ).toLowerCase();
     const forbidden = [
       "nobody can",
@@ -176,6 +182,24 @@ describe("the words", () => {
       "pinned dependencies",
       "each row linking to the rule",
       "elke rij linkt naar de regel",
+      // the second review of 29 October 2026: sentences that said more than we can show
+      "we cannot move",
+      "niet kunnen verschuiven",
+      "hundreds of thousands",
+      "honderdduizenden",
+      "with proof for each",
+      "met bewijs bij elke",
+      "comprehensive test",
+      "nobody records",
+      "niemand legt",
+      "cannot be changed afterwards",
+      "niet achteraf te wijzigen",
+      "status, honestly",
+      "we say that plainly",
+      "marketing-truc",
+      "current version 0.2.0",
+      "currently at 0.7.0",
+      "article 14 in effect",
     ];
     for (const phrase of forbidden) expect(all.includes(phrase), phrase).toBe(false);
   });

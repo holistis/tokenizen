@@ -69,7 +69,7 @@ export const SCORE_RUNS: ScoreRun[] = [
     found: null,
     hypotheses: null,
     tunedOn: "not applicable",
-    note: "The cleanest test, because no model can have seen the answers. The hash of a system's report is committed before the contest results are published, and scored afterwards with the same two judges. Takes weeks, since results arrive per contest.",
+    note: "The cleanest test, because the answers do not exist yet when the report is committed. The hash of a system's report is committed before the contest results are published, and scored afterwards with the same two judges. Takes weeks, since results arrive per contest.",
     links: [{ label: "How the judges decide", href: `${REPO}/PREREGISTRATION-v3-2026-10-24.md` }],
   },
   {
@@ -111,7 +111,7 @@ export const SCORE_RUNS: ScoreRun[] = [
     found: 5,
     hypotheses: 135,
     tunedOn: "no",
-    note: "Counts the first 15 hypotheses per contest, which is what reports showed until 25 October; the first 30 held 8 of 66. The rule for reading the result was written before the run: 5 percent or more holds, and this is 7.6 percent. 3 of 35 easy findings, 0 of 8 middle and 2 of 23 hard were in the first 15; 58 of 66 known findings were not. Small numbers, one run per contest. The Code4rena known lists are shorter than Sherlock's, contests from early 2026 may be in the training data of a model, and the Olas contest was read for 38 percent of its code.",
+    note: "Counts the first 15 hypotheses per contest, which is what reports showed until 25 October; the first 30 held 8 of 66. The rule for reading the result was written before the run: 5 percent or more holds, and this is 7.6 percent. 3 of 35 easy findings, 0 of 8 middle and 2 of 23 hard were in the first 15; 61 of 66 known findings were not. Small numbers, one run per contest. The Code4rena known lists are shorter than Sherlock's, contests from early 2026 may be in the training data of a model, and the Olas contest was read for 38 percent of its code.",
     links: [{ label: "The results, judgements and hashes", href: `${REPO}/results/2026-10-25-c4-fresh/README.md` }],
   },
   {
@@ -139,7 +139,7 @@ export const SCORE_RUNS: ScoreRun[] = [
     found: 4,
     hypotheses: 120,
     tunedOn: "no",
-    note: "2 of 59 easy findings, 0 of 14 middle, 2 of 32 hard. Precision 5.0 percent, 46 to 105 seconds and at most 0.064 dollar per scan. It found 3 known findings that the running scan did not. The rule written first needed 5, so it is not met and the running scan stays in production. Our own reading of two disagreements between the judges would have made it 5; the number we registered is the one both judges agree on.",
+    note: "2 of 59 easy findings, 0 of 14 middle, 2 of 32 hard. Precision 5.0 percent, 46 to 105 seconds and at most 0.064 dollar per scan. It found 3 known findings that the running scan did not. The rule written first needed 5, so it is not met and the running scan stayed in production. On the evening of 25 October version 3.1 replaced it, see the row above. Our own reading of two disagreements between the judges would have made it 5; the number we registered is the one both judges agree on.",
     links: [
       { label: "The results and our reading", href: `${REPO}/results/2026-10-24-sealed/README.md` },
       { label: "The pre-registration and its addendum", href: `${REPO}/PREREGISTRATION-v3-2026-10-24.md` },
@@ -256,7 +256,7 @@ export const SCORE_RUNS_NL: Record<string, RunTextNl> = {
     title: "Wedstrijden die na vandaag verschijnen",
     system: "Elk systeem dat meedoet, het onze inbegrepen",
     set: "Nieuwe wedstrijden zodra hun eindrapporten verschijnen",
-    note: "De zuiverste toets, want geen enkel model kan de antwoorden hebben gezien. De hash van het rapport van een systeem wordt vastgelegd voordat de uitslagen van de wedstrijd verschijnen, en wordt achteraf beoordeeld door dezelfde twee rechters. Dat duurt weken, want de uitslagen komen per wedstrijd binnen.",
+    note: "De zuiverste toets, want de antwoorden bestaan nog niet als het rapport wordt vastgelegd. De hash van het rapport van een systeem wordt vastgelegd voordat de uitslagen van de wedstrijd verschijnen, en wordt achteraf beoordeeld door dezelfde twee rechters. Dat duurt weken, want de uitslagen komen per wedstrijd binnen.",
     links: ["Hoe de rechters beslissen"],
   },
   "slither-same-contests": {
@@ -277,7 +277,7 @@ export const SCORE_RUNS_NL: Record<string, RunTextNl> = {
     title: "Versie 3.1 op negen nieuwere Code4rena-wedstrijden",
     system: "Versie 3.1 van de scan, zoals die in productie draait",
     set: "9 Code4rena-wedstrijden van september 2025 tot maart 2026, 66 bekende bevindingen. Niet gebruikt om de scan te bouwen",
-    note: "Telt de eerste 15 hypotheses per wedstrijd, wat rapporten tot 25 oktober lieten zien; de eerste 30 bevatten er 8 van de 66. De regel voor het lezen van de uitslag is vooraf opgeschreven: 5 procent of meer houdt stand, en dit is 7,6 procent. 3 van de 35 makkelijke bevindingen, 0 van de 8 gemiddelde en 2 van de 23 moeilijke zaten in de eerste 15; 58 van de 66 bekende bevindingen niet. Kleine aantallen, één run per wedstrijd. De bekende lijsten van Code4rena zijn korter dan die van Sherlock, wedstrijden van begin 2026 kunnen in de trainingsdata van een model zitten, en de Olas-wedstrijd is voor 38 procent van de code gelezen.",
+    note: "Telt de eerste 15 hypotheses per wedstrijd, wat rapporten tot 25 oktober lieten zien; de eerste 30 bevatten er 8 van de 66. De regel voor het lezen van de uitslag is vooraf opgeschreven: 5 procent of meer houdt stand, en dit is 7,6 procent. 3 van de 35 makkelijke bevindingen, 0 van de 8 gemiddelde en 2 van de 23 moeilijke zaten in de eerste 15; 61 van de 66 bekende bevindingen niet. Kleine aantallen, één run per wedstrijd. De bekende lijsten van Code4rena zijn korter dan die van Sherlock, wedstrijden van begin 2026 kunnen in de trainingsdata van een model zitten, en de Olas-wedstrijd is voor 38 procent van de code gelezen.",
     links: ["De resultaten, oordelen en hashes"],
   },
   "v31-same-eight": {
@@ -291,7 +291,7 @@ export const SCORE_RUNS_NL: Record<string, RunTextNl> = {
     title: "De verzegelde run: de nieuwe versie",
     system: "Versie 3 van de scan, de bestanden vooraf vastgelegd met een hash",
     set: "Verzegelde set: 8 wedstrijden, 105 bekende bevindingen, met een hash vastgelegd voordat iemand ernaar keek",
-    note: "2 van de 59 makkelijke bevindingen, 0 van de 14 gemiddelde, 2 van de 32 moeilijke. Precisie 5,0 procent, 46 tot 105 seconden en hooguit 0,064 dollar per scan. Hij vond 3 bekende bevindingen die de draaiende scan niet vond. De eerst opgeschreven regel vroeg er 5, dus die is niet gehaald en de draaiende scan blijft in productie. Onze eigen lezing van twee meningsverschillen tussen de rechters had er 5 van gemaakt; het getal dat we hebben vastgelegd is het getal waar beide rechters het over eens zijn.",
+    note: "2 van de 59 makkelijke bevindingen, 0 van de 14 gemiddelde, 2 van de 32 moeilijke. Precisie 5,0 procent, 46 tot 105 seconden en hooguit 0,064 dollar per scan. Hij vond 3 bekende bevindingen die de draaiende scan niet vond. De eerst opgeschreven regel vroeg er 5, dus die is niet gehaald en de draaiende scan bleef in productie. Op de avond van 25 oktober verving versie 3.1 hem, zie de rij hierboven. Onze eigen lezing van twee meningsverschillen tussen de rechters had er 5 van gemaakt; het getal dat we hebben vastgelegd is het getal waar beide rechters het over eens zijn.",
     links: ["De resultaten en onze lezing", "De preregistratie en de aanvulling", "De set, om zijn hash na te rekenen"],
   },
   "sealed-s0": {

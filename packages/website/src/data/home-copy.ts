@@ -48,7 +48,7 @@ const OFFERS_EN: Offer[] = [
     status: "on request",
     name: "Security research",
     line: "We read your pipelines and automation the way an attacker does, and tell you what we find.",
-    gets: "A written report with proof for every finding and a severity, delivered to you privately.",
+    gets: "A written report, delivered to you privately, with the evidence we have for each finding, a severity and what is still open.",
     verify: "Our published GitHub advisory, with our account credited as reporter, is an example you can open yourself.",
     not: "Not a penetration test of your production systems and not a certificate.",
     price: "After a conversation. No fixed offer yet.",
@@ -103,7 +103,7 @@ const OFFERS_NL: Offer[] = [
   },
   {
     id: "signal-log",
-    status: "early access",
+    status: "vroege toegang",
     name: "Signal log",
     line: "Elke week dezelfde acht signalen van jouw repositories, vastgelegd in een logboek met een tijdstempel buiten onze controle.",
     gets: "Een wekelijkse run voor 3 (Solo) of 25 (Team) openbare repositories. Je krijgt het logboek per mail, een tijdstempel van OpenTimestamps en het commando om die te controleren.",
@@ -117,7 +117,7 @@ const OFFERS_NL: Offer[] = [
     status: "op aanvraag",
     name: "Beveiligingsonderzoek",
     line: "Wij lezen jouw pijplijnen en automatisering zoals een aanvaller dat doet, en vertellen wat we vinden.",
-    gets: "Een schriftelijk rapport met bewijs bij elke vondst en een ernst, privé aan jou geleverd.",
+    gets: "Een schriftelijk rapport, privé aan jou geleverd, met het bewijs dat we per vondst hebben, een ernst en wat nog open staat.",
     verify: "Ons gepubliceerde GitHub-advisory, waarin ons account als melder staat, is een voorbeeld dat je zelf kunt openen.",
     not: "Geen penetratietest van je productiesystemen en geen certificaat.",
     price: "Na een gesprek. Nog geen vast aanbod.",
@@ -223,7 +223,7 @@ export const HOME: Record<Locale, HomeCopy> = {
     proof: {
       heading: "Down to one line.",
       body: "This is how a log works that you can verify without trusting us. Every line holds the hash of the line before it, so changing, removing or reordering an old line shows to anyone who kept an earlier head of the log. Our Signal log works this way, and the timestamp of its head comes from OpenTimestamps, which is outside our control.",
-      sealed: "Our smart contract scan was tested on a sealed set of audit contests. The set was committed by its hash before the run, so anyone can recompute that hash.",
+      sealed: "Our smart contract scan was tested on a sealed set of audit contests. The set was committed by its hash before the run, so anyone can recompute that hash. The new version did not meet the bar we set beforehand.",
       scoreboard: "See the scoreboard",
     },
     brothers: {
@@ -249,7 +249,7 @@ export const HOME: Record<Locale, HomeCopy> = {
         },
         {
           chip: "planned",
-          text: "Sealed dossiers: every report we file gets a date and a fingerprint on a public list, without its content. When the fix is out we publish the dossier, and anyone can see that we had it on that date.",
+          text: "Planned, not live yet: each report we file would get a date and a fingerprint on a public list, without its content. When the fix is out we would publish the dossier, and anyone could see that we had it on that date.",
         },
       ],
       more: "The whole record",
@@ -257,8 +257,8 @@ export const HOME: Record<Locale, HomeCopy> = {
     unknowns: {
       heading: "What we do not know, and where we missed.",
       intro: "The numbers that do not flatter us sit on the same page as the ones that do.",
-      scan: "Our smart contract scan found 8 of 105 known findings in its first 15 hypotheses, on contests that were no longer secret. It missed 97. In the sealed run the earlier versions found 1 and 4.",
-      pinned: "In 29 of the 109 repositories we could not tell whether dependencies are pinned, so they count neither way.",
+      scan: "Our smart contract scan found 8 of 105 known findings in its first 15 hypotheses, on contests that were no longer secret, after two changes at once. It missed 97. In the sealed run the earlier versions found 1 and 4.",
+      pinned: "In 29 of the 109 repositories we could not tell whether a lockfile is present, so they count neither way.",
       warnings: "The email warnings of the Signal log are not built yet.",
       scoreboard: "Scoreboard with every run",
     },
@@ -296,7 +296,7 @@ export const HOME: Record<Locale, HomeCopy> = {
     proof: {
       heading: "Tot op één regel.",
       body: "Zo werkt een logboek dat je kunt controleren zonder ons te vertrouwen. Elke regel bevat de hash van de regel ervoor, dus een oude regel veranderen, weghalen of verplaatsen valt op voor wie een eerdere kop van het logboek heeft bewaard. Ons Signal log werkt zo, en de tijdstempel van de kop komt van OpenTimestamps, dat buiten onze controle staat.",
-      sealed: "Onze smart-contractscan is getest op een verzegelde set auditwedstrijden. De set is vooraf met zijn hash vastgelegd, dus iedereen kan die hash zelf narekenen.",
+      sealed: "Onze smart-contractscan is getest op een verzegelde set auditwedstrijden. De set is vooraf met zijn hash vastgelegd, dus iedereen kan die hash zelf narekenen. De nieuwe versie haalde de lat niet die we vooraf zetten.",
       scoreboard: "Bekijk het scorebord",
     },
     brothers: {
@@ -322,7 +322,7 @@ export const HOME: Record<Locale, HomeCopy> = {
         },
         {
           chip: "gepland",
-          text: "Verzegelde dossiers: elke melding die we doen krijgt een datum en een vingerafdruk op een openbare lijst, zonder de inhoud. Zodra de reparatie er is publiceren we het dossier, en iedereen kan zien dat we het op die datum al hadden.",
+          text: "Gepland, nog niet live: elke melding die we doen krijgt dan een datum en een vingerafdruk op een openbare lijst, zonder de inhoud. Zodra de reparatie er is publiceren we het dossier, en iedereen kan dan zien dat we het op die datum al hadden.",
         },
       ],
       more: "Het hele dossier",
@@ -330,8 +330,8 @@ export const HOME: Record<Locale, HomeCopy> = {
     unknowns: {
       heading: "Wat we niet weten, en waar we misten.",
       intro: "De cijfers die ons niet flatteren staan op dezelfde pagina als de cijfers die dat wel doen.",
-      scan: "Onze smart-contractscan vond 8 van de 105 bekende bevindingen in zijn eerste 15 hypotheses, op wedstrijden die niet meer geheim waren. Hij miste er 97. In de verzegelde run vonden de eerdere versies er 1 en 4.",
-      pinned: "Bij 29 van de 109 repositories konden we niet zien of onderdelen zijn vastgezet, dus die tellen naar geen van beide kanten mee.",
+      scan: "Onze smart-contractscan vond 8 van de 105 bekende bevindingen in zijn eerste 15 hypotheses, op wedstrijden die niet meer geheim waren, na twee wijzigingen tegelijk. Hij miste er 97. In de verzegelde run vonden de eerdere versies er 1 en 4.",
+      pinned: "Bij 29 van de 109 repositories konden we niet zien of er een lockfile is, dus die tellen naar geen van beide kanten mee.",
       warnings: "De waarschuwingsmails van het Signal log zijn nog niet gebouwd.",
       scoreboard: "Scorebord met elke run",
     },
@@ -377,10 +377,10 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
       {
         id: "betrouwbaarheid",
         label: "Reliability",
-        title: "Every number says where to check it.",
+        title: "Our numbers say where to check them.",
         points: [
           "Each result lists the public pages that were asked for, and whether that worked.",
-          "The timestamp on our log can be checked without us.",
+          "The timestamp on a Signal log can be checked without us.",
           "Our misses sit on the same page as our hits.",
         ],
       },
@@ -396,11 +396,11 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
       },
       {
         id: "uniek",
-        label: "Unique",
-        title: "A history with dates we cannot move.",
+        label: "What sets us apart",
+        title: "Dates you can check without us.",
         points: [
-          "The timestamp of our log comes from OpenTimestamps, which is outside our control.",
-          "We publish what our scan missed: 97 of 105 known findings in that run.",
+          "The timestamp of a Signal log comes from OpenTimestamps, which is outside our control, and shows that the log existed by that date.",
+          "We publish what our scan missed: 97 of 105 known findings in its run on eight audit contests.",
         ],
       },
     ],
@@ -445,10 +445,10 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
       {
         id: "betrouwbaarheid",
         label: "Betrouwbaarheid",
-        title: "Bij elk getal staat waar je het nagaat.",
+        title: "Bij onze getallen staat waar je ze nagaat.",
         points: [
           "Elke uitslag noemt de openbare pagina's die zijn opgevraagd, en of dat lukte.",
-          "De tijdstempel op ons logboek is te controleren zonder ons.",
+          "De tijdstempel op een Signal log is zonder ons te controleren.",
           "Onze missers staan op dezelfde pagina als onze successen.",
         ],
       },
@@ -464,11 +464,11 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
       },
       {
         id: "uniek",
-        label: "Uniek",
-        title: "Een geschiedenis met data die wij niet kunnen verschuiven.",
+        label: "Wat ons onderscheidt",
+        title: "Datums die je zonder ons kunt nagaan.",
         points: [
-          "De tijdstempel van ons logboek komt van OpenTimestamps, dat buiten onze controle staat.",
-          "Wij publiceren wat onze scan miste: 97 van de 105 bekende bevindingen in die run.",
+          "De tijdstempel van een Signal log komt van OpenTimestamps, dat buiten onze controle staat, en laat zien dat het logboek op die datum al bestond.",
+          "Wij publiceren wat onze scan miste: 97 van de 105 bekende bevindingen in de run op acht auditwedstrijden.",
         ],
       },
     ],
@@ -487,7 +487,7 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
     },
     talk: {
       heading: "Praat met ons.",
-      body: "Begin met een gesprek over waar jij staat. Vraag naar onze metingen en we laten zien hoe elke is gemaakt.",
+      body: "Begin met een gesprek over waar jij staat. Vraag naar onze metingen en we laten zien hoe elke meting is gemaakt.",
       button: "Schrijf ons",
       secondary: "Wie wij zijn",
       subject: "Een gesprek",

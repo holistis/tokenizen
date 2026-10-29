@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { ScoreboardPage, resultText } from "@/components/pages/scoreboard-page";
 import { SCORE_RUNS, SCORE_RUNS_NL, SEALED_SET_HASH, TUNED_LABEL, TUNED_LABEL_NL, runText, tunedLabel } from "@/data/scoreboard";
 import { LocaleProvider, type Locale } from "@/i18n/context";
+import { readableText } from "@/test-utils/readable-text";
 
 const render = (locale: Locale) =>
   renderToStaticMarkup(
@@ -13,13 +14,7 @@ const render = (locale: Locale) =>
   );
 
 /** What a reader sees: the markup without its tags, with the few entities React writes turned back into characters. */
-const textOf = (html: string) =>
-  html
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&#x27;/g, "'")
-    .replace(/&quot;/g, '"')
-    .replace(/\s+/g, " ");
+const textOf = (html: string) => readableText(html);
 
 const escapeHtml = (s: string) => s.replace(/&/g, "&amp;").replace(/'/g, "&#x27;").replace(/"/g, "&quot;");
 
@@ -75,7 +70,7 @@ describe("ScoreboardPage", () => {
   it("keeps the English wording of the head, the intro and the notes as they were", () => {
     const text = textOf(html);
     expect(text).toContain(
-      "How many of the findings that human auditors already found in closed contests does our smart contract scan find? Each row links to the rule we wrote before the run and the result we wrote after it. A row without a result is empty on purpose.",
+      "How many of the findings that human auditors already found in closed contests does our smart contract scan find? Each row links to the result we wrote after the run. For the sealed run the rule was written down in public beforehand; for version 3.1 it is only in our own notes, and the row says so. A row without a result is empty on purpose.",
     );
     expect(text).toContain("Last updated 2026-10-25. Newest and still open rows first.");
     expect(text).toContain("Bug Bounty Intelligence · open scoreboard");
@@ -144,7 +139,7 @@ describe("ScoreboardPage in Dutch", () => {
     expect(text).toContain("geen bewijs");
     expect(text).toContain("trainingsdata");
     expect(text).toContain("De rechters zijn taalmodellen en wij hebben zelf belang bij de uitslag.");
-    expect(text).toContain("dus die is niet gehaald en de draaiende scan blijft in productie");
+    expect(text).toContain("dus die is niet gehaald en de draaiende scan bleef in productie");
     expect(text).toContain("deze rij is minder goed te controleren dan de verzegelde run");
   });
 

@@ -64,7 +64,7 @@ export const SELF_CHECK_COPY: Record<Locale, Copy> = {
       "Prove you control an endpoint with a free, live DNS or well-known-file check, the same ownership proof endpoint-attest uses, run directly in your browser.",
     chip: "free",
     h1: "Prove you own an endpoint. Free, live, no account.",
-    lead: "This runs the same ownership proof endpoint-attest uses: an ACME-style challenge (like every certificate authority already uses), checked live against your DNS or your own server the moment you click verify.",
+    lead: "This runs the same ownership proof endpoint-attest uses: an ACME-style challenge (the method certificate authorities such as Let's Encrypt use), checked live against your DNS or your own server the moment you click verify.",
     storageParagraph:
       "This does not store your endpoint, your address, or the result anywhere. Verification runs once, live, and nothing is written to a database. If verification unexpectedly fails right after you published the token correctly, this free service may simply have restarted. Request a fresh token and try again.",
     step1Title: "Step 1: get your verification token",
@@ -107,7 +107,7 @@ export const SELF_CHECK_COPY: Record<Locale, Copy> = {
       "Bewijs dat je een endpoint beheert met een gratis, live check via DNS of een well-known-bestand: hetzelfde eigenaarschapsbewijs dat endpoint-attest gebruikt, direct vanuit je browser uitgevoerd.",
     chip: "gratis",
     h1: "Bewijs dat een endpoint van jou is. Gratis, live, zonder account.",
-    lead: "Dit draait hetzelfde eigenaarschapsbewijs dat endpoint-attest gebruikt: een challenge in ACME-stijl, zoals elke certificate authority die al gebruikt, live gecontroleerd tegen je DNS of je eigen server op het moment dat je op verifiëren klikt.",
+    lead: "Dit draait hetzelfde eigenaarschapsbewijs dat endpoint-attest gebruikt: een challenge in ACME-stijl (de methode die certificaatuitgevers zoals Let's Encrypt gebruiken), live gecontroleerd tegen je DNS of je eigen server op het moment dat je op verifiëren klikt.",
     storageParagraph:
       "Deze check slaat je endpoint, je adres en de uitkomst nergens op. De verificatie draait één keer, live, en er wordt niets in een database geschreven. Als de verificatie onverwacht mislukt terwijl je het token correct hebt gepubliceerd, is deze gratis dienst misschien gewoon opnieuw gestart. Vraag dan een nieuw token aan en probeer het opnieuw.",
     step1Title: "Stap 1: haal je verificatietoken op",

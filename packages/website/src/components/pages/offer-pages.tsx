@@ -95,7 +95,7 @@ const CHECKS = {
       {
         href: "/cra-check",
         name: "Eight security signals in a GitHub repository",
-        text: "Name a public repository and see which of eight selected signals, related to topics in the EU Cyber Resilience Act, are visible in it: a security policy that names a contact, an SBOM, proof of where releases come from, pinned dependencies, automatic updates, a security scan, recent maintenance and a licence. It reads public pages only and stores no report.",
+        text: "Name a public repository and see which of eight selected signals, related to topics in the EU Cyber Resilience Act, are visible in it: a security policy that names a contact, an SBOM, proof of where releases come from, a lockfile, automatic updates, a security scan, recent maintenance and a licence. It reads public pages only and stores no report.",
       },
       {
         href: "/x402-check",
@@ -131,7 +131,7 @@ const CHECKS = {
       {
         href: "/cra-check",
         name: "Acht beveiligingssignalen in een GitHub-repository",
-        text: "Noem een openbare repository en zie welke van acht gekozen signalen, gerelateerd aan onderwerpen uit de Europese Cyber Resilience Act, erin zichtbaar zijn: een beveiligingsbeleid dat een contact noemt, een SBOM, bewijs waar releases vandaan komen, vastgezette onderdelen, automatische updates, een beveiligingsscan, recent onderhoud en een licentie. De check leest alleen openbare pagina's en bewaart geen rapport.",
+        text: "Noem een openbare repository en zie welke van acht gekozen signalen, gerelateerd aan onderwerpen uit de Europese Cyber Resilience Act, erin zichtbaar zijn: een beveiligingsbeleid dat een contact noemt, een SBOM, bewijs waar releases vandaan komen, een lockfile, automatische updates, een beveiligingsscan, recent onderhoud en een licentie. De check leest alleen openbare pagina's en bewaart geen rapport.",
       },
       {
         href: "/x402-check",
@@ -227,7 +227,7 @@ const SECURITY = {
     sealedText:
       "Reports under embargo cannot be shown. We plan to put each one on a public list with its date and a fingerprint, without its content. When the fix is out we publish the dossier, and anyone can recompute the fingerprint and see that we had it on that date. It is the same idea as our Signal log. It is not live yet.",
     notLabel: "What it is not",
-    notText: "Not a penetration test of your production systems and not a certificate. You get a written report with proof for each finding, privately.",
+    notText: "Not a penetration test of your production systems and not a certificate. You get a written report, privately, with the evidence we have for each finding and what is still open.",
     startLabel: "Start",
     subject: "Security research",
     write: "Write to us",
@@ -253,7 +253,7 @@ const SECURITY = {
     sealedText:
       "Meldingen onder embargo kunnen we niet tonen. We willen elk ervan op een openbare lijst zetten met zijn datum en een vingerafdruk, zonder de inhoud. Zodra de reparatie er is publiceren we het dossier, en iedereen kan de vingerafdruk narekenen en zien dat we het op die datum al hadden. Het is hetzelfde idee als ons Signal log. Het is nog niet live.",
     notLabel: "Wat het niet is",
-    notText: "Geen penetratietest van je productiesystemen en geen certificaat. Je krijgt een schriftelijk rapport met bewijs bij elke vondst, privé.",
+    notText: "Geen penetratietest van je productiesystemen en geen certificaat. Je krijgt privé een schriftelijk rapport, met het bewijs dat we per vondst hebben en wat nog open staat.",
     startLabel: "Start",
     subject: "Beveiligingsonderzoek",
     write: "Schrijf ons",
@@ -378,7 +378,7 @@ const TOOLS = {
     tools: [
       {
         name: "capacity-attest",
-        text: "After an x402 payment for capacity, the paying agent leaves a signed, factual claim of what was actually delivered. A record, not a score and not a verdict.",
+        text: "After an x402 payment for capacity, the paying agent leaves a signed claim of what it says was delivered. A record, not a score and not a verdict.",
         href: "https://www.npmjs.com/package/capacity-attest",
       },
       {
@@ -393,7 +393,7 @@ const TOOLS = {
       },
       {
         name: "muraqib-agent-watch",
-        text: "A free, instant capability check for any MCP server: it lists what the server can actually do (money, files, outbound messages, destructive actions, credentials) and flags tools that do not state their own safeguard.",
+        text: "A free, instant capability check for an MCP server: it lists what its tools say they can do (money, files, outbound messages, destructive actions, credentials) and flags tools that do not state their own safeguard.",
         href: "https://www.npmjs.com/package/muraqib-agent-watch",
       },
     ],
@@ -412,7 +412,7 @@ const TOOLS = {
     tools: [
       {
         name: "capacity-attest",
-        text: "Na een x402-betaling voor capaciteit laat de betalende agent een ondertekende, feitelijke claim achter van wat er echt is geleverd. Een vastlegging, geen score en geen oordeel.",
+        text: "Na een x402-betaling voor capaciteit laat de betalende agent een ondertekende claim achter van wat volgens hem is geleverd. Een vastlegging, geen score en geen oordeel.",
         href: "https://www.npmjs.com/package/capacity-attest",
       },
       {
@@ -427,7 +427,7 @@ const TOOLS = {
       },
       {
         name: "muraqib-agent-watch",
-        text: "Een gratis, directe capaciteitscheck voor elke MCP-server: hij laat zien wat de server echt kan (geld, bestanden, uitgaande berichten, destructieve acties, inloggegevens) en markeert tools die hun eigen beveiliging niet noemen.",
+        text: "Een gratis, directe capaciteitscheck voor een MCP-server: hij laat zien wat de tools zeggen te kunnen (geld, bestanden, uitgaande berichten, destructieve acties, inloggegevens) en markeert tools die hun eigen beveiliging niet noemen.",
         href: "https://www.npmjs.com/package/muraqib-agent-watch",
       },
     ],
@@ -503,7 +503,7 @@ const TALK = {
     getLabel: "Wat je krijgt",
     getText: "Een gesprek over beveiliging, de Europese Cyber Resilience Act of betalingen tussen agenten, met de broer die onze consultancy en communicatie doet.",
     checkLabel: "Zo ga je het na",
-    checkText: "Vraag naar onze metingen. We laten zien hoe elke is gemaakt en wat hij buiten beschouwing laat.",
+    checkText: "Vraag naar onze metingen. We laten zien hoe elke meting is gemaakt en wat ze buiten beschouwing laat.",
     notLabel: "Wat het niet is",
     notText: "Geen juridisch advies, geen certificaat en geen belofte van een uitkomst.",
     startLabel: "Start",

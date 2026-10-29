@@ -72,7 +72,7 @@ export const nl: Dictionary = {
         body: "Die begint blind bij dezelfde verkoper, zonder geschiedenis om op te checken vóór hij zelf betaalt.",
       },
       {
-        title: "Niemand legt de claim vast",
+        title: "Meestal geen vastlegging van de claim",
         body: "Zonder ondertekend spoor is er niets dat een belofte aan een geclaimde levering koppelt, laat staan iets dat een volgende koper kan controleren.",
       },
     ],
@@ -85,17 +85,17 @@ export const nl: Dictionary = {
       {
         date: "20 juli 2026",
         title: "EU Digital Product Passport-register live",
-        body: "De Europese Commissie opende het DPP-register; verplichte paspoorten volgen gefaseerd per productcategorie (batterijen vanaf feb. 2027). Bewijst dat een machineleesbaar, financiën-vrij asset-paspoort een reële EU-norm wordt, niet dat het nu al overal verplicht is.",
+        body: "De Europese Commissie opende het DPP-register; verplichte paspoorten volgen gefaseerd per productcategorie (batterijen vanaf feb. 2027). Dat laat zien dat een machineleesbaar productpaspoort zonder financiële functie een echte EU-norm wordt, niet dat het nu al overal verplicht is.",
       },
       {
-        date: "2 augustus 2026",
-        title: "EU AI Act, Artikel 14 in werking",
+        date: "regelgeving",
+        title: "EU AI Act, Artikel 14",
         body: "Hoog-risico AI-systemen moeten aantoonbaar door mensen te overzien zijn. Dat vraagt om een controleerbaar spoor van wat een autonome agent deed, precies het soort auditeerbaarheid waar Tokenizen op inspeelt, zonder dat wij zelf een Artikel 14-nalevingsclaim doen.",
       },
       {
         date: "doorlopend",
         title: "x402 en Google AP2 laten één vraag open",
-        body: "Coinbase (nu Linux Foundation) en Google bouwden de betaal- en autorisatie-rails. “Wat koop ik precies, en mag de verkoper dit leveren?” blijft onbeantwoord.",
+        body: "Coinbase en Google bouwden de betaal- en autorisatie-rails. “Wat koop ik precies, en mag de verkoper dit leveren?” blijft onbeantwoord.",
       },
     ],
   },
@@ -114,7 +114,7 @@ export const nl: Dictionary = {
       },
       {
         title: "get_delivery_history",
-        body: "Gegeven een `sellerAddress`: alle bekende, handtekening-geverifieerde claims tegen die verkoper, chronologisch. Puur feitelijk: geen gemiddelde, geen percentage, geen trust score.",
+        body: "Bij een `sellerAddress`: alle bekende, handtekening-geverifieerde claims tegen die verkoper, chronologisch. Puur feitelijk: geen gemiddelde, geen percentage, geen vertrouwensscore.",
       },
     ],
   },
@@ -143,7 +143,7 @@ export const nl: Dictionary = {
   howItWorks: {
     eyebrow: "Hoe het werkt",
     h2: "Vier stappen, geen tussenpersoon.",
-    body: "Tokenizen verifieert of settelt zelf geen betalingen, dat gebeurt al bij x402. De ledger registreert alleen de bon van een afwikkeling die al heeft plaatsgevonden.",
+    body: "Tokenizen verifieert zelf geen betalingen en wikkelt ze ook niet af, dat gebeurt al bij x402. Het grootboek registreert alleen de bon van een afwikkeling die al heeft plaatsgevonden.",
     steps: [
       {
         title: "Agent betaalt via x402",
@@ -151,7 +151,7 @@ export const nl: Dictionary = {
       },
       {
         title: "Koper tekent een claim",
-        body: "Na afwikkeling legt de betalende agent vast of het beloofde is aangekomen: yes / no / partial, plus een hash van het bewijs.",
+        body: "Na afwikkeling legt de betalende agent vast of het beloofde is aangekomen: ja / nee / gedeeltelijk, plus een hash van het bewijs.",
       },
       {
         title: "Claim naar de ledger",
@@ -166,19 +166,19 @@ export const nl: Dictionary = {
   boundaries: {
     eyebrow: "Ontwerpgrenzen",
     h2: "Bewust géén token, géén rente, géén lening.",
-    body: "Dit is geen marketing-truc. Het is een bewuste, harde ontwerpgrens, en een strategische: het houdt Tokenizen buiten de zwaarst gereguleerde en meest gehypte hoek van crypto. De grens is expliciet ingebakken in het schema en de documentatie, niet weggemoffeld.",
+    body: "Het is een bewuste, harde ontwerpgrens, en een strategische: het houdt Tokenizen buiten de zwaarst gereguleerde en meest gehypte hoek van crypto. De grens is expliciet ingebakken in het schema en de documentatie, niet weggemoffeld.",
     columns: [
       {
         label: "Wel: bouwen we",
         items: [
           "Verificatie van levering (delivered: yes/no/partial + evidence hash)",
-          "Append-only audit-trail, content-addressed, niet achteraf te wijzigen",
+          "Append-only audit-trail, content-addressed, dus een latere wijziging valt op",
           "MCP-tools om vóór betaling de geschiedenis van een verkoper te checken",
           "Echte capaciteitshandel: GPU-uren, opslag, API-credits, bandbreedte",
         ],
       },
       {
-        label: "Met guardrail",
+        label: "Met vangrail",
         items: [
           "Settlement is spot-only (direct afgewikkeld, nooit op krediet of termijn)",
           "Credits zijn inwisselbare vouchers voor capaciteit, geen verhandelbaar instrument",
@@ -186,11 +186,11 @@ export const nl: Dictionary = {
         ],
       },
       {
-        label: "Nooit: hardcoded uitgesloten",
+        label: "Nooit: vast uitgesloten",
         items: [
           "Geen eigen token of munt",
           "Geen leningen",
-          "Geen rente-op-betalingen",
+          "Geen rente op betalingen",
           "Geen factoring / invoice-financing",
           "Geen yield-producten",
         ],
@@ -200,7 +200,7 @@ export const nl: Dictionary = {
   openSource: {
     eyebrow: "Open source & voor developers",
     h2: "De code is er. En nu ook op npm.",
-    body: "`capacity-attest` is een MCP-server, geschreven in TypeScript, met een dekkende testsuite. Het package staat live op npm (huidige versie 0.2.0) en is geregistreerd in het officiële MCP-register als `io.github.holistis/capacity-attest`. Een agent kan de server direct aanroepen zonder eerst de repository te klonen.",
+    body: "`capacity-attest` is een MCP-server, geschreven in TypeScript, met een testsuite. Het pakket staat live op npm en is geregistreerd in het officiële MCP-register als `io.github.holistis/capacity-attest`. Een agent kan de server direct aanroepen zonder eerst de repository te klonen.",
     badges: {
       mit: "MIT-licentie",
       typescript: "TypeScript",
@@ -208,7 +208,7 @@ export const nl: Dictionary = {
       status: "live op npm",
     },
     npmLabel: "npmjs.com/package/capacity-attest",
-    installIntro: "Voor lokale ontwikkeling: clone de repository, installeer, bouw, en draai de meegeleverde end-to-end demo, die gebruikt een wegwerpbare test-wallet en raakt geen live infrastructuur aan.",
+    installIntro: "Voor lokale ontwikkeling: kloon de repository, installeer, bouw, en draai de meegeleverde end-to-end demo, die een wegwerp-testwallet gebruikt en raakt geen live infrastructuur aan.",
     localDevLabel: "lokale ontwikkeling",
     repoButton: "Repository op GitHub",
     terminalLabel: "installeren",
@@ -271,13 +271,13 @@ export const nl: Dictionary = {
       "kunt elke regel hierboven zelf narekenen.",
   },
   status: {
-    eyebrow: "Status, eerlijk",
+    eyebrow: "Status",
     h2: "Geen betalende klanten. Wel drie externe partijen die op het formaat bouwen, en werk dat anderen zelf hebben nagerekend.",
-    body: "Tokenizen is open source en in actieve ontwikkeling. Er zijn geen betalende klanten en geen partnerships, en dat zeggen we gewoon zo. Wat er wel is: drie partijen buiten dit project bouwen inmiddels op het claimformaat. Een van hen heeft onze verifier van de grond af opnieuw gebouwd in een andere taal en levert hem mee in zijn eigen pakket. Een ander noemt het measured-blok de bron van waarheid voor gemeten levering in zijn eigen conceptspecificatie, vastgepind op een commit van deze repo. Het volgende dat telt is de ondertekende testvectoren in een officiële conformance-set krijgen, zodat iedereen die later meedoet er langs moet.",
+    body: "Tokenizen is open source en in actieve ontwikkeling. Er zijn geen betalende klanten en geen samenwerkingen. Wat er wel is: drie partijen buiten dit project bouwen inmiddels op het claimformaat. Een van hen heeft onze verifier van de grond af opnieuw gebouwd in een andere taal en levert hem mee in zijn eigen pakket. Een ander noemt het measured-blok de bron van waarheid voor gemeten levering in zijn eigen conceptspecificatie, vastgepind op een commit van deze repo. Het volgende dat telt is de ondertekende testvectoren in een officiële conformance-set krijgen, zodat iedereen die later meedoet er langs moet.",
     checkpoints: [
       {
         title: "npm-publicatie",
-        body: "capacity-attest staat live op npm en in het MCP-register, op dit moment als 0.7.0, met 0.8.0 wachtend op een blokkade bij de registry.",
+        body: "capacity-attest staat live op npm en in het MCP-register.",
         achieved: true,
       },
       {
@@ -308,8 +308,8 @@ export const nl: Dictionary = {
       verificationLabel: "Bekijk de verificatie",
     },
     limitation: {
-      title: "Bewuste grens: de ledger is nog lokaal",
-      body: "`npm install capacity-attest` start standaard een lokale ledger per installatie (in te stellen via `CAPACITY_ATTEST_DATA_DIR`). Twee onafhankelijke installaties zien elkaars claims nog niet automatisch via die standaardinstelling; dat blijft de volgende bouwstap. Wat er intussen wél is, en live geverifieerd op Base mainnet: claims publiceren en terugvinden via de Ethereum Attestation Service, én een echte `giveFeedback()`-koppeling met de ERC-8004 Reputation Registry, zodat het leveringsfeit ook zichtbaar wordt op de plek waar honderdduizenden ERC-8004-agents al kijken. Beide zijn bewezen, opt-in bouwstenen: klaar om te gebruiken, nog niet automatisch actief tussen installaties.",
+      title: "Bekende grens: het grootboek is nog lokaal",
+      body: "`npm install capacity-attest` start standaard een lokaal grootboek per installatie (in te stellen via `CAPACITY_ATTEST_DATA_DIR`). Twee onafhankelijke installaties zien elkaars claims nog niet automatisch via die standaardinstelling; dat blijft de volgende bouwstap. Wat er intussen wél is, en live geverifieerd op Base mainnet: claims publiceren en terugvinden via de Ethereum Attestation Service, én een echte `giveFeedback()`-koppeling met de ERC-8004 Reputation Registry, zodat het leveringsfeit ook zichtbaar wordt in het ERC-8004 Reputation Registry. Beide zijn geteste, opt-in bouwstenen: klaar om te gebruiken, nog niet automatisch actief tussen installaties.",
     },
   },
   footer: {
@@ -323,7 +323,7 @@ export const nl: Dictionary = {
     legend: [
       { dot: "bg-rule-green", label: "wel: bouwen we" },
       { dot: "bg-rule-yellow", label: "met guardrail" },
-      { dot: "bg-rule-red", label: "nooit, hardcoded uitgesloten" },
+      { dot: "bg-rule-red", label: "nooit, vast uitgesloten" },
     ],
   },
   trustRadar: {

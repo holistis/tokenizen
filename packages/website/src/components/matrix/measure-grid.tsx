@@ -63,7 +63,7 @@ const LABELS: Record<GridLocale, Record<string, string>> = {
     stamp: "Gemeten op",
     rules: "regelversie",
     read: "Lees de notitie met de methode",
-    table: "Toon als tabel",
+    table: "Bekijk als tabel",
     signal: "Signaal",
     total: "Repositories",
   },

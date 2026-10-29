@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import { BUSINESS_LINE } from "@/components/footer";
 import { LEGAL_PAGES, LegalPage, PrivacyPage, SignalLogPage, TermsPage, linkify, parseLegalText } from "@/components/pages/legal-page";
 import { LocaleProvider, type Locale } from "@/i18n/context";
+import { readableText } from "@/test-utils/readable-text";
 
 import signalLog from "@/data/legal/signal-log.txt?raw";
 import terms from "@/data/legal/terms.txt?raw";
@@ -137,14 +138,7 @@ const render = (Page: () => ReactElement, locale: Locale) =>
   );
 
 /** What a reader reads: the markup without its tags (so a link in the middle of a sentence does not split it), the entities React writes turned back. */
-const readable = (html: string) =>
-  html
-    .replace(/<[^>]+>/g, "")
-    .replace(/&amp;/g, "&")
-    .replace(/&#x27;/g, "'")
-    .replace(/&quot;/g, '"')
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">");
+const readable = (html: string) => readableText(html, { gap: "", collapse: false });
 
 const NOTICE_NL = "Deze pagina staat voorlopig alleen in het Engels. Een Nederlandse vertaling volgt nog. Vragen? Mail info@tokenizen.nl.";
 
@@ -247,7 +241,7 @@ describe("the three pages in Dutch", () => {
   }
 
   it("names each page with its own Dutch chip", () => {
-    expect(render(SignalLogPage, "nl")).toContain(">early access<");
+    expect(render(SignalLogPage, "nl")).toContain(">vroege toegang<");
     expect(render(TermsPage, "nl")).toContain(">voorwaarden<");
     expect(render(PrivacyPage, "nl")).toContain(">privacy<");
   });

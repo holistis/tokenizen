@@ -46,10 +46,10 @@ const COPY: Record<Locale, Copy> = {
   en: {
     metaTitle: "Scoreboard | tokenizen",
     metaDescription:
-      "How many of the findings that human auditors already found in closed contests our smart contract scan finds. Every row links to the rule written before the run and the result after it.",
+      "How many of the findings that human auditors already found in closed contests our smart contract scan finds. Every row links to the result after the run. The rule written before the run is public for the sealed run; for version 3.1 it is only in our own notes.",
     chip: "public",
     title: "Scoreboard",
-    lead: "How many of the findings that human auditors already found in closed contests does our smart contract scan find? Each row links to the rule we wrote before the run and the result we wrote after it. A row without a result is empty on purpose.",
+    lead: "How many of the findings that human auditors already found in closed contests does our smart contract scan find? Each row links to the result we wrote after the run. For the sealed run the rule was written down in public beforehand; for version 3.1 it is only in our own notes, and the row says so. A row without a result is empty on purpose.",
     eyebrow: "Bug Bounty Intelligence · open scoreboard",
     updated: (date) => `Last updated ${date}. Newest and still open rows first.`,
     pending: "pending",
@@ -61,7 +61,7 @@ const COPY: Record<Locale, Copy> = {
         description: "What is counted, and by whom.",
         list: "ul",
         items: [
-          "A known finding is a unique valid High or Medium finding in the final report of a Sherlock contest. The number of wardens who found it is its difficulty: easy is found by 5 or more, middle by 3 or 4, hard by 1 or 2.",
+          "A known finding is a unique valid High or Medium finding in the final report of a Sherlock or Code4rena contest. The number of wardens who found it is its difficulty: easy is found by 5 or more, middle by 3 or 4, hard by 1 or 2.",
           "A hit counts only when two judges of different model families both name the same known finding for the same root cause. A person reads every disagreement.",
           <>
             The contests were split into a development set and a sealed set by sorting them on a hash that includes the hash of Base block{" "}
@@ -87,7 +87,7 @@ const COPY: Record<Locale, Copy> = {
         list: "ul",
         items: [
           "Open: the contests, the two judges and their check, the rules we wrote before each run, every output and every judge statement. Anyone can re-score them.",
-          "Private: how the scan finds things. Before the sealed run we published the SHA-256 of the files it uses, so they could not change afterwards.",
+          "Private: how the scan finds things. Before the sealed run we published the SHA-256 of the files it uses, so any later change would show.",
         ],
       },
       {
@@ -111,10 +111,10 @@ const COPY: Record<Locale, Copy> = {
   nl: {
     metaTitle: "Scorebord | tokenizen",
     metaDescription:
-      "Hoeveel van de bevindingen die menselijke auditors al vonden in afgesloten wedstrijden onze smart-contractscan vindt. Elke rij verwijst naar de regel die voor de run is opgeschreven en naar de uitslag erna.",
+      "Hoeveel van de bevindingen die menselijke auditors al vonden in afgesloten wedstrijden onze smart-contractscan vindt. Elke rij verwijst naar de uitslag na de run. De regel van vóór de run is bij de verzegelde run openbaar; voor versie 3.1 staat hij alleen in onze eigen notities.",
     chip: "openbaar",
     title: "Scorebord",
-    lead: "Hoeveel van de bevindingen die menselijke auditors al vonden in afgesloten wedstrijden vindt onze smart-contractscan? Elke rij verwijst naar de regel die we vóór de run opschreven en naar de uitslag die we erna opschreven. Een rij zonder uitslag is met opzet leeg.",
+    lead: "Hoeveel van de bevindingen die menselijke auditors al vonden in afgesloten wedstrijden vindt onze smart-contractscan? Elke rij verwijst naar de uitslag die we na de run opschreven. Bij de verzegelde run stond de regel vooraf openbaar opgeschreven; voor versie 3.1 staat hij alleen in onze eigen notities, en de rij zegt dat. Een rij zonder uitslag is met opzet leeg.",
     eyebrow: "Bug Bounty Intelligence · open scorebord",
     updated: (date) => `Laatst bijgewerkt op ${date}. Eerst de nieuwste rijen en de rijen die nog open staan.`,
     pending: "nog open",
@@ -126,7 +126,7 @@ const COPY: Record<Locale, Copy> = {
         description: "Wat er wordt geteld, en door wie.",
         list: "ul",
         items: [
-          "Een bekende bevinding is een unieke, geldige bevinding met ernst High of Medium in het eindrapport van een Sherlock-wedstrijd. Het aantal deelnemers dat een bevinding vond is de moeilijkheid ervan: makkelijk is gevonden door 5 of meer, gemiddeld door 3 of 4, moeilijk door 1 of 2.",
+          "Een bekende bevinding is een unieke, geldige bevinding met ernst High of Medium in het eindrapport van een Sherlock- of Code4rena-wedstrijd. Het aantal deelnemers dat een bevinding vond is de moeilijkheid ervan: makkelijk is gevonden door 5 of meer, gemiddeld door 3 of 4, moeilijk door 1 of 2.",
           "Een treffer telt alleen als twee rechters uit verschillende modelfamilies allebei dezelfde bekende bevinding noemen voor dezelfde grondoorzaak. Een mens leest elk meningsverschil na.",
           <>
             De wedstrijden zijn verdeeld in een ontwikkelset en een verzegelde set door ze te sorteren op een hash waarin de hash van blok {SEED_BLOCK.number} van
@@ -152,7 +152,7 @@ const COPY: Record<Locale, Copy> = {
         list: "ul",
         items: [
           "Open: de wedstrijden, de twee rechters en hun controle, de regels die we vóór elke run opschreven, elke uitvoer en elk oordeel van de rechters. Iedereen kan die opnieuw beoordelen.",
-          "Privé: hoe de scan dingen vindt. Vóór de verzegelde run publiceerden we de SHA-256 van de bestanden die hij gebruikt, zodat die daarna niet meer konden veranderen.",
+          "Privé: hoe de scan dingen vindt. Vóór de verzegelde run publiceerden we de SHA-256 van de bestanden die hij gebruikt, zodat elke latere wijziging zou opvallen.",
         ],
       },
       {

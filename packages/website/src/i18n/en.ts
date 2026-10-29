@@ -99,7 +99,7 @@ export const en: Dictionary = {
         "body": "They start blind with the same seller, with no history to check before they pay."
       },
       {
-        "title": "Nobody records the claim",
+        "title": "Usually no record of the claim",
         "body": "Without a signed record, there is nothing linking a promise to a claimed delivery, let alone anything the next buyer can verify."
       }
     ]
@@ -107,7 +107,7 @@ export const en: Dictionary = {
   "whyNow": {
     "eyebrow": "Why now",
     "h2": "Three developments converge this year.",
-    "body": "Nine domain scans (August 2026) show the same pattern: the buyer side of the agent economy gets all the attention. The seller side, and the object itself (the evidence), stays underexposed, exactly when regulation and payment rails are starting to call for it.",
+    "body": "In our own nine scans of August 2026 the pattern was the same: the buyer side of the agent economy gets all the attention. The seller side, and the object itself (the evidence), stays underexposed, exactly when regulation and payment rails are starting to call for it.",
     "reasons": [
       {
         "date": "July 20, 2026",
@@ -115,21 +115,21 @@ export const en: Dictionary = {
         "body": "The European Commission opened the DPP register; mandatory passports follow in phases per product category (batteries from Feb. 2027). This shows that a machine-readable, finance-free asset passport is becoming a real EU standard, not that it is already mandatory everywhere."
       },
       {
-        "date": "August 2, 2026",
-        "title": "EU AI Act, Article 14 in effect",
+        "date": "regulation",
+        "title": "EU AI Act, Article 14",
         "body": "High-risk AI systems must be demonstrably overseeable by humans. That calls for a verifiable record of what an autonomous agent did, exactly the kind of auditability Tokenizen addresses, without us making an Article 14 compliance claim ourselves."
       },
       {
         "date": "ongoing",
         "title": "x402 and Google AP2 leave one question open",
-        "body": "Coinbase (now Linux Foundation) and Google built the payment and authorization rails. \"What exactly am I buying, and is the seller allowed to deliver this?\" remains unanswered."
+        "body": "Coinbase and Google built the payment and authorization rails. \"What exactly am I buying, and is the seller allowed to deliver this?\" remains unanswered."
       }
     ]
   },
   "product": {
     "eyebrow": "Pillar 1: proof of delivery",
     "h2": "A receipt of what was delivered. No score, no verdict.",
-    "body": "Once an agent has paid, it records whether it got what was promised: yes, no, or partial. That receipt is signed and cannot be changed afterwards. Anyone who later wants to deal with that same seller can look up the history before paying.",
+    "body": "Once an agent has paid, it records whether it got what was promised: yes, no, or partial. That receipt is signed, so a later change to it shows. Anyone who later wants to deal with that same seller can look up the history before paying.",
     "codeLabelRecordCall": "MCP tool call → record_delivery",
     "codeLabelHistoryCall": "MCP tool call → get_delivery_history",
     "codeLabelResult": "response",
@@ -193,13 +193,13 @@ export const en: Dictionary = {
   "boundaries": {
     "eyebrow": "Design limits",
     "h2": "Deliberately no token, no interest, no loans.",
-    "body": "This is not a marketing trick. It is a deliberate, hard design boundary, and a strategic one: it keeps Tokenizen out of the most heavily regulated and most hyped corner of crypto. The boundary is explicitly built into the schema and the documentation, not glossed over.",
+    "body": "It is a deliberate, hard design boundary, and a strategic one: it keeps Tokenizen out of the most heavily regulated and most hyped corner of crypto. The boundary is explicitly built into the schema and the documentation, not glossed over.",
     "columns": [
       {
         "label": "Yes: we build",
         "items": [
           "Verification of delivery (delivered: yes/no/partial + evidence hash)",
-          "Append-only audit trail, content-addressed, cannot be altered after the fact",
+          "Append-only audit trail, content-addressed, so a later change shows",
           "MCP tools to check a seller's history before payment",
           "Real capacity trading: GPU-hours, storage, API credits, bandwidth"
         ]
@@ -227,7 +227,7 @@ export const en: Dictionary = {
   "openSource": {
     "eyebrow": "Open source & for developers",
     "h2": "The code is there. And now on npm too.",
-    "body": "`capacity-attest` is an MCP server, written in TypeScript, with a comprehensive test suite. The package is live on npm (current version 0.2.0) and is registered in the official MCP registry as `io.github.holistis/capacity-attest`. An agent can call the server directly without first cloning the repository.",
+    "body": "`capacity-attest` is an MCP server, written in TypeScript, with a test suite. The package is live on npm and is registered in the official MCP registry as `io.github.holistis/capacity-attest`. An agent can call the server directly without first cloning the repository.",
     "badges": {
       "mit": "MIT license",
       "typescript": "TypeScript",
@@ -275,13 +275,13 @@ export const en: Dictionary = {
     "footer": "Every line above carries a date and a way of measuring. If a number changes, the line changes and the date stays visible. That way you can see whether something is still true instead of having to assume it. The code and the raw output are at github.com/holistis/agent-receipt-verify, so you can recheck every line above yourself."
   },
   "status": {
-    "eyebrow": "Status, honestly",
+    "eyebrow": "Status",
     "h2": "No paying customers. Three outside parties building on the format, and work others checked themselves.",
-    "body": "Tokenizen is open source and in active development. There are no paying customers and no partnerships, and we say that plainly. What does exist: three parties outside this project now build on the claim format. One of them rebuilt our verifier from scratch in another language and ships it inside their own package. Another cites the measured block as the source of truth for metered delivery in their own draft specification, pinned to a commit of this repo. The next thing that counts is getting the signed test vectors into an official conformance set, so that anyone joining later has to pass them.",
+    "body": "Tokenizen is open source and in active development. There are no paying customers and no partnerships. What does exist: three parties outside this project now build on the claim format. One of them rebuilt our verifier from scratch in another language and ships it inside their own package. Another cites the measured block as the source of truth for metered delivery in their own draft specification, pinned to a commit of this repo. The next thing that counts is getting the signed test vectors into an official conformance set, so that anyone joining later has to pass them.",
     "checkpoints": [
       {
         "title": "npm publication",
-        "body": "capacity-attest is live on npm and in the MCP registry, currently at 0.7.0, with 0.8.0 waiting on a registry hold.",
+        "body": "capacity-attest is live on npm and in the MCP registry.",
         "achieved": true
       },
       {
@@ -313,7 +313,7 @@ export const en: Dictionary = {
     },
     "limitation": {
       "title": "Known limit: the ledger is still local",
-      "body": "`npm install capacity-attest` starts a local, per-installation ledger by default (configurable via `CAPACITY_ATTEST_DATA_DIR`). Two independent installations don't automatically see each other's claims through that default; that's still the next build step. What already exists in the meantime, live-verified on Base mainnet: publishing and finding claims via the Ethereum Attestation Service, and a real `giveFeedback()` connection to the ERC-8004 Reputation Registry, so the delivery fact also becomes visible where hundreds of thousands of ERC-8004 agents already look. Both are proven, opt-in building blocks: ready to use, not yet automatically active across installations."
+      "body": "`npm install capacity-attest` starts a local, per-installation ledger by default (configurable via `CAPACITY_ATTEST_DATA_DIR`). Two independent installations don't automatically see each other's claims through that default; that's still the next build step. What already exists in the meantime, live-verified on Base mainnet: publishing and finding claims via the Ethereum Attestation Service, and a real `giveFeedback()` connection to the ERC-8004 Reputation Registry, so the delivery fact also becomes visible in the ERC-8004 Reputation Registry. Both are tested, opt-in building blocks: ready to use, not yet automatically active across installations."
     }
   },
   "footer": {

@@ -137,12 +137,12 @@ export const LEGAL_PAGES = {
       metaDescription: "A weekly record of the security signals of your public GitHub repositories that you can check without us. Early access.",
     },
     nl: {
-      chip: "early access",
+      chip: "vroege toegang",
       title: "Signal log",
-      lead: "Het aanbod van het Signal log in early access: een wekelijks logboek van de beveiligingssignalen van je openbare GitHub-repositories, dat je zonder ons kunt controleren.",
-      metaTitle: "Signal log in early access | tokenizen",
+      lead: "Het aanbod van het Signal log in vroege toegang: een wekelijks logboek van de beveiligingssignalen van je openbare GitHub-repositories, dat je zonder ons kunt controleren.",
+      metaTitle: "Signal log in vroege toegang | tokenizen",
       metaDescription:
-        "Een wekelijks logboek van de beveiligingssignalen van je openbare GitHub-repositories, dat je zonder ons kunt controleren. Early access. De volledige tekst staat voorlopig alleen in het Engels.",
+        "Een wekelijks logboek van de beveiligingssignalen van je openbare GitHub-repositories, dat je zonder ons kunt controleren. Vroege toegang. De volledige tekst staat voorlopig alleen in het Engels.",
     },
   },
   terms: {
