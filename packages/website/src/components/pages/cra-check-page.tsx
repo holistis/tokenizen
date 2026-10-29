@@ -28,6 +28,7 @@ interface Copy {
   fieldLabel: string;
   placeholder: string;
   emptyError: string;
+  invalidError: string;
   genericError: string;
   button: string;
   whyThisExists: string;
@@ -64,6 +65,7 @@ const COPY: Record<Locale, Copy> = {
     fieldLabel: "Repository",
     placeholder: "owner/name",
     emptyError: "Type a public repository first, for example owner/name or https://github.com/owner/name",
+    invalidError: "That does not look like a public GitHub repository. Use owner/name or https://github.com/owner/name.",
     genericError: "Something went wrong. Please try again.",
     button: "Check this repository",
     whyThisExists:
@@ -108,6 +110,7 @@ const COPY: Record<Locale, Copy> = {
     fieldLabel: "Repository",
     placeholder: "owner/name",
     emptyError: "Typ eerst een openbare repository, bijvoorbeeld owner/name of https://github.com/owner/name",
+    invalidError: "Dat lijkt niet op een openbare GitHub-repository. Gebruik owner/name of https://github.com/owner/name.",
     genericError: "Er ging iets mis. Probeer het opnieuw.",
     button: "Check deze repository",
     whyThisExists:
@@ -162,6 +165,58 @@ export function clientErrorText(locale: Locale, message: string): string {
   const plain = /^The check service returned HTTP (\d{1,3})\.$/.exec(message);
   if (plain) return `De checkservice antwoordde met HTTP ${plain[1]}.`;
   return COPY.nl.genericError;
+}
+
+/**
+ * What the visitor typed, reduced to "owner/name", or null when it cannot be a GitHub repository. It mirrors parseRepo in the server
+ * (cra-repo-check.ts) and is a little more forgiving about the address (http, www, no scheme). The server still decides; this only keeps
+ * a typo from using up one of the few checks a visitor gets per ten minutes, and gives the answer at once.
+ */
+export function normaliseRepoInput(input: string): string | null {
+  const s = input
+    .trim()
+    .slice(0, 300)
+    .replace(/^(?:https?:\/\/)?(?:www\.)?github\.com\//i, "")
+    .replace(/\.git$/i, "")
+    .replace(/\/+$/, "");
+  const [owner = "", name = ""] = s.split("/");
+  if (!/^[A-Za-z0-9][A-Za-z0-9-]{0,38}$/.test(owner)) return null;
+  if (!/^[A-Za-z0-9_.-]{1,100}$/.test(name) || name === "." || name.includes("..")) return null;
+  return `${owner}/${name}`;
+}
+
+/** The fixed error sentences the server sends with an error answer (cra-check.ts, rate-limit.ts), in Dutch. A test ties every key to the server source. */
+export const SERVER_ERRORS_NL: Readonly<Record<string, string>> = {
+  "use a public GitHub repository as owner/repo, or its github.com address": "Gebruik een openbare GitHub-repository als owner/name, of het github.com-adres ervan.",
+  "that repository was not found, or it is not public": "Die repository is niet gevonden, of hij is niet openbaar.",
+  "that repository has been renamed or moved, please use its current name": "Die repository is hernoemd of verplaatst. Gebruik de huidige naam.",
+  "the checker is busy right now, please try again in a few seconds": "De check is nu even druk. Probeer het over een paar seconden opnieuw.",
+  "the checker is busy, please try again later": "De check is druk. Probeer het later opnieuw.",
+  "our access to GitHub is used up for the moment, please try again later": "Onze toegang tot GitHub is even op. Probeer het later opnieuw.",
+  "the check could not be completed, please try again later": "De check kon niet worden afgerond. Probeer het later opnieuw.",
+  "this check is not switched on on this server": "Deze check staat op dit moment uit.",
+};
+
+/** The sentence rate-limit.ts writes: the English skeleton is "rate limit exceeded: max ${max} requests per ${seconds}s". */
+const RATE_LIMIT_SENTENCE = /^rate limit exceeded: max (\d{1,4}) requests per (\d{1,6})s$/;
+
+/**
+ * The sentence the server sent with an error answer, as the visitor should read it. The rate limit sentence is turned into plain words in
+ * both languages. Other sentences keep the server's English in English, and become the mapped Dutch (or the generic Dutch sentence for an
+ * unknown one) in Dutch.
+ */
+export function serverErrorText(locale: Locale, message: string): string {
+  const limit = RATE_LIMIT_SENTENCE.exec(message);
+  if (limit) {
+    const max = limit[1];
+    const minutes = Math.max(1, Math.round(Number(limit[2]) / 60));
+    if (locale === "en") {
+      return `Too many checks from your connection: at most ${max} per ${minutes} ${minutes === 1 ? "minute" : "minutes"}. Wait a few minutes and try again.`;
+    }
+    return `Te veel checks vanaf jouw verbinding: maximaal ${max} per ${minutes} ${minutes === 1 ? "minuut" : "minuten"}. Wacht een paar minuten en probeer het opnieuw.`;
+  }
+  if (locale === "en") return message;
+  return SERVER_ERRORS_NL[message] ?? COPY.nl.genericError;
 }
 
 function useArticleMeta(title: string, description: string) {
@@ -317,12 +372,17 @@ export function CraCheckPage() {
       setError(copy.emptyError);
       return;
     }
+    const normalised = normaliseRepoInput(repo);
+    if (normalised === null) {
+      setError(copy.invalidError);
+      return;
+    }
     setLoading(true);
     setResult(null);
     try {
-      const answer = await checkCraRepo(repo.trim());
+      const answer = await checkCraRepo(normalised);
       if (answer.ok) setResult(answer);
-      else setError(answer.error);
+      else setError(serverErrorText(locale, answer.error));
     } catch (err) {
       setError(err instanceof CheckApiError ? clientErrorText(locale, err.message) : copy.genericError);
     } finally {
