@@ -1,7 +1,7 @@
 name: Site-wacht
 
 # The watcher of tokenizen.nl from the outside. It reads our own addresses (scripts/diensten.json) with GET requests and nothing else: no secret,
-# no payment, no write access. It runs in GitHub Actions, so not on the servers it watches. When something is red in three rounds a minute apart
+# no payment, no write access, no secret of ours (the only token is the read-only one GitHub gives every run, and it is sent to api.github.com only). It runs in GitHub Actions, so not on the servers it watches. When something is red in three rounds a minute apart
 # the job fails, and GitHub emails the person who last changed the schedule below. A run that does not happen at all is not seen by this file:
 # something outside it has to look at the time of the last run.
 on:
@@ -17,6 +17,7 @@ on:
 # Read only. The job has no reason to write anything, and a step that was changed under us would inherit nothing.
 permissions:
   contents: read
+  checks: read
 
 # A run that is still going is never cancelled by the next one; a cancelled night looks exactly like a green one.
 concurrency:
@@ -38,6 +39,7 @@ jobs:
 
       - name: Look from the outside
         env:
+          GITHUB_TOKEN: ${{ github.token }}
           SITE_WACHT_OEFENALARM: ${{ inputs.oefenalarm && '1' || '0' }}
         run: node scripts/site-wacht.mjs --json "$RUNNER_TEMP/status.json"
 
