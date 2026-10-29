@@ -2,7 +2,7 @@ Privacyverklaring
 
 Wie verantwoordelijk is (verwerkingsverantwoordelijke). AO Services, KvK 86816632, Eindhoven, Nederland. Privacyvragen: info@tokenizen.nl.
 
-De gratis checks op deze site. We lezen openbare pagina's van de repository, het adres of het domein dat je intypt. Rapporten worden niet bewaard. Een antwoord blijft maximaal een uur in het geheugen van de server, zodat dezelfde repository niet twee keer wordt gelezen, en de server logt geen repositorynamen. Onze netwerkleverancier (Cloudflare) en de server die de check draait verwerken je IP-adres om de pagina te leveren en misbruik te beperken (ons gerechtvaardigd belang bij een veilige dienst).
+De gratis checks op deze site. We lezen openbare pagina's van de repository, het adres of het domein dat je intypt. Rapporten worden niet bewaard. Een antwoord blijft maximaal een uur in het geheugen van de server, zodat dezelfde repository niet twee keer wordt gelezen, en de server logt geen repositorynamen. Voor elk antwoord schrijft de server één regel die zegt welke check het was, welke antwoordcode erbij hoorde en of het verzoek van onze eigen testclient kwam. Die regel bevat geen namen, adressen of andere gegevens waarmee je te herkennen bent, en we gebruiken hem alleen om te tellen hoe vaak de checks worden gebruikt. Onze netwerkleverancier (Cloudflare) en de server die de check draait verwerken je IP-adres om de pagina te leveren en misbruik te beperken (ons gerechtvaardigd belang bij een veilige dienst).
 
 Cookies. We plaatsen geen cookies en gebruiken geen analyse of tracking. Je browser bewaart je themakeuze (licht, donker of systeem) in de lokale opslag op je apparaat. De betaalpagina wordt beheerd door Stripe, die daar eigen cookies plaatst.
 

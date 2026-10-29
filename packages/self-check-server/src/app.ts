@@ -40,7 +40,7 @@
 //                                 sign an attestation.
 
 import cors from "cors";
-import express, { type Express, type NextFunction, type Request, type Response } from "express";
+import express, { type Express, type NextFunction, type Request, type RequestHandler, type Response } from "express";
 import { z } from "zod";
 import {
   ETH_ADDRESS_RE,
@@ -66,6 +66,7 @@ import { handleConformance } from "./x402-conformance.js";
 import { handleBadge, handleBadgeJson } from "./x402-badge.js";
 import { createX402Checker, handleX402Check, type X402CheckerOptions } from "./x402-check.js";
 import { createCraChecker, handleCraCheck, type CraCheckerOptions } from "./cra-check.js";
+import { usageLog, type UsageWriter } from "./usage-log.js";
 
 const DEFAULT_ALLOWED_ORIGINS = ["http://localhost:5173", "https://tokenizen.nl", "https://www.tokenizen.nl"];
 
@@ -128,6 +129,11 @@ export interface CreateAppOptions {
    * limit, 6 requests / 10 minutes by default. See cra-check.ts for the limits that sit behind it.
    */
   craCheck?: CraCheckerOptions & { rateLimit?: { windowMs: number; max: number } };
+  /**
+   * Where the one-line count of every free-check answer is written (usage-log.ts: route, status, own-client flag, nothing that identifies
+   * a visitor). Unset means nothing is written, which is what the tests want; server.ts sets it to the process log.
+   */
+  usageWriter?: UsageWriter;
 }
 
 const ChallengeBody = z.object({
@@ -307,6 +313,9 @@ export function createApp(options: CreateAppOptions = {}): Express {
   });
   const craChecker = createCraChecker(craCheckerOptions);
 
+  // The one-line count of free-check answers (usage-log.ts). Nothing is written unless the server gave a writer.
+  const counted = (route: string): RequestHandler[] => (options.usageWriter ? [usageLog(route, options.usageWriter)] : []);
+
   const app = express();
   app.disable("x-powered-by");
   // Decides how req.ip (the rate-limit key) is resolved. Default false; behind
@@ -343,12 +352,12 @@ export function createApp(options: CreateAppOptions = {}): Express {
   // The live twin of the badge: measures the visitor's own endpoint now. It is the one place that
   // reverses the badge's "never measure live" rule, on purpose and behind its own limiter plus the
   // per-host and global budgets inside the checker. See the header of x402-check.ts.
-  app.post("/api/x402/check", x402CheckLimiter, handleX402Check(x402Checker));
+  app.post("/api/x402/check", ...counted("x402"), x402CheckLimiter, handleX402Check(x402Checker));
 
   // The free CRA readiness check of a public GitHub repository. The visitor chooses an owner/repo pair, never
   // a host, and the egress is the same net-guard fetch. Behind its own limiter plus a global hourly budget and
   // a one hour cache inside the checker. See the header of cra-check.ts.
-  app.post("/api/cra/check", craCheckLimiter, handleCraCheck(craChecker));
+  app.post("/api/cra/check", ...counted("cra"), craCheckLimiter, handleCraCheck(craChecker));
 
   app.post("/api/challenge", challengeLimiter, async (req: Request, res: Response) => {
     const parsed = ChallengeBody.safeParse(req.body);

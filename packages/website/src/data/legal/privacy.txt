@@ -2,7 +2,7 @@ Privacy statement
 
 Who is responsible. AO Services, KvK 86816632, Eindhoven, the Netherlands. Privacy questions: info@tokenizen.nl.
 
-The free checks on this site. We read public pages of the repository, address or domain that you type. Reports are not stored. An answer stays in server memory for up to an hour so that the same repository is not read twice, and the server does not log repository names. Our network provider (Cloudflare) and the server that runs the check process your IP address to deliver the page and to limit abuse (our legitimate interest in keeping the service safe).
+The free checks on this site. We read public pages of the repository, address or domain that you type. Reports are not stored. An answer stays in server memory for up to an hour so that the same repository is not read twice, and the server does not log repository names. For every answer the server writes one line that says which check it was, the answer code and whether the request came from our own test client. The line holds no names, addresses or anything else that could identify you, and we use it only to count how often the checks are used. Our network provider (Cloudflare) and the server that runs the check process your IP address to deliver the page and to limit abuse (our legitimate interest in keeping the service safe).
 
 Cookies. We set no cookies and use no analytics or tracking. Your browser stores your theme choice (light, dark or system) in its local storage on your device. The payment page is run by Stripe, which sets its own cookies there.
 

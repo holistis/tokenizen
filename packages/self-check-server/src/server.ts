@@ -49,6 +49,8 @@ async function main(): Promise<void> {
     trustProxy,
     ...(allowedOrigins ? { allowedOrigins } : {}),
     craCheck: { enabled: craEnabled, ...(githubToken ? { githubToken } : {}) },
+    // One line per free-check answer: route, status, own-client flag. Nothing that identifies a visitor (see usage-log.ts).
+    usageWriter: (line) => console.log(line),
   });
   // HOST narrows the interface it listens on. Unset keeps the old behaviour (all interfaces). Behind a
   // proxy that sets X-Forwarded-For, set HOST=127.0.0.1 so nobody can reach the port directly and send
