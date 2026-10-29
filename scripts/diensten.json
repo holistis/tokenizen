@@ -1,0 +1,41 @@
+{
+  "versie": 1,
+  "uitleg": "De lijst van wat de bewaker van buitenaf bekijkt. Alleen GET-verzoeken, nooit een betaling, nooit een bestelling. Wijzigen kan alleen met een pull request die de eigenaar merget; de bewaker schrijft deze lijst nooit zelf.",
+  "sites": ["https://tokenizen.nl", "https://api.tokenizen.nl", "https://x402.tokenizen.nl"],
+  "x402": {
+    "url": "https://x402.tokenizen.nl/api/bug-intel",
+    "betaaladres": "0x015Eb036560216B3051339061FF68A207E0fe88f",
+    "netwerk": "eip155:8453",
+    "bedrag": "5000000",
+    "bron": "https://tokenizen.nl/notes/official-sources"
+  },
+  "api": { "gezondheid": "https://api.tokenizen.nl/api/health" },
+  "betaallinks": [
+    "https://buy.stripe.com/00w9AT6cM2hZ7A79ib3oA05",
+    "https://buy.stripe.com/9B6aEX30A3m3g6D3XR3oA06",
+    "https://buy.stripe.com/eVq5kD0Ss8Gn2fN9ib3oA07",
+    "https://buy.stripe.com/28EeVdfNm4q7dYv7a33oA08"
+  ],
+  "npm": ["capacity-attest", "agent-receipt-verify", "@alghanima/x402-lint", "muraqib-agent-watch"],
+  "inhoud": {
+    "moetErInStaan": [
+      "We find the leaks.",
+      "Wij vinden de lekken.",
+      "9.95 euro per month",
+      "9,95 euro per maand",
+      "Onderdelenlijst (SBOM)",
+      "Eindhoven, the Netherlands",
+      "Eindhoven, Nederland"
+    ],
+    "magErNietInStaan": [
+      "Lochemstraat",
+      "5651 EL",
+      "Nobody records the claim",
+      "hundreds of thousands of ERC-8004",
+      "current version 0.2.0",
+      "we cannot move"
+    ]
+  },
+  "kanarie": "tokenizen-kanarie-onzin-48291",
+  "tlsMinimaleDagen": 14
+}
