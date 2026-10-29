@@ -35,7 +35,7 @@ const NOT_SENTENCES = new Set([
 ]);
 
 /** Dutch that is deliberately the same as the English (a technical term). */
-const SAME_IN_DUTCH = new Set(["Software bill of materials (SBOM)"]);
+const SAME_IN_DUTCH = new Set<string>();
 
 const TOP_LEVEL_SENTENCES = ["RULES_BASIS", "ELSEWHERE", "SETTINGS"];
 

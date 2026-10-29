@@ -23,7 +23,7 @@ const WHERE_NL = " (het beleid dat GitHub toont voor alle repositories van deze 
 export const PHRASES: Readonly<Record<string, string>> = {
   // The topic of each signal.
   "Reporting channel and policy for vulnerabilities": "Meldkanaal en beleid voor kwetsbaarheden",
-  "Software bill of materials (SBOM)": "Software bill of materials (SBOM)",
+  "Software bill of materials (SBOM)": "Onderdelenlijst (SBOM)",
   "Provenance of releases": "Herkomst van releases",
   "Pinned dependencies": "Vastgezette afhankelijkheden",
   "Automatic updates of components": "Automatische updates van componenten",
