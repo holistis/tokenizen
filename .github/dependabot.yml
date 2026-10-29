@@ -5,6 +5,12 @@
 # Minor and patch updates arrive as ONE grouped pull request per ecosystem per week, and
 # dependabot-auto-merge.yml lets GitHub merge that one once the required check is green.
 # Major updates stay separate and are never merged by a machine: a person reads them first.
+#
+# Parked on purpose (checked 29 October 2026, revisit around 1 December 2026): the website cannot take React 19, Vite 8
+# or lucide-react 1 yet. With them npm installs a second copy of React for lucide-react, 70 website tests fail with
+# "Objects are not valid as a React child", and @tailwindcss/vite and vitest still pull their own Vite 6. lucide-react 1
+# also dropped the brand icons the site uses. Listing them here keeps the pull request list honest instead of full of
+# proposals that cannot pass.
 version: 2
 updates:
   - package-ecosystem: npm
@@ -17,6 +23,21 @@ updates:
         update-types:
           - minor
           - patch
+    ignore:
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/react-dom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "lucide-react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "vite"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@vitejs/plugin-react"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
