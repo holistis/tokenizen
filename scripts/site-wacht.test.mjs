@@ -12,6 +12,7 @@ import {
   draai,
   eenRonde,
   haal,
+  npmAdres,
   openbaarOverzicht,
   oordeelApi,
   oordeelBetaallinks,
@@ -45,7 +46,7 @@ function wereld(wijziging = {}) {
       tekst: JSON.stringify({ x402Version: 2, accepts: [{ scheme: "exact", network: config.x402.netwerk, amount: config.x402.bedrag, payTo: config.x402.betaaladres }] }),
     },
   };
-  for (const naam of config.npm) goed[`https://registry.npmjs.org/${encodeURIComponent(naam).replace("%40", "@")}/latest`] = { status: 200, location: "", paymentRequired: "", tekst: '{"version":"1.2.3"}' };
+  for (const naam of config.npm) goed[npmAdres(naam)] = { status: 200, location: "", paymentRequired: "", tekst: '{"version":"1.2.3"}' };
   const wereldMap = { ...goed, ...wijziging };
   return {
     haal: async (url) => wereldMap[url] ?? { fout: "onbekend adres in de proefwereld" },

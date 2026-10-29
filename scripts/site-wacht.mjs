@@ -192,9 +192,12 @@ export async function eenRonde(config, { haal: lees = haal, tlsDagen: tlsLees = 
   r.push(oordeelApi(await lees(config.api.gezondheid)));
   r.push(oordeelBetaalroute(await lees(config.x402.url), config.x402));
   for (const host of config.sites.map((s) => new URL(s).hostname)) r.push(oordeelTls(host, await tlsLees(host), config.tlsMinimaleDagen));
-  for (const naam of config.npm) r.push(oordeelNpm(naam, await lees(`https://registry.npmjs.org/${encodeURIComponent(naam).replace("%40", "@")}/latest`)));
+  for (const naam of config.npm) r.push(oordeelNpm(naam, await lees(npmAdres(naam))));
   return r;
 }
+
+/** The registry address of a package. A scoped name keeps its @ and writes the slash as %2F; the names come from our own list. */
+export const npmAdres = (naam) => `https://registry.npmjs.org/${naam.replace(/\//g, "%2F")}/latest`;
 
 const wachtMs = (ms) => new Promise((klaar) => setTimeout(klaar, ms));
 
