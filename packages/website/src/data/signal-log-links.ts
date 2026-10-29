@@ -2,6 +2,10 @@
 // Created, read back and switched on on 29 October 2026. The prices behind them are the ones of the approved offer text
 // (src/data/legal/signal-log.txt): Solo 9.95 euro per month or 99 euro per year, Team 29.95 euro per month or 299 euro per year, VAT included.
 
+// The customer portal of Stripe (log in with the email address used to subscribe): a subscriber sees the invoices, updates the payment method and
+// cancels the subscription there, at the end of the period that is paid for. The terms promise exactly this ("cancel at any time in the customer portal").
+export const SIGNAL_LOG_PORTAL = "https://billing.stripe.com/p/login/5kQ9ATat21dVaMj8e73oA00";
+
 export const SIGNAL_LOG_LINKS = {
   solo: {
     month: "https://buy.stripe.com/00w9AT6cM2hZ7A79ib3oA05",
