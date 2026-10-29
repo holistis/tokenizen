@@ -19,7 +19,7 @@
 //   - at most eight checks busy at once, and every request aborted when the deadline passes
 //   - a result is cached for CACHE_TTL_MS, one host gets at most HOST_MAX live measurements per
 //     hour and the whole server at most GLOBAL_MAX per hour, on top of the per-IP limit in app.ts
-//   - nothing is stored. The cache lives in memory and dies with the process. No URL is logged.
+//   - no result is stored. The cache lives in memory and dies with the process. No URL is logged. One count line per answer is written (usage-log.ts).
 //
 // TWO CHECKS FROM ONE RESPONSE. The measurement is agent-receipt-verify's ladder (levels 0 to 2,
 // the ones that need no payment), and the buyer check runs @x402/core's real parsePaymentRequired
@@ -294,7 +294,7 @@ const LIMITS = [
   "This check never pays. Levels 3 to 5 of the ladder need a real settlement and are reported as not measured, which is not the same as failed.",
   "It looks at what the endpoint answers to one anonymous request. It cannot see whether the seller's own signer can settle a payment.",
   "REST-style x402 routes only. For an MCP server with paid tools, use the command line tool.",
-  "The result is a snapshot with a date. Nothing is stored on our side.",
+  "The result is a snapshot with a date. No result is stored on our side.",
 ];
 
 const STATUS_FROM_METER: Record<string, Status> = { HAALT: "pass", HAALT_NIET: "fail", ONGEMETEN: "not_measured" };

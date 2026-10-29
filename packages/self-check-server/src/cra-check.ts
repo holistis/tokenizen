@@ -25,7 +25,7 @@
 //     costs one API call, so it draws on a separate, larger budget and gives its slot back.
 //   - hostile text in a repository (file names, release asset names): cut and stripped of control characters
 //     before it goes anywhere, and the page renders it as a text node.
-// Nothing is stored. The cache lives in memory and dies with the process. No repository name is logged.
+// No report is stored. The cache lives in memory and dies with the process. No repository name is logged. One count line per answer is written (usage-log.ts).
 
 import { z } from "zod";
 import type { Request as ExpressRequest, Response as ExpressResponse } from "express";

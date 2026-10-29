@@ -100,7 +100,7 @@ const CHECKS = {
       {
         href: "/x402-check",
         name: "Free x402 endpoint check",
-        text: "Paste the URL of an x402 route you run and see, from one anonymous request that never pays, whether the payment request passes the official buyer schema and how far up the receipt ladder it gets. Nothing is stored.",
+        text: "Paste the URL of an x402 route you run and see, from one anonymous request that never pays, whether the payment request passes the official buyer schema and how far up the receipt ladder it gets. No result is stored.",
       },
       {
         href: "/check",
@@ -136,7 +136,7 @@ const CHECKS = {
       {
         href: "/x402-check",
         name: "Gratis x402-endpointcheck",
-        text: "Plak de URL van een x402-route die je zelf draait en zie, na één anoniem verzoek dat nooit betaalt, of het betaalverzoek door het officiële koperschema komt en hoe hoog het op de receipt-ladder komt. Er wordt niets bewaard.",
+        text: "Plak de URL van een x402-route die je zelf draait en zie, na één anoniem verzoek dat nooit betaalt, of het betaalverzoek door het officiële koperschema komt en hoe hoog het op de receipt-ladder komt. Er wordt geen resultaat bewaard.",
       },
       {
         href: "/check",

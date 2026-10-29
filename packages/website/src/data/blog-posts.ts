@@ -899,7 +899,7 @@ The sampling script is bench/cra-benchmark.mjs in github.com/holistis/tokenizen,
       {
         type: "cta",
         heading: "Try it on your own repository",
-        text: "Name a public GitHub repository and see which of the eight signals are visible in it. It is free and nothing is stored.",
+        text: "Name a public GitHub repository and see which of the eight signals are visible in it. It is free, and reports are not stored.",
         links: [
           { label: "The free check", href: "https://tokenizen.nl/en/cra-check" },
           { label: "The benchmark script", href: "https://github.com/holistis/tokenizen/blob/main/packages/self-check-server/bench/cra-benchmark.mjs" },

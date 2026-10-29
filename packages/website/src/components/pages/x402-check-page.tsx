@@ -69,7 +69,7 @@ export const X402_CHECK_COPY: Record<Locale, Copy> = {
     schemaParagraph:
       "Two answers come from that one response. First: does the payment request pass the official x402 schema, the check a real buyer client runs before it pays. A request that fails it is usually not recognised as a payment request at all, and the seller sees no error. Second: how far up the receipt ladder you get, for the levels that need no payment.",
     storageParagraph:
-      "We store nothing. The answer is kept in memory for two minutes so that a double click does not hit your server twice. A route can be checked a limited number of times per hour, and you may check only routes you run or have permission to test.",
+      "We do not store the result. The answer is kept in memory for two minutes so that a double click does not hit your server twice. A route can be checked a limited number of times per hour, and you may check only routes you run or have permission to test.",
     routeTitle: "Your route",
     routeHint: "A public https URL on the standard port. IP addresses and internal names are refused.",
     urlLabel: "Endpoint URL",
@@ -122,7 +122,7 @@ export const X402_CHECK_COPY: Record<Locale, Copy> = {
     schemaParagraph:
       "Uit dat ene antwoord komen twee uitkomsten. Ten eerste: komt het betaalverzoek door het officiële x402-schema, de controle die een echte koperclient doet voordat er betaald wordt. Een verzoek dat daar niet doorheen komt, wordt meestal helemaal niet als betaalverzoek herkend, en de verkoper ziet geen enkele foutmelding. Ten tweede: hoe hoog je op de receipt-ladder komt, voor de niveaus waarvoor je niets hoeft te betalen.",
     storageParagraph:
-      "We slaan niets op. Het antwoord blijft twee minuten in het geheugen staan, zodat een dubbele klik je server niet twee keer raakt. Een route kan een beperkt aantal keer per uur worden gecontroleerd, en je mag alleen routes controleren die je zelf draait of waarvoor je toestemming hebt om ze te testen.",
+      "We slaan het resultaat niet op. Het antwoord blijft twee minuten in het geheugen staan, zodat een dubbele klik je server niet twee keer raakt. Een route kan een beperkt aantal keer per uur worden gecontroleerd, en je mag alleen routes controleren die je zelf draait of waarvoor je toestemming hebt om ze te testen.",
     routeTitle: "Jouw route",
     routeHint: "Een openbare https-URL op de standaardpoort. IP-adressen en interne namen worden geweigerd.",
     urlLabel: "Endpoint-URL",
