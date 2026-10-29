@@ -132,14 +132,14 @@
     },
     "/cra-check": {
       "lang": "en",
-      "title": "Free check of eight security signals in a GitHub repository, related to the EU Cyber Resilience Act | tokenizen",
+      "title": "Free CRA check: 8 security signals in a GitHub repo | tokenizen",
       "description": "Name a public GitHub repository and see which of eight selected security signals, related to topics in the EU Cyber Resilience Act, are visible in it, and what would make the rest visible. An indication, not a compliance check. Free, read only, no reports stored.",
       "canonical": "https://tokenizen.nl/cra-check",
       "ogLocale": "en_US",
       "ogUrl": "https://tokenizen.nl/cra-check",
-      "ogTitle": "Free check of eight security signals in a GitHub repository, related to the EU Cyber Resilience Act | tokenizen",
+      "ogTitle": "Free CRA check: 8 security signals in a GitHub repo | tokenizen",
       "ogDescription": "Name a public GitHub repository and see which of eight selected security signals, related to topics in the EU Cyber Resilience Act, are visible in it, and what would make the rest visible. An indication, not a compliance check. Free, read only, no reports stored.",
-      "twitterTitle": "Free check of eight security signals in a GitHub repository, related to the EU Cyber Resilience Act | tokenizen",
+      "twitterTitle": "Free CRA check: 8 security signals in a GitHub repo | tokenizen",
       "twitterDescription": "Name a public GitHub repository and see which of eight selected security signals, related to topics in the EU Cyber Resilience Act, are visible in it, and what would make the rest visible. An indication, not a compliance check. Free, read only, no reports stored.",
       "alternates": [
         {
@@ -314,14 +314,14 @@
     },
     "/nl/cra-check": {
       "lang": "nl",
-      "title": "Gratis check van acht beveiligingssignalen in een GitHub-repository, verwant aan de EU Cyber Resilience Act | tokenizen",
+      "title": "Gratis CRA-check van 8 beveiligingssignalen | tokenizen",
       "description": "Geef een openbare GitHub-repository op en zie welke van acht gekozen beveiligingssignalen, verwant aan onderwerpen uit de EU Cyber Resilience Act, erin zichtbaar zijn en wat de rest zichtbaar zou maken. Een indicatie, geen toets op naleving. Gratis, alleen lezen, geen rapporten opgeslagen.",
       "canonical": "https://tokenizen.nl/nl/cra-check",
       "ogLocale": "nl_NL",
       "ogUrl": "https://tokenizen.nl/nl/cra-check",
-      "ogTitle": "Gratis check van acht beveiligingssignalen in een GitHub-repository, verwant aan de EU Cyber Resilience Act | tokenizen",
+      "ogTitle": "Gratis CRA-check van 8 beveiligingssignalen | tokenizen",
       "ogDescription": "Geef een openbare GitHub-repository op en zie welke van acht gekozen beveiligingssignalen, verwant aan onderwerpen uit de EU Cyber Resilience Act, erin zichtbaar zijn en wat de rest zichtbaar zou maken. Een indicatie, geen toets op naleving. Gratis, alleen lezen, geen rapporten opgeslagen.",
-      "twitterTitle": "Gratis check van acht beveiligingssignalen in een GitHub-repository, verwant aan de EU Cyber Resilience Act | tokenizen",
+      "twitterTitle": "Gratis CRA-check van 8 beveiligingssignalen | tokenizen",
       "twitterDescription": "Geef een openbare GitHub-repository op en zie welke van acht gekozen beveiligingssignalen, verwant aan onderwerpen uit de EU Cyber Resilience Act, erin zichtbaar zijn en wat de rest zichtbaar zou maken. Een indicatie, geen toets op naleving. Gratis, alleen lezen, geen rapporten opgeslagen.",
       "alternates": [
         {

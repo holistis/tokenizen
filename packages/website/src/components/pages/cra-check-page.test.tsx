@@ -165,8 +165,11 @@ describe("craPageMeta", () => {
   it("has a title and a description in each language, without long dashes", () => {
     const en = craPageMeta("en");
     const nl = craPageMeta("nl");
-    expect(en.title).toContain("Free check of eight security signals");
-    expect(nl.title).toContain("Gratis check van acht beveiligingssignalen");
+    expect(en.title).toContain("Free CRA check");
+    expect(nl.title).toContain("Gratis CRA-check");
+    // Search engines show about 60 characters; the audit of our own pages flagged a title over 70.
+    expect(en.title.length).toBeLessThanOrEqual(70);
+    expect(nl.title.length).toBeLessThanOrEqual(70);
     expect(nl.description).toContain("geen toets op naleving");
     expect(nl.description).not.toBe(en.description);
     for (const text of [en.title, en.description, nl.title, nl.description]) {

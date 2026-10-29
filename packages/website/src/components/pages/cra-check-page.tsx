@@ -49,7 +49,7 @@ interface Copy {
 
 const COPY: Record<Locale, Copy> = {
   en: {
-    title: "Free check of eight security signals in a GitHub repository, related to the EU Cyber Resilience Act | tokenizen",
+    title: "Free CRA check: 8 security signals in a GitHub repo | tokenizen",
     description:
       "Name a public GitHub repository and see which of eight selected security signals, related to topics in the EU Cyber Resilience Act, are visible in it, and what would make the rest visible. An indication, not a compliance check. Free, read only, no reports stored.",
     chip: "free",
@@ -94,7 +94,7 @@ const COPY: Record<Locale, Copy> = {
     sourcesIntro: "These are the public pages our server asked for, and what came of each. Open them and compare.",
   },
   nl: {
-    title: "Gratis check van acht beveiligingssignalen in een GitHub-repository, verwant aan de EU Cyber Resilience Act | tokenizen",
+    title: "Gratis CRA-check van 8 beveiligingssignalen | tokenizen",
     description:
       "Geef een openbare GitHub-repository op en zie welke van acht gekozen beveiligingssignalen, verwant aan onderwerpen uit de EU Cyber Resilience Act, erin zichtbaar zijn en wat de rest zichtbaar zou maken. Een indicatie, geen toets op naleving. Gratis, alleen lezen, geen rapporten opgeslagen.",
     chip: "gratis",
