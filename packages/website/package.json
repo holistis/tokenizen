@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && node scripts/check-agent-files.mjs",
+    "build": "tsc -b && vite build && node scripts/prerender-heads.mjs && node scripts/check-agent-files.mjs",
+    "share-heads-capture": "node scripts/share-heads-capture.mjs",
     "check-agent-files": "node scripts/check-agent-files.mjs",
     "typecheck": "tsc -b --noEmit",
     "preview": "vite preview",
