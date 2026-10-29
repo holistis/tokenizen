@@ -207,6 +207,8 @@ test("the deploy check: success is green, a failure is red, a running or cancell
   assert.equal(oordeelUitrol(antwoord([run("cancelled", "2026-10-29T08:00:00Z")]), naam).stand, ONBEKEND);
   assert.equal(oordeelUitrol(antwoord([{ name: "iets anders", status: "completed", conclusion: "failure", started_at: "2026-10-29T08:00:00Z" }]), naam).stand, ONBEKEND, "another check does not count");
   assert.equal(oordeelUitrol(antwoord([], 403), naam).stand, ONBEKEND, "a refused read is never green");
+  assert.equal(naam, "Workers Builds: tokenizen", "the watcher follows the worker that serves tokenizen.nl");
+  assert.equal(oordeelUitrol(antwoord([{ name: "Workers Builds: tokenizen-website", status: "completed", conclusion: "failure", started_at: "2026-10-29T08:00:00Z" }]), naam).stand, ONBEKEND, "the old worker's check no longer counts");
   assert.equal(oordeelUitrol({ fout: "x" }, naam).stand, ONBEKEND);
   assert.equal(oordeelUitrol({ status: 200, tekst: "geen json" }, naam).stand, ONBEKEND);
 });
