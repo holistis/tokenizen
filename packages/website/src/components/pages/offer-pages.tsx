@@ -311,7 +311,7 @@ const SCAN = {
     strip: "8 of 105 known findings found, 97 missed",
     board: "Open the scoreboard",
     notLabel: "What it is not",
-    notText: "It is not an audit and gives no guarantee that a contract is safe. It missed 97 of 105 known findings in that run.",
+    notText: "It is not an audit and gives no guarantee that a contract is safe. What it finds and what it misses is on the public scoreboard.",
   },
   nl: {
     chip: "per scan betalen",
@@ -329,7 +329,7 @@ const SCAN = {
     strip: "8 van de 105 bekende bevindingen gevonden, 97 gemist",
     board: "Open het scorebord",
     notLabel: "Wat het niet is",
-    notText: "Geen audit en geen garantie dat een contract veilig is. Hij miste 97 van de 105 bekende bevindingen in die run.",
+    notText: "Geen audit en geen garantie dat een contract veilig is. Wat hij vindt en wat hij mist staat op het openbare scorebord.",
   },
 };
 
