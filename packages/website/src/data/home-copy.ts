@@ -199,8 +199,8 @@ export const HOME: Record<Locale, HomeCopy> = {
       ctaPrimary: "Check your repository",
       ctaSecondary: "See what we offer",
       chips: [
-        { value: "0 of 600", label: "live x402 services we sampled sign a receipt. Ours does, and you can verify it", href: "/notes/zero-of-600-x402-services-sign-a-receipt" },
-        { value: "733,203", label: "withdrawn attestations counted, about 15 percent of 4,986,045 in the three largest EAS indexers", href: "/notes/733203-attestations-were-taken-back" },
+        { value: "0 of 600", label: "live x402 resources in our October sample sign a receipt. Ours does, and you can verify it", href: "/notes/zero-of-600-x402-services-sign-a-receipt" },
+        { value: "On-chain", label: "one real AI-agent payment on Base mainnet, with the commands to check it yourself", href: "/notes/check-pay-prove" },
         { value: "109", label: "public repositories in ten EU countries measured on eight security signals, our misses published", href: "/notes/eight-security-signals-109-repositories" },
       ],
     },
@@ -272,8 +272,8 @@ export const HOME: Record<Locale, HomeCopy> = {
       ctaPrimary: "Check jouw repository",
       ctaSecondary: "Bekijk ons aanbod",
       chips: [
-        { value: "0 van 600", label: "live x402-diensten in onze steekproef ondertekenen een bonnetje. De onze wel, en je kunt het zelf nagaan", href: "/notes/zero-of-600-x402-services-sign-a-receipt" },
-        { value: "733.203", label: "ingetrokken attestaties geteld, ongeveer 15 procent van 4.986.045 in de drie grootste EAS-indexeerders", href: "/notes/733203-attestations-were-taken-back" },
+        { value: "0 van 600", label: "live x402-resources in onze steekproef van oktober ondertekenen een bonnetje. De onze wel, en je kunt het zelf nagaan", href: "/notes/zero-of-600-x402-services-sign-a-receipt" },
+        { value: "Op de keten", label: "één echte betaling van een AI-agent op Base mainnet, met de commando's om het zelf na te gaan", href: "/notes/check-pay-prove" },
         { value: "109", label: "openbare repositories in tien EU-landen gemeten op acht beveiligingssignalen, onze missers gepubliceerd", href: "/notes/eight-security-signals-109-repositories" },
       ],
     },
