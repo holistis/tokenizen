@@ -11,6 +11,10 @@
 # "Objects are not valid as a React child", and @tailwindcss/vite and vitest still pull their own Vite 6. lucide-react 1
 # also dropped the brand icons the site uses. Listing them here keeps the pull request list honest instead of full of
 # proposals that cannot pass.
+#
+# Also parked (their own checks fail, 29 October 2026, revisit around 1 December 2026): vitest 5, TypeScript 7 and undici 8. undici sits in net-guard,
+# the one place all outgoing requests of the API pass, so it is read by a person before it moves. @types/node stays on the major of the Node that runs the
+# server (22), so the compiler cannot allow an API the server does not have.
 version: 2
 updates:
   - package-ecosystem: npm
@@ -37,6 +41,14 @@ updates:
       - dependency-name: "vite"
         update-types: ["version-update:semver-major"]
       - dependency-name: "@vitejs/plugin-react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "vitest"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "undici"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: "/"
