@@ -80,7 +80,7 @@ export const nl: Dictionary = {
   whyNow: {
     eyebrow: "Waarom nu",
     h2: "Drie ontwikkelingen vallen dit jaar samen.",
-    body: "Uit negen domeinscans (augustus 2026) volgt hetzelfde patroon: de koperskant van de agent-economie krijgt alle aandacht. De verkoperskant en het object zelf (het bewijs) blijft onderbelicht, precies op het moment dat regelgeving en betaalrails er wél om vragen.",
+    body: "In onze eigen negen scans van augustus 2026 was het patroon hetzelfde: de koperskant van de agent-economie krijgt alle aandacht. De verkoperskant en het object zelf (het bewijs) blijft onderbelicht, precies op het moment dat regelgeving en betaalrails er wél om vragen.",
     reasons: [
       {
         date: "20 juli 2026",
@@ -102,7 +102,7 @@ export const nl: Dictionary = {
   product: {
     eyebrow: "Pijler 1: bewijs van levering",
     h2: "Een bonnetje van wat er geleverd is. Geen cijfer, geen oordeel.",
-    body: "Zodra een agent betaald heeft, legt hij vast of hij kreeg wat beloofd was: ja, nee, of gedeeltelijk. Dat bonnetje wordt ondertekend en kan daarna niet meer worden veranderd. Wie later met diezelfde verkoper zaken wil doen, kan die geschiedenis opvragen voordat hij betaalt.",
+    body: "Zodra een agent betaald heeft, legt hij vast of hij kreeg wat beloofd was: ja, nee, of gedeeltelijk. Dat bonnetje wordt ondertekend, dus een latere wijziging valt op. Wie later met diezelfde verkoper zaken wil doen, kan die geschiedenis opvragen voordat hij betaalt.",
     codeLabelRecordCall: "MCP tool-call → record_delivery",
     codeLabelHistoryCall: "MCP tool-call → get_delivery_history",
     codeLabelResult: "antwoord",

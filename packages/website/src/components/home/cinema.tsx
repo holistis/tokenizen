@@ -65,6 +65,9 @@ export function useReveal<T extends HTMLElement>() {
   useEffect(() => {
     const el = ref.current;
     if (!el || reduced() || typeof IntersectionObserver === "undefined") return;
+    // A block that is already on screen when the page opens must not blink (visible, hidden, faded back in): it stays as it is.
+    // Only blocks below the fold fade in when they scroll into view.
+    if (el.getBoundingClientRect().top < window.innerHeight) return;
     el.dataset.armed = "true";
     const io = new IntersectionObserver(
       (entries) => {

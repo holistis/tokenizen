@@ -70,7 +70,7 @@ describe("ScoreboardPage", () => {
   it("keeps the English wording of the head, the intro and the notes as they were", () => {
     const text = textOf(html);
     expect(text).toContain(
-      "How many of the findings that human auditors already found in closed contests does our smart contract scan find? Each row links to the result we wrote after the run. For the sealed run the rule was written down in public beforehand; for version 3.1 it is only in our own notes, and the row says so. A row without a result is empty on purpose.",
+      "How many of the findings that human auditors already found in closed contests does our smart contract scan find? Rows link to their results and, where one exists, to the pre-registration written before the run. A row without that link has no public rule from before the run: for version 3.1 the rule is only in our own notes, and the row says so. A row without a result is empty on purpose.",
     );
     expect(text).toContain("Last updated 2026-10-25. Newest and still open rows first.");
     expect(text).toContain("Bug Bounty Intelligence · open scoreboard");

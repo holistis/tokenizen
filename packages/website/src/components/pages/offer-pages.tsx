@@ -307,7 +307,7 @@ const SCAN = {
     sources: "Price and payment address: the official sources",
     checkLabel: "How you check it",
     checkText:
-      "The public scoreboard lists every run with its result. In the sealed run the rule was written down in public before it; for version 3.1 it is only in our own notes, so that row is less verifiable. Version 3.1 found 8 of 105 known findings in its first 15 hypotheses, on the same eight contests as our sealed run, which were no longer secret by then, after two changes at once. In the sealed run the earlier versions found 1 and 4. Each square below is one known finding.",
+      "The public scoreboard lists every run. Where a row links to a pre-registration, the rule was written down in public before the run; for version 3.1 the rule is only in our own notes, so that row is less verifiable. Version 3.1 found 8 of 105 known findings in its first 15 hypotheses, on the same eight contests as our sealed run, which were no longer secret by then, after two changes at once. In the sealed run the earlier versions found 1 and 4. Each square below is one known finding.",
     strip: "8 of 105 known findings found, 97 missed",
     board: "Open the scoreboard",
     notLabel: "What it is not",
@@ -325,7 +325,7 @@ const SCAN = {
     sources: "Prijs en betaaladres: de officiële bronnen",
     checkLabel: "Zo ga je het na",
     checkText:
-      "Het openbare scorebord noemt elke run met zijn resultaat. Bij de verzegelde run stond de regel vooraf openbaar opgeschreven; voor versie 3.1 staat hij alleen in onze eigen notities, dus die rij is minder goed na te gaan. Versie 3.1 vond 8 van de 105 bekende bevindingen in zijn eerste 15 hypotheses, op dezelfde acht wedstrijden als onze verzegelde run, die toen niet meer geheim waren, na twee wijzigingen tegelijk. In de verzegelde run vonden de eerdere versies er 1 en 4. Elk vierkantje hieronder is één bekende bevinding.",
+      "Het openbare scorebord noemt elke run. Waar een rij naar een preregistratie verwijst, stond de regel vooraf openbaar opgeschreven; voor versie 3.1 staat de regel alleen in onze eigen notities, dus die rij is minder goed na te gaan. Versie 3.1 vond 8 van de 105 bekende bevindingen in zijn eerste 15 hypotheses, op dezelfde acht wedstrijden als onze verzegelde run, die toen niet meer geheim waren, na twee wijzigingen tegelijk. In de verzegelde run vonden de eerdere versies er 1 en 4. Elk vierkantje hieronder is één bekende bevinding.",
     strip: "8 van de 105 bekende bevindingen gevonden, 97 gemist",
     board: "Open het scorebord",
     notLabel: "Wat het niet is",

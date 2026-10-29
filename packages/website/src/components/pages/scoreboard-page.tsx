@@ -46,10 +46,10 @@ const COPY: Record<Locale, Copy> = {
   en: {
     metaTitle: "Scoreboard | tokenizen",
     metaDescription:
-      "How many of the findings that human auditors already found in closed contests our smart contract scan finds. Every row links to the result after the run. The rule written before the run is public for the sealed run; for version 3.1 it is only in our own notes.",
+      "How many of the findings that human auditors already found in closed contests our smart contract scan finds. Rows link to their results and, where one exists, to the pre-registration written before the run. Version 3.1 has no public rule from before the run: it is only in our own notes.",
     chip: "public",
     title: "Scoreboard",
-    lead: "How many of the findings that human auditors already found in closed contests does our smart contract scan find? Each row links to the result we wrote after the run. For the sealed run the rule was written down in public beforehand; for version 3.1 it is only in our own notes, and the row says so. A row without a result is empty on purpose.",
+    lead: "How many of the findings that human auditors already found in closed contests does our smart contract scan find? Rows link to their results and, where one exists, to the pre-registration written before the run. A row without that link has no public rule from before the run: for version 3.1 the rule is only in our own notes, and the row says so. A row without a result is empty on purpose.",
     eyebrow: "Bug Bounty Intelligence · open scoreboard",
     updated: (date) => `Last updated ${date}. Newest and still open rows first.`,
     pending: "pending",
@@ -111,10 +111,10 @@ const COPY: Record<Locale, Copy> = {
   nl: {
     metaTitle: "Scorebord | tokenizen",
     metaDescription:
-      "Hoeveel van de bevindingen die menselijke auditors al vonden in afgesloten wedstrijden onze smart-contractscan vindt. Elke rij verwijst naar de uitslag na de run. De regel van vóór de run is bij de verzegelde run openbaar; voor versie 3.1 staat hij alleen in onze eigen notities.",
+      "Hoeveel van de bevindingen die menselijke auditors al vonden in afgesloten wedstrijden onze smart-contractscan vindt. Rijen verwijzen naar hun uitslag en, waar die er is, naar de preregistratie die voor de run is opgeschreven. Versie 3.1 heeft geen openbare regel van vóór de run: hij staat alleen in onze eigen notities.",
     chip: "openbaar",
     title: "Scorebord",
-    lead: "Hoeveel van de bevindingen die menselijke auditors al vonden in afgesloten wedstrijden vindt onze smart-contractscan? Elke rij verwijst naar de uitslag die we na de run opschreven. Bij de verzegelde run stond de regel vooraf openbaar opgeschreven; voor versie 3.1 staat hij alleen in onze eigen notities, en de rij zegt dat. Een rij zonder uitslag is met opzet leeg.",
+    lead: "Hoeveel van de bevindingen die menselijke auditors al vonden in afgesloten wedstrijden vindt onze smart-contractscan? Rijen verwijzen naar hun uitslag en, waar die er is, naar de preregistratie die voor de run is opgeschreven. Een rij zonder die link heeft vooraf geen openbare regel: bij versie 3.1 staat de regel alleen in onze eigen notities, en de rij zegt dat. Een rij zonder uitslag is met opzet leeg.",
     eyebrow: "Bug Bounty Intelligence · open scorebord",
     updated: (date) => `Laatst bijgewerkt op ${date}. Eerst de nieuwste rijen en de rijen die nog open staan.`,
     pending: "nog open",

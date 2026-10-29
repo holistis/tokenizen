@@ -200,6 +200,8 @@ describe("the words", () => {
       "current version 0.2.0",
       "currently at 0.7.0",
       "article 14 in effect",
+      "niet meer worden veranderd",
+      "uit negen domeinscans",
     ];
     for (const phrase of forbidden) expect(all.includes(phrase), phrase).toBe(false);
   });
