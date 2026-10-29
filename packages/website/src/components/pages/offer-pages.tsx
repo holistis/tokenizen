@@ -298,12 +298,12 @@ const SCAN = {
   en: {
     chip: "pay per scan",
     title: "Smart contract scan",
-    lead: "A scan that returns hypotheses for you to review. It finds some of what a human audit finds, and we publish how much.",
+    lead: "A security scan of smart contract code: it returns possible weak spots for you to check. It finds some of what a human audit finds, and we publish how much.",
     metaTitle: "Smart contract scan | tokenizen",
     metaDescription: "A smart contract scan with a public scoreboard that includes what it missed. Pay per scan over x402.",
     getLabel: "What you get",
     getText:
-      "A report of AI-generated hypotheses about your contract, to be reviewed by hand. The quick scan costs 1 dollar and returns the first 15 hypotheses; the full scan costs 5 dollars. You pay in USDC on Base over x402. A scan takes about 20 to 45 seconds.",
+      "A report of AI-generated hypotheses about the Solidity code in a public GitHub repository, to be reviewed by hand. The quick scan costs 1 dollar and returns the 15 hypotheses the model is most sure about, usually within a minute or two. The full scan costs 5 dollars, adds 15 less certain ones, and is usually done within the hour. You pay in USDC on Base over x402, so you need an x402 client and USDC: paying by card or invoice is not possible yet. Before you pay, a free check tells you how much of your code the scan will read: https://x402.tokenizen.nl/api/bug-intel/precheck?repo=owner/name",
     sources: "Price and payment address: the official sources",
     checkLabel: "How you check it",
     checkText:
@@ -316,12 +316,12 @@ const SCAN = {
   nl: {
     chip: "per scan betalen",
     title: "Smart-contractscan",
-    lead: "Een scan die hypotheses teruggeeft om na te lopen. Hij vindt een deel van wat een menselijke audit vindt, en we publiceren hoeveel.",
+    lead: "Een beveiligingsscan van smart-contractcode: hij geeft mogelijke zwakke plekken terug om na te lopen. Hij vindt een deel van wat een menselijke audit vindt, en we publiceren hoeveel.",
     metaTitle: "Smart-contractscan | tokenizen",
     metaDescription: "Een smart-contractscan met een openbaar scorebord dat ook laat zien wat hij miste. Betaal per scan via x402.",
     getLabel: "Wat je krijgt",
     getText:
-      "Een rapport met door AI bedachte hypotheses over jouw contract, om met de hand na te lopen. De snelle scan kost 1 dollar en geeft de eerste 15 hypotheses; de volledige scan kost 5 dollar. Je betaalt in USDC op Base via x402. Een scan duurt ongeveer 20 tot 45 seconden.",
+      "Een rapport met door AI bedachte hypotheses over de Solidity-code in een openbare GitHub-repository, om met de hand na te lopen. De snelle scan kost 1 dollar en geeft de 15 hypotheses waar het model het zekerst van is, meestal binnen een minuut of twee. De volledige scan kost 5 dollar, voegt 15 minder zekere toe en is meestal binnen het uur klaar. Je betaalt in USDC op Base via x402, dus je hebt een x402-programma en USDC nodig: betalen met kaart of op factuur kan nog niet. Voor je betaalt vertelt een gratis check hoeveel van je code de scan leest: https://x402.tokenizen.nl/api/bug-intel/precheck?repo=eigenaar/naam",
     sources: "Prijs en betaaladres: de officiële bronnen",
     checkLabel: "Zo ga je het na",
     checkText:

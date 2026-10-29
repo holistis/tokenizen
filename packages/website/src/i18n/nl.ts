@@ -19,7 +19,7 @@ export const nl: Dictionary = {
     mobileNavLabel: "Mobiele navigatie",
     links: [
       { href: "/signal-log", label: "Signal log" },
-      { href: "/scan", label: "Scan" },
+      { href: "/scan", label: "Contractscan" },
       { href: "/security", label: "Beveiliging" },
       { href: "/tools", label: "Gereedschap" },
       { href: "/notes", label: "Notities" },
