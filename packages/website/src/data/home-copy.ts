@@ -193,15 +193,15 @@ export const HOME: Record<Locale, HomeCopy> = {
   en: {
     hero: {
       eyebrow: "tokenizen.nl · Eindhoven",
-      h1a: "We find the leaks.",
-      h1b: "We publish the numbers.",
-      body: "Security research, free checks and a log with a timestamp outside our control. We measured 109 public repositories on eight security signals, and we publish our misses too.",
+      h1a: "Everyone makes claims.",
+      h1b: "We make ours checkable.",
+      body: "Security research, free checks and a log with a timestamp outside our control. Each number below links to how we got it, with the commands, the limits and our misses.",
       ctaPrimary: "Check your repository",
       ctaSecondary: "See what we offer",
       chips: [
-        { value: "109", label: "public repositories measured", href: "/notes/eight-security-signals-109-repositories" },
-        { value: "8", label: "signals per repository", href: "/cra-check" },
-        { value: "1", label: "published High advisory, our account credited", href: ADVISORY_URL },
+        { value: "0 of 600", label: "live x402 services we sampled sign a receipt. Ours does, and you can verify it", href: "/notes/zero-of-600-x402-services-sign-a-receipt" },
+        { value: "733,203", label: "withdrawn attestations counted, about 15 percent of 4,986,045 in the three largest EAS indexers", href: "/notes/733203-attestations-were-taken-back" },
+        { value: "109", label: "public repositories in ten EU countries measured on eight security signals, our misses published", href: "/notes/eight-security-signals-109-repositories" },
       ],
     },
     offers: {
@@ -266,15 +266,15 @@ export const HOME: Record<Locale, HomeCopy> = {
   nl: {
     hero: {
       eyebrow: "tokenizen.nl · Eindhoven",
-      h1a: "Wij vinden de lekken.",
-      h1b: "Wij publiceren de cijfers.",
-      body: "Beveiligingsonderzoek, gratis checks en een logboek met een tijdstempel buiten onze controle. We maten 109 openbare repositories op acht beveiligingssignalen, en onze missers publiceren we ook.",
+      h1a: "Iedereen beweert wat.",
+      h1b: "Bij ons kun je het nameten.",
+      body: "Beveiligingsonderzoek, gratis checks en een logboek met een tijdstempel buiten onze controle. Elk getal hieronder linkt naar hoe we eraan kwamen, met de commando's, de grenzen en onze missers.",
       ctaPrimary: "Check jouw repository",
       ctaSecondary: "Bekijk ons aanbod",
       chips: [
-        { value: "109", label: "openbare repositories gemeten", href: "/notes/eight-security-signals-109-repositories" },
-        { value: "8", label: "signalen per repository", href: "/cra-check" },
-        { value: "1", label: "gepubliceerd advisory met ernst High, ons account als melder", href: ADVISORY_URL },
+        { value: "0 van 600", label: "live x402-diensten in onze steekproef ondertekenen een bonnetje. De onze wel, en je kunt het zelf nagaan", href: "/notes/zero-of-600-x402-services-sign-a-receipt" },
+        { value: "733.203", label: "ingetrokken attestaties geteld, ongeveer 15 procent van 4.986.045 in de drie grootste EAS-indexeerders", href: "/notes/733203-attestations-were-taken-back" },
+        { value: "109", label: "openbare repositories in tien EU-landen gemeten op acht beveiligingssignalen, onze missers gepubliceerd", href: "/notes/eight-security-signals-109-repositories" },
       ],
     },
     offers: {
