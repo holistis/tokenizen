@@ -166,8 +166,10 @@ export function oordeelBetaallinks(bundel, links) {
 // ---------------------------------------------------------------------------------------------------------------------------------
 // One round and the whole run.
 
-export async function eenRonde(config, { haal: lees = haal, tlsDagen: tlsLees = tlsDagen } = {}) {
+export async function eenRonde(config, { haal: lees = haal, tlsDagen: tlsLees = tlsDagen, oefenalarm = false } = {}) {
   const r = [];
+  // A drill: a red that is put there on purpose, to see that a failed run really reaches the owner. Only a person starts it, by hand.
+  if (oefenalarm) r.push(uitslag("oefenalarm", "bewaker", ROOD, "dit is een proef: een bewust rood alarm om te zien dat de mail de eigenaar bereikt"));
   const start = await lees("https://tokenizen.nl/");
   r.push(oordeelStartpagina(start));
 
@@ -242,7 +244,7 @@ async function main() {
     console.error("STOP: scripts/diensten.json is niet te lezen, dus de bewaker kan niets bekijken.");
     process.exit(2);
   }
-  const { uitslagen, bevestigdRood } = await draai(config);
+  const { uitslagen, bevestigdRood } = await draai(config, { oefenalarm: process.env.SITE_WACHT_OEFENALARM === "1" });
   for (const x of uitslagen) console.log(`${x.stand.toUpperCase().padEnd(9)} ${x.id}${x.reden ? `: ${x.reden}` : ""}`);
   const uit = process.argv.indexOf("--json");
   if (uit > -1 && process.argv[uit + 1]) writeFileSync(process.argv[uit + 1], JSON.stringify(openbaarOverzicht(uitslagen), null, 2) + "\n");
