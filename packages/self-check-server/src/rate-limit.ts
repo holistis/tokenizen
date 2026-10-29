@@ -35,6 +35,13 @@
 
 import type { NextFunction, Request, Response } from "express";
 
+/** What a route that answers a refusal itself gets to know. */
+export interface RateLimitInfo {
+  max: number;
+  windowSeconds: number;
+  retryAfterSeconds: number;
+}
+
 export interface RateLimitOptions {
   windowMs: number;
   max: number;
@@ -152,7 +159,14 @@ export function createRateLimiter(options: RateLimitOptions) {
 
     if (existing.count >= max) {
       const retryAfterMs = windowMs - (t - existing.windowStart);
-      res.setHeader("Retry-After", Math.max(1, Math.ceil(retryAfterMs / 1000)).toString());
+      const retryAfterSeconds = Math.max(1, Math.ceil(retryAfterMs / 1000));
+      res.setHeader("Retry-After", retryAfterSeconds.toString());
+      // A route that wants to answer in its own protocol (the MCP route answers with a tool result) sets res.locals.onRateLimited.
+      const custom = res.locals?.onRateLimited as ((info: RateLimitInfo) => void) | undefined;
+      if (typeof custom === "function") {
+        custom({ max, windowSeconds: Math.round(windowMs / 1000), retryAfterSeconds });
+        return;
+      }
       res.status(429).json({
         ok: false,
         error: `rate limit exceeded: max ${max} requests per ${Math.round(windowMs / 1000)}s`,

@@ -63,3 +63,11 @@ Configure with env vars: `PORT` (default `8787`), `ALLOWED_ORIGINS` (comma-separ
 ## Status
 
 Live at https://api.tokenizen.nl: Caddy in front, this service under its own unprivileged user behind it, deployed by hand (pull as the service user, build, restart the unit). The ownership routes and the paid route are older; the x402 check is new. The x402 check had an internal adversarial review before it went live. That is our own review, not an independent one, and no independent external review of this package has been done.
+
+## The CRA check as an MCP tool
+
+The same check is also an MCP tool at `POST /mcp` (`src/cra-mcp.ts`), so that an AI agent can ask for it without a browser. It is one read-only tool, `check_github_repo`, that takes `repo` (`owner/name` or its github.com address) and returns the same dated report as `POST /api/cra/check`, or a plain error. It goes through the same checker, so the limits behind the web page stand behind it too: the strict `owner/repo` pattern, the one hour cache, at most a few checks at once and the hourly budget for GitHub.
+
+Stateless: every request gets its own server and transport and nothing is kept between requests. Only `POST` is allowed (`GET` and `DELETE` answer 405) and a batch of messages is refused, because a batch could hold many tool calls under one request. A request that calls the tool uses the same limiter as the web route (six per ten minutes per address); connecting, listing tools and pings use a looser one (sixty per ten minutes), so an agent can look around without using up its checks. Answers are counted like the other free checks (`src/usage-log.ts`: route `mcp`, status, own-client flag; no address and no repository name).
+
+Try it with the MCP Inspector in its default proxy mode: `npx @modelcontextprotocol/inspector`, transport Streamable HTTP, URL `https://api.tokenizen.nl/mcp` (its direct-from-browser mode is not allowed by the CORS list). A tool call that is over the limit is answered as a tool result with `isError` and the wait in seconds, not as a bare HTTP 429. Only tool calls are counted as use. `server.json` in this folder is the entry for the official MCP registry.
