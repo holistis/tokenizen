@@ -100,11 +100,11 @@ describe("BlogPostPage", () => {
   // An English reader must stay on the English site when following an internal
   // link, and a Dutch reader on the Dutch one.
   it("keeps internal links in the reader's language", () => {
-    expect(renderPost("en")).toContain('href="/en/notes/zero-of-600-x402-services-sign-a-receipt"');
-    expect(renderPost("nl")).toContain('href="/notes/zero-of-600-x402-services-sign-a-receipt"');
+    expect(renderPost("en")).toContain('href="/notes/zero-of-600-x402-services-sign-a-receipt"');
+    expect(renderPost("nl")).toContain('href="/nl/notes/zero-of-600-x402-services-sign-a-receipt"');
     // The post is a blog, so its way back leads to the blog and not to the notes.
-    expect(renderPost("en")).toContain('href="/en/blog"');
-    expect(renderPost("nl")).toContain('href="/blog"');
+    expect(renderPost("en")).toContain('href="/blog"');
+    expect(renderPost("nl")).toContain('href="/nl/blog"');
   });
 });
 
@@ -112,7 +112,7 @@ describe("BlogIndex", () => {
   it("features the pinned blog and shows no mission", () => {
     const html = renderIndex("en");
     expect(html).toContain(post.title);
-    expect(html).toContain("/en/notes/check-pay-prove");
+    expect(html).toContain("/notes/check-pay-prove");
     expect(html).not.toContain(MISSION.headline);
     expect(html).toContain("Pinned");
   });

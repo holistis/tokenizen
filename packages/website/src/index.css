@@ -69,7 +69,7 @@
 
   --rule-green: #3f6b4a;
   --rule-green-soft: #e7eee6;
-  --rule-yellow: #8c6d22;
+  --rule-yellow: #7d6119;
   --rule-yellow-soft: #f2ecda;
   --rule-red: #8b4a3c;
   --rule-red-soft: #f3e7e3;
@@ -192,5 +192,434 @@
       padding-left: 2.5rem;
       padding-right: 2.5rem;
     }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   De Hoogtemeter: meetraster, cockpit-vlak en hoogtebalk.
+   Betekenis zit in vorm (vierkant, ring, streepje), nooit alleen in kleur.
+   --------------------------------------------------------------------------- */
+:root {
+  --altitude: #0a5c7a;
+  --cell-visible: var(--rule-green);
+  --cell-hidden: var(--rule-yellow);
+  --cell-none: #6b665b;
+  --cell-you: var(--altitude);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --altitude: #6cc4e0;
+    --cell-none: #8f897a;
+  }
+}
+
+:root.dark {
+  --altitude: #6cc4e0;
+  --cell-none: #8f897a;
+}
+
+/* Het cockpit-vlak is in beide thema's donker: het overzicht vanaf 1000 meter. De tokens worden hier overschreven,
+   dus alle gewone klassen (text-foreground, border-border, ...) binnen het vlak lezen de donkere waarden. */
+.panel {
+  --background: #0c1011;
+  --foreground: #ede8db;
+  --muted: #151b1c;
+  --muted-foreground: #b3ac9a;
+  --border: #26302f;
+  --primary: #6cc4e0;
+  --primary-foreground: #0c1011;
+  --ring: #6cc4e0;
+  --altitude: #6cc4e0;
+  --cell-visible: #7fae8a;
+  --cell-hidden: #d2ae5c;
+  --cell-none: #8f897a;
+  --cell-you: #6cc4e0;
+  --rule-green: #7fae8a;
+  --rule-yellow: #d2ae5c;
+  color: var(--foreground);
+  background-color: var(--background);
+  background-image:
+    linear-gradient(rgba(108, 196, 224, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(108, 196, 224, 0.07) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.cell-visible {
+  fill: var(--cell-visible);
+}
+.cell-hidden {
+  fill: none;
+  stroke: var(--cell-hidden);
+  stroke-width: 1.5;
+}
+.cell-none {
+  stroke: var(--cell-none);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+.cell-you {
+  fill: none;
+  stroke: var(--cell-you);
+  stroke-width: 1.2;
+  stroke-dasharray: 2 1.6;
+}
+
+/* De golf: elke cel komt een keer binnen als het raster in beeld komt. Zonder JavaScript en bij reduced-motion staat alles direct. */
+.grid-wave[data-armed="true"]:not([data-in="true"]) .cell {
+  opacity: 0;
+}
+.grid-wave[data-in="true"] .cell {
+  animation: cell-in 520ms ease-out both;
+  animation-delay: calc(var(--i) * 8ms);
+}
+.grid-wave .cell-you {
+  animation: you-pulse 2.8s ease-in-out infinite;
+}
+
+@keyframes cell-in {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes you-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.cell {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grid-wave[data-armed="true"]:not([data-in="true"]) .cell {
+    opacity: 1;
+  }
+  .grid-wave[data-in="true"] .cell,
+  .grid-wave .cell-you {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   De bioscoop: beeldvullende foto's met diepte, glas en licht. Net als .panel is dit vlak in beide thema's donker.
+   --------------------------------------------------------------------------- */
+.cinema {
+  --background: #06090a;
+  --foreground: #efe9dc;
+  --muted: #0f1517;
+  --muted-foreground: #b9b3a3;
+  --border: #232c2d;
+  --primary: #f5a524;
+  --primary-foreground: #06090a;
+  --ring: #f5a524;
+  --card: #0f1517;
+  --card-foreground: #efe9dc;
+  --input: #2c3738;
+  --rule-green: #7fae8a;
+  --rule-green-soft: #14211a;
+  --rule-yellow: #d2ae5c;
+  --rule-yellow-soft: #2e2818;
+  --rule-red: #c77e6c;
+  --rule-red-soft: #2e1f1b;
+  --altitude: #6cc4e0;
+  --cell-visible: #7fae8a;
+  --cell-hidden: #d2ae5c;
+  --cell-none: #8f897a;
+  --cell-you: #6cc4e0;
+  --glow: #f5a524;
+  --glow-2: #3fd6c4;
+  --soft: #d6d0c1;
+  color: var(--foreground);
+  background:
+    radial-gradient(1200px 600px at 85% -5%, rgba(63, 214, 196, 0.08), transparent 60%),
+    radial-gradient(900px 500px at 0% 45%, rgba(245, 165, 36, 0.06), transparent 60%), #06090a;
+  overflow-x: clip;
+}
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: min(calc(100svh - 4rem), 56rem);
+  padding-block: 4rem 3rem;
+}
+.hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  overflow: hidden;
+  animation: hero-zoom 40s ease-in-out infinite alternate;
+}
+.hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 60% 78%;
+  transform: translate3d(calc(var(--mx, 0) * -22px), calc(var(--my, 0) * -14px + var(--p, 0) * -3%), 0) scale(1.12);
+  transition: transform 0.4s ease-out;
+}
+.hero-shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(6, 9, 10, 0.94) 0%, rgba(6, 9, 10, 0.82) 38%, rgba(6, 9, 10, 0.35) 62%, rgba(6, 9, 10, 0.04) 90%),
+    linear-gradient(180deg, rgba(6, 9, 10, 0.45) 0%, transparent 25%, transparent 62%, #06090a 100%);
+}
+@keyframes hero-zoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.07);
+  }
+}
+
+/* De kop van een subpagina: dezelfde foto, hetzelfde glas, korter. */
+.subhero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  min-height: min(62svh, 34rem);
+  padding-block: 5rem 3.5rem;
+}
+.subhero .scene-img {
+  object-position: 50% 58%;
+}
+.subhero-shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(6, 9, 10, 0.7), rgba(6, 9, 10, 0.2) 65%, rgba(6, 9, 10, 0.02)),
+    linear-gradient(180deg, rgba(6, 9, 10, 0.35) 0%, transparent 30%, transparent 55%, #06090a 100%);
+}
+@media (max-width: 767px) {
+  .subhero {
+    min-height: 0;
+    padding-block: 3.5rem 2.5rem;
+  }
+  .subhero-shade {
+    background: linear-gradient(180deg, rgba(6, 9, 10, 0.55), rgba(6, 9, 10, 0.8)), linear-gradient(180deg, transparent 70%, #06090a 100%);
+  }
+}
+
+.scene {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  min-height: min(88svh, 50rem);
+  padding-block: 5rem;
+}
+.scene-media {
+  position: absolute;
+  inset: -8% 0;
+  z-index: -2;
+}
+.scene-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: translate3d(0, calc(var(--p, 0) * -5%), 0) scale(1.06);
+  will-change: transform;
+}
+.scene-shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(6, 9, 10, 0.78), rgba(6, 9, 10, 0.25) 60%, rgba(6, 9, 10, 0.02)),
+    linear-gradient(180deg, #06090a 0%, transparent 16%, transparent 84%, #06090a 100%);
+}
+.scene-shade[data-side="right"] {
+  background:
+    linear-gradient(270deg, rgba(6, 9, 10, 0.78), rgba(6, 9, 10, 0.25) 60%, rgba(6, 9, 10, 0.02)),
+    linear-gradient(180deg, #06090a 0%, transparent 16%, transparent 84%, #06090a 100%);
+}
+@media (max-width: 767px) {
+  .scene {
+    min-height: 0;
+    padding-block: 4rem;
+  }
+  .scene-shade,
+  .scene-shade[data-side="right"] {
+    background:
+      linear-gradient(180deg, rgba(6, 9, 10, 0.6), rgba(6, 9, 10, 0.78)),
+      linear-gradient(180deg, #06090a 0%, transparent 12%, transparent 88%, #06090a 100%);
+  }
+  .hero-shade {
+    background: linear-gradient(180deg, rgba(6, 9, 10, 0.62) 0%, rgba(6, 9, 10, 0.72) 55%, #06090a 100%);
+  }
+}
+
+/* Glas: de tekst staat op een donker, wazig vlak, zodat hij leesbaar blijft op elke foto. */
+.glass {
+  background: rgba(8, 12, 13, 0.64);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1.25rem;
+  padding: 1.75rem;
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+@media (min-width: 768px) {
+  .glass {
+    padding: 2.25rem;
+  }
+}
+.glass-flat {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+}
+.chip-glass {
+  background: rgba(8, 12, 13, 0.58);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 1rem;
+  transition:
+    border-color 0.2s,
+    transform 0.2s;
+}
+.chip-glass:hover {
+  border-color: var(--glow);
+  transform: translateY(-2px);
+}
+
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 1.75rem;
+  border-radius: 1.25rem;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: border-color 0.2s;
+}
+.tile::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(260px circle at var(--gx, 50%) var(--gy, 0%), rgba(245, 165, 36, 0.16), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.tile:hover {
+  border-color: rgba(245, 165, 36, 0.5);
+}
+.tile:hover::before {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .tilt {
+    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transition:
+      transform 0.25s ease-out,
+      border-color 0.2s;
+  }
+}
+
+.btn-glow,
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 3rem;
+  padding-inline: 1.5rem;
+  border-radius: 9999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition:
+    box-shadow 0.25s,
+    transform 0.2s,
+    background-color 0.2s;
+}
+.btn-glow {
+  background: linear-gradient(135deg, #ffc15a, #f5a524 55%, #e48a0f);
+  color: #1a1205;
+  box-shadow: 0 10px 30px rgba(245, 165, 36, 0.25);
+}
+.btn-glow:hover {
+  box-shadow:
+    0 0 0 6px rgba(245, 165, 36, 0.18),
+    0 14px 40px rgba(245, 165, 36, 0.4);
+  transform: translateY(-1px);
+}
+.btn-ghost {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+}
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.glow-text {
+  background: linear-gradient(100deg, #f5a524 0%, #ffd98a 30%, #3fd6c4 65%, #f5a524 100%);
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: sheen 10s linear infinite;
+}
+@keyframes sheen {
+  to {
+    background-position: 220% center;
+  }
+}
+
+/* Binnenkomen bij scrollen. Zonder JavaScript en bij reduced-motion staat alles direct. */
+.reveal[data-armed="true"]:not([data-in="true"]) {
+  opacity: 0;
+  transform: translateY(28px);
+}
+.reveal[data-in="true"] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.8s ease-out,
+    transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-media {
+    animation: none;
+  }
+  .hero-img,
+  .scene-img {
+    transform: scale(1.06);
+  }
+  .glow-text {
+    animation: none;
+  }
+  .reveal[data-armed="true"]:not([data-in="true"]) {
+    opacity: 1;
+    transform: none;
   }
 }

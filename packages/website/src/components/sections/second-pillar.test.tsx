@@ -19,15 +19,18 @@ describe("SecondPillar", () => {
   // is the failure this test exists to prevent: a visitor must be able to get
   // there from the homepage, in their own language.
   it("links to the self-check page, locale-correct, in both languages", () => {
-    expect(render("nl")).toContain('href="/check"');
-    expect(render("en")).toContain('href="/en/check"');
+    expect(render("nl")).toContain('href="/nl/check"');
+    expect(render("en")).toContain('href="/check"');
   });
 
   // The section shipped without a nav entry, so it existed on the page while the
   // menu gave no sign of it. Anyone scanning the header concluded it was missing.
   it("is reachable from the main navigation in both languages", () => {
-    expect(nl.header.links.some((l) => l.href === "#controle")).toBe(true);
-    expect(en.header.links.some((l) => l.href === "#controle")).toBe(true);
+    // The section now sits on the tools page (the menu links to it), and the free check it describes is in the checks menu.
+    for (const dict of [nl, en]) {
+      expect(dict.header.links.some((l) => l.href === "/tools")).toBe(true);
+      expect(dict.header.checks.some((l) => l.href === "/check")).toBe(true);
+    }
   });
 
   it("explains the second pillar in both languages", () => {

@@ -29,7 +29,7 @@ export function HierarchyOfAgentTrustArticle() {
     <article className="border-t border-border py-16 md:py-24">
       <div className="container max-w-3xl">
         <a
-          href="/en"
+          href="/"
           className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-wide text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-3.5" aria-hidden="true" />

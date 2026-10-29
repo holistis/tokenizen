@@ -4,158 +4,303 @@
     <loc>https://tokenizen.nl/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/en" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/" />
   </url>
   <url>
-    <loc>https://tokenizen.nl/en</loc>
+    <loc>https://tokenizen.nl/nl</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/en" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/" />
   </url>
   <url>
     <loc>https://tokenizen.nl/notes</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/notes" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/en/notes" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/notes" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/notes" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/notes" />
   </url>
   <url>
-    <loc>https://tokenizen.nl/en/notes</loc>
+    <loc>https://tokenizen.nl/nl/notes</loc>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/notes" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/en/notes" />
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/notes" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/notes" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/notes" />
   </url>
   <url>
     <loc>https://tokenizen.nl/blog</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/blog" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/en/blog" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/blog" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/blog" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/blog" />
   </url>
   <url>
-    <loc>https://tokenizen.nl/en/blog</loc>
+    <loc>https://tokenizen.nl/nl/blog</loc>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/blog" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/en/blog" />
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/blog" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/blog" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/blog" />
   </url>
   <url>
-    <loc>https://tokenizen.nl/en/scoreboard</loc>
+    <loc>https://tokenizen.nl/scoreboard</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/scoreboard" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/scoreboard" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/scoreboard" />
   </url>
   <url>
-    <loc>https://tokenizen.nl/en/x402-check</loc>
-    <changefreq>monthly</changefreq>
+    <loc>https://tokenizen.nl/nl/scoreboard</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/scoreboard" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/scoreboard" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/scoreboard" />
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/x402-check</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/x402-check" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/x402-check" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/x402-check" />
   </url>
   <url>
-    <loc>https://tokenizen.nl/en/cra-check</loc>
-    <changefreq>monthly</changefreq>
+    <loc>https://tokenizen.nl/nl/x402-check</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/x402-check" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/x402-check" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/x402-check" />
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/cra-check</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/cra-check" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/cra-check" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/cra-check" />
   </url>
   <url>
-    <loc>https://tokenizen.nl/en/signal-log</loc>
-    <changefreq>monthly</changefreq>
+    <loc>https://tokenizen.nl/nl/cra-check</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/cra-check" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/cra-check" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/cra-check" />
   </url>
   <url>
-    <loc>https://tokenizen.nl/en/terms</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://tokenizen.nl/en/privacy</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://tokenizen.nl/en/notes/check-pay-prove</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tokenizen.nl/en/notes/free-tools-same-contests</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://tokenizen.nl/en/notes/quick-scan-standard-clients</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://tokenizen.nl/en/notes/scan-newer-contests</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://tokenizen.nl/en/notes/scan-signs-its-offer</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://tokenizen.nl/en/notes/scan-version-3-1</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://tokenizen.nl/en/notes/official-sources</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://tokenizen.nl/en/notes/we-measured-our-scan</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tokenizen.nl/en/notes/the-ruler-and-the-misses</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://tokenizen.nl/en/notes/a-signed-receipt-that-cannot-name-its-own-payment</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://tokenizen.nl/en/notes/733203-attestations-were-taken-back</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://tokenizen.nl/en/notes/zero-of-600-x402-services-sign-a-receipt</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://tokenizen.nl/en/notes/nine-ways-to-fake-a-delivery-claim</loc>
-    <changefreq>monthly</changefreq>
+    <loc>https://tokenizen.nl/signal-log</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://tokenizen.nl/en/notes/the-hierarchy-of-agent-trust</loc>
-    <changefreq>monthly</changefreq>
+    <loc>https://tokenizen.nl/terms</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://tokenizen.nl/en/notes/x402-security-sellers-90-days</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://tokenizen.nl/privacy</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://tokenizen.nl/en/notes/eight-security-signals-109-repositories</loc>
-    <changefreq>monthly</changefreq>
+    <loc>https://tokenizen.nl/checks</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/checks" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/checks" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/checks" />
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/nl/checks</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/checks" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/checks" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/checks" />
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/security</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/security" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/security" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/security" />
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/nl/security</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/security" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/security" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/security" />
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/scan</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/scan" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/scan" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/scan" />
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/nl/scan</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/scan" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/scan" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/scan" />
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/tools</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/tools" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/tools" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/tools" />
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/nl/tools</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/tools" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/tools" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/tools" />
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/consultancy</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/consultancy" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/consultancy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/consultancy" />
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/nl/consultancy</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/consultancy" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/consultancy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/consultancy" />
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/about</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/about" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/about" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/about" />
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/nl/about</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/about" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/about" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/about" />
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/notes/check-pay-prove</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/notes/free-tools-same-contests</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/notes/quick-scan-standard-clients</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/notes/scan-newer-contests</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/notes/scan-signs-its-offer</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/notes/scan-version-3-1</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/notes/official-sources</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/notes/we-measured-our-scan</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/notes/the-ruler-and-the-misses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/notes/a-signed-receipt-that-cannot-name-its-own-payment</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/notes/733203-attestations-were-taken-back</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/notes/zero-of-600-x402-services-sign-a-receipt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/notes/nine-ways-to-fake-a-delivery-claim</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/notes/the-hierarchy-of-agent-trust</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/notes/x402-security-sellers-90-days</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/notes/eight-security-signals-109-repositories</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/check</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/check" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/check" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/check" />
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/nl/check</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/check" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/check" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/check" />
   </url>
 </urlset>

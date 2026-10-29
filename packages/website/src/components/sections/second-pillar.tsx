@@ -3,12 +3,13 @@ import { ArrowRight } from "lucide-react";
 import { Section } from "@/components/section";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { useLocale } from "@/i18n/context";
+import { localePath } from "@/lib/locale-paths";
 
 export function SecondPillar() {
   const { t, locale } = useLocale();
   // The self-check page is served under the same locale prefix as the rest of
   // the site, so a Dutch visitor stays Dutch when they follow this button.
-  const checkHref = locale === "en" ? "/en/check" : "/check";
+  const checkHref = localePath(locale === "nl" ? "nl" : "en", "/check");
 
   return (
     <Section id="controle" index="04" eyebrow={t.secondPillar.eyebrow}>

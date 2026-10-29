@@ -69,7 +69,7 @@ export const SCORE_RUNS: ScoreRun[] = [
     found: null,
     hypotheses: null,
     tunedOn: "not applicable",
-    note: "The cleanest test, because no model can have seen the answers. The hash of a system's report is committed before the contest results are published, and scored afterwards with the same two judges. Takes weeks, since results arrive per contest.",
+    note: "The cleanest test, because the answers do not exist yet when the report is committed. The hash of a system's report is committed before the contest results are published, and scored afterwards with the same two judges. Takes weeks, since results arrive per contest.",
     links: [{ label: "How the judges decide", href: `${REPO}/PREREGISTRATION-v3-2026-10-24.md` }],
   },
   {
@@ -111,7 +111,7 @@ export const SCORE_RUNS: ScoreRun[] = [
     found: 5,
     hypotheses: 135,
     tunedOn: "no",
-    note: "Counts the first 15 hypotheses per contest, which is what reports showed until 25 October; the first 30 held 8 of 66. The rule for reading the result was written before the run: 5 percent or more holds, and this is 7.6 percent. 3 of 35 easy findings, 0 of 8 middle and 2 of 23 hard were in the first 15; 58 of 66 known findings were not. Small numbers, one run per contest. The Code4rena known lists are shorter than Sherlock's, contests from early 2026 may be in the training data of a model, and the Olas contest was read for 38 percent of its code.",
+    note: "Counts the first 15 hypotheses per contest, which is what reports showed until 25 October; the first 30 held 8 of 66. The rule for reading the result was written before the run: 5 percent or more holds, and this is 7.6 percent. 3 of 35 easy findings, 0 of 8 middle and 2 of 23 hard were in the first 15; 61 of 66 known findings were not. Small numbers, one run per contest. The Code4rena known lists are shorter than Sherlock's, contests from early 2026 may be in the training data of a model, and the Olas contest was read for 38 percent of its code.",
     links: [{ label: "The results, judgements and hashes", href: `${REPO}/results/2026-10-25-c4-fresh/README.md` }],
   },
   {
@@ -139,7 +139,7 @@ export const SCORE_RUNS: ScoreRun[] = [
     found: 4,
     hypotheses: 120,
     tunedOn: "no",
-    note: "2 of 59 easy findings, 0 of 14 middle, 2 of 32 hard. Precision 5.0 percent, 46 to 105 seconds and at most 0.064 dollar per scan. It found 3 known findings that the running scan did not. The rule written first needed 5, so it is not met and the running scan stays in production. Our own reading of two disagreements between the judges would have made it 5; the number we registered is the one both judges agree on.",
+    note: "2 of 59 easy findings, 0 of 14 middle, 2 of 32 hard. Precision 5.0 percent, 46 to 105 seconds and at most 0.064 dollar per scan. It found 3 known findings that the running scan did not. The rule written first needed 5, so it is not met and the running scan stayed in production. On the evening of 25 October version 3.1 replaced it, see the row above. Our own reading of two disagreements between the judges would have made it 5; the number we registered is the one both judges agree on.",
     links: [
       { label: "The results and our reading", href: `${REPO}/results/2026-10-24-sealed/README.md` },
       { label: "The pre-registration and its addendum", href: `${REPO}/PREREGISTRATION-v3-2026-10-24.md` },
@@ -234,3 +234,124 @@ export const TUNED_LABEL: Record<TunedOn, string> = {
   partly: "partly tuned on this set",
   "not applicable": "decides the question",
 };
+
+// THE DUTCH VERSION OF THE ROWS. The numbers, dates, hashes and links of a row are the same in both languages and live in SCORE_RUNS
+// above; only the words differ, so only the words are repeated here. A test checks that every row has its Dutch text, that the links
+// line up, and that every number of the English note appears in the Dutch one (decimals written with a comma). Dutch must never say
+// more than the English does and keeps every caveat.
+
+export type RunLocale = "en" | "nl";
+
+export interface RunTextNl {
+  title: string;
+  system: string;
+  set: string;
+  note: string;
+  /** The labels of the links, in the order of the links of the English row. */
+  links: string[];
+}
+
+export const SCORE_RUNS_NL: Record<string, RunTextNl> = {
+  "contests-after-today": {
+    title: "Wedstrijden die na vandaag verschijnen",
+    system: "Elk systeem dat meedoet, het onze inbegrepen",
+    set: "Nieuwe wedstrijden zodra hun eindrapporten verschijnen",
+    note: "De zuiverste toets, want de antwoorden bestaan nog niet als het rapport wordt vastgelegd. De hash van het rapport van een systeem wordt vastgelegd voordat de uitslagen van de wedstrijd verschijnen, en wordt achteraf beoordeeld door dezelfde twee rechters. Dat duurt weken, want de uitslagen komen per wedstrijd binnen.",
+    links: ["Hoe de rechters beslissen"],
+  },
+  "slither-same-contests": {
+    title: "Slither 0.11.6 op dezelfde wedstrijden",
+    system: "Slither 0.11.6 met standaardinstellingen, een gratis hulpmiddel voor statische analyse",
+    set: "Code4rena-wedstrijden waarop het in onze opzet draaide: 4 van de 9 nieuwere en 4 van de 6 oudere, 34 bekende bevindingen",
+    note: "Strikte treffers: geen. Twee hypotheses bij één wedstrijd kwamen voor slechts één van de twee rechters overeen met een bekende bevinding. Statische analysetools zijn niet gemaakt voor de fouten in de bedrijfslogica die in wedstrijden worden beloond, ze draaiden in onze opzet maar op een deel van de wedstrijden, en de rechters zijn taalmodellen. Op dezelfde wedstrijden vond onze scan er 6 van de 34 in zijn eerste 15 hypotheses; de oudere wedstrijden kunnen in de trainingsdata staan van het model achter onze scan.",
+    links: ["De resultaten, oordelen en hashes"],
+  },
+  "aderyn-same-contests": {
+    title: "Aderyn 0.6.8 op dezelfde wedstrijden",
+    system: "Aderyn 0.6.8 met standaardinstellingen, een gratis hulpmiddel voor statische analyse",
+    set: "Code4rena-wedstrijden waarop het in onze opzet draaide: 4 van de 9 nieuwere en 6 van de 6 oudere, 70 bekende bevindingen",
+    note: "Strikte treffers: geen. Statische analysetools zijn niet gemaakt voor de fouten in de bedrijfslogica die in wedstrijden worden beloond, ze draaiden in onze opzet maar op een deel van de wedstrijden, en de rechters zijn taalmodellen. Op dezelfde wedstrijden vond onze scan er 10 van de 70 in zijn eerste 15 hypotheses; de oudere wedstrijden kunnen in de trainingsdata staan van het model achter onze scan.",
+    links: ["De resultaten, oordelen en hashes"],
+  },
+  "c4-fresh-nine": {
+    title: "Versie 3.1 op negen nieuwere Code4rena-wedstrijden",
+    system: "Versie 3.1 van de scan, zoals die in productie draait",
+    set: "9 Code4rena-wedstrijden van september 2025 tot maart 2026, 66 bekende bevindingen. Niet gebruikt om de scan te bouwen",
+    note: "Telt de eerste 15 hypotheses per wedstrijd, wat rapporten tot 25 oktober lieten zien; de eerste 30 bevatten er 8 van de 66. De regel voor het lezen van de uitslag is vooraf opgeschreven: 5 procent of meer houdt stand, en dit is 7,6 procent. 3 van de 35 makkelijke bevindingen, 0 van de 8 gemiddelde en 2 van de 23 moeilijke zaten in de eerste 15; 61 van de 66 bekende bevindingen niet. Kleine aantallen, één run per wedstrijd. De bekende lijsten van Code4rena zijn korter dan die van Sherlock, wedstrijden van begin 2026 kunnen in de trainingsdata van een model zitten, en de Olas-wedstrijd is voor 38 procent van de code gelezen.",
+    links: ["De resultaten, oordelen en hashes"],
+  },
+  "v31-same-eight": {
+    title: "Versie 3.1 op dezelfde acht wedstrijden",
+    system: "Versie 3.1 van de scan, live sinds de avond van 25 oktober",
+    set: "De 8 wedstrijden van de verzegelde run, 105 bekende bevindingen. Niet meer geheim: de uitslagen zijn op 24 oktober gepubliceerd",
+    note: "6 van de 59 makkelijke bevindingen, 1 van de 14 gemiddelde, 1 van de 32 moeilijke. Precisie 7,5 procent, ongeveer 20 tot 45 seconden en 0,02 tot 0,15 dollar per scan. Er veranderden twee dingen tegelijk, een nieuwer model en een aanpassing van welke bestanden meetellen, dus we kunnen niet zeggen welke van de twee het werk deed. Eén run, dus een herhaling kan uitkomen tussen ongeveer 6 en 10. De modellen kunnen deze wedstrijden hebben gezien. 97 van de 105 bekende bevindingen werden nog steeds niet gevonden. De regel voor het lezen van de uitslag stond vooraf in onze eigen notities, die niet openbaar zijn, dus deze rij is minder goed te controleren dan de verzegelde run.",
+    links: ["De resultaten, oordelen en hashes"],
+  },
+  "sealed-v3": {
+    title: "De verzegelde run: de nieuwe versie",
+    system: "Versie 3 van de scan, de bestanden vooraf vastgelegd met een hash",
+    set: "Verzegelde set: 8 wedstrijden, 105 bekende bevindingen, met een hash vastgelegd voordat iemand ernaar keek",
+    note: "2 van de 59 makkelijke bevindingen, 0 van de 14 gemiddelde, 2 van de 32 moeilijke. Precisie 5,0 procent, 46 tot 105 seconden en hooguit 0,064 dollar per scan. Hij vond 3 bekende bevindingen die de draaiende scan niet vond. De eerst opgeschreven regel vroeg er 5, dus die is niet gehaald en de draaiende scan bleef in productie. Op de avond van 25 oktober verving versie 3.1 hem, zie de rij hierboven. Onze eigen lezing van twee meningsverschillen tussen de rechters had er 5 van gemaakt; het getal dat we hebben vastgelegd is het getal waar beide rechters het over eens zijn.",
+    links: ["De resultaten en onze lezing", "De preregistratie en de aanvulling", "De set, om zijn hash na te rekenen"],
+  },
+  "sealed-s0": {
+    title: "De verzegelde run: de scan zoals hij draait",
+    system: "Versie 2.1 van de scan, die tot de avond van 25 oktober in productie was, met het patroonblok",
+    set: "Verzegelde set: 8 wedstrijden, 105 bekende bevindingen",
+    note: "1 van de 59 makkelijke bevindingen, 0 van de 14 gemiddelde, 0 van de 32 moeilijke. Precisie 4,7 procent, 2,7 tot 8,6 minuten per scan. De ene bevinding die hij vond, vond de nieuwe versie ook.",
+    links: ["De resultaten en onze lezing", "De preregistratie"],
+  },
+  "exploration-a": {
+    title: "De volgende versie, eerste proef",
+    system: "In ontwikkeling. Hoe het werkt blijft privé tot na de verzegelde run; de hash van de bestanden wordt vóór die run gepubliceerd",
+    set: "Ontwikkelset: 6 wedstrijden, 85 bekende bevindingen",
+    note: "7 van de 31 makkelijke bevindingen, 0 van de 26 gemiddelde, 0 van de 28 moeilijke. We stellen de scan op deze set af, dus dit is een verslag van hoe we hier gekomen zijn en geen bewijs.",
+    links: ["Resultaten en ruwe uitvoer"],
+  },
+  "baseline-dev-set": {
+    title: "De scan zoals hij draait, op de ontwikkelset",
+    system: "Versie 2 van de scan met het patroonblok van productie",
+    set: "Ontwikkelset: 6 wedstrijden, 85 bekende bevindingen",
+    note: "Zonder het patroonblok vond hij 0 van de 85 met 36 hypotheses. Nog twee bekende bevindingen werden door slechts één van de twee rechters gekoppeld, en die tellen we niet mee. We stellen de scan op deze set af, dus dit is geen bewijs.",
+    links: ["Resultaten en ruwe uitvoer"],
+  },
+  v2: {
+    title: "Versie 2 van de scan",
+    system: "De scan na de eerste ronde verbeteringen",
+    set: "7 wedstrijden: 4 waarop hij was afgesteld (31 bekende bevindingen) en 3 nieuwe (9 bekende)",
+    note: "0 van de 31 op de vier wedstrijden waarop hij was afgesteld en 0 van de 9 op de drie nieuwe. Hij las 29 procent van de code die binnen de scope viel. Achteraf bleek dat de gemeten kopie een blok historische patronen miste dat productie wel heeft, en de pagina met de resultaten zet die correctie boven de tabellen.",
+    links: ["De preregistratie", "De resultaten"],
+  },
+  v1: {
+    title: "Versie 1, zoals hij draaide",
+    system: "De scan zoals hij draaide op de ochtend van 24 oktober 2026",
+    set: "4 wedstrijden, 31 bekende bevindingen",
+    note: "In totaal twee hypotheses, geen van beide kwam overeen met een bekende bevinding. Eén taak mislukte en twee leverden een leeg rapport op. De voorspelling die we vóór de run opschreven was hooguit 2 van de 31.",
+    links: ["De preregistratie", "De resultaten"],
+  },
+};
+
+/** The Dutch version of TUNED_LABEL. */
+export const TUNED_LABEL_NL: Record<TunedOn, string> = {
+  no: "niet op deze set afgesteld",
+  yes: "op deze set afgesteld, geen bewijs",
+  partly: "deels op deze set afgesteld",
+  "not applicable": "beslist de vraag",
+};
+
+/** The words of a row in a language. Falls back to the English row when no Dutch text exists, so a new row never renders empty. */
+export function runText(run: ScoreRun, locale: RunLocale): { title: string; system: string; set: string; note: string; links: RunLink[] } {
+  const nl = locale === "nl" ? SCORE_RUNS_NL[run.id] : undefined;
+  if (!nl || nl.links.length !== run.links.length) return { title: run.title, system: run.system, set: run.set, note: run.note, links: run.links };
+  return {
+    title: nl.title,
+    system: nl.system,
+    set: nl.set,
+    note: nl.note,
+    links: run.links.map((link, i) => ({ href: link.href, label: nl.links[i] })),
+  };
+}
+
+export function tunedLabel(tunedOn: TunedOn, locale: RunLocale): string {
+  return locale === "nl" ? TUNED_LABEL_NL[tunedOn] : TUNED_LABEL[tunedOn];
+}

@@ -153,10 +153,10 @@ function PostIndex({ kind }: { kind: PostKind }) {
   const { locale } = useLocale();
   const lang = COPY[locale as keyof typeof COPY] ?? COPY.en;
   const copy = lang[kind === "blog" ? "blog" : "note"];
-  // The English site lives under /en, and App.tsx strips that prefix before it
-  // looks a slug up. A bare href would therefore drop an English reader onto
-  // the Dutch page without saying so.
-  const prefix = locale === "en" ? "/en" : "";
+  // The Dutch site lives under /nl, and App.tsx strips that prefix before it
+  // looks a slug up. A bare href would therefore drop a Dutch reader onto
+  // the English page without saying so.
+  const prefix = locale === "nl" ? "/nl" : "";
 
   // The description is the page's own intro, in the reader's language. Without it the page kept the
   // homepage's description (in Dutch, from index.html), which told a search engine nothing about the list.

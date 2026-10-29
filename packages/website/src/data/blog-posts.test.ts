@@ -98,7 +98,7 @@ describe("BLOG_POSTS", () => {
   // a post nobody can find, which is the failure the notes index was made to end.
   it("lists every post in the sitemap and in llms.txt", () => {
     for (const post of BLOG_POSTS) {
-      const url = `https://tokenizen.nl/en${postPath(post.slug)}`;
+      const url = `https://tokenizen.nl${postPath(post.slug)}`;
       expect(sitemap, `sitemap: ${url}`).toContain(`<loc>${url}</loc>`);
       expect(llms, `llms.txt: ${url}`).toContain(url);
     }
