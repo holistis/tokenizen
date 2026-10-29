@@ -53,7 +53,7 @@
     "erc8004-reputation-demo": "tsx examples/erc8004-reputation-live-demo.ts"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@x402/core": "^2.28.0",
     "@x402/evm": "^2.28.0",
     "@x402/extensions": "^2.28.0",
