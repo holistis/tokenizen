@@ -25,13 +25,13 @@ const uitslag = (id, groep, stand, reden = "") => ({ id, groep, stand, reden });
 // ---------------------------------------------------------------------------------------------------------------------------------
 // Reading: one GET at a time, only https, only our own hosts and the two services we look at (Stripe pages, the npm registry).
 
-const TOEGESTAAN = new Set(["tokenizen.nl", "api.tokenizen.nl", "x402.tokenizen.nl", "buy.stripe.com", "registry.npmjs.org"]);
+const TOEGESTAAN = new Set(["tokenizen.nl", "api.tokenizen.nl", "x402.tokenizen.nl", "buy.stripe.com", "registry.npmjs.org", "api.github.com"]);
 
-export async function haal(url, { fetcher = fetch, ms = 20000 } = {}) {
+export async function haal(url, { fetcher = fetch, ms = 20000, token = "" } = {}) {
   const u = new URL(url);
   if (u.protocol !== "https:" || !TOEGESTAAN.has(u.hostname)) return { fout: "adres niet toegestaan" };
   try {
-    const res = await fetcher(url, { method: "GET", redirect: "manual", signal: AbortSignal.timeout(ms), headers: { "user-agent": "tokenizen-site-wacht (read only)" } });
+    const res = await fetcher(url, { method: "GET", redirect: "manual", signal: AbortSignal.timeout(ms), headers: { "user-agent": "tokenizen-site-wacht (read only)", ...(token && u.hostname === "api.github.com" ? { authorization: `Bearer ${token}`, accept: "application/vnd.github+json" } : {}) } });
     const tekst = await res.text();
     return { status: res.status, location: res.headers.get("location") ?? "", paymentRequired: res.headers.get("payment-required") ?? "", tekst };
   } catch (e) {
@@ -139,6 +139,26 @@ export function oordeelBetaalroute(ant, x402) {
   return uitslag("scan-betaalverzoek", "scan", GROEN);
 }
 
+/** Did the last deploy of the website work? Cloudflare reports it as a check on the newest commit of main. A failed deploy leaves the old site up, so
+ *  the site itself looks fine while nothing new can go live: only this check sees it. A deploy that is still running is onbekend, never red. */
+export function oordeelUitrol(ant, naam) {
+  if (ant.fout) return uitslag("website-uitrol", "website", ONBEKEND, "de uitrol van de site was niet na te kijken");
+  let runs = [];
+  try {
+    runs = JSON.parse(ant.tekst).check_runs ?? [];
+  } catch {
+    runs = [];
+  }
+  const nieuwste = runs
+    .filter((r) => r && r.name === naam)
+    .sort((a, b) => Date.parse(b.started_at ?? "") - Date.parse(a.started_at ?? ""))[0];
+  if (ant.status !== 200 || !nieuwste) return uitslag("website-uitrol", "website", ONBEKEND, "geen uitslag van de uitrol te vinden");
+  if (nieuwste.status !== "completed") return uitslag("website-uitrol", "website", ONBEKEND, "de uitrol loopt nog");
+  if (nieuwste.conclusion === "success") return uitslag("website-uitrol", "website", GROEN);
+  if (nieuwste.conclusion === "cancelled" || nieuwste.conclusion === "skipped" || nieuwste.conclusion === "neutral") return uitslag("website-uitrol", "website", ONBEKEND, `de uitrol is ${nieuwste.conclusion}`);
+  return uitslag("website-uitrol", "website", ROOD, "de laatste uitrol van de website is mislukt: wat nieuw is staat niet online");
+}
+
 export function oordeelTls(host, dagen, minimaal) {
   if (dagen === null) return uitslag(`tls-${host}`, "website", ONBEKEND, "certificaat niet te lezen");
   return dagen >= minimaal ? uitslag(`tls-${host}`, "website", GROEN) : uitslag(`tls-${host}`, "website", ROOD, `het certificaat verloopt over ${dagen} dagen`);
@@ -166,7 +186,7 @@ export function oordeelBetaallinks(bundel, links) {
 // ---------------------------------------------------------------------------------------------------------------------------------
 // One round and the whole run.
 
-export async function eenRonde(config, { haal: lees = haal, tlsDagen: tlsLees = tlsDagen, oefenalarm = false } = {}) {
+export async function eenRonde(config, { haal: lees = (u) => haal(u, { token: process.env.GITHUB_TOKEN ?? "" }), tlsDagen: tlsLees = tlsDagen, oefenalarm = false } = {}) {
   const r = [];
   // A drill: a red that is put there on purpose, to see that a failed run really reaches the owner. Only a person starts it, by hand.
   if (oefenalarm) r.push(uitslag("oefenalarm", "bewaker", ROOD, "dit is een proef: een bewust rood alarm om te zien dat de mail de eigenaar bereikt"));
@@ -193,6 +213,7 @@ export async function eenRonde(config, { haal: lees = haal, tlsDagen: tlsLees = 
   r.push(oordeelLlms(await lees("https://tokenizen.nl/llms.txt")));
   r.push(oordeelApi(await lees(config.api.gezondheid)));
   r.push(oordeelBetaalroute(await lees(config.x402.url), config.x402));
+  if (config.uitrol) r.push(oordeelUitrol(await lees(config.uitrol.adres), config.uitrol.controle));
   for (const host of config.sites.map((s) => new URL(s).hostname)) r.push(oordeelTls(host, await tlsLees(host), config.tlsMinimaleDagen));
   for (const naam of config.npm) r.push(oordeelNpm(naam, await lees(npmAdres(naam))));
   return r;

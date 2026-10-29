@@ -16,6 +16,7 @@
     "https://buy.stripe.com/eVq5kD0Ss8Gn2fN9ib3oA07",
     "https://buy.stripe.com/28EeVdfNm4q7dYv7a33oA08"
   ],
+  "uitrol": { "adres": "https://api.github.com/repos/holistis/tokenizen/commits/main/check-runs?per_page=50", "controle": "Workers Builds: tokenizen-website" },
   "npm": ["capacity-attest", "agent-receipt-verify", "@alghanima/x402-lint", "muraqib-agent-watch"],
   "inhoud": {
     "moetErInStaan": [

@@ -24,6 +24,7 @@ import {
   oordeelSitemap,
   oordeelStartpagina,
   oordeelTls,
+  oordeelUitrol,
 } from "./site-wacht.mjs";
 
 const config = JSON.parse(readFileSync(new URL("./diensten.json", import.meta.url), "utf8"));
@@ -46,6 +47,7 @@ function wereld(wijziging = {}) {
       tekst: JSON.stringify({ x402Version: 2, accepts: [{ scheme: "exact", network: config.x402.netwerk, amount: config.x402.bedrag, payTo: config.x402.betaaladres }] }),
     },
   };
+  goed[config.uitrol.adres] = { status: 200, location: "", paymentRequired: "", tekst: JSON.stringify({ check_runs: [{ name: config.uitrol.controle, status: "completed", conclusion: "success", started_at: "2026-10-29T08:00:00Z" }] }) };
   for (const naam of config.npm) goed[npmAdres(naam)] = { status: 200, location: "", paymentRequired: "", tekst: '{"version":"1.2.3"}' };
   const wereldMap = { ...goed, ...wijziging };
   return {
@@ -79,6 +81,7 @@ const DEFECTEN = [
   ["het betaaladres is veranderd", { [config.x402.url]: { status: 402, location: "", paymentRequired: "x", tekst: JSON.stringify({ accepts: [{ network: config.x402.netwerk, amount: config.x402.bedrag, payTo: "0x0000000000000000000000000000000000000001" }] }) } }, "scan-betaalverzoek"],
   ["de prijs is veranderd", { [config.x402.url]: { status: 402, location: "", paymentRequired: "x", tekst: JSON.stringify({ accepts: [{ network: config.x402.netwerk, amount: "1", payTo: config.x402.betaaladres }] }) } }, "scan-betaalverzoek"],
   ["het certificaat verloopt over 3 dagen", { tlsDagen: 3 }, "tls-tokenizen.nl"],
+  ["de laatste uitrol van de website is mislukt", { [config.uitrol?.adres ?? "x"]: { status: 200, location: "", paymentRequired: "", tekst: JSON.stringify({ check_runs: [{ name: config.uitrol.controle, status: "completed", conclusion: "failure", started_at: "2026-10-29T08:00:00Z" }] }) } }, "website-uitrol"],
   ["een pakket staat niet meer op npm", { "https://registry.npmjs.org/capacity-attest/latest": { status: 404, location: "", paymentRequired: "", tekst: "not found" } }, "npm-capacity-attest"],
 ];
 
@@ -191,5 +194,29 @@ test("the drill puts a red there that lasts three rounds, and without the drill 
   assert.deepEqual(mee.bevestigdRood.map((x) => x.id), ["oefenalarm"], "the drill is the only red");
   const zonder = await draai(config, { ...wereld(), pauzeMs: 1, wacht: async () => {} });
   assert.deepEqual(zonder.bevestigdRood, []);
+});
+
+test("the deploy check: success is green, a failure is red, a running or cancelled deploy is onbekend, and an older failure does not count", () => {
+  const naam = config.uitrol.controle;
+  const antwoord = (runs, status = 200) => ({ status, tekst: JSON.stringify({ check_runs: runs }) });
+  const run = (conclusion, start, status = "completed") => ({ name: naam, status, conclusion, started_at: start });
+  assert.equal(oordeelUitrol(antwoord([run("success", "2026-10-29T08:00:00Z")]), naam).stand, GROEN);
+  assert.equal(oordeelUitrol(antwoord([run("failure", "2026-10-29T08:00:00Z")]), naam).stand, ROOD);
+  assert.equal(oordeelUitrol(antwoord([run("failure", "2026-10-29T07:00:00Z"), run("success", "2026-10-29T08:00:00Z")]), naam).stand, GROEN, "the newest run counts");
+  assert.equal(oordeelUitrol(antwoord([run(null, "2026-10-29T08:00:00Z", "in_progress")]), naam).stand, ONBEKEND, "a deploy still running is not red");
+  assert.equal(oordeelUitrol(antwoord([run("cancelled", "2026-10-29T08:00:00Z")]), naam).stand, ONBEKEND);
+  assert.equal(oordeelUitrol(antwoord([{ name: "iets anders", status: "completed", conclusion: "failure", started_at: "2026-10-29T08:00:00Z" }]), naam).stand, ONBEKEND, "another check does not count");
+  assert.equal(oordeelUitrol(antwoord([], 403), naam).stand, ONBEKEND, "a refused read is never green");
+  assert.equal(oordeelUitrol({ fout: "x" }, naam).stand, ONBEKEND);
+  assert.equal(oordeelUitrol({ status: 200, tekst: "geen json" }, naam).stand, ONBEKEND);
+});
+
+test("the token goes to api.github.com only and to no other host", async () => {
+  const gezien = [];
+  const fetcher = async (url, opties) => { gezien.push([new URL(url).hostname, opties.headers.authorization ?? null]); return { status: 200, headers: new Headers(), text: async () => "" }; };
+  await haal("https://api.github.com/repos/x/y", { fetcher, token: "geheim" });
+  await haal("https://tokenizen.nl/", { fetcher, token: "geheim" });
+  await haal("https://registry.npmjs.org/x/latest", { fetcher, token: "geheim" });
+  assert.deepEqual(gezien, [["api.github.com", "Bearer geheim"], ["tokenizen.nl", null], ["registry.npmjs.org", null]]);
 });
 
