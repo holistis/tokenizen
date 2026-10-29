@@ -174,6 +174,8 @@ describe("the words", () => {
       "on a sealed set, in one run",
       "any change to the past shows",
       "pinned dependencies",
+      "each row linking to the rule",
+      "elke rij linkt naar de regel",
     ];
     for (const phrase of forbidden) expect(all.includes(phrase), phrase).toBe(false);
   });
@@ -346,6 +348,47 @@ const token = (name: string, from = 0) => {
   const i = css.indexOf(`${name}:`, from);
   return css.slice(i + name.length + 1, css.indexOf(";", i)).trim();
 };
+
+describe("the Dutch site", () => {
+  const internalHrefs = (html: string) => [...html.matchAll(/href="(\/[^"]*)"/g)].map((m) => m[1]);
+
+  const dutch: Array<[string, () => JSX.Element, string[], string[]]> = [
+    ["home", HomePage, ["Wat wij doen.", "Betrouwbaarheid", "Missie en visie"], ["What we do.", "Reliability", "Mission and vision"]],
+    ["checks", ChecksPage, ["De drie checks", "Wat we maten", "Wat ze niet zijn"], ["The three checks", "What we measured", "What they are not"]],
+    ["security", SecurityPage, ["Wat we doen", "Het hele dossier", "Schrijf ons"], ["What we do", "The whole record", "Write to us"]],
+    ["scan", ScanPage, ["Wat je krijgt", "Zo ga je het na", "Open het scorebord"], ["What you get", "How you check it", "Open the scoreboard"]],
+    ["tools", ToolsPage, ["Het gereedschap", "Op npm", "Geen score, geen oordeel"], ["The tools", "On npm", "No score, no verdict"]],
+    ["consultancy", ConsultancyPage, ["Praat met Ahmed", "Schrijf Ahmed", "Zo ga je het na"], ["Talk to Ahmed", "Write to Ahmed", "How you check it"]],
+    ["about", AboutPage, ["Twee broers, één bedrijf", "Techniek en metingen", "Voorwaarden"], ["Two brothers, one company", "Technology and measurements", "Terms:"]],
+  ];
+
+  it.each(dutch)("%s speaks Dutch: Dutch headings, no English ones left, one h1, no long dashes", (_name, Page, inDutch, notInDutch) => {
+    const html = page("nl", <Page />);
+    for (const text of inDutch) expect(html, text).toContain(text);
+    for (const text of notInDutch) expect(html, text).not.toContain(text);
+    expect(html.match(/<h1/g)).toHaveLength(1);
+    expect(html).not.toMatch(LONG_DASH);
+  });
+
+  // A Dutch reader who follows a link must stay on the Dutch site, an English reader on the English one.
+  it.each(dutch)("%s keeps every internal link in the language of the reader", (_name, Page) => {
+    for (const href of internalHrefs(page("nl", <Page />))) {
+      if (href.startsWith("/media/") || href.startsWith("/assets/")) continue;
+      expect(href.startsWith("/nl"), `nl ${href}`).toBe(true);
+    }
+    for (const href of internalHrefs(page("en", <Page />))) {
+      if (href.startsWith("/media/") || href.startsWith("/assets/")) continue;
+      expect(href.startsWith("/nl") || href.startsWith("/en"), `en ${href}`).toBe(false);
+    }
+  });
+
+  it("gives the English pages the same structure as the Dutch ones", () => {
+    for (const [name, Page] of dutch) {
+      const count = (locale: Locale) => (page(locale, <Page />).match(/<h2/g) ?? []).length;
+      expect(count("nl"), name).toBe(count("en"));
+    }
+  });
+});
 
 describe("the colours", () => {
   it("keep the yellow text readable on the paper background", () => {

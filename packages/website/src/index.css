@@ -402,6 +402,9 @@
   min-height: min(62svh, 34rem);
   padding-block: 5rem 3.5rem;
 }
+.subhero .scene-img {
+  object-position: 50% 58%;
+}
 .subhero-shade {
   position: absolute;
   inset: 0;

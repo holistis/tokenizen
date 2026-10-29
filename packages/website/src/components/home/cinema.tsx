@@ -24,7 +24,7 @@ export function Photo({ name, eager = false, className }: { name: string; eager?
       alt=""
       decoding="async"
       loading={eager ? "eager" : "lazy"}
-      {...(eager ? { fetchPriority: "high" as const } : {})}
+      {...(eager ? ({ fetchpriority: "high" } as Record<string, string>) : {})}
       className={className}
     />
   );
