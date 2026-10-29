@@ -99,17 +99,50 @@
   <url>
     <loc>https://tokenizen.nl/signal-log</loc>
     <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/signal-log" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/signal-log" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/signal-log" />
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/nl/signal-log</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/signal-log" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/signal-log" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/signal-log" />
   </url>
   <url>
     <loc>https://tokenizen.nl/terms</loc>
     <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/terms" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/terms" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/terms" />
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/nl/terms</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/terms" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/terms" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/terms" />
   </url>
   <url>
     <loc>https://tokenizen.nl/privacy</loc>
     <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/privacy" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/privacy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/privacy" />
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/nl/privacy</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/privacy" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/privacy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/privacy" />
   </url>
   <url>
     <loc>https://tokenizen.nl/checks</loc>
