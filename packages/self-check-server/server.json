@@ -1,0 +1,17 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.holistis/cra-check",
+  "description": "Free read-only check of a public GitHub repo for eight security signals related to the EU CRA.",
+  "repository": {
+    "url": "https://github.com/holistis/tokenizen",
+    "source": "github",
+    "subfolder": "packages/self-check-server"
+  },
+  "version": "0.1.0",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://api.tokenizen.nl/mcp"
+    }
+  ]
+}

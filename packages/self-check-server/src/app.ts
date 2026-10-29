@@ -67,6 +67,7 @@ import { handleBadge, handleBadgeJson } from "./x402-badge.js";
 import { createX402Checker, handleX402Check, type X402CheckerOptions } from "./x402-check.js";
 import { createCraChecker, handleCraCheck, type CraCheckerOptions } from "./cra-check.js";
 import { usageLog, type UsageWriter } from "./usage-log.js";
+import { bodyCallsATool, craMcpMethodNotAllowed, craMcpRejectBatch, handleCraMcp } from "./cra-mcp.js";
 
 const DEFAULT_ALLOWED_ORIGINS = ["http://localhost:5173", "https://tokenizen.nl", "https://www.tokenizen.nl"];
 
@@ -358,6 +359,15 @@ export function createApp(options: CreateAppOptions = {}): Express {
   // a host, and the egress is the same net-guard fetch. Behind its own limiter plus a global hourly budget and
   // a one hour cache inside the checker. See the header of cra-check.ts.
   app.post("/api/cra/check", ...counted("cra"), craCheckLimiter, handleCraCheck(craChecker));
+
+  // The same check as an MCP tool for AI agents (cra-mcp.ts), stateless, POST only. A request that calls the tool costs a check, so it uses
+  // the check limiter above (same six per ten minutes per address); the other messages of the protocol (initialize, tools/list, pings) use
+  // a looser limiter so that one agent can connect and look around without using up its checks.
+  const mcpOtherLimiter = createRateLimiter({ windowMs: 10 * 60 * 1000, max: 60 });
+  const mcpLimiter: RequestHandler = (req, res, next) => (bodyCallsATool(req.body) ? craCheckLimiter : mcpOtherLimiter)(req, res, next);
+  app.post("/mcp", ...counted("mcp"), craMcpRejectBatch, mcpLimiter, handleCraMcp(craChecker));
+  app.get("/mcp", craMcpMethodNotAllowed);
+  app.delete("/mcp", craMcpMethodNotAllowed);
 
   app.post("/api/challenge", challengeLimiter, async (req: Request, res: Response) => {
     const parsed = ChallengeBody.safeParse(req.body);
