@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import { PrivacyPage, SignalLogPage, TermsPage } from "@/components/pages/legal-page";
-import { SIGNAL_LOG_LINKS } from "@/data/signal-log-links";
+import { SIGNAL_LOG_LINKS, SIGNAL_LOG_PORTAL } from "@/data/signal-log-links";
 import { LocaleProvider, type Locale } from "@/i18n/context";
 
 import signalLogText from "@/data/legal/signal-log.txt?raw";
@@ -51,6 +51,18 @@ describe("the way to subscribe to the Signal log", () => {
     expect(nl).not.toContain("Subscribe monthly");
     expect(en).not.toMatch(LONG_DASH);
     expect(nl).not.toMatch(LONG_DASH);
+  });
+
+  it("gives a subscriber the link to the customer portal, to manage or cancel, in the language of the reader", () => {
+    expect(SIGNAL_LOG_PORTAL.startsWith("https://billing.stripe.com/p/login/")).toBe(true);
+    const en = render(SignalLogPage, "en");
+    const nl = render(SignalLogPage, "nl");
+    expect(en).toContain(`href="${SIGNAL_LOG_PORTAL}"`);
+    expect(nl).toContain(`href="${SIGNAL_LOG_PORTAL}"`);
+    expect(en).toContain("Manage or cancel your subscription yourself");
+    expect(nl).toContain("Beheer of zeg je abonnement zelf op");
+    // The portal link is not a payment link: the four buy buttons stay four.
+    expect(hrefs(en)).toHaveLength(4);
   });
 
   it("is only on the Signal log page, not on the terms or the privacy statement", () => {

@@ -1,4 +1,4 @@
-import { SIGNAL_LOG_LINKS } from "@/data/signal-log-links";
+import { SIGNAL_LOG_LINKS, SIGNAL_LOG_PORTAL } from "@/data/signal-log-links";
 import { useLocale } from "@/i18n/context";
 
 // The way to subscribe, above the approved text of the Signal log offer. It repeats the prices of that text and nothing else: no new promise.
@@ -13,6 +13,8 @@ const COPY = {
     },
     monthButton: "Subscribe monthly",
     yearButton: "Subscribe yearly",
+    portalLead: "Already subscribed?",
+    portalLink: "Manage or cancel your subscription yourself",
   },
   nl: {
     heading: "Abonneren",
@@ -23,6 +25,8 @@ const COPY = {
     },
     monthButton: "Abonneer per maand",
     yearButton: "Abonneer per jaar",
+    portalLead: "Al abonnee?",
+    portalLink: "Beheer of zeg je abonnement zelf op",
   },
 };
 
@@ -49,6 +53,12 @@ export function SignalLogBuy() {
           </div>
         ))}
       </div>
+      <p className="mt-6 text-sm text-[color:var(--soft)]">
+        {c.portalLead}{" "}
+        <a href={SIGNAL_LOG_PORTAL} className="underline underline-offset-2 hover:text-foreground">
+          {c.portalLink}
+        </a>
+      </p>
     </section>
   );
 }
