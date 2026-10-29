@@ -1,0 +1,42 @@
+name: Site-wacht
+
+# The watcher of tokenizen.nl from the outside. It reads our own addresses (scripts/diensten.json) with GET requests and nothing else: no secret,
+# no payment, no write access. It runs in GitHub Actions, so not on the servers it watches. When something is red in three rounds a minute apart
+# the job fails, and GitHub emails the person who last changed the schedule below. A run that does not happen at all is not seen by this file:
+# something outside it has to look at the time of the last run.
+on:
+  schedule:
+    - cron: "17,47 * * * *"
+  workflow_dispatch:
+
+# Read only. The job has no reason to write anything, and a step that was changed under us would inherit nothing.
+permissions:
+  contents: read
+
+# A run that is still going is never cancelled by the next one; a cancelled night looks exactly like a green one.
+concurrency:
+  group: site-wacht
+  cancel-in-progress: false
+
+jobs:
+  kijk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+
+      - name: Look from the outside
+        run: node scripts/site-wacht.mjs --json "$RUNNER_TEMP/status.json"
+
+      - name: The public summary of this run
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/status.json" ]; then
+            { echo '```json'; cat "$RUNNER_TEMP/status.json"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          fi

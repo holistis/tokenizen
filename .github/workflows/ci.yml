@@ -60,6 +60,10 @@ jobs:
 
       # The own-dependency guard lives outside any workspace, so the blanket test
       # command above would never reach it. A gate nobody runs is a gate that rots.
+      # The watcher of the live site has its own tests, with a defect injected into every check. It runs here without touching the network.
+      - name: Test the site watcher
+        run: npm run site-wacht-test
+
       - name: Test the own-dependency guard
         run: npm run check-own-deps-test
 
