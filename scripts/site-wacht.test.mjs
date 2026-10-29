@@ -185,3 +185,11 @@ test("small helpers", () => {
   assert.equal(oordeelBetaalroute({ status: 402, tekst: "kapot json", paymentRequired: "x" }, config.x402).stand, ROOD);
   assert.equal(oordeelBetaallinks(config.betaallinks.join(" "), config.betaallinks)[0].stand, GROEN);
 });
+
+test("the drill puts a red there that lasts three rounds, and without the drill there is none", async () => {
+  const mee = await draai(config, { ...wereld(), oefenalarm: true, pauzeMs: 1, wacht: async () => {} });
+  assert.deepEqual(mee.bevestigdRood.map((x) => x.id), ["oefenalarm"], "the drill is the only red");
+  const zonder = await draai(config, { ...wereld(), pauzeMs: 1, wacht: async () => {} });
+  assert.deepEqual(zonder.bevestigdRood, []);
+});
+

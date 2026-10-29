@@ -8,6 +8,11 @@ on:
   schedule:
     - cron: "17,47 * * * *"
   workflow_dispatch:
+    inputs:
+      oefenalarm:
+        description: "A drill: put a red on purpose, to see that the failed run reaches the owner by email"
+        type: boolean
+        default: false
 
 # Read only. The job has no reason to write anything, and a step that was changed under us would inherit nothing.
 permissions:
@@ -32,6 +37,8 @@ jobs:
           node-version: 20
 
       - name: Look from the outside
+        env:
+          SITE_WACHT_OEFENALARM: ${{ inputs.oefenalarm && '1' || '0' }}
         run: node scripts/site-wacht.mjs --json "$RUNNER_TEMP/status.json"
 
       - name: The public summary of this run
