@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 
 import { CinemaPage } from "@/components/home/cinema";
+import { SignalLogBuy } from "@/components/pages/signal-log-buy";
 import signalLogText from "@/data/legal/signal-log.txt?raw";
 import termsText from "@/data/legal/terms.txt?raw";
 import privacyText from "@/data/legal/privacy.txt?raw";
@@ -85,6 +86,8 @@ export interface LegalPageProps {
   en: { chip: string; metaTitle: string; metaDescription: string };
   /** Dutch: everything the head and the browser tab say. The text below the head stays English. */
   nl: { chip: string; title: string; lead: string; metaTitle: string; metaDescription: string };
+  /** Something that belongs above the text, such as the way to subscribe. Not part of the approved wording. */
+  extra?: ReactNode;
 }
 
 function Block({ block }: { block: LegalBlock }) {
@@ -94,7 +97,7 @@ function Block({ block }: { block: LegalBlock }) {
   return <p className="whitespace-pre-line break-words">{linkify(block.text)}</p>;
 }
 
-export function LegalPage({ raw, en, nl }: LegalPageProps) {
+export function LegalPage({ raw, en, nl, extra }: LegalPageProps) {
   const { locale } = useLocale();
   const dutch = locale === "nl";
   const meta = dutch ? nl : en;
@@ -110,6 +113,7 @@ export function LegalPage({ raw, en, nl }: LegalPageProps) {
 
   return (
     <CinemaPage image="logboek" chip={meta.chip} title={title} lead={lead}>
+      {extra}
       <article className="max-w-2xl">
         {dutch ? (
           <p role="note" className="mb-8 rounded-lg border border-l-4 border-border border-l-primary bg-card px-5 py-4 text-base leading-relaxed text-foreground">
@@ -170,7 +174,7 @@ export const LEGAL_PAGES = {
 } satisfies Record<string, LegalPageProps>;
 
 export function SignalLogPage() {
-  return <LegalPage {...LEGAL_PAGES["signal-log"]} />;
+  return <LegalPage {...LEGAL_PAGES["signal-log"]} extra={<SignalLogBuy />} />;
 }
 
 export function TermsPage() {
