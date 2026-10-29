@@ -21,7 +21,7 @@ export const en: Dictionary = {
       },
       {
         "href": "/scan",
-        "label": "Scan"
+        "label": "Contract scan"
       },
       {
         "href": "/security",

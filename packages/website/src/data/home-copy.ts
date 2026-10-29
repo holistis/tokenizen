@@ -58,8 +58,8 @@ const OFFERS_EN: Offer[] = [
     id: "scan",
     status: "pay per scan",
     name: "Smart contract scan",
-    line: "A scan that returns hypotheses for you to review. It finds some of what a human audit finds, and we publish how much.",
-    gets: "A report of AI-generated hypotheses about your contract, to be reviewed by hand. You pay per scan over x402.",
+    line: "A security scan of smart contract code: it returns possible weak spots for you to check. It finds some of what a human audit finds, and we publish how much.",
+    gets: "A report of AI-generated hypotheses about the Solidity code in a public GitHub repository, to be reviewed by hand. You pay per scan in USDC over x402.",
     verify: "The public scoreboard lists every run. Version 3.1 found 8 of 105 known findings in its first 15 hypotheses, on contests that were no longer secret, after two changes at once. In the sealed run the earlier versions found 1 and 4. The rule of the sealed run was written down in public before it; for 3.1 it is only in our own notes.",
     not: "Not an audit and no guarantee that a contract is safe. It missed 97 of 105 in that run.",
     price: "Quick scan 1 dollar (the first 15 hypotheses), full scan 5 dollars, paid in USDC on Base over x402. Payment address: the official sources.",
@@ -127,8 +127,8 @@ const OFFERS_NL: Offer[] = [
     id: "scan",
     status: "per scan betalen",
     name: "Smart-contractscan",
-    line: "Een scan die hypotheses teruggeeft om na te lopen. Hij vindt een deel van wat een menselijke audit vindt, en we publiceren hoeveel.",
-    gets: "Een rapport met door AI bedachte hypotheses over jouw contract, om met de hand na te lopen. Je betaalt per scan via x402.",
+    line: "Een beveiligingsscan van smart-contractcode: hij geeft mogelijke zwakke plekken terug om na te lopen. Hij vindt een deel van wat een menselijke audit vindt, en we publiceren hoeveel.",
+    gets: "Een rapport met door AI bedachte hypotheses over de Solidity-code in een openbare GitHub-repository, om met de hand na te lopen. Je betaalt per scan in USDC via x402.",
     verify: "Het openbare scorebord noemt elke run. Versie 3.1 vond 8 van de 105 bekende bevindingen in zijn eerste 15 hypotheses, op wedstrijden die niet meer geheim waren, na twee wijzigingen tegelijk. In de verzegelde run vonden de eerdere versies er 1 en 4. De regel van de verzegelde run stond vooraf openbaar; voor 3.1 staat hij alleen in onze eigen notities.",
     not: "Geen audit en geen garantie dat een contract veilig is. Hij miste 97 van de 105 in die run.",
     price: "Snelle scan 1 dollar (de eerste 15 hypotheses), volledige scan 5 dollar, betaald in USDC op Base via x402. Betaaladres: de officiële bronnen.",
@@ -372,7 +372,7 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
       tools: "Free",
       talk: "No fixed offer yet",
     },
-    tileName: { talk: "Talk to us" },
+    tileName: { scan: "Security scan for smart contracts", talk: "Talk to us" },
     pillars: [
       {
         id: "betrouwbaarheid",
@@ -440,7 +440,7 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
       tools: "Gratis",
       talk: "Nog geen vast aanbod",
     },
-    tileName: { talk: "Praat met ons" },
+    tileName: { scan: "Beveiligingsscan voor smart contracts", talk: "Praat met ons" },
     pillars: [
       {
         id: "betrouwbaarheid",
