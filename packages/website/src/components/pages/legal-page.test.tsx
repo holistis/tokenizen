@@ -145,7 +145,7 @@ describe("the business line in the footer", () => {
 describe("discoverability", () => {
   it("lists the three pages in the sitemap and in llms.txt", () => {
     for (const slug of ["signal-log", "terms", "privacy"]) {
-      const url = `https://tokenizen.nl/en/${slug}`;
+      const url = `https://tokenizen.nl/${slug}`;
       expect(sitemap, `sitemap: ${url}`).toContain(`<loc>${url}</loc>`);
       expect(llms, `llms.txt: ${url}`).toContain(url);
     }

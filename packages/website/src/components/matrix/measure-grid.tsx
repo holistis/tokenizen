@@ -8,6 +8,7 @@ import {
   BENCHMARK_SIGNALS,
   type BenchmarkSignal,
 } from "@/data/cra-benchmark";
+import { localePath } from "@/lib/locale-paths";
 
 // Eight small grids, one per signal. Every grid has 110 places: one square per measured repository (109) and one empty place that is
 // yours. Inside a grid the squares are sorted by result, so the picture shows how many, not which. The same place in two grids is not
@@ -152,7 +153,7 @@ export function MeasureGrid({ signal, locale }: { signal: BenchmarkSignal; local
 
 export function MeasureGrids({ locale }: { locale: GridLocale }) {
   const L = LABELS[locale];
-  const noteHref = `/en${BENCHMARK_NOTE_PATH}`;
+  const noteHref = localePath(locale, BENCHMARK_NOTE_PATH);
   return (
     <div>
       <div className="grid grid-cols-2 gap-x-6 gap-y-9 sm:grid-cols-4">

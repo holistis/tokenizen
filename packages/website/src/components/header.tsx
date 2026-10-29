@@ -6,21 +6,22 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLocale } from "@/i18n/context";
 import type { NavLink } from "@/i18n/types";
+import { localePath, parsePath } from "@/lib/locale-paths";
 
 const GITHUB_URL = "https://github.com/holistis/tokenizen";
 
 // The nav hrefs are anchors on the homepage ("#product") or site paths ("/notes").
 // On any other page a bare anchor points at that page itself, and a bare path
-// drops an English reader onto the Dutch site. Resolve both against the reader's
+// drops a Dutch reader onto the English site. Resolve both against the reader's
 // language and the homepage, so the menu works from the blog too.
 export function resolveNavHref(href: string, locale: string, pathname?: string): string {
-  const home = locale === "en" ? "/en" : "/";
+  const lang = locale === "nl" ? "nl" : "en";
   if (href.startsWith("#")) {
-    const path = (pathname ?? (typeof window === "undefined" ? "/" : window.location.pathname)).replace(/\/+$/, "") || "/";
-    const onHome = path === "/" || path === "/en";
-    return onHome ? href : `${home}${href}`;
+    const path = pathname ?? (typeof window === "undefined" ? "/" : window.location.pathname);
+    const onHome = parsePath(path).rest === "/";
+    return onHome ? href : `${localePath(lang, "/")}${href}`;
   }
-  if (href.startsWith("/")) return locale === "en" ? `/en${href}` : href;
+  if (href.startsWith("/")) return localePath(lang, href);
   return href;
 }
 

@@ -18,11 +18,10 @@ import { ReceiptCannotNameArticle } from "@/components/pages/receipt-cannot-name
 import { RevocationsArticle } from "@/components/pages/revocations-article";
 import { BlogPostPage } from "@/components/blog/blog-post-page";
 import { findPostByPath } from "@/data/blog-posts";
+import { parsePath } from "@/lib/locale-paths";
 
-// Engelstalig-only stukken: geen NL-versie. De taalwissel-knop in de header
-// bouwt zijn href door het /en-voorvoegsel te strippen (i18n/context.tsx),
-// dus zonder de tweede match per slug valt die knop hier stil terug op de
-// homepage in plaats van het artikel te tonen.
+// De pagina's per slug. Het taalvoorvoegsel (/nl, of het oude /en) wordt eraf gehaald voor de opzoeking
+// (lib/locale-paths.ts), dus elke slug is in beide talen bereikbaar; stukken zonder vertaling tonen hun Engelse tekst.
 const ARTICLES: Record<string, () => JSX.Element> = {
   "/notes": NotesIndex,
   // The blog and the notes are two places. A blog is only what the owner has called one.
@@ -49,7 +48,7 @@ const ARTICLES: Record<string, () => JSX.Element> = {
 };
 
 function articleForPath(path: string): (() => JSX.Element) | null {
-  const withoutLocale = path === "/en" || path.startsWith("/en/") ? path.slice(3) : path;
+  const withoutLocale = parsePath(path).rest;
   // A trailing slash is the same page. Without this /notes/ fell through to the homepage.
   const slug = withoutLocale.replace(/\/+$/, "");
   const fixed = ARTICLES[slug];

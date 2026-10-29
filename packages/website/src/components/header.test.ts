@@ -6,24 +6,24 @@ import { nl } from "@/i18n/nl";
 
 describe("resolveNavHref", () => {
   it("keeps homepage anchors as they are on the homepage", () => {
-    expect(resolveNavHref("#product", "nl", "/")).toBe("#product");
-    expect(resolveNavHref("#product", "en", "/en")).toBe("#product");
+    expect(resolveNavHref("#product", "en", "/")).toBe("#product");
+    expect(resolveNavHref("#product", "nl", "/nl")).toBe("#product");
   });
 
   // On the blog a bare "#product" would point at the blog page itself and do
   // nothing, so the menu looked broken from every page except the homepage.
   it("sends homepage anchors back to the homepage from other pages", () => {
-    expect(resolveNavHref("#product", "nl", "/notes")).toBe("/#product");
-    expect(resolveNavHref("#product", "en", "/en/notes/check-pay-prove")).toBe("/en#product");
+    expect(resolveNavHref("#product", "en", "/notes")).toBe("/#product");
+    expect(resolveNavHref("#product", "nl", "/nl/notes/check-pay-prove")).toBe("/nl#product");
   });
 
-  it("keeps English readers on the English site for site paths", () => {
-    expect(resolveNavHref("/notes", "en", "/en")).toBe("/en/notes");
-    expect(resolveNavHref("/notes", "nl", "/")).toBe("/notes");
+  it("keeps each reader on the site of their own language for site paths", () => {
+    expect(resolveNavHref("/notes", "en", "/")).toBe("/notes");
+    expect(resolveNavHref("/notes", "nl", "/nl")).toBe("/nl/notes");
   });
 
   it("leaves absolute urls alone", () => {
-    expect(resolveNavHref("https://example.org", "en", "/en")).toBe("https://example.org");
+    expect(resolveNavHref("https://example.org", "en", "/")).toBe("https://example.org");
   });
 });
 
@@ -41,8 +41,8 @@ describe("the free checks in the menu", () => {
   });
 
   it("keeps an English reader on the English site and a Dutch reader on the Dutch one", () => {
-    expect(checkLinks(en.header.checks, "en").map((c) => c.href)).toEqual(["/en/cra-check", "/en/x402-check", "/en/check"]);
-    expect(checkLinks(nl.header.checks, "nl").map((c) => c.href)).toEqual(["/cra-check", "/x402-check", "/check"]);
+    expect(checkLinks(en.header.checks, "en").map((c) => c.href)).toEqual(["/cra-check", "/x402-check", "/check"]);
+    expect(checkLinks(nl.header.checks, "nl").map((c) => c.href)).toEqual(["/nl/cra-check", "/nl/x402-check", "/nl/check"]);
   });
 
   it("does not use long dashes in the labels", () => {

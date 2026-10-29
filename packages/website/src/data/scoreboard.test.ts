@@ -82,7 +82,7 @@ describe("SCORE_RUNS", () => {
   });
 
   it("is listed in the sitemap and in llms.txt", () => {
-    expect(sitemap).toContain("https://tokenizen.nl/en/scoreboard");
-    expect(llms).toContain("https://tokenizen.nl/en/scoreboard");
+    expect(sitemap).toContain("https://tokenizen.nl/scoreboard");
+    expect(llms).toContain("https://tokenizen.nl/scoreboard");
   });
 });

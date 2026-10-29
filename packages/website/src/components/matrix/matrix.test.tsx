@@ -271,10 +271,10 @@ describe("the homepage", () => {
 
 describe("links to the sections of the old homepage", () => {
   it("lead to the same section on the tools page, in the reader's language", () => {
-    expect(legacyAnchorTarget("#hoe-het-werkt", "en")).toBe("/en/tools#hoe-het-werkt");
-    expect(legacyAnchorTarget("#status", "nl")).toBe("/tools#status");
+    expect(legacyAnchorTarget("#hoe-het-werkt", "en")).toBe("/tools#hoe-het-werkt");
+    expect(legacyAnchorTarget("#status", "nl")).toBe("/nl/tools#status");
     for (const id of ["probleem", "waarom-nu", "product", "controle", "ontwerpgrenzen", "open-source"]) {
-      expect(legacyAnchorTarget(`#${id}`, "en"), id).toBe(`/en/tools#${id}`);
+      expect(legacyAnchorTarget(`#${id}`, "en"), id).toBe(`/tools#${id}`);
     }
   });
 
@@ -326,8 +326,9 @@ describe("the offer pages", () => {
 
   it("lists every new page in the sitemap and in llms.txt", () => {
     for (const slug of ["checks", "security", "scan", "tools", "consultancy", "about"]) {
-      expect(sitemap, slug).toContain(`<loc>https://tokenizen.nl/en/${slug}</loc>`);
-      expect(llms, slug).toContain(`https://tokenizen.nl/en/${slug}`);
+      expect(sitemap, slug).toContain(`<loc>https://tokenizen.nl/${slug}</loc>`);
+      expect(sitemap, `${slug} in Dutch`).toContain(`<loc>https://tokenizen.nl/nl/${slug}</loc>`);
+      expect(llms, slug).toContain(`https://tokenizen.nl/${slug}`);
     }
   });
 });

@@ -4,6 +4,7 @@ import { nl } from "./nl";
 import { en } from "./en";
 import type { Dictionary } from "./types";
 import { applyHeadPlan, headPlan } from "@/lib/page-head";
+import { localePath, parsePath } from "@/lib/locale-paths";
 
 export type Locale = "nl" | "en";
 
@@ -20,14 +21,7 @@ interface LocaleContextValue {
 const LocaleContext = createContext<LocaleContextValue | null>(null);
 
 function localeFromPathname(pathname: string): Locale {
-  return pathname === "/en" || pathname.startsWith("/en/") ? "en" : "nl";
-}
-
-/** Haalt het "/en"-prefix eraf zodat we het pad onder beide talen kunnen vergelijken. */
-function stripLocalePrefix(pathname: string): string {
-  if (pathname === "/en") return "/";
-  if (pathname.startsWith("/en/")) return pathname.slice(3);
-  return pathname;
+  return parsePath(pathname).locale;
 }
 
 export function LocaleProvider({ children, locale: forcedLocale }: { children: ReactNode; locale?: Locale }) {
@@ -52,10 +46,8 @@ export function LocaleProvider({ children, locale: forcedLocale }: { children: R
   }, [t]);
 
   const switchLocaleHref = () => {
-    const restOfPath = stripLocalePrefix(window.location.pathname);
-    const prefix = otherLocale === "en" ? "/en" : "";
-    const path = restOfPath === "/" ? prefix || "/" : `${prefix}${restOfPath}`;
-    return `${path}${window.location.hash}`;
+    const { rest } = parsePath(window.location.pathname);
+    return `${localePath(otherLocale, rest)}${window.location.hash}`;
   };
 
   return (

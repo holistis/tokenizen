@@ -55,10 +55,10 @@ describe("the blog and the notes are two places", () => {
   });
 
   it("points each page at the other", () => {
-    expect(render("en", "blog")).toContain('href="/en/notes"');
-    expect(render("en", "notes")).toContain('href="/en/blog"');
-    expect(render("nl", "blog")).toContain('href="/notes"');
-    expect(render("nl", "notes")).toContain('href="/blog"');
+    expect(render("en", "blog")).toContain('href="/notes"');
+    expect(render("en", "notes")).toContain('href="/blog"');
+    expect(render("nl", "blog")).toContain('href="/nl/notes"');
+    expect(render("nl", "notes")).toContain('href="/nl/blog"');
   });
 
   it("keeps post urls where they were, so links that are already out there still work", () => {

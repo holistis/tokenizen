@@ -1,6 +1,7 @@
 import { Github, Mail } from "lucide-react";
 
 import { useLocale } from "@/i18n/context";
+import { parsePath } from "@/lib/locale-paths";
 import { resolveNavHref } from "@/components/header";
 
 const GITHUB_URL = "https://github.com/holistis/tokenizen";
@@ -15,7 +16,7 @@ export const BUSINESS_LINE = "AO Services · KvK 86816632 · BTW NL004319767B61 
 export function showsRuleLegend(pathname?: string): boolean {
   const path = (pathname ?? (typeof window === "undefined" ? "/" : window.location.pathname)).replace(/\/+$/, "") || "/";
   // The dots explain the coloured limits of the section on the tools page (Capacity Attest). The homepage has no such section any more.
-  return path === "/tools" || path === "/en/tools";
+  return parsePath(path).rest === "/tools";
 }
 
 export function Footer() {

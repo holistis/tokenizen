@@ -19,8 +19,8 @@ describe("SecondPillar", () => {
   // is the failure this test exists to prevent: a visitor must be able to get
   // there from the homepage, in their own language.
   it("links to the self-check page, locale-correct, in both languages", () => {
-    expect(render("nl")).toContain('href="/check"');
-    expect(render("en")).toContain('href="/en/check"');
+    expect(render("nl")).toContain('href="/nl/check"');
+    expect(render("en")).toContain('href="/check"');
   });
 
   // The section shipped without a nav entry, so it existed on the page while the

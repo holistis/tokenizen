@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { CheckScene, Hero, MissionScene, OfferTiles, PillarScene, SecurityScene, TalkScene, Unknowns } from "@/components/home/home-sections";
 import { CINEMA } from "@/data/home-copy";
 import { useLocale } from "@/i18n/context";
+import { localePath } from "@/lib/locale-paths";
 
 // The sections of the old homepage now live on the tools page. A link from outside to one of them (tokenizen.nl/#hoe-het-werkt) would land on
 // the top of the new homepage; this sends it to the same section on the tools page.
@@ -11,7 +12,7 @@ const LEGACY_ANCHORS = ["probleem", "waarom-nu", "product", "controle", "hoe-het
 export function legacyAnchorTarget(hash: string, locale: "en" | "nl"): string | null {
   const id = hash.replace(/^#/, "");
   if (!LEGACY_ANCHORS.includes(id)) return null;
-  return `${locale === "nl" ? "" : "/en"}/tools#${id}`;
+  return `${localePath(locale, "/tools")}#${id}`;
 }
 
 // The photograph behind each pillar, in the order of the pillars. Left and right alternate so the eye moves down the page.

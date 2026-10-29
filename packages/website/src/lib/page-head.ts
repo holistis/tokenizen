@@ -6,9 +6,27 @@
 // on the live site on 2026-10-28: /en/cra-check, /en/x402-check and every note told a search engine
 // that its canonical address was https://tokenizen.nl/en. The decision per path lives here, as plain
 // functions, so it can be tested without a browser.
+//
+// English is the base: its address has no prefix. The Dutch version of a page lives under /nl.
+
+import { localePath, parsePath } from "@/lib/locale-paths";
 
 /** Pages that exist in both languages (they are both in sitemap.xml). Every other page is English only. */
-export const BILINGUAL_PATHS = ["/", "/notes", "/blog"];
+export const BILINGUAL_PATHS = [
+  "/",
+  "/notes",
+  "/blog",
+  "/checks",
+  "/security",
+  "/scan",
+  "/tools",
+  "/consultancy",
+  "/about",
+  "/cra-check",
+  "/x402-check",
+  "/check",
+  "/scoreboard",
+];
 
 export interface Alternate {
   hreflang: string;
@@ -19,41 +37,32 @@ export function normalizePath(pathname: string): string {
   return pathname.replace(/\/+$/, "") || "/";
 }
 
-function split(pathname: string): { en: boolean; rest: string } {
-  const path = normalizePath(pathname);
-  if (path === "/en") return { en: true, rest: "/" };
-  if (path.startsWith("/en/")) return { en: true, rest: path.slice(3) };
-  return { en: false, rest: path };
+function split(pathname: string): { nl: boolean; rest: string } {
+  const { locale, rest } = parsePath(pathname);
+  return { nl: locale === "nl", rest };
 }
 
 /**
  * The address a page calls its own. `known` is whether the app has a page of its own for this path;
  * any other path shows the homepage, so its canonical address is the homepage of that language.
- * An English-only page reached under a Dutch path (/cra-check) points at its /en address, the one in sitemap.xml.
+ * An English-only page reached under a Dutch path (/nl/notes/x) points at its English address, the one in sitemap.xml.
  */
 export function canonicalPath(pathname: string, known: boolean): string {
-  const { en, rest } = split(pathname);
-  const home = en ? "/en" : "/";
-  if (!known || rest === "/") return home;
-  if (BILINGUAL_PATHS.includes(rest)) return en ? `/en${rest}` : rest;
-  return `/en${rest}`;
+  const { nl, rest } = split(pathname);
+  if (!known || rest === "/") return localePath(nl ? "nl" : "en", "/");
+  if (BILINGUAL_PATHS.includes(rest)) return localePath(nl ? "nl" : "en", rest);
+  return localePath("en", rest);
 }
 
 /** The language versions of a page. An English-only page has none: it is its own canonical address. */
 export function alternatePaths(pathname: string, known: boolean): Alternate[] {
   const { rest } = split(pathname);
-  if (!known || rest === "/") {
+  const page = !known ? "/" : rest;
+  if (page === "/" || BILINGUAL_PATHS.includes(page)) {
     return [
-      { hreflang: "nl", path: "/" },
-      { hreflang: "en", path: "/en" },
-      { hreflang: "x-default", path: "/" },
-    ];
-  }
-  if (BILINGUAL_PATHS.includes(rest)) {
-    return [
-      { hreflang: "nl", path: rest },
-      { hreflang: "en", path: `/en${rest}` },
-      { hreflang: "x-default", path: rest },
+      { hreflang: "en", path: localePath("en", page) },
+      { hreflang: "nl", path: localePath("nl", page) },
+      { hreflang: "x-default", path: localePath("en", page) },
     ];
   }
   return [];

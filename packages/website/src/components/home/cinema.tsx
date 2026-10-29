@@ -1,5 +1,8 @@
 import { useEffect, useRef, type CSSProperties, type PointerEvent, type ReactNode } from "react";
 
+import { useLocale } from "@/i18n/context";
+import { localePath } from "@/lib/locale-paths";
+
 // The building blocks of the cinematic pages: a full-bleed photograph with depth, dust that drifts in front of it, glass cards that tilt toward the
 // pointer, and a reveal when a block scrolls into view. The photographs are illustrations made with AI and are labelled as such on the page.
 // Everything moves only when the reader has not asked for reduced motion, and everything is readable without JavaScript.
@@ -235,5 +238,40 @@ export function Tilt({ children, className = "", as: Tag = "div" }: { children: 
     <Tag onPointerMove={onMove} onPointerLeave={onLeave} style={style} className={`tilt ${className}`}>
       {children}
     </Tag>
+  );
+}
+
+/** The head of a subpage: the same photograph and pane of glass as the homepage, shorter. The one h1 of the page lives here. */
+export function PageHero({ image, chip, title, lead }: { image: string; chip: string; title: string; lead: string }) {
+  const ref = useDepth<HTMLElement>();
+  const reveal = useReveal<HTMLDivElement>();
+  const { locale } = useLocale();
+  return (
+    <section ref={ref} className="subhero">
+      <div className="scene-media" aria-hidden="true">
+        <Photo name={image} eager className="scene-img" />
+      </div>
+      <div className="subhero-shade" aria-hidden="true" />
+      <div className="container relative">
+        <div ref={reveal} className="reveal glass max-w-3xl">
+          <a href={localePath(locale, "/")} className="block w-fit font-mono text-xs uppercase tracking-[0.2em] text-white/70 hover:text-white">
+            tokenizen.nl
+          </a>
+          <p className="mt-5 inline-flex w-fit rounded-full border border-white/20 px-3 py-0.5 font-mono text-[11px] uppercase tracking-wide text-[color:var(--glow)]">{chip}</p>
+          <h1 className="mt-4 font-display text-4xl leading-[1.05] sm:text-5xl md:text-6xl">{title}</h1>
+          <p className="mt-5 max-w-2xl text-base leading-relaxed text-white/90 md:text-lg">{lead}</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** A subpage: a dark page with a photograph at the top and the content below it. */
+export function CinemaPage({ image, chip, title, lead, children }: { image: string; chip: string; title: string; lead: string; children: ReactNode }) {
+  return (
+    <div className="cinema">
+      <PageHero image={image} chip={chip} title={title} lead={lead} />
+      <div className="container py-12 md:py-16">{children}</div>
+    </div>
   );
 }

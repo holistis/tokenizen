@@ -212,7 +212,7 @@ function renderBlock(block: PostBlock, index: number, prefix: string): JSX.Eleme
 
 export function BlogPostPage({ post }: { post: BlogPost }) {
   const { locale } = useLocale();
-  const prefix = locale === "en" ? "/en" : "";
+  const prefix = locale === "nl" ? "/nl" : "";
   const title = `${post.title} | tokenizen`;
 
   useEffect(() => {

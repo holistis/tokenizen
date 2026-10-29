@@ -326,9 +326,23 @@
   --primary: #f5a524;
   --primary-foreground: #06090a;
   --ring: #f5a524;
+  --card: #0f1517;
+  --card-foreground: #efe9dc;
+  --input: #2c3738;
+  --rule-green: #7fae8a;
+  --rule-green-soft: #14211a;
+  --rule-yellow: #d2ae5c;
+  --rule-yellow-soft: #2e2818;
+  --rule-red: #c77e6c;
+  --rule-red-soft: #2e1f1b;
+  --altitude: #6cc4e0;
+  --cell-visible: #7fae8a;
+  --cell-hidden: #d2ae5c;
+  --cell-none: #8f897a;
+  --cell-you: #6cc4e0;
   --glow: #f5a524;
   --glow-2: #3fd6c4;
-  --soft: #cfc9b9;
+  --soft: #d6d0c1;
   color: var(--foreground);
   background:
     radial-gradient(1200px 600px at 85% -5%, rgba(63, 214, 196, 0.08), transparent 60%),
@@ -375,6 +389,34 @@
   }
   to {
     transform: scale(1.07);
+  }
+}
+
+/* De kop van een subpagina: dezelfde foto, hetzelfde glas, korter. */
+.subhero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  min-height: min(62svh, 34rem);
+  padding-block: 5rem 3.5rem;
+}
+.subhero-shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(6, 9, 10, 0.7), rgba(6, 9, 10, 0.2) 65%, rgba(6, 9, 10, 0.02)),
+    linear-gradient(180deg, rgba(6, 9, 10, 0.35) 0%, transparent 30%, transparent 55%, #06090a 100%);
+}
+@media (max-width: 767px) {
+  .subhero {
+    min-height: 0;
+    padding-block: 3.5rem 2.5rem;
+  }
+  .subhero-shade {
+    background: linear-gradient(180deg, rgba(6, 9, 10, 0.55), rgba(6, 9, 10, 0.8)), linear-gradient(180deg, transparent 70%, #06090a 100%);
   }
 }
 

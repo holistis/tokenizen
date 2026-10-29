@@ -4,16 +4,17 @@ import { ArrowRight, ArrowUpRight, Mail } from "lucide-react";
 import { CinemaHero, Scene, Tilt, useReveal } from "@/components/home/cinema";
 import { repoFromHash } from "@/components/pages/cra-check-page";
 import { CINEMA, CONTACT_EMAIL, HOME, OFFERS, type Locale, type Offer, type Pillar } from "@/data/home-copy";
+import { localePath } from "@/lib/locale-paths";
 
 // The sections of the homepage, from the first screen down. Each of them says one thing and has its own photograph.
 
 const eyebrow = "mb-4 font-mono text-xs font-medium uppercase tracking-[0.2em] text-[color:var(--glow)]";
 const title = "font-display text-4xl leading-[1.05] sm:text-5xl";
 
-/** Pages behind the cards exist in English only, so their address is the /en one, also from the Dutch homepage. */
-function tileHref(offer: Offer): string {
-  if (offer.id === "talk") return "/en/consultancy";
-  return offer.cta.href.startsWith("/") ? `/en${offer.cta.href}` : offer.cta.href;
+/** The page behind a card, in the reader's language. The conversation card opens the page about it, not a mail window. */
+function tileHref(offer: Offer, locale: Locale): string {
+  if (offer.id === "talk") return localePath(locale, "/consultancy");
+  return offer.cta.href.startsWith("/") ? localePath(locale, offer.cta.href) : offer.cta.href;
 }
 
 export function Hero({ locale }: { locale: Locale }) {
@@ -28,22 +29,24 @@ export function Hero({ locale }: { locale: Locale }) {
           <br />
           <span className="glow-text font-signage font-bold uppercase tracking-tight">{c.h1b}</span>
         </h1>
-        <p className="mt-6 max-w-xl text-base leading-relaxed text-[color:var(--soft)] md:text-lg">{c.body}</p>
-        <div className="mt-8 flex flex-wrap items-center gap-3">
-          <a href="/en/cra-check" className="btn-glow">
-            {c.ctaPrimary}
-            <ArrowRight className="size-4" aria-hidden="true" />
-          </a>
-          <a href="#aanbod" className="btn-ghost">
-            {c.ctaSecondary}
-          </a>
+        <div className="glass mt-6 max-w-xl">
+          <p className="text-base leading-relaxed text-white md:text-lg">{c.body}</p>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <a href={localePath(locale, "/cra-check")} className="btn-glow">
+              {c.ctaPrimary}
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </a>
+            <a href="#aanbod" className="btn-ghost">
+              {c.ctaSecondary}
+            </a>
+          </div>
         </div>
       </div>
       <ul className="mt-12 grid gap-3 sm:grid-cols-3 lg:mt-16">
         {c.chips.map((chip) => (
           <li key={chip.label}>
             <a
-              href={chip.href.startsWith("/") ? `/en${chip.href}` : chip.href}
+              href={chip.href.startsWith("/") ? localePath(locale, chip.href) : chip.href}
               className="chip-glass group flex h-full items-baseline gap-4 px-5 py-4"
             >
               <span className="glow-text font-signage text-5xl font-bold leading-none">{chip.value}</span>
@@ -74,7 +77,7 @@ export function OfferTiles({ locale }: { locale: Locale }) {
                 {offer.status}
               </p>
               <h3 className="mt-5 font-display text-3xl leading-tight">
-                <a href={tileHref(offer)} className="after:absolute after:inset-0 after:content-['']">
+                <a href={tileHref(offer, locale)} className="after:absolute after:inset-0 after:content-['']">
                   {CINEMA[locale].tileName[offer.id] ?? offer.name}
                 </a>
               </h3>
@@ -131,7 +134,7 @@ export function SecurityScene({ locale }: { locale: Locale }) {
         ))}
       </ul>
       <p className="mt-6">
-        <a href="/en/security" className="inline-flex items-center gap-1 font-mono text-xs uppercase tracking-wide text-[color:var(--glow)] underline-offset-2 hover:underline">
+        <a href={localePath(locale, "/security")} className="inline-flex items-center gap-1 font-mono text-xs uppercase tracking-wide text-[color:var(--glow)] underline-offset-2 hover:underline">
           {c.more}
           <ArrowUpRight className="size-3.5" aria-hidden="true" />
         </a>
@@ -165,7 +168,7 @@ export function CheckScene({ locale }: { locale: Locale }) {
     e.preventDefault();
     const typed = String(new FormData(e.currentTarget).get("repo") ?? "").trim();
     const repo = repoFromHash(`#repo=${encodeURIComponent(typed)}`);
-    if (repo) window.location.assign(`/en/cra-check#repo=${encodeURIComponent(repo)}`);
+    if (repo) window.location.assign(`${localePath(locale, "/cra-check")}#repo=${encodeURIComponent(repo)}`);
   }
   return (
     <Scene id="nagaan" image="lens" side="right" label={c.heading}>
@@ -214,7 +217,7 @@ export function Unknowns({ locale }: { locale: Locale }) {
             ))}
           </ul>
           <p className="mt-6">
-            <a href="/en/scoreboard" className="inline-flex items-center gap-1 font-mono text-xs uppercase tracking-wide text-[color:var(--glow)] underline-offset-2 hover:underline">
+            <a href={localePath(locale, "/scoreboard")} className="inline-flex items-center gap-1 font-mono text-xs uppercase tracking-wide text-[color:var(--glow)] underline-offset-2 hover:underline">
               {c.scoreboard}
               <ArrowUpRight className="size-3.5" aria-hidden="true" />
             </a>
@@ -238,7 +241,7 @@ export function TalkScene({ locale }: { locale: Locale }) {
             <Mail className="size-4" aria-hidden="true" />
             {c.button}
           </a>
-          <a href="/en/about" className="btn-ghost">
+          <a href={localePath(locale, "/about")} className="btn-ghost">
             {c.secondary}
           </a>
         </div>

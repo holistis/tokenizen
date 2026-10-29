@@ -6,6 +6,8 @@ describe("showsRuleLegend", () => {
   it("shows the rule legend on the tools page in both languages", () => {
     expect(showsRuleLegend("/tools")).toBe(true);
     expect(showsRuleLegend("/en/tools")).toBe(true);
+    expect(showsRuleLegend("/tools")).toBe(true);
+    expect(showsRuleLegend("/nl/tools")).toBe(true);
     expect(showsRuleLegend("/en/tools/")).toBe(true);
   });
 
