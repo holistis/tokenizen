@@ -310,6 +310,11 @@ const SCAN = {
       "Every run on our fixed sets goes on the public scoreboard within 7 days, the misses included, under a public rule with an OpenTimestamps stamp. Where a row links to a pre-registration, the rule was written down in public before the run; for version 3.1 the rule is only in our own notes, so that row is less verifiable. Version 3.1 found 8 of 105 known findings in its first 15 hypotheses, on the same eight contests as our sealed run, which were no longer secret by then, after two changes at once. In the sealed run the earlier versions found 1 and 4. Every report we deliver is also put on a public list: the fingerprint of the report, the outcome, the coverage and the time, without the repository or the buyer. The head of that list is stamped with OpenTimestamps, which is outside our control and counts as confirmed some hours after it is made. The list is at https://api.tokenizen.nl/api/scan-receipts and you check your own report with one file, verify-scan-receipts.mjs on this site. This shows that a report existed on that date and was not changed afterwards. It does not show which version of the code was scanned, and it does not show that the code is safe. Our own test runs are not on the list. Each square below is one known finding.",
     strip: "8 of 105 known findings found, 97 missed",
     board: "Open the scoreboard",
+    watchLabel: "Watch it in a minute",
+    watchText: "In one minute: what our scan found, what it missed, and how you can check it. We publish every run on our fixed test sets, the misses included, together with the programs that check the results. Every number in this film can be checked from open files and on-chain records.",
+    watchSub: "English, with English subtitles.",
+    transcriptLabel: "Transcript",
+    filmTranscript: ["Eight of a hundred and five.","That is how many known findings version three point one of our scan found on eight audit contests. It missed ninety-seven.","We publish both numbers.","Every run goes on a public scoreboard within seven days. The bad ones too.","The rule is written down and time-stamped before the first run it covers.","Every report we deliver goes on a dated list. You check yours with one file.","When money moves, you read it back from the chain. One real payment on Base. One rating, written by the buyer. One hash that ties them together.","Everything we show, you can replay.","Check. Pay. Prove. tokenizen.nl"],
     openText:
       "The programs that check our payment receipts and the list of delivered reports are open source, under the MIT and Apache-2.0 licences, so you can read them, run them and fork them. The scan's own prompts and model settings are not published.",
     notLabel: "Where it stops",
@@ -330,6 +335,11 @@ const SCAN = {
       "Elke run op onze vaste sets komt binnen 7 dagen op het openbare scorebord, de missers inbegrepen, onder een openbare regel met een OpenTimestamps-stempel. Waar een rij naar een preregistratie verwijst, stond de regel vooraf openbaar opgeschreven; voor versie 3.1 staat de regel alleen in onze eigen notities, dus die rij is minder goed na te gaan. Versie 3.1 vond 8 van de 105 bekende bevindingen in zijn eerste 15 hypotheses, op dezelfde acht wedstrijden als onze verzegelde run, die toen niet meer geheim waren, na twee wijzigingen tegelijk. In de verzegelde run vonden de eerdere versies er 1 en 4. Elk rapport dat we afleveren komt ook op een openbare lijst: de vingerafdruk van het rapport, de uitkomst, de dekking en het tijdstip, zonder de repository of de koper. De kop van die lijst krijgt een stempel van OpenTimestamps, buiten onze controle, dat enkele uren na het zetten als bevestigd telt. De lijst staat op https://api.tokenizen.nl/api/scan-receipts en je controleert je eigen rapport met één bestand, verify-scan-receipts.mjs op deze site. Dat laat zien dat een rapport op die datum bestond en daarna niet is aangepast. Het laat niet zien welke versie van de code is gescand, en ook niet dat de code veilig is. Onze eigen proefruns staan niet op de lijst. Elk vierkantje hieronder is één bekende bevinding.",
     strip: "8 van de 105 bekende bevindingen gevonden, 97 gemist",
     board: "Open het scorebord",
+    watchLabel: "Kijk in een minuut",
+    watchText: "In een minuut: wat onze scan vond, wat hij miste en hoe je het nagaat. We publiceren elke run op onze vaste testsets, de missers erbij, samen met de programma's die de uitslagen nakijken. Elk getal in deze film is na te gaan met open bestanden en bewijs op de keten.",
+    watchSub: "Engels gesproken, met Engelse ondertitels.",
+    transcriptLabel: "Uitgeschreven tekst (Engels)",
+    filmTranscript: ["Eight of a hundred and five.","That is how many known findings version three point one of our scan found on eight audit contests. It missed ninety-seven.","We publish both numbers.","Every run goes on a public scoreboard within seven days. The bad ones too.","The rule is written down and time-stamped before the first run it covers.","Every report we deliver goes on a dated list. You check yours with one file.","When money moves, you read it back from the chain. One real payment on Base. One rating, written by the buyer. One hash that ties them together.","Everything we show, you can replay.","Check. Pay. Prove. tokenizen.nl"],
     openText:
       "De programma's waarmee je onze betaalbewijzen en de lijst met afgeleverde rapporten nakijkt zijn open source, onder de licenties MIT en Apache-2.0, dus je kunt ze lezen, draaien en forken. De prompts en modelinstellingen van de scan zelf zijn niet openbaar.",
     notLabel: "Waar het ophoudt",
@@ -343,6 +353,29 @@ export function ScanPage() {
   const to = (rest: string) => localePath(loc, rest);
   return (
     <OfferFrame image="prisma" chip={c.chip} title={c.title} lead={c.lead} metaTitle={c.metaTitle} metaDescription={c.metaDescription}>
+      <Block label={c.watchLabel}>
+        <figure>
+          <video controls preload="none" playsInline poster="/media/tokenizen-film-60s-poster.jpg" className="aspect-video w-full rounded-lg border border-border bg-black">
+            <source src="/media/tokenizen-film-60s.mp4" type="video/mp4" />
+            <track kind="captions" srcLang="en" label="English" src="/media/tokenizen-film-60s.en.vtt" />
+            <p>
+              <a href="/media/tokenizen-film-60s.mp4">{c.watchLabel}</a>
+            </p>
+          </video>
+          <figcaption className="mt-3">
+            <p>{c.watchText}</p>
+            <p className="text-sm text-muted-foreground">{c.watchSub}</p>
+          </figcaption>
+          <details className="mt-3 text-sm text-muted-foreground">
+            <summary className="cursor-pointer font-mono text-xs uppercase tracking-wide">{c.transcriptLabel}</summary>
+            <ol className="mt-3 list-decimal space-y-1 pl-5">
+              {c.filmTranscript.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ol>
+          </details>
+        </figure>
+      </Block>
       <Block label={c.getLabel}>
         <p>{c.getText}</p>
         <p>
