@@ -2,6 +2,7 @@
   "name": "@tokenizen/website",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "description": "Publieke marketing/product-website voor tokenizen.nl.",
   "type": "module",
   "scripts": {

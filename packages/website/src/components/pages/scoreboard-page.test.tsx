@@ -72,7 +72,7 @@ describe("ScoreboardPage", () => {
     expect(text).toContain(
       "How many of the findings that human auditors already found in closed contests does our smart contract scan find? Rows link to their results and, where one exists, to the pre-registration written before the run. A row without that link has no public rule from before the run: for version 3.1 the rule is only in our own notes, and the row says so. A row without a result is empty on purpose.",
     );
-    expect(text).toContain("Last updated 2026-10-25. Newest and still open rows first.");
+    expect(text).toContain("Last updated 2026-10-30. Newest and still open rows first.");
     expect(text).toContain("Bug Bounty Intelligence · open scoreboard");
     expect(text).toContain("It reported 120 hypotheses in total.");
     expect(text).toContain("Found a mistake in how we count? Open an issue in the repository . We correct it in public.");
@@ -113,7 +113,7 @@ describe("ScoreboardPage in Dutch", () => {
     expect(text).toContain("Hoeveel van de bevindingen die menselijke auditors al vonden in afgesloten wedstrijden vindt onze smart-contractscan?");
     expect(text).toContain("Een rij zonder uitslag is met opzet leeg.");
     expect(text).toContain("Bug Bounty Intelligence · open scorebord");
-    expect(text).toContain("Laatst bijgewerkt op 2026-10-25.");
+    expect(text).toContain("Laatst bijgewerkt op 2026-10-30.");
   });
 
   it("labels the rows on a set we tuned on as not evidence, in Dutch", () => {

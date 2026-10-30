@@ -4,7 +4,7 @@ import { CinemaPage } from "@/components/home/cinema";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription } from "@/components/ui/card";
 import { CopyButton } from "@/components/copy-button";
-import { SCORE_RUNS, SCORE_UPDATED, SEALED_SET_HASH, SEED_BLOCK, runText, tunedLabel, type ScoreRun } from "@/data/scoreboard";
+import { PUBLICATION_RULE_URL, SCORE_RUNS, SCORE_UPDATED, SEALED_SET_HASH, SEED_BLOCK, runText, tunedLabel, type ScoreRun } from "@/data/scoreboard";
 import { useLocale, type Locale } from "@/i18n/context";
 
 // The page is complete in English and in Dutch. The words of the rows come from data/scoreboard.ts (SCORE_RUNS and SCORE_RUNS_NL); the words
@@ -27,6 +27,9 @@ interface Copy {
   lead: string;
   eyebrow: string;
   updated: (date: string) => string;
+  /** The promise about what goes on this page and how fast, and the label of the link to the rule behind it. */
+  rule: string;
+  ruleLink: string;
   pending: string;
   measured: string;
   hypothesesReported: (n: number) => string;
@@ -52,6 +55,8 @@ const COPY: Record<Locale, Copy> = {
     lead: "How many of the findings that human auditors already found in closed contests does our smart contract scan find? Rows link to their results and, where one exists, to the pre-registration written before the run. A row without that link has no public rule from before the run: for version 3.1 the rule is only in our own notes, and the row says so. A row without a result is empty on purpose.",
     eyebrow: "Bug Bounty Intelligence · open scoreboard",
     updated: (date) => `Last updated ${date}. Newest and still open rows first.`,
+    rule: "Every run of our scan on our fixed sets of known findings goes on this page within 7 days, the misses included, so you see the whole record and not only the good runs. If a version scores lower than the run before it on the same set, its row says so, with both numbers side by side. The rule is public and has an OpenTimestamps stamp next to it:",
+    ruleLink: "The Publication Rule",
     pending: "pending",
     measured: "measured",
     hypothesesReported: (n) => `. It reported ${n} hypotheses in total.`,
@@ -117,6 +122,8 @@ const COPY: Record<Locale, Copy> = {
     lead: "Hoeveel van de bevindingen die menselijke auditors al vonden in afgesloten wedstrijden vindt onze smart-contractscan? Rijen verwijzen naar hun uitslag en, waar die er is, naar de preregistratie die voor de run is opgeschreven. Een rij zonder die link heeft vooraf geen openbare regel: bij versie 3.1 staat de regel alleen in onze eigen notities, en de rij zegt dat. Een rij zonder uitslag is met opzet leeg.",
     eyebrow: "Bug Bounty Intelligence · open scorebord",
     updated: (date) => `Laatst bijgewerkt op ${date}. Eerst de nieuwste rijen en de rijen die nog open staan.`,
+    rule: "Elke run van onze scan op onze vaste sets van bekende bevindingen staat binnen 7 dagen op deze pagina, de missers inbegrepen, zodat je het hele verslag ziet en niet alleen de goede runs. Scoort een versie lager dan de run ervoor op dezelfde set, dan zegt de rij dat, met beide getallen naast elkaar. De regel is openbaar en heeft een OpenTimestamps-stempel ernaast:",
+    ruleLink: "De publicatieregel",
     pending: "nog open",
     measured: "gemeten",
     hypothesesReported: (n) => `. Er werden in totaal ${n} hypotheses gemeld.`,
@@ -261,6 +268,12 @@ export function ScoreboardPage() {
       <div className="max-w-3xl">
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">{c.eyebrow}</p>
         <p className="mt-3 text-sm text-muted-foreground">{c.updated(SCORE_UPDATED)}</p>
+        <p className="mt-3 text-sm leading-relaxed">
+          {c.rule}{" "}
+          <a className="underline underline-offset-2 hover:text-primary" href={PUBLICATION_RULE_URL} target="_blank" rel="noreferrer noopener">
+            {c.ruleLink}
+          </a>
+        </p>
 
         <ul className="mt-8 space-y-5">
           {SCORE_RUNS.map((run) => (
