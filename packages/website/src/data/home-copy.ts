@@ -195,7 +195,7 @@ export const HOME: Record<Locale, HomeCopy> = {
       eyebrow: "tokenizen.nl · Eindhoven",
       h1a: "Everyone makes claims.",
       h1b: "We make ours checkable.",
-      body: "Security research, free checks and a log with a timestamp outside our control. Each number below links to how we got it, with the commands, the limits and our misses.",
+      body: "Security research, free checks and a log with a timestamp outside our control. We do not promise that your contract is safe. We show what we checked, with our misses next to it and numbers you can recompute yourself. Each number below links to how we got it, with the commands and the limits.",
       ctaPrimary: "Check your repository",
       ctaSecondary: "See what we offer",
       chips: [
@@ -268,7 +268,7 @@ export const HOME: Record<Locale, HomeCopy> = {
       eyebrow: "tokenizen.nl · Eindhoven",
       h1a: "Iedereen beweert wat.",
       h1b: "Bij ons kun je het nameten.",
-      body: "Beveiligingsonderzoek, gratis checks en een logboek met een tijdstempel buiten onze controle. Elk getal hieronder linkt naar hoe we eraan kwamen, met de commando's, de grenzen en onze missers.",
+      body: "Beveiligingsonderzoek, gratis checks en een logboek met een tijdstempel buiten onze controle. Wij beloven niet dat je contract veilig is. Wij laten zien wat we gecontroleerd hebben, met onze missers erbij en cijfers die je zelf kunt nareken. Elk getal hieronder linkt naar hoe we eraan kwamen, met de commando's en de grenzen.",
       ctaPrimary: "Check jouw repository",
       ctaSecondary: "Bekijk ons aanbod",
       chips: [

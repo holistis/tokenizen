@@ -298,7 +298,7 @@ const SCAN = {
   en: {
     chip: "pay per scan",
     title: "Smart contract scan",
-    lead: "A security scan of smart contract code: it returns possible weak spots for you to check. It finds some of what a human audit finds, and we publish how much.",
+    lead: "We do not promise that your contract is safe. We show what we checked, with our misses next to it and numbers you can recompute yourself. The scan returns possible weak spots for you to check. It finds some of what a human audit finds, and we publish how much.",
     metaTitle: "Smart contract scan | tokenizen",
     metaDescription: "A smart contract scan with a public scoreboard that includes what it missed. Pay per scan over x402.",
     getLabel: "What you get",
@@ -316,7 +316,7 @@ const SCAN = {
   nl: {
     chip: "per scan betalen",
     title: "Smart-contractscan",
-    lead: "Een beveiligingsscan van smart-contractcode: hij geeft mogelijke zwakke plekken terug om na te lopen. Hij vindt een deel van wat een menselijke audit vindt, en we publiceren hoeveel.",
+    lead: "Wij beloven niet dat je contract veilig is. Wij laten zien wat we gecontroleerd hebben, met onze missers erbij en cijfers die je zelf kunt nareken. De scan geeft mogelijke zwakke plekken terug om na te lopen. Hij vindt een deel van wat een menselijke audit vindt, en we publiceren hoeveel.",
     metaTitle: "Smart-contractscan | tokenizen",
     metaDescription: "Een smart-contractscan met een openbaar scorebord dat ook laat zien wat hij miste. Betaal per scan via x402.",
     getLabel: "Wat je krijgt",
