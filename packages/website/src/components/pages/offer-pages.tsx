@@ -226,7 +226,7 @@ const SECURITY = {
     sealedLabel: "Sealed dossiers (planned)",
     sealedText:
       "Reports under embargo cannot be shown. We plan to put each one on a public list with its date and a fingerprint, without its content. When the fix is out we publish the dossier, and anyone can recompute the fingerprint and see that we had it on that date. It is the same idea as our Signal log. It is not live yet.",
-    notLabel: "What it is not",
+    notLabel: "Where it stops",
     notText: "Not a penetration test of your production systems and not a certificate. You get a written report, privately, with the evidence we have for each finding and what is still open.",
     startLabel: "Start",
     subject: "Security research",
@@ -252,7 +252,7 @@ const SECURITY = {
     sealedLabel: "Verzegelde dossiers (gepland)",
     sealedText:
       "Meldingen onder embargo kunnen we niet tonen. We willen elk ervan op een openbare lijst zetten met zijn datum en een vingerafdruk, zonder de inhoud. Zodra de reparatie er is publiceren we het dossier, en iedereen kan de vingerafdruk narekenen en zien dat we het op die datum al hadden. Het is hetzelfde idee als ons Signal log. Het is nog niet live.",
-    notLabel: "Wat het niet is",
+    notLabel: "Waar het ophoudt",
     notText: "Geen penetratietest van je productiesystemen en geen certificaat. Je krijgt privé een schriftelijk rapport, met het bewijs dat we per vondst hebben en wat nog open staat.",
     startLabel: "Start",
     subject: "Beveiligingsonderzoek",
@@ -298,7 +298,7 @@ const SCAN = {
   en: {
     chip: "pay per scan",
     title: "Smart contract scan",
-    lead: "We do not promise that your contract is safe. We show what we checked, with our misses next to it and numbers you can recompute yourself. The scan returns possible weak spots for you to check. It finds some of what a human audit finds, and we publish how much.",
+    lead: "Scan a smart contract repository for 1 dollar and get, in a minute or two, the weak spots the model is most sure about, ready to check by hand. Every run and every miss is on a public scoreboard, and every delivered report goes on a dated list you can check yourself. It finds some of what a human audit finds, and we publish how much.",
     metaTitle: "Smart contract scan | tokenizen",
     metaDescription: "A smart contract scan with a public scoreboard that includes what it missed. Pay per scan over x402.",
     getLabel: "What you get",
@@ -310,13 +310,13 @@ const SCAN = {
       "The public scoreboard lists every run. Where a row links to a pre-registration, the rule was written down in public before the run; for version 3.1 the rule is only in our own notes, so that row is less verifiable. Version 3.1 found 8 of 105 known findings in its first 15 hypotheses, on the same eight contests as our sealed run, which were no longer secret by then, after two changes at once. In the sealed run the earlier versions found 1 and 4. Every report we deliver is also put on a public list: the fingerprint of the report, the outcome, the coverage and the time, without the repository or the buyer. The head of that list is stamped with OpenTimestamps, which is outside our control and counts as confirmed some hours after it is made. The list is at https://api.tokenizen.nl/api/scan-receipts and you check your own report with one file, verify-scan-receipts.mjs on this site. This shows that a report existed on that date and was not changed afterwards. It does not show which version of the code was scanned, and it does not show that the code is safe. Our own test runs are not on the list. Each square below is one known finding.",
     strip: "8 of 105 known findings found, 97 missed",
     board: "Open the scoreboard",
-    notLabel: "What it is not",
+    notLabel: "Where it stops",
     notText: "It is not an audit and gives no guarantee that a contract is safe. What it finds and what it misses is on the public scoreboard.",
   },
   nl: {
     chip: "per scan betalen",
     title: "Smart-contractscan",
-    lead: "Wij beloven niet dat je contract veilig is. Wij laten zien wat we gecontroleerd hebben, met onze missers erbij en cijfers die je zelf kunt nareken. De scan geeft mogelijke zwakke plekken terug om na te lopen. Hij vindt een deel van wat een menselijke audit vindt, en we publiceren hoeveel.",
+    lead: "Scan een smart-contractrepository voor 1 dollar en krijg binnen een minuut of twee de zwakke plekken waar het model het zekerst van is, klaar om met de hand na te lopen. Elke run en elke misser staat op een openbaar scorebord, en elk afgeleverd rapport komt op een gedateerde lijst die je zelf kunt nagaan. Hij vindt een deel van wat een menselijke audit vindt, en we publiceren hoeveel.",
     metaTitle: "Smart-contractscan | tokenizen",
     metaDescription: "Een smart-contractscan met een openbaar scorebord dat ook laat zien wat hij miste. Betaal per scan via x402.",
     getLabel: "Wat je krijgt",
@@ -328,7 +328,7 @@ const SCAN = {
       "Het openbare scorebord noemt elke run. Waar een rij naar een preregistratie verwijst, stond de regel vooraf openbaar opgeschreven; voor versie 3.1 staat de regel alleen in onze eigen notities, dus die rij is minder goed na te gaan. Versie 3.1 vond 8 van de 105 bekende bevindingen in zijn eerste 15 hypotheses, op dezelfde acht wedstrijden als onze verzegelde run, die toen niet meer geheim waren, na twee wijzigingen tegelijk. In de verzegelde run vonden de eerdere versies er 1 en 4. Elk rapport dat we afleveren komt ook op een openbare lijst: de vingerafdruk van het rapport, de uitkomst, de dekking en het tijdstip, zonder de repository of de koper. De kop van die lijst krijgt een stempel van OpenTimestamps, buiten onze controle, dat enkele uren na het zetten als bevestigd telt. De lijst staat op https://api.tokenizen.nl/api/scan-receipts en je controleert je eigen rapport met één bestand, verify-scan-receipts.mjs op deze site. Dat laat zien dat een rapport op die datum bestond en daarna niet is aangepast. Het laat niet zien welke versie van de code is gescand, en ook niet dat de code veilig is. Onze eigen proefruns staan niet op de lijst. Elk vierkantje hieronder is één bekende bevinding.",
     strip: "8 van de 105 bekende bevindingen gevonden, 97 gemist",
     board: "Open het scorebord",
-    notLabel: "Wat het niet is",
+    notLabel: "Waar het ophoudt",
     notText: "Geen audit en geen garantie dat een contract veilig is. Wat hij vindt en wat hij mist staat op het openbare scorebord.",
   },
 };
@@ -407,7 +407,7 @@ const TOOLS = {
     label: "Het gereedschap",
     npm: "Op npm",
     code: "De code op GitHub",
-    notLabel: "Wat het niet is",
+    notLabel: "Waar het ophoudt",
     notText: "Geen score, geen oordeel en geen eigen token.",
     tools: [
       {
@@ -488,7 +488,7 @@ const TALK = {
     getText: "A conversation about security, the EU Cyber Resilience Act or payments between agents, with the brother who does our consultancy and communication.",
     checkLabel: "How you check it",
     checkText: "Ask for our measurements. We show how each one was made and what it leaves out.",
-    notLabel: "What it is not",
+    notLabel: "Where it stops",
     notText: "No legal advice, no certificate and no promise of a result.",
     startLabel: "Start",
     subject: "A conversation with Ahmed",
@@ -504,7 +504,7 @@ const TALK = {
     getText: "Een gesprek over beveiliging, de Europese Cyber Resilience Act of betalingen tussen agenten, met de broer die onze consultancy en communicatie doet.",
     checkLabel: "Zo ga je het na",
     checkText: "Vraag naar onze metingen. We laten zien hoe elke meting is gemaakt en wat ze buiten beschouwing laat.",
-    notLabel: "Wat het niet is",
+    notLabel: "Waar het ophoudt",
     notText: "Geen juridisch advies, geen certificaat en geen belofte van een uitkomst.",
     startLabel: "Start",
     subject: "Een gesprek met Ahmed",

@@ -195,7 +195,7 @@ export const HOME: Record<Locale, HomeCopy> = {
       eyebrow: "tokenizen.nl · Eindhoven",
       h1a: "Everyone makes claims.",
       h1b: "We make ours checkable.",
-      body: "Security research, free checks and a log with a timestamp outside our control. We do not promise that your contract is safe. We show what we checked, with our misses next to it and numbers you can recompute yourself. Each number below links to how we got it, with the commands and the limits.",
+      body: "We find leaks in real software and show the numbers. In an open-source AI tool with more than 10,000 stars, 33 secrets leaked before, 20 after the maintainers' own fixes and 4 with ours (pull request open). Check your repository free in a minute, scan a smart contract for 1 dollar, and keep a log whose timestamp is outside our control. Every number below links to the commands, so you can run it yourself.",
       ctaPrimary: "Check your repository",
       ctaSecondary: "See what we offer",
       chips: [
@@ -209,7 +209,7 @@ export const HOME: Record<Locale, HomeCopy> = {
       intro: "Each one comes with the way to check it and with its limit, on the same card. Security research and talking to Ahmed have no fixed offer yet.",
       get: "What you get",
       verify: "How you check it",
-      not: "What it is not",
+      not: "Where it stops",
       price: "Price",
     },
     check: {
@@ -268,7 +268,7 @@ export const HOME: Record<Locale, HomeCopy> = {
       eyebrow: "tokenizen.nl · Eindhoven",
       h1a: "Iedereen beweert wat.",
       h1b: "Bij ons kun je het nameten.",
-      body: "Beveiligingsonderzoek, gratis checks en een logboek met een tijdstempel buiten onze controle. Wij beloven niet dat je contract veilig is. Wij laten zien wat we gecontroleerd hebben, met onze missers erbij en cijfers die je zelf kunt nareken. Elk getal hieronder linkt naar hoe we eraan kwamen, met de commando's en de grenzen.",
+      body: "Wij vinden lekken in echte software en laten de cijfers zien. In een open-source AI-gereedschap met meer dan 10.000 sterren lekten 33 geheimen, na de eigen reparaties van de makers nog 20 en met de onze nog 4 (pull request open). Check je repository gratis in een minuut, scan een smart contract voor 1 dollar en houd een logboek bij met een tijdstempel buiten onze controle. Elk getal hieronder linkt naar de commando's, dus je kunt het zelf draaien.",
       ctaPrimary: "Check jouw repository",
       ctaSecondary: "Bekijk ons aanbod",
       chips: [
@@ -282,7 +282,7 @@ export const HOME: Record<Locale, HomeCopy> = {
       intro: "Bij elk staat de manier om het na te gaan en de grens ervan, op dezelfde kaart. Beveiligingsonderzoek en praten met Ahmed hebben nog geen vast aanbod.",
       get: "Wat je krijgt",
       verify: "Zo ga je het na",
-      not: "Wat het niet is",
+      not: "Waar het ophoudt",
       price: "Prijs",
     },
     check: {
