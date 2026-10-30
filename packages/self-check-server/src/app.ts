@@ -67,11 +67,17 @@ import { handleBadge, handleBadgeJson } from "./x402-badge.js";
 import { createX402Checker, handleX402Check, type X402CheckerOptions } from "./x402-check.js";
 import { createCraChecker, handleCraCheck, type CraCheckerOptions } from "./cra-check.js";
 import { usageLog, type UsageWriter } from "./usage-log.js";
+import { scanReceiptsHandlers } from "./scan-receipts-serve.js";
 import { bodyCallsATool, craMcpLimitedAsToolResult, craMcpMethodNotAllowed, craMcpRejectBatch, handleCraMcp } from "./cra-mcp.js";
 
 const DEFAULT_ALLOWED_ORIGINS = ["http://localhost:5173", "https://tokenizen.nl", "https://www.tokenizen.nl"];
 
 export interface CreateAppOptions {
+  /**
+   * The directory the daily run of the public list of delivered scan reports writes into (scan-receipts.jsonl, head-<day>.txt and its
+   * .ots). Set, the three read-only routes under /api/scan-receipts answer from it; unset, they answer 404 as if they did not exist.
+   */
+  scanReceiptsDir?: string;
   /**
    * x402 seller configuration. Omit to read it from the environment, which is
    * what production does. Pass null in a test to keep the paid route off even
@@ -349,6 +355,13 @@ export function createApp(options: CreateAppOptions = {}): Express {
   // x402-badge.ts for why the caller's url never reaches the rendered svg.
   app.get("/api/x402/badge", challengeLimiter, handleBadge);
   app.get("/api/x402/badge.json", challengeLimiter, handleBadgeJson);
+
+  // The public list of delivered scan reports, read only: hashes, outcome, coverage and time, no repository and no buyer. Behind the
+  // same limiter as the other cheap public reads. The visitor never picks a path, see scan-receipts-serve.ts.
+  const scanReceipts = scanReceiptsHandlers(options.scanReceiptsDir);
+  app.get("/api/scan-receipts", challengeLimiter, scanReceipts.list);
+  app.get("/api/scan-receipts/heads", challengeLimiter, scanReceipts.heads);
+  app.get("/api/scan-receipts/heads/:name", challengeLimiter, scanReceipts.head);
 
   // The live twin of the badge: measures the visitor's own endpoint now. It is the one place that
   // reverses the badge's "never measure live" rule, on purpose and behind its own limiter plus the

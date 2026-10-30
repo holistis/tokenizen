@@ -92,4 +92,4 @@ Check your own report (job number and the report file you received):
 
 What it does not prove: which version of the code was scanned (the job record holds no commit), that the report is right, or that the code is safe. A chain can be rebuilt from the start; only the timestamp of the head dates it, and a timestamp is not an anchor until Bitcoin has confirmed it.
 
-Not live yet: the feed route on the scan server is a proposed patch that waits for the owner's approval.
+Where it is served: the scan server answers `GET /api/bug-intel-receipts` (added 30 October 2026, read only, our own test runs left out). The daily run (`bench/scan-receipts-daily.sh`) fetches it into one directory, and this API shows that directory read only when `SCAN_RECEIPTS_DIR` is set: `GET /api/scan-receipts` (the list), `GET /api/scan-receipts/heads` (the head files) and `GET /api/scan-receipts/heads/<name>` (a head and its `.ots` stamp). The visitor never chooses a path; a name must match `head-YYYYMMDD-HHMM.txt` or its `.ots`.

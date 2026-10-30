@@ -49,6 +49,8 @@ async function main(): Promise<void> {
     trustProxy,
     ...(allowedOrigins ? { allowedOrigins } : {}),
     craCheck: { enabled: craEnabled, ...(githubToken ? { githubToken } : {}) },
+    // Where the daily run of the public scan-receipts list writes; unset keeps the /api/scan-receipts routes off.
+    ...(process.env.SCAN_RECEIPTS_DIR?.trim() ? { scanReceiptsDir: process.env.SCAN_RECEIPTS_DIR.trim() } : {}),
     // One line per free-check answer: route, status, own-client flag. Nothing that identifies a visitor (see usage-log.ts).
     usageWriter: (line) => console.log(line),
   });
