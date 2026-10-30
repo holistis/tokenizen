@@ -13,9 +13,9 @@ let baseUrl: string;
 let dir: string;
 let outside: string;
 
-function start(scanReceiptsDir: string | undefined): Promise<void> {
+function start(scanReceiptsDir: string | undefined, challengeRateLimit?: { windowMs: number; max: number }): Promise<void> {
   return new Promise((resolve) => {
-    const app = createApp({ identity: createAttesterIdentity(), seller: null, ...(scanReceiptsDir ? { scanReceiptsDir } : {}) });
+    const app = createApp({ identity: createAttesterIdentity(), seller: null, ...(scanReceiptsDir ? { scanReceiptsDir } : {}), ...(challengeRateLimit ? { challengeRateLimit } : {}) });
     server = createServer(app);
     server.listen(0, "127.0.0.1", () => {
       const address = server.address();
@@ -71,6 +71,18 @@ describe("with a directory configured", () => {
     for (const name of ["notes.txt", "..%2Fsecret.txt", "..%2F..%2Fsecret.txt", "%2Fetc%2Fpasswd", "head-20261030-0600.txt%00.js", "head-1-2.txt", "scan-receipts.jsonl"]) {
       const res = await fetch(`${baseUrl}/api/scan-receipts/heads/${name}`);
       expect(res.status, name).toBe(404);
+    }
+  });
+});
+
+describe("rate limit", () => {
+  it("answers 429 on every one of the three routes once the per-caller limit is used up", async () => {
+    for (const path of ["/api/scan-receipts", "/api/scan-receipts/heads", "/api/scan-receipts/heads/head-20261030-0600.txt"]) {
+      await start(dir, { windowMs: 60_000, max: 2 });
+      expect((await fetch(`${baseUrl}${path}`)).status, path + " 1").toBe(200);
+      expect((await fetch(`${baseUrl}${path}`)).status, path + " 2").toBe(200);
+      expect((await fetch(`${baseUrl}${path}`)).status, path + " 3").toBe(429);
+      server.close();
     }
   });
 });
