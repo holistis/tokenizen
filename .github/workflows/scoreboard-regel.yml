@@ -1,0 +1,42 @@
+name: Scoreboard-regel
+
+# Checks the Publication Rule for scan results once a week, from the outside. The rule (in the open repository bug-bounty-intelligence-mcp) says
+# that every run of the scan on a fixed set is on the scoreboard within 7 days, and that a run scoring lower than the run before it says so.
+# This reads the scoreboard of this repository and the results folder of that repository, with no secret and no write access, and fails when
+# a results folder has no row after 7 days or a lower run does not say so. GitHub then emails the person who last changed the schedule below.
+# A week in which this does not run at all is not seen by this file.
+on:
+  schedule:
+    - cron: "23 6 * * 1"
+  workflow_dispatch:
+
+# Read only. Nothing here has a reason to write.
+permissions:
+  contents: read
+
+concurrency:
+  group: scoreboard-regel
+  cancel-in-progress: false
+
+jobs:
+  kijk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Checkout the open repository with the results
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: holistis/bug-bounty-intelligence-mcp
+          path: open-repo
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - name: Check the Publication Rule
+        run: node scripts/scoreboard-regel.mjs --results open-repo/results

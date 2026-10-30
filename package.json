@@ -1,6 +1,7 @@
 {
   "name": "tokenizen",
   "private": true,
+  "license": "MIT",
   "description": "Monorepo root for tokenizen.nl packages.",
   "version": "0.0.0",
   "workspaces": [
@@ -9,6 +10,7 @@
   "scripts": {
     "check-own-deps": "node scripts/check-own-deps-published.mjs",
     "check-own-deps-test": "node --test scripts/check-own-deps-published.test.mjs",
+    "scoreboard-regel": "node scripts/scoreboard-regel.mjs",
     "site-wacht": "node scripts/site-wacht.mjs",
     "site-wacht-test": "node --test scripts/site-wacht.test.mjs",
     "publish-order": "node scripts/publish-order.mjs",

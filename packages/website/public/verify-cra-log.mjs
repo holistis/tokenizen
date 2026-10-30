@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // verify-cra-log.mjs: checks a Signal log from its text alone. No installs, no network, no files except the one you name.
 // Source and licence: https://github.com/holistis/tokenizen (MIT), made by tokenizen.nl.
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Abdellah Ouadoudi. The full licence text is the LICENSE file in the repository above.
 //
 //   node verify-cra-log.mjs yourlog.jsonl
 //

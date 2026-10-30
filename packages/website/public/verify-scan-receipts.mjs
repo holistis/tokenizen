@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // verify-scan-receipts.mjs: checks the public list of delivered scan reports from its text alone. No installs, no network, no files except the ones you name.
 // Source and licence: https://github.com/holistis/tokenizen (MIT), made by tokenizen.nl.
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Abdellah Ouadoudi. The full licence text is the LICENSE file in the repository above.
 //
 //   node verify-scan-receipts.mjs scan-receipts.jsonl                          is the whole list intact?
 //   node verify-scan-receipts.mjs scan-receipts.jsonl <job number> <report.html>   is MY report in it, unchanged?

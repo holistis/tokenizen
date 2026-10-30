@@ -47,12 +47,18 @@ export interface ScoreRun {
   /** Hypotheses the system reported in total. */
   hypotheses: number | null;
   tunedOn: TunedOn;
+  /** Which fixed set a row measured and which version of the scan, so that two rows can be compared (scripts/scoreboard-regel.mjs). Rows on the development set carry neither: the Publication Rule does not cover them. */
+  setId?: string;
+  version?: string;
   /** What to know before reading the number. */
   note: string;
   links: RunLink[];
 }
 
-export const SCORE_UPDATED = "2026-10-25";
+export const SCORE_UPDATED = "2026-10-30";
+
+// The rule for what goes on this page and how fast, with an OpenTimestamps stamp next to it in the open repository.
+export const PUBLICATION_RULE_URL = `${REPO}/PUBLICATION-RULE-scan-results.md`;
 
 export const SEALED_SET_HASH = "de1a23a4aabc17def5145229c8ee4b4b216e25e8a5ec990e0c5bb37620b61ca1";
 export const SEED_BLOCK = { number: 53022890, hash: "0x91b7371d9902f60b3515633ffda7f89f7537bcce9a132a62fef21694f54ddd1d" };
@@ -71,6 +77,22 @@ export const SCORE_RUNS: ScoreRun[] = [
     tunedOn: "not applicable",
     note: "The cleanest test, because the answers do not exist yet when the report is committed. The hash of a system's report is committed before the contest results are published, and scored afterwards with the same two judges. Takes weeks, since results arrive per contest.",
     links: [{ label: "How the judges decide", href: `${REPO}/PREREGISTRATION-v3-2026-10-24.md` }],
+  },
+  {
+    id: "evmbench-forty",
+    setId: "evmbench-40",
+    version: "3.1",
+    date: "2026-10-26",
+    title: "Version 3.1 on the 40 audits of EVMbench",
+    system: "Version 3.1 of the scan, as in production, unchanged",
+    set: "The 40 audits of the public EVMbench detect set, 117 high severity findings. 4 of the 40 overlap earlier tuning sets",
+    status: "measured",
+    known: 117,
+    found: 23,
+    hypotheses: 600,
+    tunedOn: "partly",
+    note: "Counts the first 15 hypotheses per audit, like the rows below. The first 30 hold 29 of 117, and so does the whole list. Only High findings are counted here, so the number cannot be set next to the Code4rena and Sherlock rows, which count High and Medium. 2.9 percent of the 1,537 hypotheses match a known finding, and in 18 of the 40 audits nothing passed both judges. Without the 4 audits that overlap our earlier tuning sets it is 21 of 110. On the 7 newest audits, none used before, it is 3 of 14. The 29 older audits are public and may be in the training data of the models behind the scan and the judges. One run, no audit run twice. The rules for reading the result were written in a working note before the run, but we anchored that note only after it, so the order is something you take on our word. Three people outside our team recomputed the totals from the verdict files and got the same numbers; that covers the arithmetic, not whether the judges' verdicts are right.",
+    links: [{ label: "The results, judgements and hashes", href: `${REPO}/results/2026-10-26-evmbench/README.md` }],
   },
   {
     id: "slither-same-contests",
@@ -102,6 +124,8 @@ export const SCORE_RUNS: ScoreRun[] = [
   },
   {
     id: "c4-fresh-nine",
+    setId: "c4-nine",
+    version: "3.1",
     date: "2026-10-25",
     title: "Version 3.1 on nine newer Code4rena contests",
     system: "Version 3.1 of the scan, as in production",
@@ -116,6 +140,8 @@ export const SCORE_RUNS: ScoreRun[] = [
   },
   {
     id: "v31-same-eight",
+    setId: "sealed-8",
+    version: "3.1",
     date: "2026-10-25",
     title: "Version 3.1 on the same eight contests",
     system: "Version 3.1 of the scan, live since the evening of 25 October",
@@ -130,6 +156,8 @@ export const SCORE_RUNS: ScoreRun[] = [
   },
   {
     id: "sealed-v3",
+    setId: "sealed-8",
+    version: "3",
     date: "2026-10-24",
     title: "The sealed run: the new version",
     system: "Version 3 of the scan, its files committed by hash before the run",
@@ -148,6 +176,8 @@ export const SCORE_RUNS: ScoreRun[] = [
   },
   {
     id: "sealed-s0",
+    setId: "sealed-8",
+    version: "2.1",
     date: "2026-10-24",
     title: "The sealed run: the scan as it runs",
     system: "Version 2.1 of the scan, the one in production until the evening of 25 October, with the pattern block",
@@ -258,6 +288,13 @@ export const SCORE_RUNS_NL: Record<string, RunTextNl> = {
     set: "Nieuwe wedstrijden zodra hun eindrapporten verschijnen",
     note: "De zuiverste toets, want de antwoorden bestaan nog niet als het rapport wordt vastgelegd. De hash van het rapport van een systeem wordt vastgelegd voordat de uitslagen van de wedstrijd verschijnen, en wordt achteraf beoordeeld door dezelfde twee rechters. Dat duurt weken, want de uitslagen komen per wedstrijd binnen.",
     links: ["Hoe de rechters beslissen"],
+  },
+  "evmbench-forty": {
+    title: "Versie 3.1 op de 40 audits van EVMbench",
+    system: "Versie 3.1 van de scan, zoals in productie, ongewijzigd",
+    set: "De 40 audits van de openbare detect-set van EVMbench, 117 bevindingen van hoge ernst. 4 van de 40 overlappen met eerdere afstelsets",
+    note: "Telt de eerste 15 hypotheses per audit, zoals de rijen hieronder. De eerste 30 bevatten er 29 van de 117, en de hele lijst ook. Hier tellen alleen High-bevindingen mee, dus het getal is niet naast de rijen van Code4rena en Sherlock te leggen, die High en Medium tellen. 2,9 procent van de 1.537 hypotheses komt overeen met een bekende bevinding, en in 18 van de 40 audits kwam er niets door beide rechters. Zonder de 4 audits die overlappen met onze eerdere afstelsets zijn het er 21 van de 110. Op de 7 nieuwste audits, nog niet eerder gebruikt, zijn het er 3 van de 14. De 29 oudere audits zijn openbaar en kunnen in de trainingsdata staan van de modellen achter de scan en de rechters. Eén run, geen audit twee keer gedraaid. De regels voor het lezen van de uitslag stonden vooraf in een werknotitie, maar we hebben die notitie pas na de run verankerd, dus de volgorde moet je op ons woord geloven. Drie mensen buiten ons team hebben de totalen opnieuw berekend uit de oordeelbestanden en kwamen op dezelfde getallen; dat dekt de rekensom, niet of de oordelen van de rechters kloppen.",
+    links: ["De resultaten, oordelen en hashes"],
   },
   "slither-same-contests": {
     title: "Slither 0.11.6 op dezelfde wedstrijden",
