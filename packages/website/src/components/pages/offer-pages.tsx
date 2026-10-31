@@ -7,6 +7,7 @@ import { ChainDemo } from "@/components/matrix/chain-demo";
 import { MeasureGrids } from "@/components/matrix/measure-grid";
 import { MissStrip } from "@/components/matrix/miss-strip";
 import { useMeta } from "@/components/pages/legal-page";
+import { REPO_CHECK_COPY, RepoPriceCheck } from "@/components/pages/repo-price-check";
 import { ADVISORY_URL, CONTACT_EMAIL, GITHUB_URL, HOME, type Locale } from "@/data/home-copy";
 import { Problem } from "@/components/sections/problem";
 import { WhyNow } from "@/components/sections/why-now";
@@ -381,6 +382,9 @@ export function ScanPage() {
         <p>
           <LinkOut href={to("/notes/official-sources")}>{c.sources}</LinkOut>
         </p>
+      </Block>
+      <Block label={REPO_CHECK_COPY[loc].label}>
+        <RepoPriceCheck locale={loc} />
       </Block>
       <Block label={c.checkLabel}>
         <p>{c.checkText}</p>

@@ -45,7 +45,7 @@ describe("public/_headers", () => {
   });
 
   it("allows only the outside addresses index.html and the app really use", () => {
-    expect(directive("connect-src")).toBe("'self' https://api.tokenizen.nl");
+    expect(directive("connect-src")).toBe("'self' https://api.tokenizen.nl https://x402.tokenizen.nl");
     expect(directive("style-src")).toContain("https://fonts.googleapis.com");
     expect(directive("font-src")).toContain("https://fonts.gstatic.com");
     // Things the page loads, not links a reader can follow.
