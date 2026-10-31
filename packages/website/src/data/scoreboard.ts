@@ -55,7 +55,7 @@ export interface ScoreRun {
   links: RunLink[];
 }
 
-export const SCORE_UPDATED = "2026-10-30";
+export const SCORE_UPDATED = "2026-10-31";
 
 // The rule for what goes on this page and how fast, with an OpenTimestamps stamp next to it in the open repository.
 export const PUBLICATION_RULE_URL = `${REPO}/PUBLICATION-RULE-scan-results.md`;
@@ -77,6 +77,36 @@ export const SCORE_RUNS: ScoreRun[] = [
     tunedOn: "not applicable",
     note: "The cleanest test, because the answers do not exist yet when the report is committed. The hash of a system's report is committed before the contest results are published, and scored afterwards with the same two judges. Takes weeks, since results arrive per contest.",
     links: [{ label: "How the judges decide", href: `${REPO}/PREREGISTRATION-v3-2026-10-24.md` }],
+  },
+  {
+    id: "lab-sealed-2",
+    version: "4.1",
+    date: "2026-10-31",
+    title: "A development version on the same eight contests, second run",
+    system: "A development version of the scan, not in production. Run 2 of 2 on 31 October",
+    set: "The 8 contests of the sealed run, 105 known findings. No longer secret: their results were published on 24 October",
+    status: "measured",
+    known: 105,
+    found: 12,
+    hypotheses: 324,
+    tunedOn: "yes",
+    note: "Strict, both judges name the same finding: 12 of 105 in the first 15 hypotheses per contest (120 of the 324 reported), 15 in the first 30, 16 in the whole list (15.2 percent). All easy: 16 of 59 easy, 0 of 14 middle, 0 of 32 hard. Every contest was read in full this time, for 0.12 dollars for the whole set. The prediction written before the run was 12 to 25 strict over the whole list, most likely 15 to 20; the rule written with it needed 17 or more over the whole list to count as clearly above the first run, and 16 does not meet it. Both runs together found 21 different findings. Two things changed between the runs, the version and a setting, so the rise cannot be credited to either one. The judges are a different pair than in the older rows, so the older rows are not strictly comparable. We built this version after the answers to these contests were public, and run 2 after seeing run 1 on them, so the set is tuned on. One run, and the better of two. The contests have been public since 24 October and may be in the training data.",
+    links: [{ label: "The results, judgements and hashes", href: `${REPO}/results/2026-10-31-lab-sealed/README.md` }],
+  },
+  {
+    id: "lab-sealed-1",
+    version: "4.0",
+    date: "2026-10-31",
+    title: "A development version on the same eight contests, first run",
+    system: "A development version of the scan, not in production. Run 1 of 2 on 31 October",
+    set: "The 8 contests of the sealed run, 105 known findings. No longer secret: their results were published on 24 October",
+    status: "measured",
+    known: 105,
+    found: 10,
+    hypotheses: 282,
+    tunedOn: "yes",
+    note: "Strict, both judges name the same finding: 10 of 105 in the first 15 hypotheses per contest (120 of the 282 reported), 12 in the first 30 and 12 in the whole list (11.4 percent). All easy: 12 of 59 easy, 0 of 14 middle, 0 of 32 hard. This run was only partly read because of a setting of ours that we fixed for the second run, so it is likely lower than a full read would give. The second run above read everything. The judges are a different pair than in the older rows, so the older rows are not strictly comparable. We built this version after the answers to these contests were public, so the set is tuned on. One run. The contests have been public since 24 October and may be in the training data.",
+    links: [{ label: "The results, judgements and hashes", href: `${REPO}/results/2026-10-31-lab-sealed/README.md` }],
   },
   {
     id: "evmbench-forty",
@@ -150,8 +180,8 @@ export const SCORE_RUNS: ScoreRun[] = [
     known: 105,
     found: 8,
     hypotheses: 120,
-    tunedOn: "no",
-    note: "6 of 59 easy findings, 1 of 14 middle, 1 of 32 hard. Precision 7.5 percent, about 20 to 45 seconds and 0.02 to 0.15 dollar per scan. Two things changed at once, a newer model and a fix of which files count, so we cannot say which one did the work. One run, so a repeat could land between about 6 and 10. The models may have seen these contests. 97 of 105 known findings were still not found. The rule for reading the result was written in our own notes before the run, which are not public, so this row is less verifiable than the sealed run.",
+    tunedOn: "partly",
+    note: "6 of 59 easy findings, 1 of 14 middle, 1 of 32 hard. Precision 7.5 percent, about 20 to 45 seconds and 0.02 to 0.15 dollar per scan. Two things changed at once, a newer model and a fix of which files count, so we cannot say which one did the work. One run, so a repeat could land between about 6 and 10. The models may have seen these contests. 97 of 105 known findings were still not found. The rule for reading the result was written in our own notes before the run, which are not public, so this row is less verifiable than the sealed run. Correction on 31 October 2026: this row first said it was not tuned on this set. Version 3.1 was built after the results of these contests were public on 24 October, so the label is now partly. The time per scan was about 20 to 50 seconds, not 20 to 45 as written above.",
     links: [{ label: "The results, judgements and hashes", href: `${REPO}/results/2026-10-25-v31/README.md` }],
   },
   {
@@ -296,6 +326,20 @@ export const SCORE_RUNS_NL: Record<string, RunTextNl> = {
     note: "Telt de eerste 15 hypotheses per audit, 600 van de 1.537 die de scan meldde, zoals de rijen hieronder. De eerste 30 bevatten er 29 van de 117, en de hele lijst ook. Hier tellen alleen High-bevindingen mee, dus het getal is niet naast de rijen van Code4rena en Sherlock te leggen, die High en Medium tellen. Over de hele lijst komt 2,9 procent van de hypotheses overeen met een bekende bevinding, en in 18 van de 40 audits kwam er niets door beide rechters. Zonder de 4 audits die overlappen met onze eerdere afstelsets zijn het er 21 van de 110. Op de 7 nieuwste audits, nog niet eerder gebruikt, zijn het er 3 van de 14. De 29 oudere audits zijn openbaar en kunnen in de trainingsdata staan van de modellen achter de scan en de rechters. Eén run, geen audit twee keer gedraaid. De regels voor het lezen van de uitslag stonden vooraf in een werknotitie, maar we hebben die notitie pas na de run verankerd, dus de volgorde moet je op ons woord geloven. Drie mensen buiten ons team hebben de totalen opnieuw berekend uit de oordeelbestanden en kwamen op dezelfde getallen; dat dekt de rekensom, niet of de oordelen van de rechters kloppen.",
     links: ["De resultaten, oordelen en hashes"],
   },
+  "lab-sealed-2": {
+    title: "Een ontwikkelversie op dezelfde acht wedstrijden, tweede run",
+    system: "Een ontwikkelversie van de scan, niet in productie. Run 2 van 2 op 31 oktober",
+    set: "De 8 wedstrijden van de verzegelde run, 105 bekende bevindingen. Niet meer geheim: de uitslagen zijn op 24 oktober gepubliceerd",
+    note: "Strikt, beide rechters noemen dezelfde bevinding: 12 van 105 in de eerste 15 hypotheses per wedstrijd (120 van de 324 gemelde), 15 in de eerste 30, 16 in de hele lijst (15,2 procent). Allemaal makkelijk: 16 van de 59 makkelijke, 0 van de 14 gemiddelde, 0 van de 32 moeilijke. Dit keer is elke wedstrijd helemaal gelezen, voor 0,12 dollar voor de hele set. De voorspelling vooraf was 12 tot 25 strikt over de hele lijst, meest waarschijnlijk 15 tot 20; de regel die erbij hoorde vroeg 17 of meer over de hele lijst om duidelijk boven de eerste run te tellen, en 16 haalt dat niet. Beide runs samen vonden 21 verschillende bevindingen. Tussen de runs veranderden twee dingen, de versie en een instelling, dus de stijging is aan geen van beide toe te schrijven. De rechters zijn een ander paar dan in de oudere rijen, dus de oudere rijen zijn niet strikt vergelijkbaar. We hebben deze versie gebouwd nadat de antwoorden op deze wedstrijden openbaar waren, en run 2 nadat we run 1 erop zagen, dus de set is afgesteld. Eén run, en de betere van twee. De wedstrijden zijn sinds 24 oktober openbaar en kunnen in de trainingsdata zitten.",
+    links: ["De resultaten, oordelen en hashes"],
+  },
+  "lab-sealed-1": {
+    title: "Een ontwikkelversie op dezelfde acht wedstrijden, eerste run",
+    system: "Een ontwikkelversie van de scan, niet in productie. Run 1 van 2 op 31 oktober",
+    set: "De 8 wedstrijden van de verzegelde run, 105 bekende bevindingen. Niet meer geheim: de uitslagen zijn op 24 oktober gepubliceerd",
+    note: "Strikt, beide rechters noemen dezelfde bevinding: 10 van 105 in de eerste 15 hypotheses per wedstrijd (120 van de 282 gemelde), 12 in de eerste 30 en 12 in de hele lijst (11,4 procent). Allemaal makkelijk: 12 van de 59 makkelijke, 0 van de 14 gemiddelde, 0 van de 32 moeilijke. Deze run is maar deels gelezen door een instelling van ons die we voor de tweede run hebben gerepareerd, dus hij ligt waarschijnlijk lager dan een volledige lezing zou geven. De tweede run hierboven las alles. De rechters zijn een ander paar dan in de oudere rijen, dus de oudere rijen zijn niet strikt vergelijkbaar. We hebben deze versie gebouwd nadat de antwoorden op deze wedstrijden openbaar waren, dus de set is afgesteld. Eén run. De wedstrijden zijn sinds 24 oktober openbaar en kunnen in de trainingsdata zitten.",
+    links: ["De resultaten, oordelen en hashes"],
+  },
   "slither-same-contests": {
     title: "Slither 0.11.6 op dezelfde wedstrijden",
     system: "Slither 0.11.6 met standaardinstellingen, een gratis hulpmiddel voor statische analyse",
@@ -321,7 +365,7 @@ export const SCORE_RUNS_NL: Record<string, RunTextNl> = {
     title: "Versie 3.1 op dezelfde acht wedstrijden",
     system: "Versie 3.1 van de scan, live sinds de avond van 25 oktober",
     set: "De 8 wedstrijden van de verzegelde run, 105 bekende bevindingen. Niet meer geheim: de uitslagen zijn op 24 oktober gepubliceerd",
-    note: "6 van de 59 makkelijke bevindingen, 1 van de 14 gemiddelde, 1 van de 32 moeilijke. Precisie 7,5 procent, ongeveer 20 tot 45 seconden en 0,02 tot 0,15 dollar per scan. Er veranderden twee dingen tegelijk, een nieuwer model en een aanpassing van welke bestanden meetellen, dus we kunnen niet zeggen welke van de twee het werk deed. Eén run, dus een herhaling kan uitkomen tussen ongeveer 6 en 10. De modellen kunnen deze wedstrijden hebben gezien. 97 van de 105 bekende bevindingen werden nog steeds niet gevonden. De regel voor het lezen van de uitslag stond vooraf in onze eigen notities, die niet openbaar zijn, dus deze rij is minder goed te controleren dan de verzegelde run.",
+    note: "6 van de 59 makkelijke bevindingen, 1 van de 14 gemiddelde, 1 van de 32 moeilijke. Precisie 7,5 procent, ongeveer 20 tot 45 seconden en 0,02 tot 0,15 dollar per scan. Er veranderden twee dingen tegelijk, een nieuwer model en een aanpassing van welke bestanden meetellen, dus we kunnen niet zeggen welke van de twee het werk deed. Eén run, dus een herhaling kan uitkomen tussen ongeveer 6 en 10. De modellen kunnen deze wedstrijden hebben gezien. 97 van de 105 bekende bevindingen werden nog steeds niet gevonden. De regel voor het lezen van de uitslag stond vooraf in onze eigen notities, die niet openbaar zijn, dus deze rij is minder goed te controleren dan de verzegelde run. Correctie op 31 oktober 2026: deze rij zei eerst dat de versie niet op deze set was afgesteld. Versie 3.1 is gebouwd nadat de uitslagen van deze wedstrijden op 24 oktober openbaar waren, dus het label is nu deels. De tijd per scan was ongeveer 20 tot 50 seconden, niet 20 tot 45 zoals hierboven staat.",
     links: ["De resultaten, oordelen en hashes"],
   },
   "sealed-v3": {

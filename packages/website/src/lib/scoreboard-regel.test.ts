@@ -135,9 +135,11 @@ describe("the real scoreboard", () => {
     expect(regressionsWithoutNote(SCORE_RUNS, SCORE_RUNS_NL)).toEqual([]);
   });
 
-  it("compares the three versions of the sealed set in order, 1 then 4 then 8", () => {
+  it("compares the versions of the sealed set in order, 1, 4, 8, and keeps the two development runs 10 and 12 out of that series", () => {
     const sealed = runsPerSet(SCORE_RUNS).get("sealed-8")!;
     expect(sealed.map((r) => [r.version, r.found])).toEqual([["2.1", 1], ["3", 4], ["3.1", 8]]);
+    const lab = SCORE_RUNS.filter((r) => r.id.startsWith("lab-sealed-"));
+    expect(lab.map((r) => [r.version, r.found, r.tunedOn, r.setId]).sort()).toEqual([["4.0", 10, "yes", undefined], ["4.1", 12, "yes", undefined]]);
   });
 
   it("covers the three fixed sets of the rule and leaves out the development set", () => {
