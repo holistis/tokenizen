@@ -270,7 +270,7 @@ test("the real register has 12 to 18 claims, each with pages, mustContain and a 
 
 test("the register text contains no em dash, en dash or double asterisks", () => {
   const text = fs.readFileSync(path.join(ROOT, REGISTER_REL), "utf8");
-  assert.ok(!/[–—]/.test(text), "dash found");
+  assert.ok(!new RegExp("[\\u2013\\u2014]").test(text), "dash found");
   assert.ok(!text.includes("**"), "double asterisks found");
 });
 
