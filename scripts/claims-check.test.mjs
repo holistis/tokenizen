@@ -10,8 +10,9 @@
 //   (c) mutation tests: copies of claims-check.mjs with one deliberate bug each must fail at least one
 //       case of the same suite. Each mutation is asserted to change the source, so none is a no-op.
 //
-// Mutation results (run on 2026-10-31, 13 of 13 mutants caught, 36 tests pass on the real checker):
-//   always-ok                 return ok: true at the end              caught by all 16 claim-level red cases
+// Mutation results (run on 2026-10-31, 13 of 13 mutants caught, 38 tests pass on the real checker):
+//   always-ok                 return ok: true at the end              caught by 18 of 19 red cases (all but the corrupt
+//                                                                     register, which returns before the final ok)
 //   ignore-missing-page       drop the "missing from share-bodies"    caught by: delete page key
 //   skip-source-check         never call checkSource                  caught by: version in source, address, llms.txt,
 //                                                                     footer KvK, unknown kind, path outside the repo
@@ -185,6 +186,22 @@ const RED_CASES = [
         r.find((c) => c.id === "home-misses-97").mustContian = ["typo"];
       }),
     red: ["home-misses-97"],
+  },
+  {
+    name: "a field has the wrong type (mustContain is a bare string, not a list)",
+    change: (f) =>
+      f.editRegister((r) => {
+        r.find((c) => c.id === "home-misses-97").mustContain = "97 of 105";
+      }),
+    red: ["home-misses-97"],
+  },
+  {
+    name: "a json-path expected value has the wrong type (number instead of string)",
+    change: (f) =>
+      f.editRegister((r) => {
+        r.find((c) => c.id === "scan-full-price").source[0].expected = 5000000;
+      }),
+    red: ["scan-full-price"],
   },
   {
     name: "a source points outside the repository",
