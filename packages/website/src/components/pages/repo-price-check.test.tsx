@@ -7,8 +7,8 @@ import { LocaleProvider, type Locale } from "@/i18n/context";
 import type { RepoCheckErrorCode, RepoCheckOutcome } from "@/lib/repo-price-check";
 
 const LONG_DASHES = /[–—]/;
-const NO_QUOTE_EN = "The free check shows size and estimated lines. The price for a deep scan by size will appear here once the deep scan is live.";
-const NO_QUOTE_NL = "De gratis check toont grootte en geschatte regels. De prijs voor een diepe scan op grootte verschijnt hier zodra de diepe scan live is.";
+const NO_QUOTE_EN = "The free check shows the measured size of the code. The price for a deep scan by size will appear here once the deep scan is live.";
+const NO_QUOTE_NL = "De gratis check toont de gemeten grootte van de code. De prijs voor een diepe scan op grootte verschijnt hier zodra de diepe scan live is.";
 
 const view = (outcome: RepoCheckOutcome, locale: "en" | "nl" = "en") => renderToStaticMarkup(<RepoCheckResultView outcome={outcome} locale={locale} />);
 
