@@ -11,7 +11,7 @@ import {
   usdToCents,
 } from "@/lib/repo-price-check";
 
-// The answer of the live server with the price switch off, as measured once on 31 October 2026 for holistis/tokenizen.
+// The live answer for holistis/tokenizen, measured once on 31 October 2026: no Solidity, so no quote whatever the price switch says.
 const LIVE_NO_SOLIDITY = {
   ok: false,
   repo: "holistis/tokenizen",
@@ -133,7 +133,7 @@ describe("interpretPrecheck", () => {
       sizeKb: 42,
       estimatedLines: 1176,
       noSolidity: false,
-      quote: { cents: 500, perMbCents: 2000, minimumCents: 500, minimumApplied: true, validForSeconds: 900 },
+      quote: { cents: 500, basisKb: 42, perMbCents: 2000, minimumCents: 500, minimumApplied: true, validForSeconds: 900 },
     });
   });
 

@@ -49,6 +49,8 @@ export function buildPrecheckUrl(repo: string, base: string = PRECHECK_BASE): st
 export interface RepoQuote {
   /** Whole cents, from the server's usd string. */
   cents: number;
+  /** The KB the price was calculated from (a part of a KB counts as a whole one), when the server sends it. */
+  basisKb: number | null;
   perMbCents: number | null;
   minimumCents: number | null;
   minimumApplied: boolean | null;
@@ -93,6 +95,7 @@ function readQuote(v: unknown): RepoQuote | null {
   const b = v.basis;
   return {
     cents,
+    basisKb: count(b.inScopeKb),
     perMbCents: usdToCents(b.perMbUsd),
     minimumCents: usdToCents(b.minimumUsd),
     minimumApplied: typeof b.minimumApplied === "boolean" ? b.minimumApplied : null,

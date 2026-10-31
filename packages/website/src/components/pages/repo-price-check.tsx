@@ -51,7 +51,7 @@ const COPY: Record<RepoCheckLocale, Copy> = {
     noSolidity: "No Solidity of the project's own was found. Tests, mocks, scripts, interfaces and vendored code are left out.",
     price: "Price of a deep scan",
     basis: (q, sizeKb) => {
-      const parts = [`Basis: ${formatKb(sizeKb, "en")}`];
+      const parts = [`Basis: ${formatKb(q.basisKb ?? sizeKb, "en")}`];
       if (q.perMbCents !== null) parts.push(` at ${formatUsd(q.perMbCents, "en")} per MB`);
       if (q.minimumCents !== null) parts.push(`, with a minimum of ${formatUsd(q.minimumCents, "en")}`);
       parts.push(".");
@@ -84,7 +84,7 @@ const COPY: Record<RepoCheckLocale, Copy> = {
     noSolidity: "Er is geen eigen Solidity van het project gevonden. Tests, mocks, scripts, interfaces en meegeleverde code tellen niet mee.",
     price: "Prijs van een diepe scan",
     basis: (q, sizeKb) => {
-      const parts = [`Basis: ${formatKb(sizeKb, "nl")}`];
+      const parts = [`Basis: ${formatKb(q.basisKb ?? sizeKb, "nl")}`];
       if (q.perMbCents !== null) parts.push(` tegen ${formatUsd(q.perMbCents, "nl")} per MB`);
       if (q.minimumCents !== null) parts.push(`, met een minimum van ${formatUsd(q.minimumCents, "nl")}`);
       parts.push(".");

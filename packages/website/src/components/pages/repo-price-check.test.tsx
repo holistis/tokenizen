@@ -75,7 +75,7 @@ describe("RepoCheckResultView", () => {
 
   it("shows the price and its basis only when there is a quote", () => {
     const html = view(
-      measured({ sizeKb: 42, estimatedLines: 1176, quote: { cents: 500, perMbCents: 2000, minimumCents: 500, minimumApplied: true, validForSeconds: 900 } }),
+      measured({ sizeKb: 42, estimatedLines: 1176, quote: { cents: 500, basisKb: 42, perMbCents: 2000, minimumCents: 500, minimumApplied: true, validForSeconds: 900 } }),
     );
     expect(html).toContain("Price of a deep scan");
     expect(html).toContain("$5.00");
@@ -85,10 +85,16 @@ describe("RepoCheckResultView", () => {
   });
 
   it("leaves out basis parts the server did not send", () => {
-    const html = view(measured({ sizeKb: 2048, quote: { cents: 4000, perMbCents: null, minimumCents: null, minimumApplied: null, validForSeconds: null } }), "nl");
+    const html = view(measured({ sizeKb: 2048, quote: { cents: 4000, basisKb: null, perMbCents: null, minimumCents: null, minimumApplied: null, validForSeconds: null } }), "nl");
     expect(html).toContain("$40,00");
     expect(html).toContain("Basis: 2.048 KB.");
     expect(html).not.toContain("minimum");
+  });
+
+  it("states the basis in the KB the price was calculated from", () => {
+    const html = view(measured({ sizeKb: 41, quote: { cents: 500, basisKb: 42, perMbCents: null, minimumCents: null, minimumApplied: null, validForSeconds: null } }));
+    expect(html).toContain("41 KB");
+    expect(html).toContain("Basis: 42 KB.");
   });
 
   it("says when no Solidity was found", () => {
