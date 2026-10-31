@@ -1,0 +1,187 @@
+[
+  {
+    "id": "scan-quick-price",
+    "text": "The quick scan costs 1 dollar, on the scan page in both languages",
+    "pages": ["/scan", "/nl/scan"],
+    "mustContain": [{ "regex": "(quick scan costs|snelle scan kost) 1 dollar\\b" }],
+    "source": [
+      { "file": "packages/website/src/data/home-copy.ts", "kind": "contains", "expected": "Quick scan 1 dollar (the first 15 hypotheses)" },
+      { "file": "packages/website/src/data/home-copy.ts", "kind": "contains", "expected": "Snelle scan 1 dollar (de eerste 15 hypotheses)" },
+      { "file": "packages/website/public/llms.txt", "kind": "contains", "expected": "a quick scan costs 1 dollar" }
+    ]
+  },
+  {
+    "id": "scan-full-price",
+    "text": "The full scan costs 5 dollars, and the paid endpoint the outside watcher checks asks 5 USDC (5000000 units)",
+    "pages": ["/scan", "/nl/scan"],
+    "mustContain": [{ "regex": "(full scan costs|volledige scan kost) 5 dollar" }],
+    "source": [
+      { "file": "scripts/diensten.json", "kind": "json-path", "path": "x402.bedrag", "expected": "5000000" },
+      { "file": "packages/website/src/data/home-copy.ts", "kind": "contains", "expected": "full scan 5 dollars" }
+    ]
+  },
+  {
+    "id": "home-scan-from-1-dollar",
+    "text": "The home page says a scan starts at 1 dollar",
+    "pages": ["/", "/nl"],
+    "mustContain": [{ "regex": "(From|Vanaf) 1 dollar per scan" }],
+    "source": [
+      { "file": "packages/website/src/data/home-copy.ts", "kind": "contains", "expected": "scan: \"From 1 dollar per scan\"" },
+      { "file": "packages/website/src/data/home-copy.ts", "kind": "contains", "expected": "scan: \"Vanaf 1 dollar per scan\"" }
+    ]
+  },
+  {
+    "id": "official-sources-price-address",
+    "text": "The official sources note gives the scan price (5 USDC) and the one payment address, matching the watcher list and llms.txt",
+    "pages": ["/notes/official-sources"],
+    "mustContain": ["Price: 5 USDC per scan", "0x015Eb036560216B3051339061FF68A207E0fe88f"],
+    "source": [
+      { "file": "scripts/diensten.json", "kind": "json-path", "path": "x402.betaaladres", "expected": "0x015Eb036560216B3051339061FF68A207E0fe88f" },
+      { "file": "scripts/diensten.json", "kind": "json-path", "path": "x402.bedrag", "expected": "5000000" },
+      { "file": "packages/website/public/llms.txt", "kind": "contains", "expected": "5 USDC on Base through x402, address 0x015Eb036560216B3051339061FF68A207E0fe88f" }
+    ]
+  },
+  {
+    "id": "scan-page-v31-score",
+    "text": "The scan page says version 3.1 found 8 of 105, which is the v31-same-eight row of the scoreboard",
+    "pages": ["/scan", "/nl/scan"],
+    "mustContain": [{ "regex": "(Version|Versie) 3\\.1 (found|vond) 8 (of|van de) 105\\b" }],
+    "source": [
+      { "file": "packages/website/src/data/scoreboard.ts", "kind": "regex-capture", "pattern": "id: \"v31-same-eight\",[^{}]*?version: \"([^\"]+)\",[^{}]*?known: (\\d+),\\s*found: (\\d+),", "expected": ["3.1", "105", "8"] },
+      { "file": "packages/website/public/llms.txt", "kind": "contains", "expected": "version 3.1 found 8 of 105 known findings in its first 15 hypotheses" }
+    ]
+  },
+  {
+    "id": "scoreboard-v31-sealed-eight",
+    "text": "The scoreboard row for version 3.1 on the eight sealed contests shows 8 of 105",
+    "pages": ["/scoreboard", "/nl/scoreboard"],
+    "mustContain": [{ "regex": "\\b8 (of|van de) 105\\b" }],
+    "source": [
+      { "file": "packages/website/src/data/scoreboard.ts", "kind": "regex-capture", "pattern": "id: \"v31-same-eight\",[^{}]*?known: (\\d+),\\s*found: (\\d+),", "expected": ["105", "8"] }
+    ]
+  },
+  {
+    "id": "home-misses-97",
+    "text": "The home page publishes the misses: 97 of 105 known findings not found",
+    "pages": ["/", "/nl"],
+    "mustContain": [{ "regex": "\\b97 (of|van de) 105\\b" }],
+    "source": [
+      { "file": "packages/website/src/data/scoreboard.ts", "kind": "contains", "expected": "97 of 105 known findings were still not found" },
+      { "file": "packages/website/src/data/home-copy.ts", "kind": "contains", "expected": "We publish what our scan missed: 97 of 105 known findings" }
+    ]
+  },
+  {
+    "id": "scoreboard-evmbench",
+    "text": "The EVMbench row: 23 of 117 in the first 15 hypotheses, 29 of 117 in the first 30",
+    "pages": ["/scoreboard", "/nl/scoreboard"],
+    "mustContain": [{ "regex": "\\b23 (of|van de) 117\\b" }, { "regex": "\\b29 (of|van de) 117\\b" }],
+    "source": [
+      { "file": "packages/website/src/data/scoreboard.ts", "kind": "regex-capture", "pattern": "id: \"evmbench-forty\",[^{}]*?version: \"([^\"]+)\",[^{}]*?known: (\\d+),\\s*found: (\\d+),", "expected": ["3.1", "117", "23"] },
+      { "file": "packages/website/src/data/scoreboard.ts", "kind": "contains", "expected": "The first 30 hold 29 of 117" }
+    ]
+  },
+  {
+    "id": "ruler-note-evmbench",
+    "text": "The EVMbench note gives 29 of 117 strict, 41 of 117 with one judge, 2.9 percent precision, as llms.txt does",
+    "pages": ["/notes/the-ruler-and-the-misses"],
+    "mustContain": [{ "regex": "\\b29 of 117\\b" }, { "regex": "\\b41 of 117\\b" }, "2.9 percent"],
+    "source": [
+      { "file": "packages/website/public/llms.txt", "kind": "contains", "expected": "29 of 117 known findings in the first 30 hypotheses with both judges agreeing, 41 with one judge, 2.9 percent precision" }
+    ]
+  },
+  {
+    "id": "scoreboard-c4-nine",
+    "text": "The row for version 3.1 on nine newer Code4rena contests shows 5 of 66",
+    "pages": ["/scoreboard", "/nl/scoreboard"],
+    "mustContain": [{ "regex": "\\b5 (of|van de) 66\\b" }],
+    "source": [
+      { "file": "packages/website/src/data/scoreboard.ts", "kind": "regex-capture", "pattern": "id: \"c4-fresh-nine\",[^{}]*?version: \"([^\"]+)\",[^{}]*?known: (\\d+),\\s*found: (\\d+),", "expected": ["3.1", "66", "5"] },
+      { "file": "packages/website/public/llms.txt", "kind": "contains", "expected": "held 5 of 66 known findings (7.6 percent)" }
+    ]
+  },
+  {
+    "id": "scoreboard-sealed-earlier",
+    "text": "The sealed run rows: version 3 found 4 of 105, version 2.1 found 1 of 105",
+    "pages": ["/scoreboard", "/nl/scoreboard"],
+    "mustContain": [{ "regex": "\\b4 (of|van de) 105\\b" }, { "regex": "\\b1 (of|van de) 105\\b" }],
+    "source": [
+      { "file": "packages/website/src/data/scoreboard.ts", "kind": "regex-capture", "pattern": "id: \"sealed-v3\",[^{}]*?version: \"([^\"]+)\",[^{}]*?known: (\\d+),\\s*found: (\\d+),", "expected": ["3", "105", "4"] },
+      { "file": "packages/website/src/data/scoreboard.ts", "kind": "regex-capture", "pattern": "id: \"sealed-s0\",[^{}]*?version: \"([^\"]+)\",[^{}]*?known: (\\d+),\\s*found: (\\d+),", "expected": ["2.1", "105", "1"] },
+      { "file": "packages/website/public/llms.txt", "kind": "contains", "expected": "in the sealed run the earlier versions found 1 and 4" }
+    ]
+  },
+  {
+    "id": "scoreboard-free-tools",
+    "text": "The free static tools rows: Slither 0 of 34, Aderyn 0 of 70",
+    "pages": ["/scoreboard", "/nl/scoreboard"],
+    "mustContain": [{ "regex": "\\b0 (of|van de) 34\\b" }, { "regex": "\\b0 (of|van de) 70\\b" }],
+    "source": [
+      { "file": "packages/website/src/data/scoreboard.ts", "kind": "regex-capture", "pattern": "id: \"slither-same-contests\",[^{}]*?known: (\\d+),\\s*found: (\\d+),", "expected": ["34", "0"] },
+      { "file": "packages/website/src/data/scoreboard.ts", "kind": "regex-capture", "pattern": "id: \"aderyn-same-contests\",[^{}]*?known: (\\d+),\\s*found: (\\d+),", "expected": ["70", "0"] },
+      { "file": "packages/website/public/llms.txt", "kind": "contains", "expected": "Slither found 0 of 34 and Aderyn 0 of 70" }
+    ]
+  },
+  {
+    "id": "signal-log-prices-en",
+    "text": "Signal log prices and seats in English: Solo 9.95 a month or 99 a year for 3 repositories, Team 29.95 or 299 for 25",
+    "pages": ["/signal-log"],
+    "mustContain": [
+      "Solo: 9.95 euro per month or 99 euro per year, up to 3 repositories.",
+      "Team: 29.95 euro per month or 299 euro per year, up to 25 repositories."
+    ],
+    "source": [
+      { "file": "packages/website/src/data/legal/signal-log.txt", "kind": "contains", "expected": "Solo: 9.95 euro per month or 99 euro per year, up to 3 repositories." },
+      { "file": "packages/website/src/data/legal/signal-log.txt", "kind": "contains", "expected": "Team: 29.95 euro per month or 299 euro per year, up to 25 repositories." },
+      { "file": "packages/website/public/llms.txt", "kind": "contains", "expected": "(3 with Solo, 25 with Team)" }
+    ]
+  },
+  {
+    "id": "signal-log-prices-nl",
+    "text": "Signal log prices and seats in Dutch: Solo 9,95 a month or 99 a year for 3 repositories, Team 29,95 or 299 for 25",
+    "pages": ["/nl/signal-log"],
+    "mustContain": [
+      "Solo: 9,95 euro per maand of 99 euro per jaar, tot 3 repositories.",
+      "Team: 29,95 euro per maand of 299 euro per jaar, tot 25 repositories."
+    ],
+    "source": [
+      { "file": "packages/website/src/data/legal/signal-log.nl.txt", "kind": "contains", "expected": "Solo: 9,95 euro per maand of 99 euro per jaar, tot 3 repositories." },
+      { "file": "packages/website/src/data/legal/signal-log.nl.txt", "kind": "contains", "expected": "Team: 29,95 euro per maand of 299 euro per jaar, tot 25 repositories." }
+    ]
+  },
+  {
+    "id": "home-signal-log-price",
+    "text": "The home page gives the Signal log price range 9.95 or 29.95 euro per month",
+    "pages": ["/", "/nl"],
+    "mustContain": [{ "regex": "9[.,]95 (or|of) 29[.,]95 euro per (month|maand)" }],
+    "source": [
+      { "file": "packages/website/src/data/home-copy.ts", "kind": "contains", "expected": "9.95 or 29.95 euro per month, VAT included" },
+      { "file": "packages/website/src/data/legal/signal-log.txt", "kind": "contains", "expected": "Solo: 9.95 euro per month" },
+      { "file": "packages/website/src/data/legal/signal-log.txt", "kind": "contains", "expected": "Team: 29.95 euro per month" }
+    ]
+  },
+  {
+    "id": "free-checks-three",
+    "text": "The checks page names three free checks: eight signals in a GitHub repository, the x402 endpoint check, proof that you own an endpoint",
+    "pages": ["/checks", "/nl/checks"],
+    "mustContain": [
+      { "regex": "(Three|Drie) checks" },
+      { "regex": "(Eight security signals in a GitHub repository|Acht beveiligingssignalen in een GitHub-repository)" },
+      { "regex": "(Free x402 endpoint check|Gratis x402-endpointcheck)" },
+      { "regex": "(Prove you own an endpoint|Bewijs dat een endpoint van jou is)" }
+    ],
+    "source": [
+      { "file": "packages/website/src/components/pages/offer-pages.tsx", "kind": "contains", "expected": "name: \"Prove you own an endpoint\"" },
+      { "file": "packages/website/public/llms.txt", "kind": "contains", "expected": "three free checks (eight security signals in a public GitHub repository, an x402 endpoint check, proof that you own an endpoint)" }
+    ]
+  },
+  {
+    "id": "company-kvk-vat",
+    "text": "The footer gives the same KvK number and VAT number on every listed page, matching the footer source and the terms",
+    "pages": ["/", "/nl", "/scan", "/nl/scan", "/signal-log", "/nl/signal-log", "/terms", "/nl/terms", "/privacy", "/nl/privacy", "/about", "/nl/about"],
+    "mustContain": ["KvK 86816632", "NL004319767B61"],
+    "source": [
+      { "file": "packages/website/src/components/footer.tsx", "kind": "regex-capture", "pattern": "BUSINESS_LINE = \"AO Services \\S KvK (\\d+) \\S BTW (NL[0-9A-Z]+) \\S Eindhoven", "expected": ["86816632", "NL004319767B61"] },
+      { "file": "packages/website/src/data/legal/terms.txt", "kind": "regex-capture", "pattern": "AO Services, KvK (\\d+), BTW (NL[0-9A-Z]+), Eindhoven", "expected": ["86816632", "NL004319767B61"] }
+    ]
+  }
+]
