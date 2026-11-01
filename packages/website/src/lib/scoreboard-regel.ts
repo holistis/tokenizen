@@ -26,6 +26,7 @@ export const RESULT_DIR_EXCEPTIONS: Record<string, string> = {
   "2026-10-24-baseline": "Raw outputs of version 1, which its row reaches through RESULTS-2026-10-24.md.",
   "2026-10-24-v2": "Raw outputs of version 2, which its row reaches through RESULTS-v2-2026-10-24.md.",
   "2026-10-24-dev-set-2": "Part 2 of the development set, which the rule does not cover (we tune on it, it is not evidence).",
+  "2026-11-01-same-reports-different-judges": "A re-judging of the published reports of a third party with two free judges. It is not a run of our scan, so no scoreboard row can link to it; the note same-reports-different-judges does.",
 };
 
 export interface Regression {

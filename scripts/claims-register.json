@@ -183,5 +183,17 @@
       { "file": "packages/website/src/components/footer.tsx", "kind": "regex-capture", "pattern": "BUSINESS_LINE = \"AO Services \\S KvK (\\d+) \\S BTW (NL[0-9A-Z]+) \\S Eindhoven", "expected": ["86816632", "NL004319767B61"] },
       { "file": "packages/website/src/data/legal/terms.txt", "kind": "regex-capture", "pattern": "AO Services, KvK (\\d+), BTW (NL[0-9A-Z]+), Eindhoven", "expected": ["86816632", "NL004319767B61"] }
     ]
+  },
+  {
+    "id": "judges-note-counts",
+    "text": "The note on the same 40 reports gives their score and the counts of two free judges: 101, 89, 73, 64 and 98 of 117",
+    "pages": ["/notes/same-reports-different-judges"],
+    "mustContain": [{ "regex": "101 of 117" }, { "regex": "89 of 117" }, { "regex": "73 of 117" }, { "regex": "64 of 117" }, { "regex": "98 of 117" }],
+    "source": [
+      { "file": "packages/website/src/data/blog-posts.ts", "kind": "contains", "expected": "value: \"89 of 117\"" },
+      { "file": "packages/website/src/data/blog-posts.ts", "kind": "contains", "expected": "value: \"73 of 117\"" },
+      { "file": "packages/website/src/data/blog-posts.ts", "kind": "contains", "expected": "value: \"64 of 117\"" },
+      { "file": "packages/website/src/data/blog-posts.ts", "kind": "contains", "expected": "value: \"98 of 117\"" }
+    ]
   }
 ]
