@@ -5,9 +5,11 @@ import { SignalLogBuy } from "@/components/pages/signal-log-buy";
 import signalLogText from "@/data/legal/signal-log.txt?raw";
 import termsText from "@/data/legal/terms.txt?raw";
 import privacyText from "@/data/legal/privacy.txt?raw";
+import deepScanTermsText from "@/data/legal/deep-scan-terms.txt?raw";
 import signalLogTextNl from "@/data/legal/signal-log.nl.txt?raw";
 import termsTextNl from "@/data/legal/terms.nl.txt?raw";
 import privacyTextNl from "@/data/legal/privacy.nl.txt?raw";
+import deepScanTermsTextNl from "@/data/legal/deep-scan-terms.nl.txt?raw";
 import { useLocale } from "@/i18n/context";
 import { localePath } from "@/lib/locale-paths";
 
@@ -172,6 +174,17 @@ export const LEGAL_PAGES = {
       metaDescription: "De voorwaarden voor het abonnement op het Signal log van AO Services.",
     },
   },
+  "deep-scan-terms": {
+    raw: deepScanTermsText,
+    rawNl: deepScanTermsTextNl,
+    slug: "deep-scan-terms",
+    en: { chip: "terms", metaTitle: "Terms of the deep scan | tokenizen", metaDescription: "The terms of the deep scan of AO Services: what you buy, the price, delivery and refunds." },
+    nl: {
+      chip: "voorwaarden",
+      metaTitle: "Voorwaarden van de diepe scan | tokenizen",
+      metaDescription: "De voorwaarden van de diepe scan van AO Services: wat je koopt, de prijs, levering en terugbetaling.",
+    },
+  },
   privacy: {
     raw: privacyText,
     rawNl: privacyTextNl,
@@ -191,6 +204,10 @@ export function SignalLogPage() {
 
 export function TermsPage() {
   return <LegalPage {...LEGAL_PAGES.terms} />;
+}
+
+export function DeepScanTermsPage() {
+  return <LegalPage {...LEGAL_PAGES["deep-scan-terms"]} />;
 }
 
 export function PrivacyPage() {

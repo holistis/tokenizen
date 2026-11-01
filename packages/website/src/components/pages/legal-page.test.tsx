@@ -366,8 +366,8 @@ describe("the terms are correct in both languages", () => {
   });
 
   it("carries the same date of the last change in both languages", () => {
-    expect(privacy).toContain("Last changed: 29 October 2026.");
-    expect(privacyNl).toContain("Laatst gewijzigd: 29 oktober 2026.");
+    expect(privacy).toContain("Last changed: 1 November 2026.");
+    expect(privacyNl).toContain("Laatst gewijzigd: 1 november 2026.");
   });
 });
 

@@ -10,7 +10,8 @@ import { TrustRadarPage } from "@/components/pages/trust-radar-page";
 import { SelfCheckPage } from "@/components/pages/self-check-page";
 import { X402CheckPage } from "@/components/pages/x402-check-page";
 import { CraCheckPage } from "@/components/pages/cra-check-page";
-import { PrivacyPage, SignalLogPage, TermsPage } from "@/components/pages/legal-page";
+import { DeepScanTermsPage, PrivacyPage, SignalLogPage, TermsPage } from "@/components/pages/legal-page";
+import { DeepScanPage, DeepScanStatusPage } from "@/components/pages/deep-scan-page";
 import { ScoreboardPage } from "@/components/pages/scoreboard-page";
 import { BlogIndex, NotesIndex } from "@/components/pages/notes-index";
 import { ZeroOf600Article } from "@/components/pages/zero-of-600-article";
@@ -44,6 +45,9 @@ const ARTICLES: Record<string, () => JSX.Element> = {
   "/scan": ScanPage,
   "/tools": ToolsPage,
   "/agents": AgentsPage,
+  "/deep-scan": DeepScanPage,
+  "/scan/status": DeepScanStatusPage,
+  "/deep-scan-terms": DeepScanTermsPage,
   "/consultancy": ConsultancyPage,
   "/about": AboutPage,
 };
