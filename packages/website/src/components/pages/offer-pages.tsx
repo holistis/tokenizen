@@ -317,6 +317,9 @@ const SCAN = {
     watchLabel: "Watch it in a minute",
     watchText: "In one minute: what our scan found, what it missed, and how you can check it. We publish every run on our fixed test sets, the misses included, together with the programs that check the results. Every number in this film can be checked from open files and on-chain records.",
     watchSub: "English, with English subtitles.",
+    ruler: "The ruler: why a percentage needs its judge",
+    rulerText: "In under two minutes: the leading scanner says 86 percent by its own count. We rebuilt its judge, counted the same reports with two open judges and got different numbers, and we show our own first miss. A percentage without its judge says nothing.",
+    rulerSub: "English, with English subtitles.",
     transcriptLabel: "Transcript",
     filmTranscript: ["Eight of a hundred and five.","That is how many known findings version three point one of our scan found on eight audit contests. It missed ninety-seven.","We publish both numbers.","Every run goes on a public scoreboard within seven days. The bad ones too.","The rule is written down and time-stamped before the first run it covers.","Every report we deliver goes on a dated list. You check yours with one file.","When money moves, you read it back from the chain. One real payment on Base. One rating, written by the buyer. One hash that ties them together.","Everything we show, you can replay.","Check. Pay. Prove. tokenizen.nl"],
     openText:
@@ -345,6 +348,9 @@ const SCAN = {
     watchLabel: "Kijk in een minuut",
     watchText: "In een minuut: wat onze scan vond, wat hij miste en hoe je het nagaat. We publiceren elke run op onze vaste testsets, de missers erbij, samen met de programma's die de uitslagen nakijken. Elk getal in deze film is na te gaan met open bestanden en bewijs op de keten.",
     watchSub: "Engels gesproken, met Engelse ondertitels.",
+    ruler: "De liniaal: waarom een percentage zijn rechter nodig heeft",
+    rulerText: "In bijna twee minuten: de marktleider zegt 86 procent volgens zijn eigen telling. Wij bouwden zijn rechter na, telden dezelfde rapporten met twee open rechters en kregen andere getallen, en we laten onze eigen eerste misser zien. Een percentage zonder zijn rechter zegt niets.",
+    rulerSub: "Engels gesproken, met Engelse ondertitels.",
     transcriptLabel: "Uitgeschreven tekst (Engels)",
     filmTranscript: ["Eight of a hundred and five.","That is how many known findings version three point one of our scan found on eight audit contests. It missed ninety-seven.","We publish both numbers.","Every run goes on a public scoreboard within seven days. The bad ones too.","The rule is written down and time-stamped before the first run it covers.","Every report we deliver goes on a dated list. You check yours with one file.","When money moves, you read it back from the chain. One real payment on Base. One rating, written by the buyer. One hash that ties them together.","Everything we show, you can replay.","Check. Pay. Prove. tokenizen.nl"],
     openText:
@@ -381,6 +387,21 @@ export function ScanPage() {
               ))}
             </ol>
           </details>
+        </figure>
+      </Block>
+      <Block label={c.ruler}>
+        <figure>
+          <video controls preload="none" playsInline poster="/media/tokenizen-gegroeid-poster.jpg" className="aspect-video w-full rounded-lg border border-border bg-black">
+            <source src="/media/tokenizen-gegroeid.mp4" type="video/mp4" />
+            <track kind="captions" srcLang="en" label="English" src="/media/tokenizen-gegroeid.en.vtt" />
+            <p>
+              <a href="/media/tokenizen-gegroeid.mp4">{c.ruler}</a>
+            </p>
+          </video>
+          <figcaption className="mt-3">
+            <p>{c.rulerText}</p>
+            <p className="text-sm text-muted-foreground">{c.rulerSub}</p>
+          </figcaption>
         </figure>
       </Block>
       <Block label={c.deepLabel}>

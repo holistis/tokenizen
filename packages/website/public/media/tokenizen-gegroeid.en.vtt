@@ -1,0 +1,56 @@
+WEBVTT
+
+00:00:01.200 --> 00:00:02.629
+Eighty-six percent.
+
+00:00:03.400 --> 00:00:08.307
+That is what the leading scanner says it finds in smart contracts, by its own count.
+
+00:00:09.000 --> 00:00:12.669
+But a percentage is only as good as the ruler that measured it.
+
+00:00:14.800 --> 00:00:20.880
+The official ruler is a judge. GPT-5, thinking hard, one call for every finding.
+
+00:00:22.000 --> 00:00:26.075
+We had written that it was out of reach. We were wrong. So we read its code.
+
+00:00:29.300 --> 00:00:35.231
+We rebuilt it, part by part. Same model, same settings, the same question for every finding.
+
+00:00:38.000 --> 00:00:39.707
+About three cents a call.
+
+00:00:45.300 --> 00:00:48.351
+Then we tested our ruler on the leader's own reports.
+
+00:00:50.000 --> 00:00:53.499
+Their count: twenty-six of thirty-one. Ours: twenty-five.
+
+00:00:55.000 --> 00:00:58.200
+The same verdict on thirty of thirty-one findings.
+
+00:01:03.800 --> 00:01:07.789
+Now the same forty reports, counted with two open judges.
+
+00:01:09.300 --> 00:01:13.012
+Seventy-six percent. Sixty-two. Fifty-five. Eighty-four.
+
+00:01:15.000 --> 00:01:19.757
+Same bugs. Same reports. A percentage without its judge says nothing.
+
+00:01:23.300 --> 00:01:27.396
+Our first sealed run found one of a hundred and five. We published it.
+
+00:01:29.000 --> 00:01:33.224
+Every mistake since is corrected in public, with the old text kept.
+
+00:01:36.800 --> 00:01:42.304
+Two hundred thirty-four judgments sit in an open folder. One command checks every count.
+
+00:01:43.500 --> 00:01:44.759
+Check it yourself.
+
+00:01:46.000 --> 00:01:50.109
+Tokenizen. Make security claims that anyone can check.
+
