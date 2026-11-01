@@ -702,6 +702,19 @@
       "twitterDescription": "A standard x402 client can now buy our scan, checked with real purchases on Base. The official client caps payments at 1 dollar, hence a quick scan for 1.",
       "alternates": []
     },
+    "/notes/same-reports-different-judges": {
+      "lang": "en",
+      "title": "The same 40 reports, five different counts | tokenizen",
+      "description": "Azimuth's 40 published EVMbench reports under two free judges: 62 to 76 percent each, 55 to 84 combined, against their published 86.",
+      "canonical": "https://tokenizen.nl/notes/same-reports-different-judges",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/same-reports-different-judges",
+      "ogTitle": "The same 40 reports, five different counts | tokenizen",
+      "ogDescription": "Azimuth's 40 published EVMbench reports under two free judges: 62 to 76 percent each, 55 to 84 combined, against their published 86.",
+      "twitterTitle": "The same 40 reports, five different counts | tokenizen",
+      "twitterDescription": "Azimuth's 40 published EVMbench reports under two free judges: 62 to 76 percent each, 55 to 84 combined, against their published 86.",
+      "alternates": []
+    },
     "/notes/scan-newer-contests": {
       "lang": "en",
       "title": "The scan held its rate on nine newer contests | tokenizen",

@@ -55,6 +55,7 @@ New, but no longer unused. It has been run end to end against a real live paid e
 - [Nine ways to fake a delivery claim](https://tokenizen.nl/notes/nine-ways-to-fake-a-delivery-claim): nine independent designs for making buyer-signed claims harder to fake, each built and broken against the real code, and the structural reason none of them fully worked
 - [The Hierarchy of Agent Trust](https://tokenizen.nl/notes/the-hierarchy-of-agent-trust): a plain-language story explaining why capacity-attest stops at evidence and deliberately never becomes a score or a judge
 - [Eight security signals in 109 public repositories of organisations in ten EU countries](https://tokenizen.nl/notes/eight-security-signals-109-repositories): eight security signals measured on 109 public repositories with a release, how often each is visible, how we checked our own tool and what the numbers do not say
+- [The same 40 reports, five different counts](https://tokenizen.nl/notes/same-reports-different-judges): Azimuth's 40 published EVMbench reports judged by two free models, 55 to 84 percent depending on the judge against 86 in their own count, what that does and does not say, and where every verdict can be checked.
 
 ## How to use it
 

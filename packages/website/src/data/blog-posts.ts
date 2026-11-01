@@ -907,6 +907,64 @@ The sampling script is bench/cra-benchmark.mjs in github.com/holistis/tokenizen,
       },
     ],
   },
+  {
+    slug: "same-reports-different-judges",
+    kind: "note",
+    date: "2026-11-01",
+    title: "The same 40 reports, five different counts",
+    dek: "We let two free judges count the findings in Azimuth's published reports. One judge gives 62 or 76 percent, two judges combined give 55 to 84, and their published score under the EVMbench grader is 86. What that does and does not say about any percentage in this field.",
+    description:
+      "Azimuth's 40 published EVMbench reports under two free judges: 62 to 76 percent each, 55 to 84 combined, against their published 86.",
+    tags: ["Measurements"],
+    readMinutes: 4,
+    blocks: [
+      {
+        type: "md",
+        text: `Azimuth ran the detect task of EVMbench on all 40 audits and published the run with every report: 101 of 117 known findings, 86.3 percent ([their repository](https://github.com/testmachine-ai/azimuth-evmbench-101-of-117), run date 14 July 2026 in their README). We use the same ruler for our own scan, and we wanted to know how much of a percentage comes from the reports and how much from the judge. So on 31 October and 1 November 2026 we took their 40 published reports and had two free judge models decide, for each of the 117 known findings, whether the report describes it. The judging prompt is the one of the EVMbench detect grader with a fixed answer form added. The judges are gpt-oss-120b and codestral-latest, at temperature 0.1, and each answered once per finding.
+
+Five counts of the same reports, one of them theirs.`,
+      },
+      {
+        type: "facts",
+        heading: "Five counts of the same 40 reports",
+        intro: "117 known findings, all of them High severity. Each card links to the folder with every verdict, except the first, which links to their repository.",
+        items: [
+          { value: "101 of 117", label: "their published score, 86.3 percent", href: "https://github.com/testmachine-ai/azimuth-evmbench-101-of-117", hrefLabel: "Their repository" },
+          { value: "89 of 117", label: "found by judge 1, gpt-oss-120b, on its own (76.1 percent)", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-01-same-reports-different-judges", hrefLabel: "All verdicts" },
+          { value: "73 of 117", label: "found by judge 2, codestral-latest, on its own (62.4 percent)", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-01-same-reports-different-judges", hrefLabel: "All verdicts" },
+          { value: "64 of 117", label: "named by both judges, which is our strict rule (54.7 percent)", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-01-same-reports-different-judges", hrefLabel: "All verdicts" },
+          { value: "98 of 117", label: "named by at least one of the two judges (83.8 percent)", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-01-same-reports-different-judges", hrefLabel: "All verdicts" },
+        ],
+      },
+      {
+        type: "md",
+        text: `## What it says
+
+A percentage only means something next to the judge that produced it. One judge gives 76 percent and the other 62, a difference of 14 points. Counting a finding only when both judges agree gives 55 percent, and counting it when either agrees gives 84, a spread of 29 points. The biggest single difference sits in one audit: in 2024-04-noya, a report of 124 KB with 109 sections, judge 1 counts 10 of the 20 known findings where their score is 17. Our own scans are judged with free judges of this kind, so we do not put our numbers next to 86 percent.
+
+## What we do not claim
+
+We do not claim that their score is wrong. Their run used the canonical EVMbench runner and the grader that comes with it, and we did not run that grader's model. Our two judges are free models, chosen because anyone could repeat their calls at no cost on 31 October 2026, and neither is argued to equal the canonical grader: one is a code model, the other ran with low reasoning effort. We compare counts, not findings, and the same count can hide different findings. Their run logs keep the grader's answer per finding. We looked at the log of one audit (2024-04-noya) and did not compare per finding.
+
+The judges did not read their file as published. We cut each report into sections and showed the judge a rendering of each one: severity and title, the file and function of the first evidence pointer, and the explanation. A control on the raw report file, for the seven audits where judge 1 and their score differ, shows that our rendering moved the counts: judge 1 counts 29 on the raw file where it counted 26, codestral 25 where it counted 24, and both together 19 where they counted 17, mostly in noya (judge 1: 10 became 14). In three of the seven audits judge 1 went down by one. The other 33 audits were not checked that way, so the table may understate or overstate their score under these judges by a few findings. It does not close the gap.
+
+Each judge answered once per finding, and an answer moves with small changes: the same judge changed by one finding in five of the seven control audits when it saw the raw file. An earlier trial with two paid judges on 15 findings sits in the folder and counts nowhere; it gave 13, 13 and 12 of the 15 where the free judges gave 14, 11 and 11 on the same findings. The verdicts are not hand-checked, and some reasoning is hard to square with its answer, for example 2023-07-pooltogether H-02 with codestral, so read them before you rely on a single one. The audits are public contests, so the models behind the reports and the judges may have seen them. This is our own re-judging, not an independent audit, and nobody outside our team has recomputed it yet.
+
+## Repeat it
+
+The folder holds all 234 verdicts and a script, node check.mjs, that recomputes every count with no network and no key. Given a clone of their repository it also compares their scores with their RESULTS.tsv. If a count does not match, that is an error of ours, and we will correct it at the top of this note.`,
+      },
+      {
+        type: "cta",
+        heading: "Look at the verdicts",
+        text: "Every verdict is a file with the judge's reasoning. Run the checker, or judge the same reports again with a judge of your choice.",
+        links: [
+          { label: "The folder with all verdicts", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-01-same-reports-different-judges" },
+          { label: "Their repository", href: "https://github.com/testmachine-ai/azimuth-evmbench-101-of-117" },
+        ],
+      },
+    ],
+  },
 ];
 
 export function postPath(slug: string): string {
