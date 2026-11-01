@@ -85,8 +85,8 @@ describe("the deep scan page", () => {
       expect(tt).toMatch(locale === "nl" ? /Modelformulier voor herroeping/ : /Model withdrawal form/);
       expect(tt).toMatch(locale === "nl" ? /Naam: \[je naam\]/ : /Name: \[your name\]/);
       expect(tt).toMatch(locale === "nl" ? /Vragen en klachten: info@tokenizen\.nl\. We antwoorden binnen 14 dagen/ : /Questions and complaints: info@tokenizen\.nl\. We answer within 14 days/);
-      expect(tt).toMatch(locale === "nl" ? /stoppen we de scan, maken we geen rapport en betalen we de volledige prijs terug/ : /we stop the scan, make no report and refund the full price/);
-      expect(tt).not.toMatch(locale === "nl" ? /betaal je voor wat is gedaan/ : /you pay for what has been done/);
+      expect(tt).toMatch(locale === "nl" ? /maken we geen rapport en betalen we de volledige prijs terug/ : /we make no report and refund the full price/);
+      expect(tt).not.toMatch(locale === "nl" ? /betaal je voor wat is gedaan|stoppen we de scan/ : /you pay for what has been done|we stop the scan/);
       expect(tt.indexOf(locale === "nl" ? "Modelformulier" : "Model withdrawal form")).toBeGreaterThan(tt.indexOf(locale === "nl" ? "10." : "10. Law"));
     });
   }
