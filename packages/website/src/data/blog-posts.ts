@@ -374,7 +374,9 @@ The transaction, the answer, the delivered report and the script are in [the evi
     blocks: [
       {
         type: "md",
-        text: `On 24 October we published a run of our scan on 8 Sherlock contests nobody here had touched. The scan in production found 1 of 105 known High and Medium findings, a newer version 4. Since the evening of 25 October the newer version, V3.1, is what paid scans run on.
+        text: `Update, 1 November 2026. The time per scan below, about 20 to 45 seconds, should read about 20 to 50 seconds, as in the results folder of this run (results/2026-10-25-v31 in github.com/holistis/bug-bounty-intelligence-mcp). The correction is in ERRATA.md there.
+
+On 24 October we published a run of our scan on 8 Sherlock contests nobody here had touched. The scan in production found 1 of 105 known High and Medium findings, a newer version 4. Since the evening of 25 October the newer version, V3.1, is what paid scans run on.
 
 We ran it once on the same 8 contests. It found 8 of 105 (7.6 percent). Precision went from 5.0 to 7.5 percent. A scan takes about 20 to 45 seconds and costs us 0.02 to 0.15 dollar.
 
