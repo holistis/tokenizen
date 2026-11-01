@@ -412,10 +412,10 @@ export function ScanPage() {
 // For AI agents. Everything here was read from the running services and the official MCP registry on 1 November 2026 (tools/list on both
 // endpoints, one real tools/call, registry.modelcontextprotocol.io); nothing is promised that was not read there.
 
-export const AGENT_CALL = `curl -X POST https://api.tokenizen.nl/mcp \\
+export const AGENT_CALL = `curl -s -X POST https://api.tokenizen.nl/mcp \\
   -H 'content-type: application/json' \\
   -H 'accept: application/json, text/event-stream' \\
-  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"check_github_repo","arguments":{"repo":"owner/name"}}}'`;
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"check_github_repo","arguments":{"repo":"holistis/tokenizen"}}}'`;
 
 export const AGENTS = {
   en: {
@@ -427,17 +427,17 @@ export const AGENTS = {
       "MCP tools from tokenizen: a free read-only check of eight security signals in a public GitHub repository, a paid ownership check over x402, and open-source packages in the official MCP registry.",
     freeLabel: "Free, no sign-in",
     freeText1:
-      "The check of eight security signals, as one read-only tool. Endpoint: https://api.tokenizen.nl/mcp, streamable HTTP, POST only. The tool is check_github_repo. It takes a public GitHub repository as owner/name or as a github.com address.",
+      "The check of eight security signals, as one read-only tool. Endpoint: https://api.tokenizen.nl/mcp, streamable HTTP, POST only. The tool is check_github_repo. It takes a public GitHub repository as owner/name or as a github.com address. Registry name: io.github.holistis/cra-check.",
     freeText2:
-      "It reports which of eight selected signals are visible in the repository and what would make a missing one visible. A signal it could not read completely is marked not measured, never as a gap. A few checks per ten minutes per address. One call, no session needed:",
+      "It reports which of eight selected signals are visible in the repository and what would make a missing one visible. A signal it could not read completely is marked not measured, never as a gap. A few checks per ten minutes per IP address. One call, no session needed (POSIX shell):",
     freeText3:
       "An indication from public data, not a compliance check, not a certificate and not legal advice. Private repositories and hosts other than GitHub cannot be checked.",
     paidLabel: "Paid per call over x402",
     paidText:
-      "The ownership check as a paid MCP tool. Endpoint: https://x402-mcp.tokenizen.nl/mcp. The tool is verify_ownership: it checks that an operator controls an endpoint, through a DNS TXT record or a well-known file. It costs 0.001 dollar per call, paid through x402 on Base mainnet. A real mainnet payment went through it end to end on 21 October 2026.",
+      "The ownership check as a paid MCP tool. Endpoint: https://x402-mcp.tokenizen.nl/mcp. The tool is verify_ownership: it checks that an operator controls an endpoint, through a DNS TXT record or a well-known file. It costs 0.001 dollar per call, paid through x402 on Base mainnet. One real mainnet payment, made as a test, went through it end to end on 21 October 2026. Pay only if your operator has allowed x402 spending.",
     scanLabel: "Smart contract scan",
     scanText:
-      "The smart contract scan is sold over x402 on the scan page, next to its public scoreboard and what it missed. The official x402 client refuses payments above 1 dollar, so the quick scan costs exactly 1 dollar.",
+      "The smart contract scan is sold over x402 on the scan page, next to its public scoreboard and what it missed. By default the official x402 client refuses payments above 1 dollar, so the quick scan costs exactly 1 dollar; the full scan costs 5 dollars and needs a client that allows it. The scan also has its own entry in the official MCP registry: io.github.holistis/bug-bounty-intelligence-mcp.",
     scanLink: "The scan and its scoreboard",
     installLabel: "Install in your own agent",
     installIntro: "Both are in the official MCP registry (registry.modelcontextprotocol.io, read on 1 November 2026) and open source.",
@@ -449,7 +449,7 @@ export const AGENTS = {
       },
       {
         name: "io.github.holistis/agent-receipt-verify",
-        text: "Check an x402 endpoint before an agent pays it, then link the receipt to one on-chain settlement.",
+        text: "Checks x402 endpoint conformance before an agent pays, and links the receipt to its settlement.",
         href: "https://www.npmjs.com/package/agent-receipt-verify",
       },
     ],
@@ -461,28 +461,28 @@ export const AGENTS = {
     findText: "In llms.txt, in sitemap.xml and in the official MCP registry. There is no other discovery file yet.",
   },
   nl: {
-    chip: "voor agenten",
+    chip: "voor agents",
     title: "Gereedschap dat een AI-agent kan aanroepen",
-    lead: "Twee MCP-adressen die je vandaag kunt aanroepen en twee pakketten die je kunt installeren. Wat elk doet, wat het kost en wat het niet kan zeggen.",
-    metaTitle: "Voor AI-agenten | tokenizen",
+    lead: "Twee MCP-eindpunten die je vandaag kunt aanroepen en twee pakketten die je kunt installeren. Wat elk doet, wat het kost en wat het niet kan zeggen.",
+    metaTitle: "Voor AI-agents | tokenizen",
     metaDescription:
-      "MCP-gereedschap van tokenizen: een gratis, alleen-lezen controle van acht beveiligingssignalen in een openbare GitHub-repository, een betaalde eigenaarscheck via x402 en open-sourcepakketten in het officiele MCP-register.",
+      "MCP-gereedschap van tokenizen: een gratis, alleen-lezen controle van acht beveiligingssignalen in een openbare GitHub-repository, een betaalde eigenaarscheck via x402 en open-sourcepakketten in het officiële MCP-register.",
     freeLabel: "Gratis, zonder inloggen",
     freeText1:
-      "De controle van acht beveiligingssignalen als een alleen-lezen hulpmiddel. Adres: https://api.tokenizen.nl/mcp, streamable HTTP, alleen POST. Het hulpmiddel heet check_github_repo. Je geeft een openbare GitHub-repository als eigenaar/naam of als github.com-adres.",
+      "De controle van acht beveiligingssignalen als een alleen-lezen hulpmiddel. Eindpunt: https://api.tokenizen.nl/mcp, streamable HTTP, alleen POST. Het hulpmiddel heet check_github_repo. Je geeft een openbare GitHub-repository als eigenaar/naam of als github.com-adres. Registernaam: io.github.holistis/cra-check.",
     freeText2:
-      "Het meldt welke van acht gekozen signalen in de repository zichtbaar zijn en wat een ontbrekend signaal zichtbaar zou maken. Een signaal dat niet helemaal te lezen was, staat als niet gemeten, nooit als gat. Een paar controles per tien minuten per adres. Een aanroep, geen sessie nodig:",
+      "Het meldt welke van acht gekozen signalen in de repository zichtbaar zijn en wat een ontbrekend signaal zichtbaar zou maken. Een signaal dat niet helemaal te lezen was, staat als niet gemeten, nooit als gat. Een paar controles per tien minuten per IP-adres. Eén aanroep, geen sessie nodig (POSIX-shell):",
     freeText3:
       "Een aanwijzing uit openbare gegevens, geen nalevingscontrole, geen certificaat en geen juridisch advies. Privé-repositories en andere hosts dan GitHub kunnen niet worden gecontroleerd.",
     paidLabel: "Betaald per aanroep via x402",
     paidText:
-      "De eigenaarscheck als betaald MCP-hulpmiddel. Adres: https://x402-mcp.tokenizen.nl/mcp. Het hulpmiddel heet verify_ownership: het controleert dat een beheerder een adres beheert, via een DNS-TXT-record of een well-known-bestand. Het kost 0,001 dollar per aanroep, betaald via x402 op Base mainnet. Op 21 oktober 2026 liep een echte betaling op mainnet er van begin tot eind doorheen.",
-    scanLabel: "Slimme-contractscan",
+      "De eigenaarscheck als betaald MCP-hulpmiddel. Eindpunt: https://x402-mcp.tokenizen.nl/mcp. Het hulpmiddel heet verify_ownership: het controleert dat een beheerder een eindpunt in handen heeft, via een DNS-TXT-record of een well-known-bestand. Het kost 0,001 dollar per aanroep, betaald via x402 op Base mainnet. Op 21 oktober 2026 liep één echte betaling op mainnet, gedaan als test, er van begin tot eind doorheen. Betaal alleen als je beheerder x402-uitgaven heeft toegestaan.",
+    scanLabel: "Smart-contractscan",
     scanText:
-      "De scan van slimme contracten wordt via x402 verkocht op de scanpagina, naast het openbare scorebord en wat hij gemist heeft. De officiele x402-client weigert betalingen boven 1 dollar, dus de snelle scan kost precies 1 dollar.",
+      "De scan van smart contracts wordt via x402 verkocht op de scanpagina, naast het openbare scorebord en wat hij gemist heeft. De officiële x402-client weigert standaard betalingen boven 1 dollar, dus de snelle scan kost precies 1 dollar; de volledige scan kost 5 dollar en heeft een client nodig die dat toestaat. De scan heeft ook een eigen vermelding in het officiële MCP-register: io.github.holistis/bug-bounty-intelligence-mcp.",
     scanLink: "De scan en zijn scorebord",
     installLabel: "Installeer in je eigen agent",
-    installIntro: "Beide staan in het officiele MCP-register (registry.modelcontextprotocol.io, gelezen op 1 november 2026) en zijn open source.",
+    installIntro: "Beide staan in het officiële MCP-register (registry.modelcontextprotocol.io, gelezen op 1 november 2026) en zijn open source.",
     installs: [
       {
         name: "io.github.holistis/capacity-attest",
@@ -491,16 +491,16 @@ export const AGENTS = {
       },
       {
         name: "io.github.holistis/agent-receipt-verify",
-        text: "Controleer een x402-adres voordat een agent betaalt en koppel daarna de kwitantie aan een betaling op de keten.",
+        text: "Controleert of een x402-eindpunt klopt voordat een agent betaalt, en koppelt de kwitantie aan de betaling.",
         href: "https://www.npmjs.com/package/agent-receipt-verify",
       },
     ],
     npm: "Op npm",
-    notLabel: "Waar het ophoudt",
+    notLabel: "Wat deze hulpmiddelen niet zijn",
     notText:
       "Geen score, geen oordeel, geen ranglijst en geen eigen token. Een uitkomst is bewijs over het ene ding dat ze noemt. Ze zegt nooit dat een agent, een verkoper of een repository veilig is.",
     findLabel: "Waar een agent dit vindt",
-    findText: "In llms.txt, in sitemap.xml en in het officiele MCP-register. Een ander vindbestand is er nog niet.",
+    findText: "In llms.txt, in sitemap.xml en in het officiële MCP-register. Een ander vindbestand is er nog niet.",
   },
 };
 

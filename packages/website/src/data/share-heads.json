@@ -236,15 +236,15 @@
     },
     "/nl/agents": {
       "lang": "nl",
-      "title": "Voor AI-agenten | tokenizen",
-      "description": "MCP-gereedschap van tokenizen: een gratis, alleen-lezen controle van acht beveiligingssignalen in een openbare GitHub-repository, een betaalde eigenaarscheck via x402 en open-sourcepakketten in het officiele MCP-register.",
+      "title": "Voor AI-agents | tokenizen",
+      "description": "MCP-gereedschap van tokenizen: een gratis, alleen-lezen controle van acht beveiligingssignalen in een openbare GitHub-repository, een betaalde eigenaarscheck via x402 en open-sourcepakketten in het officiële MCP-register.",
       "canonical": "https://tokenizen.nl/nl/agents",
       "ogLocale": "nl_NL",
       "ogUrl": "https://tokenizen.nl/nl/agents",
-      "ogTitle": "Voor AI-agenten | tokenizen",
-      "ogDescription": "MCP-gereedschap van tokenizen: een gratis, alleen-lezen controle van acht beveiligingssignalen in een openbare GitHub-repository, een betaalde eigenaarscheck via x402 en open-sourcepakketten in het officiele MCP-register.",
-      "twitterTitle": "Voor AI-agenten | tokenizen",
-      "twitterDescription": "MCP-gereedschap van tokenizen: een gratis, alleen-lezen controle van acht beveiligingssignalen in een openbare GitHub-repository, een betaalde eigenaarscheck via x402 en open-sourcepakketten in het officiele MCP-register.",
+      "ogTitle": "Voor AI-agents | tokenizen",
+      "ogDescription": "MCP-gereedschap van tokenizen: een gratis, alleen-lezen controle van acht beveiligingssignalen in een openbare GitHub-repository, een betaalde eigenaarscheck via x402 en open-sourcepakketten in het officiële MCP-register.",
+      "twitterTitle": "Voor AI-agents | tokenizen",
+      "twitterDescription": "MCP-gereedschap van tokenizen: een gratis, alleen-lezen controle van acht beveiligingssignalen in een openbare GitHub-repository, een betaalde eigenaarscheck via x402 en open-sourcepakketten in het officiële MCP-register.",
       "alternates": [
         {
           "hreflang": "en",

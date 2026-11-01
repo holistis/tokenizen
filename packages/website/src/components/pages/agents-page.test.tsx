@@ -46,6 +46,23 @@ describe("the page for AI agents", () => {
       expect(text).not.toMatch(/guarantee|garantie|gegarandeerd|guaranteed/i);
     });
 
+    it(`names every registry entry the page talks about, in the latest wording, in ${locale}`, () => {
+      const text = render(locale);
+      // read from registry.modelcontextprotocol.io on 1 November 2026 (isLatest true): the free endpoint, the scan and both packages
+      for (const name of ["io.github.holistis/cra-check", "io.github.holistis/bug-bounty-intelligence-mcp", ...REGISTRY_NAMES]) expect(text).toContain(name);
+      // agent-receipt-verify 0.2.0 had another description; 0.2.1 is the latest
+      expect(text).not.toContain("then link the receipt to one on-chain settlement");
+      expect(text).not.toContain("naar een betaling op de keten");
+    });
+
+    it(`states the limits of the payments honestly in ${locale}`, () => {
+      const text = render(locale);
+      expect(text).toContain(locale === "nl" ? "gedaan als test" : "made as a test");
+      expect(text).toContain(locale === "nl" ? "standaard" : "By default");
+      expect(text).toContain(locale === "nl" ? "5 dollar" : "5 dollars");
+      expect(text).toContain(locale === "nl" ? "IP-adres" : "IP address");
+    });
+
     it(`has no long dashes and no double asterisks in ${locale}`, () => {
       const text = render(locale);
       expect(text).not.toMatch(/[–—]/);
@@ -69,7 +86,7 @@ describe("the page for AI agents", () => {
     expect(call.jsonrpc).toBe("2.0");
     expect(call.method).toBe("tools/call");
     expect(call.params.name).toBe(FREE_TOOL);
-    expect(call.params.arguments).toEqual({ repo: "owner/name" });
+    expect(call.params.arguments).toEqual({ repo: "holistis/tokenizen" });
     expect(AGENT_CALL).toContain(FREE_ENDPOINT);
     expect(AGENT_CALL).toContain("application/json, text/event-stream");
   });
