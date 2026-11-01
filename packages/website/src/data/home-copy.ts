@@ -22,6 +22,17 @@ export interface Offer {
 
 const OFFERS_EN: Offer[] = [
   {
+    id: "tools",
+    status: "open source",
+    name: "Receipts for AI-agent trades",
+    line: "A payment proves money moved. Our receipts record what was offered and what the buyer says arrived. Run the code yourself, so you do not have to believe us.",
+    gets: "capacity-attest (the buyer signs what arrived, linked to the seller's signed receipt), agent-receipt-verify, x402-lint and muraqib-agent-watch, plus MCP servers.",
+    verify: "The code is on GitHub and the packages are on npm.",
+    not: "No score, no verdict, no token of our own.",
+    price: "Free",
+    cta: { label: "See the tools", href: "/tools" },
+  },
+  {
     id: "checks",
     status: "free",
     name: "Free checks",
@@ -66,17 +77,6 @@ const OFFERS_EN: Offer[] = [
     cta: { label: "Open the scoreboard", href: "/scoreboard" },
   },
   {
-    id: "tools",
-    status: "open source",
-    name: "Open-source tools",
-    line: "Run them yourself, so you do not have to believe us.",
-    gets: "capacity-attest, agent-receipt-verify, x402-lint and muraqib-agent-watch, plus MCP servers.",
-    verify: "The code is on GitHub and the packages are on npm.",
-    not: "No score, no verdict, no token of our own.",
-    price: "Free",
-    cta: { label: "See the tools", href: "/tools" },
-  },
-  {
     id: "talk",
     status: "a conversation",
     name: "Talk to Ahmed",
@@ -90,6 +90,17 @@ const OFFERS_EN: Offer[] = [
 ];
 
 const OFFERS_NL: Offer[] = [
+  {
+    id: "tools",
+    status: "open source",
+    name: "Bonnetjes voor AI-agenthandel",
+    line: "Een betaling bewijst dat er geld ging. Onze bonnetjes leggen vast wat is aangeboden en wat de koper zegt te hebben ontvangen. Draai het zelf, dan hoef je ons niet te geloven.",
+    gets: "capacity-attest (de koper ondertekent wat er aankwam, gekoppeld aan het ondertekende bonnetje van de verkoper), agent-receipt-verify, x402-lint en muraqib-agent-watch, plus MCP-servers.",
+    verify: "De code staat op GitHub en de pakketten staan op npm.",
+    not: "Geen score, geen oordeel, geen eigen token.",
+    price: "Gratis",
+    cta: { label: "Bekijk het gereedschap", href: "/tools" },
+  },
   {
     id: "checks",
     status: "gratis",
@@ -133,17 +144,6 @@ const OFFERS_NL: Offer[] = [
     not: "Geen audit en geen garantie dat een contract veilig is. Wat hij vindt en mist staat op het openbare scorebord.",
     price: "Snelle scan 1 dollar (de eerste 15 hypotheses), volledige scan 5 dollar, betaald in USDC op Base via x402. Betaaladres: de officiële bronnen.",
     cta: { label: "Open het scorebord", href: "/scoreboard" },
-  },
-  {
-    id: "tools",
-    status: "open source",
-    name: "Open-sourcegereedschap",
-    line: "Draai het zelf, dan hoef je ons niet te geloven.",
-    gets: "capacity-attest, agent-receipt-verify, x402-lint en muraqib-agent-watch, plus MCP-servers.",
-    verify: "De code staat op GitHub en de pakketten staan op npm.",
-    not: "Geen score, geen oordeel, geen eigen token.",
-    price: "Gratis",
-    cta: { label: "Bekijk het gereedschap", href: "/tools" },
   },
   {
     id: "talk",
@@ -193,9 +193,9 @@ export const HOME: Record<Locale, HomeCopy> = {
   en: {
     hero: {
       eyebrow: "tokenizen.nl · Eindhoven",
-      h1a: "Everyone makes claims.",
-      h1b: "We make ours checkable.",
-      body: "We find leaks in real software and show the numbers. In an open-source AI tool with more than 10,000 stars, 33 secrets leaked before, 20 after the maintainers' own fixes and 4 with ours (pull request open). Check your repository free in a minute, scan a smart contract for 1 dollar, and keep a log whose timestamp is outside our control. Every number below links to the commands, so you can run it yourself.",
+      h1a: "A payment proves money moved.",
+      h1b: "We make what arrived checkable.",
+      body: "AI agents now pay each other. Our open-source receipts record what the seller offered and what the buyer says arrived, each signed by its own side, so anyone can check them. We also find leaks in real software and show the numbers. In an open-source AI tool with more than 10,000 stars, 33 secrets leaked before, 20 after the maintainers' own fixes and 4 with ours (pull request open). Check your repository free in a minute, see the price of a smart contract scan before you pay, and keep a log whose timestamp is outside our control. Every number below links to the commands, so you can run it yourself.",
       ctaPrimary: "Check your repository",
       ctaSecondary: "See what we offer",
       chips: [
@@ -266,9 +266,9 @@ export const HOME: Record<Locale, HomeCopy> = {
   nl: {
     hero: {
       eyebrow: "tokenizen.nl · Eindhoven",
-      h1a: "Iedereen beweert wat.",
-      h1b: "Bij ons kun je het nameten.",
-      body: "Wij vinden lekken in echte software en laten de cijfers zien. In een open-source AI-gereedschap met meer dan 10.000 sterren lekten 33 geheimen, na de eigen reparaties van de makers nog 20 en met de onze nog 4 (pull request open). Check je repository gratis in een minuut, scan een smart contract voor 1 dollar en houd een logboek bij met een tijdstempel buiten onze controle. Elk getal hieronder linkt naar de commando's, dus je kunt het zelf draaien.",
+      h1a: "Een betaling bewijst dat er geld ging.",
+      h1b: "Wij maken nagaanbaar wat er aankwam.",
+      body: "AI-agents betalen elkaar nu. Onze open-source bonnetjes leggen vast wat de verkoper aanbood en wat de koper zegt te hebben ontvangen, elk ondertekend door de eigen kant, zodat iedereen het kan nagaan. Daarnaast vinden wij lekken in echte software en laten de cijfers zien. In een open-source AI-gereedschap met meer dan 10.000 sterren lekten 33 geheimen, na de eigen reparaties van de makers nog 20 en met de onze nog 4 (pull request open). Check je repository gratis in een minuut, zie de prijs van een smart-contractscan voordat je betaalt en houd een logboek bij met een tijdstempel buiten onze controle. Elk getal hieronder linkt naar de commando's, dus je kunt het zelf draaien.",
       ctaPrimary: "Check jouw repository",
       ctaSecondary: "Bekijk ons aanbod",
       chips: [
