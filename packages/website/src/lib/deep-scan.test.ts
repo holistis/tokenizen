@@ -126,7 +126,9 @@ describe("keepPolling", () => {
     expect(keepPolling("KLAAR", true, false)).toBe(true);
     expect(keepPolling("KLAAR", true, true)).toBe(false);
     expect(keepPolling("MISLUKT", true, false)).toBe(true);
-    expect(keepPolling("AFWIJKEND", true, false)).toBe(false);
+    expect(keepPolling("AFWIJKEND", true, false)).toBe(true);
+    expect(keepPolling("AFWIJKEND", true, true)).toBe(false);
+    expect(keepPolling("AFWIJKEND", false, false)).toBe(false);
     expect(keepPolling("VERLOPEN", false, false)).toBe(false);
   });
 });

@@ -142,5 +142,5 @@ export function confirmationFor(status: ConfirmationStatus, viewerLocale: Locale
 /** Polling stops when the order is in a state that does not change by itself (a refund still being made keeps it going). */
 export function keepPolling(state: OrderState, refund: boolean, refunded: boolean): boolean {
   if (!FINAL_STATES.includes(state)) return true;
-  return refund && !refunded && state !== "AFWIJKEND";
+  return refund && !refunded;
 }

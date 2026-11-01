@@ -32,10 +32,12 @@ describe("the deep scan page", () => {
       expect(t).toContain(locale === "nl" ? "0,02 euro per regel Solidity in scope, minimum 2 euro, maximum 12.000 regels" : "0.02 euro per line of Solidity in scope, minimum 2 euro, maximum 12,000 lines");
       expect(t).toContain(locale === "nl" ? "volledig terug" : "in full");
       expect(t).toMatch(locale === "nl" ? /niet is: een audit/ : /not: an audit/);
-      expect(t).toMatch(locale === "nl" ? /nog niet op een openbare maatstaf gemeten/ : /not yet measured this deep scan on a public benchmark/);
+      expect(t).toMatch(locale === "nl" ? /één keer op één openbare wedstrijd/ : /once on one public contest/);
+      expect(t).not.toMatch(/nog niet op een openbare maatstaf|not yet measured/);
       expect(t).toMatch(locale === "nl" ? /6 uur/ : /6 hours/);
       expect(t).toMatch(locale === "nl" ? /geen hypothese/ : /no hypotheses/);
-      expect(t).toMatch(locale === "nl" ? /minder dan de helft/ : /fewer than half/);
+      expect(t).toMatch(locale === "nl" ? /minder dan de helft van de code/ : /less than half of the code/);
+      expect(t).toMatch(locale === "nl" ? /Lege regels en commentaar tellen mee/ : /Blank lines and comments count/);
       expect(t).not.toMatch(/[–—]/);
       expect(t).not.toContain("**");
       expect(t).not.toMatch(/guarantee|garantie|gegarandeerd/i);
@@ -58,7 +60,10 @@ describe("the deep scan page", () => {
     it(`has the refund rule of the page in the terms too, with the same limits, in ${locale}`, () => {
       const tt = locale === "nl" ? termsNl : terms;
       expect(tt).toMatch(locale === "nl" ? /6 uur/ : /6 hours/);
-      expect(tt).toMatch(locale === "nl" ? /minder dan de helft/ : /fewer than half/);
+      expect(tt).toMatch(locale === "nl" ? /minder dan de helft van de code in scope/ : /less than half of the code in scope/);
+      expect(tt).toMatch(locale === "nl" ? /lege regels en commentaar inbegrepen/ : /blank lines and comments included/);
+      expect(tt).toMatch(locale === "nl" ? /beperkt je wettelijke rechten niet/ : /does not limit the rights that you have by law/);
+      expect(tt).not.toMatch(locale === "nl" ? /in geschil/ : /in dispute/);
       expect(tt).toMatch(locale === "nl" ? /12\.000 regels/ : /12,000 lines/);
       expect(tt).toContain("info@tokenizen.nl");
       expect(tt).not.toMatch(/[–—]/);

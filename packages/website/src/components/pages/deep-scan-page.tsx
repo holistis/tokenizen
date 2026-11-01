@@ -66,17 +66,17 @@ export const COPY: Record<Locale, Copy> = {
   en: {
     title: "Deep scan of a smart contract repository | tokenizen",
     description:
-      "Name a public GitHub repository, see the price before you pay, and get hypotheses about its Solidity code to check by hand. 0.02 euro per line, minimum 2 euro, a full refund if the scan fails, finds nothing or reads less than half of your files.",
+      "Name a public GitHub repository, see the price before you pay, and get hypotheses about its Solidity code to check by hand. 0.02 euro per line, minimum 2 euro, a full refund if the scan fails, finds nothing or reads less than half of your code.",
     chip: "deep scan",
     heading: "Hypotheses about your Solidity code, with the price shown first.",
     lead:
       "Name a public GitHub repository. We count the lines of Solidity the scan will read and show the price before you pay. After your payment an AI reader goes through the code, and you get a list of hypotheses to check by hand.",
     priceRule:
-      "0.02 euro per line of Solidity in scope, minimum 2 euro, maximum 12,000 lines, VAT included. Tests, mocks, scripts, interfaces and bundled libraries are not counted. The scan reads the code as it is when it starts, and a smaller repository does not lower the price.",
+      "0.02 euro per line of Solidity in scope, minimum 2 euro, maximum 12,000 lines, VAT included. Blank lines and comments count. Files in test, mock, script, interface and library folders do not count, and neither do files with Mock or Test in their name. The scan reads the code as it is when it starts, and a smaller repository does not lower the price.",
     refundRule:
-      "You get your money back in full if the scan fails, if the report has no hypotheses, if part of the scan failed or it read fewer than half of the contract files, or if it has not started within 6 hours of your payment.",
+      "You get your money back in full if the scan fails, if the report has no hypotheses, if part of the scan failed or it read less than half of the code in scope, or if it has not started within 6 hours after Stripe confirmed your payment to us.",
     honest:
-      "What this is not: an audit, a certificate or a promise that nothing else is wrong. The deep scan misses real problems and names some that are not real. We have not yet measured this deep scan on a public benchmark. How our earlier scans did is on the scoreboard, with the judge named next to every number.",
+      "What this is not: an audit, a certificate or a promise that nothing else is wrong. The deep scan misses real problems and names some that are not real. We have run this deep scan once on one public contest, which is too little for a quality figure, so we give none. How our earlier scans did is on the scoreboard, with the judge named next to every number.",
     scoreboard: "The scoreboard",
     formTitle: "Your repository",
     fieldLabel: "Repository",
@@ -118,10 +118,10 @@ export const COPY: Record<Locale, Copy> = {
       BEZIG: "Your scan is running. This usually takes a few minutes.",
       KLAAR: "Your report is ready.",
       MISLUKT: "Something went wrong with the scan. You get your money back in full.",
-      AFWIJKEND: "Your payment did not match the price that was shown, so nothing was started. Email info@tokenizen.nl and we will sort it out.",
+      AFWIJKEND: "Your payment did not match the price that was shown, so nothing was started and your payment is refunded. Questions: info@tokenizen.nl.",
       VERLOPEN: "This price has expired without a payment. Ask for a new price.",
     },
-    refundMade: "The refund has been made. It reaches your account within a few working days.",
+    refundMade: "We have asked Stripe to refund you. It usually reaches your account within 5 to 10 working days.",
     refundBusy: "The refund is being made.",
     checking: "Checking where your scan is",
     reportTitle: "Report",
@@ -131,7 +131,7 @@ export const COPY: Record<Locale, Copy> = {
     nothingFound:
       "Nothing turned up that the scan could defend with a code path. That does not mean nothing is wrong. Your payment is refunded in full.",
     hypothesisCount: (n) => (n === 1 ? "1 hypothesis" : `${n} hypotheses`),
-    labels: { where: "Where", abuse: "How it could be abused", impact: "Impact", fix: "Suggested fix", confidence: "Confidence of the reader" },
+    labels: { where: "Where", abuse: "How it could be abused", impact: "Impact", fix: "Suggested fix", confidence: "The AI's own estimate, not a probability" },
     reportNote: "These are hypotheses from an AI reader, to be checked by hand. This is not an audit and not a guarantee that nothing else is wrong.",
     download: "Download as JSON",
     confirmation: "Download your order confirmation",
@@ -141,17 +141,17 @@ export const COPY: Record<Locale, Copy> = {
   nl: {
     title: "Diepe scan van een smart-contractrepository | tokenizen",
     description:
-      "Geef een openbare GitHub-repository op, zie de prijs voor je betaalt en krijg hypotheses over de Solidity-code om met de hand na te lopen. 0,02 euro per regel, minimum 2 euro, volledige terugbetaling als de scan mislukt, niets vindt of minder dan de helft van je bestanden leest.",
+      "Geef een openbare GitHub-repository op, zie de prijs voor je betaalt en krijg hypotheses over de Solidity-code om met de hand na te lopen. 0,02 euro per regel, minimum 2 euro, volledige terugbetaling als de scan mislukt, niets vindt of minder dan de helft van je code leest.",
     chip: "diepe scan",
     heading: "Hypotheses over je Solidity-code, met eerst de prijs.",
     lead:
       "Geef een openbare GitHub-repository op. We tellen de regels Solidity die de scan leest en tonen de prijs voor je betaalt. Na je betaling loopt een AI-lezer door de code en krijg je een lijst hypotheses om met de hand na te lopen.",
     priceRule:
-      "0,02 euro per regel Solidity in scope, minimum 2 euro, maximum 12.000 regels, inclusief btw. Tests, mocks, scripts, interfaces en meegeleverde bibliotheken tellen niet mee. De scan leest de code zoals hij is als hij start, en een kleinere repository verlaagt de prijs niet.",
+      "0,02 euro per regel Solidity in scope, minimum 2 euro, maximum 12.000 regels, inclusief btw. Lege regels en commentaar tellen mee. Bestanden in mappen voor tests, mocks, scripts, interfaces en bibliotheken tellen niet mee, en bestanden met Mock of Test in de naam ook niet. De scan leest de code zoals hij is als hij start, en een kleinere repository verlaagt de prijs niet.",
     refundRule:
-      "Je krijgt je geld volledig terug als de scan mislukt, als het rapport geen hypothese bevat, als een deel van de scan mislukte of hij minder dan de helft van de contractbestanden las, of als hij niet binnen 6 uur na je betaling is gestart.",
+      "Je krijgt je geld volledig terug als de scan mislukt, als het rapport geen hypothese bevat, als een deel van de scan mislukte of hij minder dan de helft van de code in scope las, of als hij niet binnen 6 uur nadat Stripe je betaling aan ons bevestigde is gestart.",
     honest:
-      "Wat dit niet is: een audit, een certificaat of een belofte dat er verder niets mis is. De diepe scan mist echte problemen en noemt er een paar die niet echt zijn. We hebben deze diepe scan nog niet op een openbare maatstaf gemeten. Hoe onze eerdere scans het deden staat op het scorebord, met de rechter erbij bij elk getal.",
+      "Wat dit niet is: een audit, een certificaat of een belofte dat er verder niets mis is. De diepe scan mist echte problemen en noemt er een paar die niet echt zijn. We hebben deze diepe scan één keer op één openbare wedstrijd laten draaien, wat te weinig is voor een kwaliteitscijfer, dus we geven er geen. Hoe onze eerdere scans het deden staat op het scorebord, met de rechter erbij bij elk getal.",
     scoreboard: "Het scorebord",
     formTitle: "Jouw repository",
     fieldLabel: "Repository",
@@ -193,10 +193,10 @@ export const COPY: Record<Locale, Copy> = {
       BEZIG: "Je scan loopt. Dit duurt meestal een paar minuten.",
       KLAAR: "Je rapport is klaar.",
       MISLUKT: "Er ging iets mis met de scan. Je krijgt je geld volledig terug.",
-      AFWIJKEND: "Je betaling kwam niet overeen met de getoonde prijs, dus er is niets gestart. Mail info@tokenizen.nl en we lossen het op.",
+      AFWIJKEND: "Je betaling kwam niet overeen met de getoonde prijs, dus er is niets gestart en je betaling wordt terugbetaald. Vragen: info@tokenizen.nl.",
       VERLOPEN: "Deze prijs is verlopen zonder betaling. Vraag een nieuwe prijs aan.",
     },
-    refundMade: "De terugbetaling is gedaan. Ze staat binnen een paar werkdagen op je rekening.",
+    refundMade: "We hebben Stripe gevraagd je terug te betalen. Het staat meestal binnen 5 tot 10 werkdagen op je rekening.",
     refundBusy: "De terugbetaling wordt gedaan.",
     checking: "We kijken hoe het met je scan staat",
     reportTitle: "Rapport",
@@ -206,7 +206,7 @@ export const COPY: Record<Locale, Copy> = {
     nothingFound:
       "Er kwam niets boven wat de scan met een codepad kon verdedigen. Dat betekent niet dat er niets mis is. Je betaling wordt volledig terugbetaald.",
     hypothesisCount: (n) => (n === 1 ? "1 hypothese" : `${n} hypotheses`),
-    labels: { where: "Waar", abuse: "Hoe het misbruikt kan worden", impact: "Gevolg", fix: "Voorgestelde oplossing", confidence: "Zekerheid van de lezer" },
+    labels: { where: "Waar", abuse: "Hoe het misbruikt kan worden", impact: "Gevolg", fix: "Voorgestelde oplossing", confidence: "De eigen inschatting van de AI, geen kans" },
     reportNote: "Dit zijn hypotheses van een AI-lezer, om met de hand na te lopen. Dit is geen audit en geen garantie dat er verder niets mis is.",
     download: "Download als JSON",
     confirmation: "Download je bestelbevestiging",

@@ -303,7 +303,7 @@ const SCAN = {
     metaTitle: "Smart contract scan | tokenizen",
     metaDescription: "A smart contract scan with a public scoreboard that includes what it missed. Pay per scan over x402.",
     deepLabel: "Pay by card, price per line",
-    deepText: "Prefer a card or iDEAL to a crypto payment? The deep scan shows the price for your repository before you pay: 0.02 euro per line of Solidity, minimum 2 euro, and a full refund if the scan fails or finds nothing.",
+    deepText: "Prefer a card or iDEAL to a crypto payment? The deep scan shows the price for your repository before you pay: 0.02 euro per line of Solidity, minimum 2 euro, and a full refund if the scan fails, finds nothing or reads less than half of your code.",
     deepLink: "The deep scan",
     getLabel: "What you get",
     getText:
@@ -331,7 +331,7 @@ const SCAN = {
     metaTitle: "Smart-contractscan | tokenizen",
     metaDescription: "Een smart-contractscan met een openbaar scorebord dat ook laat zien wat hij miste. Betaal per scan via x402.",
     deepLabel: "Betalen met kaart, prijs per regel",
-    deepText: "Liever met kaart of iDEAL dan met crypto? De diepe scan toont de prijs voor jouw repository voor je betaalt: 0,02 euro per regel Solidity, minimum 2 euro, en een volledige terugbetaling als de scan mislukt of niets vindt.",
+    deepText: "Liever met kaart of iDEAL dan met crypto? De diepe scan toont de prijs voor jouw repository voor je betaalt: 0,02 euro per regel Solidity, minimum 2 euro, en een volledige terugbetaling als de scan mislukt, niets vindt of minder dan de helft van je code leest.",
     deepLink: "De diepe scan",
     getLabel: "Wat je krijgt",
     getText:
