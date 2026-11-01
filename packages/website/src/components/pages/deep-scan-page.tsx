@@ -55,7 +55,6 @@ export interface Copy {
   nothingFound: string;
   hypothesisCount: (n: number) => string;
   labels: { where: string; abuse: string; impact: string; fix: string; confidence: string };
-  reportNote: string;
   download: string;
   confirmation: string;
   withdrawLead: string;
@@ -142,7 +141,6 @@ export const COPY: Record<Locale, Copy> = {
       "Nothing turned up that the scan could defend with a code path. That does not mean nothing is wrong. Your payment is refunded in full.",
     hypothesisCount: (n) => (n === 1 ? "1 hypothesis" : `${n} hypotheses`),
     labels: { where: "Where", abuse: "How it could be abused", impact: "Impact", fix: "Suggested fix", confidence: "The AI's own estimate, not a probability" },
-    reportNote: "These are hypotheses from an AI reader, to be checked by hand. This is not an audit and not a guarantee that nothing else is wrong.",
     download: "Download as JSON",
     confirmation: "Download your order confirmation",
     withdrawLead: "You can cancel this purchase until your report is delivered. Then the full price is refunded and no report is made.",
@@ -227,7 +225,6 @@ export const COPY: Record<Locale, Copy> = {
       "Er kwam niets boven wat de scan met een codepad kon verdedigen. Dat betekent niet dat er niets mis is. Je betaling wordt volledig terugbetaald.",
     hypothesisCount: (n) => (n === 1 ? "1 hypothese" : `${n} hypotheses`),
     labels: { where: "Waar", abuse: "Hoe het misbruikt kan worden", impact: "Gevolg", fix: "Voorgestelde oplossing", confidence: "De eigen inschatting van de AI, geen kans" },
-    reportNote: "Dit zijn hypotheses van een AI-lezer, om met de hand na te lopen. Dit is geen audit en geen garantie dat er verder niets mis is.",
     download: "Download als JSON",
     confirmation: "Download je bestelbevestiging",
     withdrawLead: "Je kunt deze aankoop ongedaan maken tot je rapport is geleverd. Dan wordt de volledige prijs terugbetaald en er komt geen rapport.",
@@ -414,7 +411,6 @@ export function ReportView({ report, c }: { report: Report; c: Copy }) {
           <ol className="space-y-4">{report.hypotheses.map((h, i) => <HypothesisCard key={i} h={h} c={c} />)}</ol>
         </>
       )}
-      <p className="text-sm opacity-80">{c.reportNote}</p>
     </section>
   );
 }
