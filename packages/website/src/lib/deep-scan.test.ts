@@ -129,6 +129,18 @@ describe("times from the server", () => {
     expect(confirmationFor({ ...s, betaaldOp: "2026-11-01T12:30:00.000Z" }, "en")).toContain("Paid at (UTC): 2026-11-01T12:30:00.000Z");
     expect(confirmationFor({ ...s, betaaldOp: "geen datum" }, "en")).toContain("Paid at (UTC): unknown");
   });
+  it("names the seller, the terms and the way to withdraw, in the language of the agreement", () => {
+    const s = { repo: "owner/name", regels: 410, prijsCenten: 820, betaaldOp: ms, akkoordOp: ms, akkoordVersie: "2026-11-01", akkoordTaal: "nl", herroepingOp: null };
+    const nl = confirmationFor(s, "en");
+    expect(nl).toContain("Verkoper: AO Services, KvK 86816632");
+    expect(nl).toContain("+31 6 40840108");
+    expect(nl).toContain("https://tokenizen.nl/nl/deep-scan-terms");
+    expect(nl).toContain("Koop ongedaan maken");
+    const en = confirmationFor({ ...s, akkoordTaal: "en" }, "nl");
+    expect(en).toContain("Seller: AO Services");
+    expect(en).toContain("https://tokenizen.nl/deep-scan-terms");
+    expect(en).toContain("Cancel purchase");
+  });
   it("show the moment of a withdrawal in the confirmation, in the language of the agreement", () => {
     const s = { repo: "owner/name", regels: 410, prijsCenten: 820, betaaldOp: ms, akkoordOp: ms, akkoordVersie: "2026-11-01", akkoordTaal: "nl", herroepingOp: ms + 5000 };
     expect(confirmationFor(s, "en")).toContain("Herroeping ontvangen op (UTC): 2026-11-01T12:30:05.000Z");

@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
+import { BUSINESS_LINE } from "@/components/footer";
 import { COPY, DeepScanPage, DeepScanStatusPage, failureText, ReportView, StatusView } from "@/components/pages/deep-scan-page";
 import type { OrderStatus, Report } from "@/lib/deep-scan-api";
 import { LocaleProvider, type Locale } from "@/i18n/context";
@@ -90,6 +91,13 @@ describe("the deep scan page", () => {
       expect(tt.indexOf(locale === "nl" ? "Modelformulier" : "Model withdrawal form")).toBeGreaterThan(tt.indexOf(locale === "nl" ? "10." : "10. Law"));
     });
   }
+  it("gives a phone number where the Dutch rules ask for it: in the terms, in the model form and in the footer of every page", () => {
+    expect(terms).toContain("phone +31 6 40840108");
+    expect(termsNl).toContain("telefoon +31 6 40840108");
+    expect(terms.match(/\+31 6 40840108/g)).toHaveLength(2);
+    expect(termsNl.match(/\+31 6 40840108/g)).toHaveLength(2);
+    expect(BUSINESS_LINE).toContain("tel +31 6 40840108");
+  });
   it("the terms version of the page is the date of the terms files", () => {
     expect(TERMS_VERSION).toBe("2026-11-01");
     expect(terms).toContain("Last changed: 1 November 2026.");
@@ -162,6 +170,29 @@ describe("the cancel button", () => {
       expect(c.withdrawButton).toMatch(locale === "nl" ? /ongedaan/ : /Cancel/);
     });
   }
+  for (const locale of ["en", "nl"] as const) {
+    it(`asks to confirm before it cancels, and the confirm step has its own buttons, in ${locale}`, () => {
+      const c = COPY[locale];
+      const stap2 = text(locale, <StatusView status={status("BEZIG")} report={null} c={c} locale={locale} onWithdraw={() => {}} onWithdrawConfirm={() => {}} onWithdrawKeep={() => {}} confirming />);
+      expect(stap2).toContain(c.withdrawConfirmLead);
+      expect(stap2).toContain(c.withdrawConfirmButton);
+      expect(stap2).toContain(c.withdrawKeep);
+      expect(stap2).not.toContain(c.withdrawButton);
+      const stap1 = text(locale, <StatusView status={status("BEZIG")} report={null} c={c} locale={locale} onWithdraw={() => {}} onWithdrawConfirm={() => {}} onWithdrawKeep={() => {}} />);
+      expect(stap1).toContain(c.withdrawButton);
+      expect(stap1).not.toContain(c.withdrawConfirmButton);
+      for (const x of [c.withdrawConfirmLead, c.withdrawConfirmButton, c.withdrawKeep]) expect(x).not.toMatch(/[–—]/);
+    });
+  }
+  it("says a failed part makes the report possibly incomplete, not refunded", () => {
+    expect(COPY.en.partial).toMatch(/incomplete/);
+    expect(COPY.nl.partial).toMatch(/onvolledig/);
+    expect(COPY.en.refundRule).not.toMatch(/part of the scan failed/);
+    expect(COPY.nl.refundRule).not.toMatch(/een deel van de scan mislukte/);
+    expect(terms).not.toMatch(/if part of the scan failed or/);
+    expect(terms).toMatch(/If part of the scan could not finish but the scan still read half of the code or more/);
+    expect(termsNl).toMatch(/Kon een deel van de scan niet worden afgemaakt/);
+  });
   it("shows the error line when the cancellation did not go through", () => {
     const t = text("en", <StatusView status={status("BETAALD")} report={null} c={COPY.en} locale="en" onWithdraw={() => {}} withdrawError />);
     expect(t).toContain(COPY.en.withdrawError);
@@ -175,7 +206,8 @@ describe("the report", () => {
     expect(html).not.toContain("<script>");
     expect(html).not.toContain("<img");
     expect(html).toContain("&lt;script&gt;");
-    expect(readableText(html)).toContain("46%");
+    expect(readableText(html)).toContain("0.46 / 1");
+    expect(readableText(html)).not.toContain("46%");
   });
   it("says so when nothing was found, and that the payment is refunded, in both languages", () => {
     for (const locale of ["en", "nl"] as const) {

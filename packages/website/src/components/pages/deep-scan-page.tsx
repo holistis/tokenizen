@@ -61,6 +61,9 @@ export interface Copy {
   withdrawLead: string;
   withdrawButton: string;
   withdrawBusy: string;
+  withdrawConfirmLead: string;
+  withdrawConfirmButton: string;
+  withdrawKeep: string;
   withdrawError: string;
   withdrawn: (time: string) => string;
   withdrawLate: string;
@@ -80,7 +83,7 @@ export const COPY: Record<Locale, Copy> = {
     priceRule:
       "0.02 euro per line of Solidity in scope, minimum 2 euro, maximum 12,000 lines, VAT included. Blank lines and comments count. Files in test, mock, script, interface and library folders do not count, and neither do files with Mock or Test in their name. The scan reads the code as it is when it starts, and a smaller repository does not lower the price.",
     refundRule:
-      "You get your money back in full if the scan fails, if the report has no hypotheses, if part of the scan failed or it read less than half of the code in scope, or if it has not started within 6 hours after Stripe confirmed your payment to us.",
+      "You get your money back in full if the scan fails, if the report has no hypotheses, if it read less than half of the code in scope, or if it has not started within 6 hours after Stripe confirmed your payment to us.",
     honest:
       "What this is not: an audit, a certificate or a promise that nothing else is wrong. The deep scan misses real problems and names some that are not real. We have run this deep scan once on one public contest, which is too little for a quality figure, so we give none. How our earlier scans did is on the scoreboard, with the judge named next to every number.",
     scoreboard: "The scoreboard",
@@ -133,7 +136,7 @@ export const COPY: Record<Locale, Copy> = {
     checking: "Checking where your scan is",
     reportTitle: "Report",
     reportMeta: (lines, read, total) => `${lines.toLocaleString("en-IE")} lines of Solidity in scope. ${read} of ${total} contract files read.`,
-    partial: "Part of the scan failed, so your payment is refunded in full and you keep this report.",
+    partial: "Part of the scan could not finish, so this report may be incomplete.",
     unread: "Not read:",
     nothingFound:
       "Nothing turned up that the scan could defend with a code path. That does not mean nothing is wrong. Your payment is refunded in full.",
@@ -145,6 +148,9 @@ export const COPY: Record<Locale, Copy> = {
     withdrawLead: "You can cancel this purchase until your report is delivered. Then the full price is refunded and no report is made.",
     withdrawButton: "Cancel purchase",
     withdrawBusy: "Cancelling",
+    withdrawConfirmLead: "Cancel this purchase for good? The full price is refunded and no report is made.",
+    withdrawConfirmButton: "Confirm cancellation",
+    withdrawKeep: "Keep my purchase",
     withdrawError: "The cancellation did not go through. If your report is already delivered, the right of withdrawal has ended, as you agreed before paying. Questions: info@tokenizen.nl.",
     withdrawn: (time) => `Your cancellation was received on ${time}. No report will be made and the full price is refunded.`,
     withdrawLate: "Your report was delivered, so the right of withdrawal ended, as you agreed before paying.",
@@ -162,7 +168,7 @@ export const COPY: Record<Locale, Copy> = {
     priceRule:
       "0,02 euro per regel Solidity in scope, minimum 2 euro, maximum 12.000 regels, inclusief btw. Lege regels en commentaar tellen mee. Bestanden in mappen voor tests, mocks, scripts, interfaces en bibliotheken tellen niet mee, en bestanden met Mock of Test in de naam ook niet. De scan leest de code zoals hij is als hij start, en een kleinere repository verlaagt de prijs niet.",
     refundRule:
-      "Je krijgt je geld volledig terug als de scan mislukt, als het rapport geen hypothese bevat, als een deel van de scan mislukte of hij minder dan de helft van de code in scope las, of als hij niet binnen 6 uur nadat Stripe je betaling aan ons bevestigde is gestart.",
+      "Je krijgt je geld volledig terug als de scan mislukt, als het rapport geen hypothese bevat, als hij minder dan de helft van de code in scope las, of als hij niet binnen 6 uur nadat Stripe je betaling aan ons bevestigde is gestart.",
     honest:
       "Wat dit niet is: een audit, een certificaat of een belofte dat er verder niets mis is. De diepe scan mist echte problemen en noemt er een paar die niet echt zijn. We hebben deze diepe scan één keer op één openbare wedstrijd laten draaien, wat te weinig is voor een kwaliteitscijfer, dus we geven er geen. Hoe onze eerdere scans het deden staat op het scorebord, met de rechter erbij bij elk getal.",
     scoreboard: "Het scorebord",
@@ -215,7 +221,7 @@ export const COPY: Record<Locale, Copy> = {
     checking: "We kijken hoe het met je scan staat",
     reportTitle: "Rapport",
     reportMeta: (lines, read, total) => `${lines.toLocaleString("nl-NL")} regels Solidity in scope. ${read} van ${total} contractbestanden gelezen.`,
-    partial: "Een deel van de scan mislukte, dus je betaling wordt volledig terugbetaald en je houdt dit rapport.",
+    partial: "Een deel van de scan kon niet worden afgemaakt, dus dit rapport kan onvolledig zijn.",
     unread: "Niet gelezen:",
     nothingFound:
       "Er kwam niets boven wat de scan met een codepad kon verdedigen. Dat betekent niet dat er niets mis is. Je betaling wordt volledig terugbetaald.",
@@ -227,6 +233,9 @@ export const COPY: Record<Locale, Copy> = {
     withdrawLead: "Je kunt deze aankoop ongedaan maken tot je rapport is geleverd. Dan wordt de volledige prijs terugbetaald en er komt geen rapport.",
     withdrawButton: "Koop ongedaan maken",
     withdrawBusy: "Bezig met annuleren",
+    withdrawConfirmLead: "Deze aankoop definitief ongedaan maken? De volledige prijs wordt terugbetaald en er komt geen rapport.",
+    withdrawConfirmButton: "Bevestig annulering",
+    withdrawKeep: "Aankoop houden",
     withdrawError: "De annulering is niet gelukt. Is je rapport al geleverd, dan is het herroepingsrecht vervallen, zoals je voor je betaling hebt aanvaard. Vragen: info@tokenizen.nl.",
     withdrawn: (time) => `Je herroeping is ontvangen op ${time}. Er komt geen rapport en de volledige prijs wordt terugbetaald.`,
     withdrawLate: "Je rapport is geleverd, dus het herroepingsrecht is vervallen, zoals je voor je betaling hebt aanvaard.",
@@ -385,7 +394,7 @@ export function HypothesisCard({ h, c }: { h: Hypothesis; c: Copy }) {
         <Field label={c.labels.abuse} text={h.attackPath} />
         <Field label={c.labels.impact} text={h.impact} />
         <Field label={c.labels.fix} text={h.recommendation} />
-        {typeof h.confidence === "number" ? <Field label={c.labels.confidence} text={`${Math.round(h.confidence * 100)}%`} /> : null}
+        {typeof h.confidence === "number" ? <Field label={c.labels.confidence} text={`${h.confidence.toFixed(2)} / 1`} /> : null}
       </dl>
     </li>
   );
@@ -410,8 +419,8 @@ export function ReportView({ report, c }: { report: Report; c: Copy }) {
   );
 }
 
-export function StatusView({ status, report, c, locale = "en", onWithdraw, withdrawing = false, withdrawError = false }: {
-  status: OrderStatus | null; report: Report | null; c: Copy; locale?: Locale; onWithdraw?: () => void; withdrawing?: boolean; withdrawError?: boolean;
+export function StatusView({ status, report, c, locale = "en", onWithdraw, onWithdrawConfirm, onWithdrawKeep, confirming = false, withdrawing = false, withdrawError = false }: {
+  status: OrderStatus | null; report: Report | null; c: Copy; locale?: Locale; onWithdraw?: () => void; onWithdrawConfirm?: () => void; onWithdrawKeep?: () => void; confirming?: boolean; withdrawing?: boolean; withdrawError?: boolean;
 }) {
   if (!status) return <p className="flex items-center gap-2"><Loader2 className="size-4 animate-spin" aria-hidden="true" />{c.checking}</p>;
   return (
@@ -421,8 +430,15 @@ export function StatusView({ status, report, c, locale = "en", onWithdraw, withd
       {status.herroepingOp ? <p className="text-sm">{c.withdrawn(formatMoment(status.herroepingOp, locale))}</p> : null}
       {!status.herroepingOp && (status.toestand === "BETAALD" || status.toestand === "BEZIG") && onWithdraw ? (
         <div className="space-y-2 rounded-md border border-white/15 p-4">
-          <p className="text-sm">{c.withdrawLead}</p>
-          <Button type="button" variant="outline" onClick={onWithdraw} disabled={withdrawing}>{withdrawing ? c.withdrawBusy : c.withdrawButton}</Button>
+          <p className="text-sm">{confirming ? c.withdrawConfirmLead : c.withdrawLead}</p>
+          {confirming ? (
+            <div className="flex flex-wrap gap-3">
+              <Button type="button" variant="outline" onClick={onWithdrawConfirm} disabled={withdrawing}>{withdrawing ? c.withdrawBusy : c.withdrawConfirmButton}</Button>
+              <Button type="button" variant="outline" onClick={onWithdrawKeep} disabled={withdrawing}>{c.withdrawKeep}</Button>
+            </div>
+          ) : (
+            <Button type="button" variant="outline" onClick={onWithdraw}>{c.withdrawButton}</Button>
+          )}
           {withdrawError ? <p role="alert" className="text-sm">{c.withdrawError}</p> : null}
         </div>
       ) : null}
@@ -441,6 +457,7 @@ export function DeepScanStatusPage() {
   const [failed, setFailed] = useState<string | null>(null);
   const [saved, setSaved] = useState<SavedOrder[]>([]);
   const [withdrawing, setWithdrawing] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [withdrawFailed, setWithdrawFailed] = useState(false);
   const stopped = useRef(false);
 
@@ -510,6 +527,7 @@ export function DeepScanStatusPage() {
     setWithdrawFailed(false);
     const r = await withdraw(token);
     setWithdrawing(false);
+    setConfirming(false);
     if (r.ok) setStatus(r);
     else setWithdrawFailed(true);
   }
@@ -519,7 +537,7 @@ export function DeepScanStatusPage() {
   return (
     <CinemaPage image="lens" chip={c.statusChip} title={c.statusTitle} lead={c.statusLead}>
       <div className="max-w-3xl space-y-6">
-        {token === null ? <p>{c.noKey}</p> : token === undefined ? null : <StatusView status={status} report={report} c={c} locale={locale} onWithdraw={() => { void withdrawNow(); }} withdrawing={withdrawing} withdrawError={withdrawFailed} />}
+        {token === null ? <p>{c.noKey}</p> : token === undefined ? null : <StatusView status={status} report={report} c={c} locale={locale} onWithdraw={() => { setWithdrawFailed(false); setConfirming(true); }} onWithdrawConfirm={() => { void withdrawNow(); }} onWithdrawKeep={() => setConfirming(false)} confirming={confirming} withdrawing={withdrawing} withdrawError={withdrawFailed} />}
         {failed !== null && token ? <p role="alert" className="flex items-start gap-2 text-sm"><AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />{failed}</p> : null}
         {report || (status?.betaald && status.akkoordOp) || saved.length > 0 ? (
           <div className="flex flex-wrap gap-3">

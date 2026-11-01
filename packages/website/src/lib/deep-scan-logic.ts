@@ -14,6 +14,7 @@ export const CONSENT: Record<string, Record<Locale, string>> = {
 };
 export const consentFor = (version: string | null | undefined, lang: Locale): string | null => (version ? CONSENT[version]?.[lang] ?? null : null);
 
+export const SELLER_LINE = "AO Services, KvK 86816632, BTW NL004319767B61, Eindhoven, the Netherlands, info@tokenizen.nl, +31 6 40840108";
 export const TOKEN_RE = /^[A-Za-z0-9_-]{43}$/;
 export const TOKEN_KEY = "tokenizen.deepscan.token";
 
@@ -122,6 +123,10 @@ export function orderConfirmation(i: ConfirmationInput): string {
     `${nl ? "Akkoord gegeven op (UTC)" : "Agreement given at (UTC)"}: ${when(i.agreedAt)}`,
     ...(i.withdrawnAt ? [`${nl ? "Herroeping ontvangen op (UTC)" : "Withdrawal received at (UTC)"}: ${when(i.withdrawnAt)}`] : []),
     `${nl ? "Versie van de voorwaarden" : "Version of the terms"}: ${i.termsVersion ?? (nl ? "onbekend" : "unknown")}`,
+    "",
+    `${nl ? "Verkoper" : "Seller"}: ${SELLER_LINE}`,
+    `${nl ? "Voorwaarden van deze versie" : "Terms of this version"}: https://tokenizen.nl/${nl ? "nl/" : ""}deep-scan-terms`,
+    nl ? "Herroepen kan tot je rapport is geleverd: met de knop \"Koop ongedaan maken\" op de pagina van je rapport, per e-mail, of met het modelformulier aan het eind van de voorwaarden." : "You can withdraw until your report is delivered: with the button \"Cancel purchase\" on the page of your report, by email, or with the model form at the end of the terms.",
     "",
     nl ? "De zin waarmee je akkoord ging:" : "The sentence you agreed to:",
     i.consent ?? (nl ? `(De zin van versie ${i.termsVersion ?? "onbekend"} staat niet in deze pagina. Mail info@tokenizen.nl en we sturen hem.)` : `(The sentence of version ${i.termsVersion ?? "unknown"} is not on this page. Email info@tokenizen.nl and we will send it.)`),
