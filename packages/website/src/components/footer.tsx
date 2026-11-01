@@ -8,7 +8,7 @@ const GITHUB_URL = "https://github.com/holistis/tokenizen";
 const MAINTAINER_URL = "https://github.com/holistis";
 const CONTACT_EMAIL = "info@tokenizen.nl";
 // The trader behind the paid service, shown on every page (a webshop must show it). The same data is in the terms and the privacy statement.
-export const BUSINESS_LINE = "AO Services · KvK 86816632 · BTW NL004319767B61 · Eindhoven, Nederland";
+export const BUSINESS_LINE = "AO Services · KvK 86816632 · BTW NL004319767B61 · Eindhoven, Nederland · tel +31 6 40840108";
 
 // The three coloured dots explain the coloured rules in the "limits" section of
 // the homepage. On any other page (the blog, the self-check) there is no such

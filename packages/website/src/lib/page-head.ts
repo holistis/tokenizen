@@ -21,6 +21,8 @@ export const BILINGUAL_PATHS = [
   "/scan",
   "/tools",
   "/agents",
+  "/deep-scan",
+  "/deep-scan-terms",
   "/consultancy",
   "/about",
   "/cra-check",

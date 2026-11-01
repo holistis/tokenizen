@@ -302,6 +302,9 @@ const SCAN = {
     lead: "Scan a smart contract repository for 1 dollar and get, in a minute or two, the weak spots the model is most sure about, ready to check by hand. Every run and every miss is on a public scoreboard, and every delivered report goes on a dated list you can check yourself. It finds some of what a human audit finds, and we publish how much.",
     metaTitle: "Smart contract scan | tokenizen",
     metaDescription: "A smart contract scan with a public scoreboard that includes what it missed. Pay per scan over x402.",
+    deepLabel: "Pay by card, price per line",
+    deepText: "Prefer a card or iDEAL to a crypto payment? The deep scan shows the price for your repository before you pay: 0.02 euro per line of Solidity, minimum 2 euro, and a full refund if the scan fails, finds nothing or reads less than half of your code.",
+    deepLink: "The deep scan",
     getLabel: "What you get",
     getText:
       "A report of AI-generated hypotheses about the Solidity code in a public GitHub repository, to be reviewed by hand. The quick scan costs 1 dollar and returns the 15 hypotheses the model is most sure about, usually within a minute or two. The full scan costs 5 dollars, adds 15 less certain ones, and is usually done within the hour. You pay in USDC on Base over x402, so you need an x402 client and USDC: paying by card or invoice is not possible yet. Before you pay, a free check tells you how much of your code the scan will read: https://x402.tokenizen.nl/api/bug-intel/precheck?repo=owner/name",
@@ -327,6 +330,9 @@ const SCAN = {
     lead: "Scan een smart-contractrepository voor 1 dollar en krijg binnen een minuut of twee de zwakke plekken waar het model het zekerst van is, klaar om met de hand na te lopen. Elke run en elke misser staat op een openbaar scorebord, en elk afgeleverd rapport komt op een gedateerde lijst die je zelf kunt nagaan. Hij vindt een deel van wat een menselijke audit vindt, en we publiceren hoeveel.",
     metaTitle: "Smart-contractscan | tokenizen",
     metaDescription: "Een smart-contractscan met een openbaar scorebord dat ook laat zien wat hij miste. Betaal per scan via x402.",
+    deepLabel: "Betalen met kaart, prijs per regel",
+    deepText: "Liever met kaart of iDEAL dan met crypto? De diepe scan toont de prijs voor jouw repository voor je betaalt: 0,02 euro per regel Solidity, minimum 2 euro, en een volledige terugbetaling als de scan mislukt, niets vindt of minder dan de helft van je code leest.",
+    deepLink: "De diepe scan",
     getLabel: "Wat je krijgt",
     getText:
       "Een rapport met door AI bedachte hypotheses over de Solidity-code in een openbare GitHub-repository, om met de hand na te lopen. De snelle scan kost 1 dollar en geeft de 15 hypotheses waar het model het zekerst van is, meestal binnen een minuut of twee. De volledige scan kost 5 dollar, voegt 15 minder zekere toe en is meestal binnen het uur klaar. Je betaalt in USDC op Base via x402, dus je hebt een x402-programma en USDC nodig: betalen met kaart of op factuur kan nog niet. Voor je betaalt vertelt een gratis check hoeveel van je code de scan leest: https://x402.tokenizen.nl/api/bug-intel/precheck?repo=eigenaar/naam",
@@ -376,6 +382,12 @@ export function ScanPage() {
             </ol>
           </details>
         </figure>
+      </Block>
+      <Block label={c.deepLabel}>
+        <p>{c.deepText}</p>
+        <p>
+          <LinkOut href={to("/deep-scan")}>{c.deepLink}</LinkOut>
+        </p>
       </Block>
       <Block label={c.getLabel}>
         <p>{c.getText}</p>

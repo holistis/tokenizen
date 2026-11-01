@@ -182,6 +182,58 @@
         }
       ]
     },
+    "/deep-scan": {
+      "lang": "en",
+      "title": "Deep scan of a smart contract repository | tokenizen",
+      "description": "Security research, free checks and a log with a timestamp outside our control, by two brothers in Eindhoven. We measured 109 public repositories on eight security signals and publish our misses too.",
+      "canonical": "https://tokenizen.nl/deep-scan",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/deep-scan",
+      "ogTitle": "Deep scan of a smart contract repository | tokenizen",
+      "ogDescription": "Security research, free checks and a log with a timestamp outside our control, by two brothers in Eindhoven. We measured 109 public repositories on eight security signals and publish our misses too.",
+      "twitterTitle": "Deep scan of a smart contract repository | tokenizen",
+      "twitterDescription": "Security research, free checks and a log with a timestamp outside our control, by two brothers in Eindhoven. We measured 109 public repositories on eight security signals and publish our misses too.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/deep-scan"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/deep-scan"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/deep-scan"
+        }
+      ]
+    },
+    "/deep-scan-terms": {
+      "lang": "en",
+      "title": "Terms of the deep scan | tokenizen",
+      "description": "The terms of the deep scan of AO Services: what you buy, the price, delivery and refunds.",
+      "canonical": "https://tokenizen.nl/deep-scan-terms",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/deep-scan-terms",
+      "ogTitle": "Terms of the deep scan | tokenizen",
+      "ogDescription": "The terms of the deep scan of AO Services: what you buy, the price, delivery and refunds.",
+      "twitterTitle": "Terms of the deep scan | tokenizen",
+      "twitterDescription": "The terms of the deep scan of AO Services: what you buy, the price, delivery and refunds.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/deep-scan-terms"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/deep-scan-terms"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/deep-scan-terms"
+        }
+      ]
+    },
     "/nl": {
       "lang": "nl",
       "title": "tokenizen | Wij vinden de lekken. Wij publiceren de cijfers.",
@@ -387,6 +439,58 @@
         {
           "hreflang": "x-default",
           "href": "https://tokenizen.nl/cra-check"
+        }
+      ]
+    },
+    "/nl/deep-scan": {
+      "lang": "nl",
+      "title": "Diepe scan van een smart-contractrepository | tokenizen",
+      "description": "Security research, free checks and a log with a timestamp outside our control, by two brothers in Eindhoven. We measured 109 public repositories on eight security signals and publish our misses too.",
+      "canonical": "https://tokenizen.nl/nl/deep-scan",
+      "ogLocale": "nl_NL",
+      "ogUrl": "https://tokenizen.nl/nl/deep-scan",
+      "ogTitle": "Diepe scan van een smart-contractrepository | tokenizen",
+      "ogDescription": "Security research, free checks and a log with a timestamp outside our control, by two brothers in Eindhoven. We measured 109 public repositories on eight security signals and publish our misses too.",
+      "twitterTitle": "Diepe scan van een smart-contractrepository | tokenizen",
+      "twitterDescription": "Security research, free checks and a log with a timestamp outside our control, by two brothers in Eindhoven. We measured 109 public repositories on eight security signals and publish our misses too.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/deep-scan"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/deep-scan"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/deep-scan"
+        }
+      ]
+    },
+    "/nl/deep-scan-terms": {
+      "lang": "nl",
+      "title": "Voorwaarden van de diepe scan | tokenizen",
+      "description": "De voorwaarden van de diepe scan van AO Services: wat je koopt, de prijs, levering en terugbetaling.",
+      "canonical": "https://tokenizen.nl/nl/deep-scan-terms",
+      "ogLocale": "nl_NL",
+      "ogUrl": "https://tokenizen.nl/nl/deep-scan-terms",
+      "ogTitle": "Voorwaarden van de diepe scan | tokenizen",
+      "ogDescription": "De voorwaarden van de diepe scan van AO Services: wat je koopt, de prijs, levering en terugbetaling.",
+      "twitterTitle": "Voorwaarden van de diepe scan | tokenizen",
+      "twitterDescription": "De voorwaarden van de diepe scan van AO Services: wat je koopt, de prijs, levering en terugbetaling.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/deep-scan-terms"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/deep-scan-terms"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/deep-scan-terms"
         }
       ]
     },

@@ -126,6 +126,11 @@ describe("linkify", () => {
     const words = parts.map((p) => (isValidElement(p) ? (p as ReactElement<LinkProps>).props.children : p)).join("");
     expect(words).toBe(text);
   });
+  it("links an address under /nl/ as well, so a Dutch text does not send a reader to the English page", () => {
+    const text = "Zie tokenizen.nl/nl/privacy of tokenizen.nl/nl/scoreboard.";
+    const links = linkify(text).filter((p): p is ReactElement<LinkProps> => isValidElement(p));
+    expect(links.map((l) => l.props.href)).toEqual(["https://tokenizen.nl/nl/privacy", "https://tokenizen.nl/nl/scoreboard"]);
+  });
 });
 
 const PAGES = [
@@ -366,8 +371,8 @@ describe("the terms are correct in both languages", () => {
   });
 
   it("carries the same date of the last change in both languages", () => {
-    expect(privacy).toContain("Last changed: 29 October 2026.");
-    expect(privacyNl).toContain("Laatst gewijzigd: 29 oktober 2026.");
+    expect(privacy).toContain("Last changed: 1 November 2026.");
+    expect(privacyNl).toContain("Laatst gewijzigd: 1 november 2026.");
   });
 });
 
