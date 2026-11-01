@@ -227,8 +227,12 @@ describe("the report", () => {
     expect(COPY.en.hypothesisCount(2)).toBe("2 hypotheses");
     expect(COPY.nl.hypothesisCount(1)).toBe("1 hypothese");
   });
-  it("always carries the line that this is not an audit", () => {
-    for (const locale of ["en", "nl"] as const) expect(text(locale, <ReportView report={report([{ title: "x" }])} c={COPY[locale]} />)).toMatch(locale === "nl" ? /geen audit/ : /not an audit/);
+  it("does not repeat the not-an-audit line under the report: it is in the terms (articles 2 and 7) and on the page before the purchase", () => {
+    for (const locale of ["en", "nl"] as const) {
+      expect(text(locale, <ReportView report={report([{ title: "x" }])} c={COPY[locale]} />)).not.toMatch(/not an audit|geen audit|to be checked by hand|om met de hand na te lopen/);
+      expect(locale === "nl" ? termsNl : terms).toMatch(locale === "nl" ? /Het is geen audit/ : /It is not an audit/);
+      expect(text(locale, <DeepScanPage />)).toMatch(locale === "nl" ? /niet is: een audit/ : /not: an audit/);
+    }
   });
 });
 
