@@ -16,7 +16,7 @@ import headers from "../../../public/_headers?raw";
 const render = (locale: Locale, node: React.ReactElement) => renderToStaticMarkup(<LocaleProvider locale={locale}>{node}</LocaleProvider>);
 const text = (locale: Locale, node: React.ReactElement) => readableText(render(locale, node));
 
-const STATES: OrderState[] = ["OFFERTE", "WACHT_OP_BETALING", "BETAALD", "BEZIG", "KLAAR", "MISLUKT", "AFWIJKEND", "VERLOPEN"];
+const STATES: OrderState[] = ["OFFERTE", "WACHT_OP_BETALING", "BETAALD", "BEZIG", "KLAAR", "MISLUKT", "AFWIJKEND", "VERLOPEN", "INGETROKKEN"];
 const status = (toestand: OrderState, extra: Partial<OrderStatus> = {}): OrderStatus => ({
   ok: true, repo: "owner/name", regels: 3792, prijsCenten: 7584, toestand, betaald: true, terugbetaling: false, terugbetaald: false, rapportKlaar: false, ...extra,
 });
@@ -78,6 +78,18 @@ describe("the deep scan page", () => {
       }
     }
   });
+  for (const locale of ["en", "nl"] as const) {
+    it(`has the withdrawal information the Dutch rules ask for: the button, the email, the model form, and where to complain, in ${locale}`, () => {
+      const tt = locale === "nl" ? termsNl : terms;
+      expect(tt).toContain(locale === "nl" ? "Koop ongedaan maken" : "Cancel purchase");
+      expect(tt).toMatch(locale === "nl" ? /Modelformulier voor herroeping/ : /Model withdrawal form/);
+      expect(tt).toMatch(locale === "nl" ? /Naam: \[je naam\]/ : /Name: \[your name\]/);
+      expect(tt).toMatch(locale === "nl" ? /Vragen en klachten: info@tokenizen\.nl\. We antwoorden binnen 14 dagen/ : /Questions and complaints: info@tokenizen\.nl\. We answer within 14 days/);
+      expect(tt).toMatch(locale === "nl" ? /stoppen we de scan, maken we geen rapport en betalen we de volledige prijs terug/ : /we stop the scan, make no report and refund the full price/);
+      expect(tt).not.toMatch(locale === "nl" ? /betaal je voor wat is gedaan/ : /you pay for what has been done/);
+      expect(tt.indexOf(locale === "nl" ? "Modelformulier" : "Model withdrawal form")).toBeGreaterThan(tt.indexOf(locale === "nl" ? "10." : "10. Law"));
+    });
+  }
   it("the terms version of the page is the date of the terms files", () => {
     expect(TERMS_VERSION).toBe("2026-11-01");
     expect(terms).toContain("Last changed: 1 November 2026.");
@@ -119,6 +131,40 @@ describe("the status page", () => {
   it("renders without a browser: the server render of the page does not crash and shows no key", () => {
     expect(() => render("en", <DeepScanStatusPage />)).not.toThrow();
     expect(text("en", <DeepScanStatusPage />)).not.toMatch(/[A-Za-z0-9_-]{43}/);
+  });
+});
+
+describe("the cancel button", () => {
+  for (const locale of ["en", "nl"] as const) {
+    const c = COPY[locale];
+    it(`is there while the order is paid and the report is not delivered, and says what happens, in ${locale}`, () => {
+      for (const s of ["BETAALD", "BEZIG"] as const) {
+        const t = text(locale, <StatusView status={status(s)} report={null} c={c} locale={locale} onWithdraw={() => {}} />);
+        expect(t, s).toContain(c.withdrawButton);
+        expect(t, s).toContain(c.withdrawLead);
+      }
+    });
+    it(`is not there before payment, after delivery, after a withdrawal, or without a handler, in ${locale}`, () => {
+      for (const s of ["OFFERTE", "WACHT_OP_BETALING", "KLAAR", "MISLUKT", "AFWIJKEND", "VERLOPEN", "INGETROKKEN"] as const) {
+        expect(text(locale, <StatusView status={status(s)} report={null} c={c} locale={locale} onWithdraw={() => {}} />), s).not.toContain(c.withdrawButton);
+      }
+      expect(text(locale, <StatusView status={status("BEZIG", { herroepingOp: Date.UTC(2026, 10, 1, 12, 30) })} report={null} c={c} locale={locale} onWithdraw={() => {}} />)).not.toContain(c.withdrawButton);
+      expect(text(locale, <StatusView status={status("BETAALD")} report={null} c={c} locale={locale} />)).not.toContain(c.withdrawButton);
+    });
+    it(`confirms a withdrawal with the moment, and says after delivery that the right ended, in ${locale}`, () => {
+      const t = text(locale, <StatusView status={status("BEZIG", { herroepingOp: Date.UTC(2026, 10, 1, 12, 30) })} report={null} c={c} locale={locale} />);
+      expect(t).toContain(c.withdrawn(locale === "nl" ? "1 nov 2026" : "1 Nov 2026").slice(0, 25));
+      expect(t).toMatch(/13:30/);
+      expect(text(locale, <StatusView status={status("KLAAR")} report={null} c={c} locale={locale} />)).toContain(c.withdrawLate);
+    });
+    it(`has no long dashes and a name for the button that says what it does, in ${locale}`, () => {
+      for (const x of [c.withdrawLead, c.withdrawButton, c.withdrawBusy, c.withdrawError, c.withdrawn("x"), c.withdrawLate, c.states.INGETROKKEN]) expect(x).not.toMatch(/[–—]/);
+      expect(c.withdrawButton).toMatch(locale === "nl" ? /ongedaan/ : /Cancel/);
+    });
+  }
+  it("shows the error line when the cancellation did not go through", () => {
+    const t = text("en", <StatusView status={status("BETAALD")} report={null} c={COPY.en} locale="en" onWithdraw={() => {}} withdrawError />);
+    expect(t).toContain(COPY.en.withdrawError);
   });
 });
 

@@ -97,17 +97,21 @@ export function privateLink(origin: string, locale: Locale, token: string): stri
   return `${origin}${locale === "nl" ? "/nl" : ""}/scan/status#${token}`;
 }
 
-export type OrderState = "OFFERTE" | "WACHT_OP_BETALING" | "BETAALD" | "BEZIG" | "KLAAR" | "MISLUKT" | "AFWIJKEND" | "VERLOPEN";
-export const FINAL_STATES: readonly OrderState[] = ["KLAAR", "MISLUKT", "AFWIJKEND", "VERLOPEN"];
+export type OrderState = "OFFERTE" | "WACHT_OP_BETALING" | "BETAALD" | "BEZIG" | "KLAAR" | "MISLUKT" | "AFWIJKEND" | "VERLOPEN" | "INGETROKKEN";
+export const FINAL_STATES: readonly OrderState[] = ["KLAAR", "MISLUKT", "AFWIJKEND", "VERLOPEN", "INGETROKKEN"];
 
 export interface ConfirmationInput {
-  repo: string; lines: number; priceCents: number; paidAt: string | null; agreedAt: string | null; termsVersion: string | null; consent: string | null; locale: Locale;
+  repo: string; lines: number; priceCents: number; paidAt: string | number | null; agreedAt: string | number | null; withdrawnAt?: string | number | null; termsVersion: string | null; consent: string | null; locale: Locale;
 }
 
 /** The order confirmation a customer can keep: what was bought, for how much, when they agreed and to which sentence. Plain text, no markup. */
 export function orderConfirmation(i: ConfirmationInput): string {
   const nl = i.locale === "nl";
-  const when = (iso: string | null) => (iso && !Number.isNaN(Date.parse(iso)) ? new Date(iso).toISOString() : nl ? "onbekend" : "unknown");
+  // the server sends times as milliseconds since 1970; a text with a date is accepted too
+  const when = (v: string | number | null | undefined) => {
+    const d = typeof v === "number" ? new Date(v) : typeof v === "string" ? new Date(Date.parse(v)) : null;
+    return d && !Number.isNaN(d.getTime()) ? d.toISOString() : nl ? "onbekend" : "unknown";
+  };
   return [
     nl ? "Bevestiging van je bestelling: diepe scan, tokenizen.nl" : "Confirmation of your order: deep scan, tokenizen.nl",
     "",
@@ -116,6 +120,7 @@ export function orderConfirmation(i: ConfirmationInput): string {
     `${nl ? "Prijs (inclusief btw)" : "Price (VAT included)"}: ${euros(i.priceCents, i.locale)}`,
     `${nl ? "Betaald op (UTC)" : "Paid at (UTC)"}: ${when(i.paidAt)}`,
     `${nl ? "Akkoord gegeven op (UTC)" : "Agreement given at (UTC)"}: ${when(i.agreedAt)}`,
+    ...(i.withdrawnAt ? [`${nl ? "Herroeping ontvangen op (UTC)" : "Withdrawal received at (UTC)"}: ${when(i.withdrawnAt)}`] : []),
     `${nl ? "Versie van de voorwaarden" : "Version of the terms"}: ${i.termsVersion ?? (nl ? "onbekend" : "unknown")}`,
     "",
     nl ? "De zin waarmee je akkoord ging:" : "The sentence you agreed to:",
@@ -127,16 +132,22 @@ export function orderConfirmation(i: ConfirmationInput): string {
 }
 
 export interface ConfirmationStatus {
-  repo: string; regels: number; prijsCenten: number; betaaldOp?: string | null; akkoordOp?: string | null; akkoordVersie?: string | null; akkoordTaal?: string | null;
+  repo: string; regels: number; prijsCenten: number; betaaldOp?: string | number | null; akkoordOp?: string | number | null; akkoordVersie?: string | null; akkoordTaal?: string | null; herroepingOp?: string | number | null;
 }
 
 /** The confirmation for a paid order, in the language the customer agreed in (the server keeps it), with the sentence of the version he agreed to. */
 export function confirmationFor(status: ConfirmationStatus, viewerLocale: Locale): string {
   const lang: Locale = status.akkoordTaal === "nl" ? "nl" : status.akkoordTaal === "en" ? "en" : viewerLocale;
   return orderConfirmation({
-    repo: status.repo, lines: status.regels, priceCents: status.prijsCenten, paidAt: status.betaaldOp ?? null, agreedAt: status.akkoordOp ?? null,
+    repo: status.repo, lines: status.regels, priceCents: status.prijsCenten, paidAt: status.betaaldOp ?? null, agreedAt: status.akkoordOp ?? null, withdrawnAt: status.herroepingOp ?? null,
     termsVersion: status.akkoordVersie ?? null, consent: consentFor(status.akkoordVersie, lang), locale: lang,
   });
+}
+
+/** A moment the way the reader's language writes it, in Dutch time (the time a customer will compare with his bank). */
+export function formatMoment(ms: number | null | undefined, locale: Locale): string {
+  if (typeof ms !== "number" || !Number.isFinite(ms)) return "";
+  return new Intl.DateTimeFormat(locale === "nl" ? "nl-NL" : "en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/Amsterdam" }).format(new Date(ms));
 }
 
 /** Polling stops when the order is in a state that does not change by itself (a refund still being made keeps it going). */

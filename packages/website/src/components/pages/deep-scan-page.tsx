@@ -5,10 +5,10 @@ import { CinemaPage } from "@/components/home/cinema";
 import { Button } from "@/components/ui/button";
 import { useLocale, type Locale } from "@/i18n/context";
 import {
-  getQuote, getReport, getStatus, isStripeUrl, startCheckout, type ApiFailure, type Hypothesis, type OrderStatus, type Quote, type Report,
+  getQuote, getReport, getStatus, isStripeUrl, startCheckout, withdraw, type ApiFailure, type Hypothesis, type OrderStatus, type Quote, type Report,
 } from "@/lib/deep-scan-api";
 import {
-  CONSENT, confirmationFor, euros, forgetToken, keepPolling, normaliseRepo, privateLink, readToken, savedOrders, saveToken, TERMS_VERSION, type OrderState, type SavedOrder,
+  CONSENT, confirmationFor, euros, forgetToken, formatMoment, keepPolling, normaliseRepo, privateLink, readToken, savedOrders, saveToken, TERMS_VERSION, type OrderState, type SavedOrder,
 } from "@/lib/deep-scan-logic";
 import { localePath } from "@/lib/locale-paths";
 
@@ -58,6 +58,12 @@ export interface Copy {
   reportNote: string;
   download: string;
   confirmation: string;
+  withdrawLead: string;
+  withdrawButton: string;
+  withdrawBusy: string;
+  withdrawError: string;
+  withdrawn: (time: string) => string;
+  withdrawLate: string;
   savedTitle: string;
   forget: string;
 }
@@ -120,6 +126,7 @@ export const COPY: Record<Locale, Copy> = {
       MISLUKT: "Something went wrong with the scan. You get your money back in full.",
       AFWIJKEND: "Your payment did not match the price that was shown, so nothing was started and your payment is refunded. Questions: info@tokenizen.nl.",
       VERLOPEN: "This price has expired without a payment. Ask for a new price.",
+      INGETROKKEN: "You cancelled this purchase. The full price is refunded and no report is made.",
     },
     refundMade: "We have asked Stripe to refund you. It usually reaches your account within 5 to 10 working days.",
     refundBusy: "The refund is being made.",
@@ -135,6 +142,12 @@ export const COPY: Record<Locale, Copy> = {
     reportNote: "These are hypotheses from an AI reader, to be checked by hand. This is not an audit and not a guarantee that nothing else is wrong.",
     download: "Download as JSON",
     confirmation: "Download your order confirmation",
+    withdrawLead: "You can cancel this purchase until your report is delivered. Then the full price is refunded and no report is made.",
+    withdrawButton: "Cancel purchase",
+    withdrawBusy: "Cancelling",
+    withdrawError: "The cancellation did not go through. If your report is already delivered, the right of withdrawal has ended, as you agreed before paying. Questions: info@tokenizen.nl.",
+    withdrawn: (time) => `Your cancellation was received on ${time}. No report will be made and the full price is refunded.`,
+    withdrawLate: "Your report was delivered, so the right of withdrawal ended, as you agreed before paying.",
     savedTitle: "Other reports saved in this browser",
     forget: "Remove the saved keys from this browser",
   },
@@ -195,6 +208,7 @@ export const COPY: Record<Locale, Copy> = {
       MISLUKT: "Er ging iets mis met de scan. Je krijgt je geld volledig terug.",
       AFWIJKEND: "Je betaling kwam niet overeen met de getoonde prijs, dus er is niets gestart en je betaling wordt terugbetaald. Vragen: info@tokenizen.nl.",
       VERLOPEN: "Deze prijs is verlopen zonder betaling. Vraag een nieuwe prijs aan.",
+      INGETROKKEN: "Je hebt deze aankoop ongedaan gemaakt. De volledige prijs wordt terugbetaald en er komt geen rapport.",
     },
     refundMade: "We hebben Stripe gevraagd je terug te betalen. Het staat meestal binnen 5 tot 10 werkdagen op je rekening.",
     refundBusy: "De terugbetaling wordt gedaan.",
@@ -210,6 +224,12 @@ export const COPY: Record<Locale, Copy> = {
     reportNote: "Dit zijn hypotheses van een AI-lezer, om met de hand na te lopen. Dit is geen audit en geen garantie dat er verder niets mis is.",
     download: "Download als JSON",
     confirmation: "Download je bestelbevestiging",
+    withdrawLead: "Je kunt deze aankoop ongedaan maken tot je rapport is geleverd. Dan wordt de volledige prijs terugbetaald en er komt geen rapport.",
+    withdrawButton: "Koop ongedaan maken",
+    withdrawBusy: "Bezig met annuleren",
+    withdrawError: "De annulering is niet gelukt. Is je rapport al geleverd, dan is het herroepingsrecht vervallen, zoals je voor je betaling hebt aanvaard. Vragen: info@tokenizen.nl.",
+    withdrawn: (time) => `Je herroeping is ontvangen op ${time}. Er komt geen rapport en de volledige prijs wordt terugbetaald.`,
+    withdrawLate: "Je rapport is geleverd, dus het herroepingsrecht is vervallen, zoals je voor je betaling hebt aanvaard.",
     savedTitle: "Andere rapporten bewaard in deze browser",
     forget: "Haal de bewaarde sleutels uit deze browser",
   },
@@ -390,12 +410,23 @@ export function ReportView({ report, c }: { report: Report; c: Copy }) {
   );
 }
 
-export function StatusView({ status, report, c }: { status: OrderStatus | null; report: Report | null; c: Copy }) {
+export function StatusView({ status, report, c, locale = "en", onWithdraw, withdrawing = false, withdrawError = false }: {
+  status: OrderStatus | null; report: Report | null; c: Copy; locale?: Locale; onWithdraw?: () => void; withdrawing?: boolean; withdrawError?: boolean;
+}) {
   if (!status) return <p className="flex items-center gap-2"><Loader2 className="size-4 animate-spin" aria-hidden="true" />{c.checking}</p>;
   return (
     <div className="space-y-4" aria-live="polite">
       <p className="text-lg font-medium">{c.states[status.toestand]}</p>
       {status.terugbetaling ? <p className="text-sm">{status.terugbetaald ? c.refundMade : c.refundBusy}</p> : null}
+      {status.herroepingOp ? <p className="text-sm">{c.withdrawn(formatMoment(status.herroepingOp, locale))}</p> : null}
+      {!status.herroepingOp && (status.toestand === "BETAALD" || status.toestand === "BEZIG") && onWithdraw ? (
+        <div className="space-y-2 rounded-md border border-white/15 p-4">
+          <p className="text-sm">{c.withdrawLead}</p>
+          <Button type="button" variant="outline" onClick={onWithdraw} disabled={withdrawing}>{withdrawing ? c.withdrawBusy : c.withdrawButton}</Button>
+          {withdrawError ? <p role="alert" className="text-sm">{c.withdrawError}</p> : null}
+        </div>
+      ) : null}
+      {status.toestand === "KLAAR" ? <p className="text-sm opacity-80">{c.withdrawLate}</p> : null}
       {report ? <ReportView report={report} c={c} /> : null}
     </div>
   );
@@ -409,6 +440,8 @@ export function DeepScanStatusPage() {
   const [report, setReport] = useState<Report | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
   const [saved, setSaved] = useState<SavedOrder[]>([]);
+  const [withdrawing, setWithdrawing] = useState(false);
+  const [withdrawFailed, setWithdrawFailed] = useState(false);
   const stopped = useRef(false);
 
   useEffect(() => {
@@ -471,12 +504,22 @@ export function DeepScanStatusPage() {
     URL.revokeObjectURL(url);
   }
 
+  async function withdrawNow() {
+    if (!token || withdrawing) return;
+    setWithdrawing(true);
+    setWithdrawFailed(false);
+    const r = await withdraw(token);
+    setWithdrawing(false);
+    if (r.ok) setStatus(r);
+    else setWithdrawFailed(true);
+  }
+
   const others = saved.filter((o) => o.token !== token);
 
   return (
     <CinemaPage image="lens" chip={c.statusChip} title={c.statusTitle} lead={c.statusLead}>
       <div className="max-w-3xl space-y-6">
-        {token === null ? <p>{c.noKey}</p> : token === undefined ? null : <StatusView status={status} report={report} c={c} />}
+        {token === null ? <p>{c.noKey}</p> : token === undefined ? null : <StatusView status={status} report={report} c={c} locale={locale} onWithdraw={() => { void withdrawNow(); }} withdrawing={withdrawing} withdrawError={withdrawFailed} />}
         {failed !== null && token ? <p role="alert" className="flex items-start gap-2 text-sm"><AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />{failed}</p> : null}
         {report || (status?.betaald && status.akkoordOp) || saved.length > 0 ? (
           <div className="flex flex-wrap gap-3">

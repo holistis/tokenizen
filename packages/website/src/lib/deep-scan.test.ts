@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { getQuote, getReport, getStatus, isStripeUrl, startCheckout } from "@/lib/deep-scan-api";
-import { CONSENT, confirmationFor, consentFor, euros, forgetToken, keepPolling, MAX_SAVED, normaliseRepo, orderConfirmation, privateLink, readToken, savedOrders, saveToken, TERMS_VERSION, TOKEN_KEY } from "@/lib/deep-scan-logic";
+import { getQuote, getReport, getStatus, isStripeUrl, startCheckout, withdraw } from "@/lib/deep-scan-api";
+import { CONSENT, confirmationFor, consentFor, euros, forgetToken, formatMoment, keepPolling, MAX_SAVED, normaliseRepo, orderConfirmation, privateLink, readToken, savedOrders, saveToken, TERMS_VERSION, TOKEN_KEY } from "@/lib/deep-scan-logic";
 
 const TOKEN = "A".repeat(43);
 const memory = () => {
@@ -118,6 +118,29 @@ describe("the confirmation of a paid order", () => {
   });
 });
 
+describe("times from the server", () => {
+  const ms = Date.UTC(2026, 10, 1, 12, 30, 0);
+  it("are milliseconds, and the confirmation writes them as a date, also when the server sends a text", () => {
+    const s = { repo: "owner/name", regels: 410, prijsCenten: 820, betaaldOp: ms, akkoordOp: ms - 60_000, akkoordVersie: "2026-11-01", akkoordTaal: "en", herroepingOp: null };
+    const t = confirmationFor(s, "en");
+    expect(t).toContain("Paid at (UTC): 2026-11-01T12:30:00.000Z");
+    expect(t).toContain("Agreement given at (UTC): 2026-11-01T12:29:00.000Z");
+    expect(t).not.toContain("Withdrawal received");
+    expect(confirmationFor({ ...s, betaaldOp: "2026-11-01T12:30:00.000Z" }, "en")).toContain("Paid at (UTC): 2026-11-01T12:30:00.000Z");
+    expect(confirmationFor({ ...s, betaaldOp: "geen datum" }, "en")).toContain("Paid at (UTC): unknown");
+  });
+  it("show the moment of a withdrawal in the confirmation, in the language of the agreement", () => {
+    const s = { repo: "owner/name", regels: 410, prijsCenten: 820, betaaldOp: ms, akkoordOp: ms, akkoordVersie: "2026-11-01", akkoordTaal: "nl", herroepingOp: ms + 5000 };
+    expect(confirmationFor(s, "en")).toContain("Herroeping ontvangen op (UTC): 2026-11-01T12:30:05.000Z");
+  });
+  it("are shown in Dutch time for the reader", () => {
+    expect(formatMoment(ms, "en")).toMatch(/1 Nov 2026/);
+    expect(formatMoment(ms, "en")).toMatch(/13:30/);
+    expect(formatMoment(ms, "nl")).toMatch(/13:30/);
+    for (const x of [null, undefined, NaN, Infinity]) expect(formatMoment(x as number, "en")).toBe("");
+  });
+});
+
 describe("keepPolling", () => {
   it("goes on until the order is final and a refund is made", () => {
     expect(keepPolling("BEZIG", false, false)).toBe(true);
@@ -130,6 +153,8 @@ describe("keepPolling", () => {
     expect(keepPolling("AFWIJKEND", true, true)).toBe(false);
     expect(keepPolling("AFWIJKEND", false, false)).toBe(false);
     expect(keepPolling("VERLOPEN", false, false)).toBe(false);
+    expect(keepPolling("INGETROKKEN", true, false)).toBe(true);
+    expect(keepPolling("INGETROKKEN", true, true)).toBe(false);
   });
 });
 
@@ -148,7 +173,8 @@ describe("the calls to the scan service", () => {
     await getReport(TOKEN, fakeFetch(200, { ok: true }, calls));
     await startCheckout(TOKEN, TERMS_VERSION, "nl", fakeFetch(200, { ok: true, url: "x" }, calls));
     await getQuote("owner/name", fakeFetch(200, { ok: true }, calls));
-    expect(calls.map((c) => c.url.replace(/^https?:\/\/[^/]+/, ""))).toEqual(["/v1/status", "/v1/report", "/v1/checkout", "/v1/quote"]);
+    await withdraw(TOKEN, fakeFetch(200, { ok: true }, calls));
+    expect(calls.map((c) => c.url.replace(/^https?:\/\/[^/]+/, ""))).toEqual(["/v1/status", "/v1/report", "/v1/checkout", "/v1/quote", "/v1/withdraw"]);
     for (const c of calls) {
       expect(c.init.method).toBe("POST");
       expect(c.url).not.toContain(TOKEN);

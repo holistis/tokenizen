@@ -33,10 +33,11 @@ export interface OrderStatus {
   terugbetaling: boolean;
   terugbetaald: boolean;
   rapportKlaar: boolean;
-  betaaldOp?: string | null;
-  akkoordOp?: string | null;
+  betaaldOp?: number | null;
+  akkoordOp?: number | null;
   akkoordVersie?: string | null;
   akkoordTaal?: string | null;
+  herroepingOp?: number | null;
 }
 
 export interface Hypothesis {
@@ -98,6 +99,9 @@ export const startCheckout = (token: string, termsVersion: string, taal: "en" | 
   post<{ ok: true; url: string }>("/v1/checkout", { token, akkoord: true, voorwaardenVersie: termsVersion, taal }, fetchFn, 30_000);
 
 export const getStatus = (token: string, fetchFn: Fetch = fetch) => post<OrderStatus>("/v1/status", { token }, fetchFn, 20_000);
+
+/** The cancel button: withdraws from the purchase. Allowed until the report is delivered. */
+export const withdraw = (token: string, fetchFn: Fetch = fetch) => post<OrderStatus>("/v1/withdraw", { token }, fetchFn, 20_000);
 
 export const getReport = (token: string, fetchFn: Fetch = fetch) => post<{ ok: true; rapport: Report }>("/v1/report", { token }, fetchFn, 30_000);
 
