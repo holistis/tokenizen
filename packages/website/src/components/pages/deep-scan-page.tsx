@@ -76,7 +76,7 @@ export const COPY: Record<Locale, Copy> = {
     refundRule:
       "You get your money back in full if the scan fails, if the report has no hypotheses, if part of the scan failed or it read fewer than half of the contract files, or if it has not started within 6 hours of your payment.",
     honest:
-      "What this is not: an audit, a certificate or a promise that nothing else is wrong. The scan misses real problems and names some that are not real. We have not yet measured this deep scan on a public benchmark. How our earlier scans did is on the scoreboard, with the judge named next to every number.",
+      "What this is not: an audit, a certificate or a promise that nothing else is wrong. It misses real problems and names some that are not real. We have not yet measured this deep scan on a public benchmark. How our earlier scans did is on the scoreboard, with the judge named next to every number.",
     scoreboard: "The scoreboard",
     formTitle: "Your repository",
     fieldLabel: "Repository",
@@ -101,7 +101,7 @@ export const COPY: Record<Locale, Copy> = {
       "I have read the terms of the deep scan and the privacy statement. I ask you to start the scan right after my payment, and I understand that if I am a consumer my right of withdrawal ends once the report is fully delivered.",
     consentLinks: { terms: "Terms of the deep scan", privacy: "Privacy statement" },
     pay: (price) => `Pay ${price}`,
-    payNote: "You pay on the page of Stripe, by card or iDEAL. The scan starts when we receive your payment, and the report appears at your private link.",
+    payNote: "You pay on the page of Stripe, by card or iDEAL. It starts when we receive your payment, and the report appears at your private link.",
     paying: "Taking you to the payment page",
     linkTitle: "Keep your private link",
     linkText:
@@ -152,7 +152,7 @@ export const COPY: Record<Locale, Copy> = {
     refundRule:
       "Je krijgt je geld volledig terug als de scan mislukt, als het rapport geen hypothese bevat, als een deel van de scan mislukte of hij minder dan de helft van de contractbestanden las, of als hij niet binnen 6 uur na je betaling is gestart.",
     honest:
-      "Wat dit niet is: een audit, een certificaat of een belofte dat er verder niets mis is. De scan mist echte problemen en noemt er een paar die niet echt zijn. We hebben deze diepe scan nog niet op een openbare maatstaf gemeten. Hoe onze eerdere scans het deden staat op het scorebord, met de rechter erbij bij elk getal.",
+      "Wat dit niet is: een audit, een certificaat of een belofte dat er verder niets mis is. Hij mist echte problemen en noemt er een paar die niet echt zijn. We hebben deze diepe scan nog niet op een openbare maatstaf gemeten. Hoe onze eerdere scans het deden staat op het scorebord, met de rechter erbij bij elk getal.",
     scoreboard: "Het scorebord",
     formTitle: "Jouw repository",
     fieldLabel: "Repository",
@@ -177,7 +177,7 @@ export const COPY: Record<Locale, Copy> = {
       "Ik heb de voorwaarden van de diepe scan en de privacyverklaring gelezen. Ik vraag je de scan direct na mijn betaling te starten en ik begrijp dat, als ik consument ben, mijn herroepingsrecht eindigt zodra het rapport volledig is geleverd.",
     consentLinks: { terms: "Voorwaarden van de diepe scan", privacy: "Privacyverklaring" },
     pay: (price) => `Betaal ${price}`,
-    payNote: "Je betaalt op de pagina van Stripe, met kaart of iDEAL. De scan start zodra we je betaling hebben ontvangen en het rapport staat dan op je privélink.",
+    payNote: "Je betaalt op de pagina van Stripe, met kaart of iDEAL. Hij start zodra we je betaling hebben ontvangen en het rapport staat dan op je privélink.",
     paying: "We brengen je naar de betaalpagina",
     linkTitle: "Bewaar je privélink",
     linkText:
