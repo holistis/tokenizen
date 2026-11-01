@@ -8,7 +8,7 @@ import {
   getQuote, getReport, getStatus, isStripeUrl, startCheckout, type ApiFailure, type Hypothesis, type OrderStatus, type Quote, type Report,
 } from "@/lib/deep-scan-api";
 import {
-  euros, forgetToken, keepPolling, normaliseRepo, orderConfirmation, privateLink, readToken, savedOrders, saveToken, TERMS_VERSION, type OrderState, type SavedOrder,
+  CONSENT, confirmationFor, euros, forgetToken, keepPolling, normaliseRepo, privateLink, readToken, savedOrders, saveToken, TERMS_VERSION, type OrderState, type SavedOrder,
 } from "@/lib/deep-scan-logic";
 import { localePath } from "@/lib/locale-paths";
 
@@ -66,7 +66,7 @@ export const COPY: Record<Locale, Copy> = {
   en: {
     title: "Deep scan of a smart contract repository | tokenizen",
     description:
-      "Name a public GitHub repository, see the price before you pay, and get hypotheses about its Solidity code to check by hand. 0.02 euro per line, minimum 2 euro, a full refund if the scan fails, finds nothing or does not read your code.",
+      "Name a public GitHub repository, see the price before you pay, and get hypotheses about its Solidity code to check by hand. 0.02 euro per line, minimum 2 euro, a full refund if the scan fails, finds nothing or reads less than half of your files.",
     chip: "deep scan",
     heading: "Hypotheses about your Solidity code, with the price shown first.",
     lead:
@@ -76,7 +76,7 @@ export const COPY: Record<Locale, Copy> = {
     refundRule:
       "You get your money back in full if the scan fails, if the report has no hypotheses, if part of the scan failed or it read fewer than half of the contract files, or if it has not started within 6 hours of your payment.",
     honest:
-      "What this is not: an audit, a certificate or a promise that nothing else is wrong. It misses real problems and names some that are not real. We have not yet measured this deep scan on a public benchmark. How our earlier scans did is on the scoreboard, with the judge named next to every number.",
+      "What this is not: an audit, a certificate or a promise that nothing else is wrong. The deep scan misses real problems and names some that are not real. We have not yet measured this deep scan on a public benchmark. How our earlier scans did is on the scoreboard, with the judge named next to every number.",
     scoreboard: "The scoreboard",
     formTitle: "Your repository",
     fieldLabel: "Repository",
@@ -97,11 +97,10 @@ export const COPY: Record<Locale, Copy> = {
       unknownKey: "We do not recognise this key. Check that you opened the whole private link.",
     },
     quoted: (repo, lines, price) => `${repo}: ${lines.toLocaleString("en-IE")} lines of Solidity in scope. Price: ${price}.`,
-    consent:
-      "I have read the terms of the deep scan and the privacy statement. I ask you to start the scan right after my payment, and I understand that if I am a consumer my right of withdrawal ends once the report is fully delivered.",
+    consent: CONSENT[TERMS_VERSION].en,
     consentLinks: { terms: "Terms of the deep scan", privacy: "Privacy statement" },
     pay: (price) => `Pay ${price}`,
-    payNote: "You pay on the page of Stripe, by card or iDEAL. It starts when we receive your payment, and the report appears at your private link.",
+    payNote: "You pay on the page of Stripe, by card or iDEAL. Once we receive your payment the scan starts, and the report appears at your private link.",
     paying: "Taking you to the payment page",
     linkTitle: "Keep your private link",
     linkText:
@@ -142,7 +141,7 @@ export const COPY: Record<Locale, Copy> = {
   nl: {
     title: "Diepe scan van een smart-contractrepository | tokenizen",
     description:
-      "Geef een openbare GitHub-repository op, zie de prijs voor je betaalt en krijg hypotheses over de Solidity-code om met de hand na te lopen. 0,02 euro per regel, minimum 2 euro, volledige terugbetaling als de scan mislukt, niets vindt of je code niet leest.",
+      "Geef een openbare GitHub-repository op, zie de prijs voor je betaalt en krijg hypotheses over de Solidity-code om met de hand na te lopen. 0,02 euro per regel, minimum 2 euro, volledige terugbetaling als de scan mislukt, niets vindt of minder dan de helft van je bestanden leest.",
     chip: "diepe scan",
     heading: "Hypotheses over je Solidity-code, met eerst de prijs.",
     lead:
@@ -152,7 +151,7 @@ export const COPY: Record<Locale, Copy> = {
     refundRule:
       "Je krijgt je geld volledig terug als de scan mislukt, als het rapport geen hypothese bevat, als een deel van de scan mislukte of hij minder dan de helft van de contractbestanden las, of als hij niet binnen 6 uur na je betaling is gestart.",
     honest:
-      "Wat dit niet is: een audit, een certificaat of een belofte dat er verder niets mis is. Hij mist echte problemen en noemt er een paar die niet echt zijn. We hebben deze diepe scan nog niet op een openbare maatstaf gemeten. Hoe onze eerdere scans het deden staat op het scorebord, met de rechter erbij bij elk getal.",
+      "Wat dit niet is: een audit, een certificaat of een belofte dat er verder niets mis is. De diepe scan mist echte problemen en noemt er een paar die niet echt zijn. We hebben deze diepe scan nog niet op een openbare maatstaf gemeten. Hoe onze eerdere scans het deden staat op het scorebord, met de rechter erbij bij elk getal.",
     scoreboard: "Het scorebord",
     formTitle: "Jouw repository",
     fieldLabel: "Repository",
@@ -173,11 +172,10 @@ export const COPY: Record<Locale, Copy> = {
       unknownKey: "We herkennen deze sleutel niet. Controleer of je de hele privélink hebt geopend.",
     },
     quoted: (repo, lines, price) => `${repo}: ${lines.toLocaleString("nl-NL")} regels Solidity in scope. Prijs: ${price}.`,
-    consent:
-      "Ik heb de voorwaarden van de diepe scan en de privacyverklaring gelezen. Ik vraag je de scan direct na mijn betaling te starten en ik begrijp dat, als ik consument ben, mijn herroepingsrecht eindigt zodra het rapport volledig is geleverd.",
+    consent: CONSENT[TERMS_VERSION].nl,
     consentLinks: { terms: "Voorwaarden van de diepe scan", privacy: "Privacyverklaring" },
     pay: (price) => `Betaal ${price}`,
-    payNote: "Je betaalt op de pagina van Stripe, met kaart of iDEAL. Hij start zodra we je betaling hebben ontvangen en het rapport staat dan op je privélink.",
+    payNote: "Je betaalt op de pagina van Stripe, met kaart of iDEAL. Zodra we je betaling hebben ontvangen start de scan, en het rapport staat dan op je privélink.",
     paying: "We brengen je naar de betaalpagina",
     linkTitle: "Bewaar je privélink",
     linkText:
@@ -465,10 +463,7 @@ export function DeepScanStatusPage() {
 
   function downloadConfirmation() {
     if (!status) return;
-    const text = orderConfirmation({
-      repo: status.repo, lines: status.regels, priceCents: status.prijsCenten, paidAt: status.betaaldOp ?? null, agreedAt: status.akkoordOp ?? null,
-      termsVersion: status.akkoordVersie ?? null, consent: c.consent, locale,
-    });
+    const text = confirmationFor(status, locale);
     const url = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
     const a = document.createElement("a");
     a.href = url; a.download = `tokenizen-deep-scan-order-${status.repo.replace("/", "-")}.txt`;

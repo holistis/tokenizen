@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { COPY, DeepScanPage, DeepScanStatusPage, failureText, ReportView, StatusView } from "@/components/pages/deep-scan-page";
 import type { OrderStatus, Report } from "@/lib/deep-scan-api";
 import { LocaleProvider, type Locale } from "@/i18n/context";
-import { TERMS_VERSION, type OrderState } from "@/lib/deep-scan-logic";
+import { CONSENT, TERMS_VERSION, type OrderState } from "@/lib/deep-scan-logic";
 import { readableText } from "@/test-utils/readable-text";
 
 import terms from "@/data/legal/deep-scan-terms.txt?raw";
@@ -46,6 +46,7 @@ describe("the deep scan page", () => {
     });
     it(`has the same facts in the consent sentence as in the terms in ${locale}`, () => {
       const c = COPY[locale];
+      expect(c.consent, "the sentence on the page is the sentence the confirmation keeps").toBe(CONSENT[TERMS_VERSION][locale]);
       const t = locale === "nl" ? termsNl : terms;
       expect(c.consent).toMatch(locale === "nl" ? /herroepingsrecht eindigt/ : /right of withdrawal ends/);
       expect(t).toMatch(locale === "nl" ? /14 dagen/ : /14 days/);

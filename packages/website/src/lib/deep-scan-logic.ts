@@ -5,6 +5,15 @@ import type { Locale } from "@/i18n/context";
 
 /** The version of the terms that the checkbox refers to. The server refuses a payment started with another version. */
 export const TERMS_VERSION = "2026-11-01";
+/** The sentence a customer ticks, per version of the terms and per language. An old version keeps its sentence here, so a confirmation of an old order shows what that customer saw. */
+export const CONSENT: Record<string, Record<Locale, string>> = {
+  "2026-11-01": {
+    en: "I have read the terms of the deep scan and the privacy statement. I ask you to start the scan right after my payment, and I understand that if I am a consumer my right of withdrawal ends once the report is fully delivered.",
+    nl: "Ik heb de voorwaarden van de diepe scan en de privacyverklaring gelezen. Ik vraag je de scan direct na mijn betaling te starten en ik begrijp dat, als ik consument ben, mijn herroepingsrecht eindigt zodra het rapport volledig is geleverd.",
+  },
+};
+export const consentFor = (version: string | null | undefined, lang: Locale): string | null => (version ? CONSENT[version]?.[lang] ?? null : null);
+
 export const TOKEN_RE = /^[A-Za-z0-9_-]{43}$/;
 export const TOKEN_KEY = "tokenizen.deepscan.token";
 
@@ -92,7 +101,7 @@ export type OrderState = "OFFERTE" | "WACHT_OP_BETALING" | "BETAALD" | "BEZIG" |
 export const FINAL_STATES: readonly OrderState[] = ["KLAAR", "MISLUKT", "AFWIJKEND", "VERLOPEN"];
 
 export interface ConfirmationInput {
-  repo: string; lines: number; priceCents: number; paidAt: string | null; agreedAt: string | null; termsVersion: string | null; consent: string; locale: Locale;
+  repo: string; lines: number; priceCents: number; paidAt: string | null; agreedAt: string | null; termsVersion: string | null; consent: string | null; locale: Locale;
 }
 
 /** The order confirmation a customer can keep: what was bought, for how much, when they agreed and to which sentence. Plain text, no markup. */
@@ -110,11 +119,24 @@ export function orderConfirmation(i: ConfirmationInput): string {
     `${nl ? "Versie van de voorwaarden" : "Version of the terms"}: ${i.termsVersion ?? (nl ? "onbekend" : "unknown")}`,
     "",
     nl ? "De zin waarmee je akkoord ging:" : "The sentence you agreed to:",
-    i.consent,
+    i.consent ?? (nl ? `(De zin van versie ${i.termsVersion ?? "onbekend"} staat niet in deze pagina. Mail info@tokenizen.nl en we sturen hem.)` : `(The sentence of version ${i.termsVersion ?? "unknown"} is not on this page. Email info@tokenizen.nl and we will send it.)`),
     "",
     nl ? "Vragen: info@tokenizen.nl" : "Questions: info@tokenizen.nl",
     "",
   ].join("\n");
+}
+
+export interface ConfirmationStatus {
+  repo: string; regels: number; prijsCenten: number; betaaldOp?: string | null; akkoordOp?: string | null; akkoordVersie?: string | null; akkoordTaal?: string | null;
+}
+
+/** The confirmation for a paid order, in the language the customer agreed in (the server keeps it), with the sentence of the version he agreed to. */
+export function confirmationFor(status: ConfirmationStatus, viewerLocale: Locale): string {
+  const lang: Locale = status.akkoordTaal === "nl" ? "nl" : status.akkoordTaal === "en" ? "en" : viewerLocale;
+  return orderConfirmation({
+    repo: status.repo, lines: status.regels, priceCents: status.prijsCenten, paidAt: status.betaaldOp ?? null, agreedAt: status.akkoordOp ?? null,
+    termsVersion: status.akkoordVersie ?? null, consent: consentFor(status.akkoordVersie, lang), locale: lang,
+  });
 }
 
 /** Polling stops when the order is in a state that does not change by itself (a refund still being made keeps it going). */

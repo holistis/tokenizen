@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { getQuote, getReport, getStatus, isStripeUrl, startCheckout } from "@/lib/deep-scan-api";
-import { euros, forgetToken, keepPolling, MAX_SAVED, normaliseRepo, orderConfirmation, privateLink, readToken, savedOrders, saveToken, TERMS_VERSION, TOKEN_KEY } from "@/lib/deep-scan-logic";
+import { CONSENT, confirmationFor, consentFor, euros, forgetToken, keepPolling, MAX_SAVED, normaliseRepo, orderConfirmation, privateLink, readToken, savedOrders, saveToken, TERMS_VERSION, TOKEN_KEY } from "@/lib/deep-scan-logic";
 
 const TOKEN = "A".repeat(43);
 const memory = () => {
@@ -94,6 +94,27 @@ describe("the order confirmation", () => {
     expect(t).toContain("Akkoord gegeven op (UTC): onbekend");
     expect(t).toContain("Versie van de voorwaarden: onbekend");
     expect(t.replace(/\s/g, " ")).toContain("€ 75,84");
+  });
+});
+
+describe("the confirmation of a paid order", () => {
+  const status = { repo: "owner/name", regels: 410, prijsCenten: 820, betaaldOp: "2026-11-01T12:30:00.000Z", akkoordOp: "2026-11-01T12:29:00.000Z", akkoordVersie: "2026-11-01", akkoordTaal: "en" };
+  it("uses the language the customer agreed in, not the language the page is shown in now", () => {
+    const t = confirmationFor({ ...status, akkoordTaal: "en" }, "nl");
+    expect(t).toContain("Confirmation of your order");
+    expect(t).toContain(CONSENT["2026-11-01"].en);
+    expect(t).not.toContain(CONSENT["2026-11-01"].nl);
+    const n = confirmationFor({ ...status, akkoordTaal: "nl" }, "en");
+    expect(n).toContain("Bevestiging van je bestelling");
+    expect(n).toContain(CONSENT["2026-11-01"].nl);
+  });
+  it("falls back to the language of the page when the server has none, and says so honestly when it does not hold the sentence of that version", () => {
+    expect(confirmationFor({ ...status, akkoordTaal: null }, "nl")).toContain("Bevestiging van je bestelling");
+    const old = confirmationFor({ ...status, akkoordVersie: "2020-01-01" }, "en");
+    expect(old).toContain("The sentence of version 2020-01-01 is not on this page");
+    expect(old).not.toContain(CONSENT["2026-11-01"].en);
+    expect(consentFor(null, "en")).toBeNull();
+    expect(consentFor("2026-11-01", "en")).toBe(CONSENT["2026-11-01"].en);
   });
 });
 

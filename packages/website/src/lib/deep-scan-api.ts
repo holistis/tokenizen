@@ -36,6 +36,7 @@ export interface OrderStatus {
   betaaldOp?: string | null;
   akkoordOp?: string | null;
   akkoordVersie?: string | null;
+  akkoordTaal?: string | null;
 }
 
 export interface Hypothesis {
