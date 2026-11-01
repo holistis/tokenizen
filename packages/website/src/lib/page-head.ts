@@ -20,6 +20,7 @@ export const BILINGUAL_PATHS = [
   "/security",
   "/scan",
   "/tools",
+  "/agents",
   "/consultancy",
   "/about",
   "/cra-check",

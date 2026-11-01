@@ -408,6 +408,148 @@ export function ScanPage() {
 // ---------------------------------------------------------------------------------------------------------------------------------
 // Open-source tools
 
+// ---------------------------------------------------------------------------------------------------------------------------------
+// For AI agents. Everything here was read from the running services and the official MCP registry on 1 November 2026 (tools/list on both
+// endpoints, one real tools/call, registry.modelcontextprotocol.io); nothing is promised that was not read there.
+
+export const AGENT_CALL = `curl -s -X POST https://api.tokenizen.nl/mcp \\
+  -H 'content-type: application/json' \\
+  -H 'accept: application/json, text/event-stream' \\
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"check_github_repo","arguments":{"repo":"holistis/tokenizen"}}}'`;
+
+export const AGENTS = {
+  en: {
+    chip: "for agents",
+    title: "Tools an AI agent can call",
+    lead: "Two MCP endpoints you can call today and two packages you can install. What each one does, what it costs, and what it cannot tell you.",
+    metaTitle: "For AI agents | tokenizen",
+    metaDescription:
+      "MCP tools from tokenizen: a free read-only check of eight security signals in a public GitHub repository, a paid ownership check over x402, and open-source packages in the official MCP registry.",
+    freeLabel: "Free, no sign-in",
+    freeText1:
+      "The check of eight security signals, as one read-only tool. Endpoint: https://api.tokenizen.nl/mcp, streamable HTTP, POST only. The tool is check_github_repo. It takes a public GitHub repository as owner/name or as a github.com address. Registry name: io.github.holistis/cra-check.",
+    freeText2:
+      "It reports which of eight selected signals are visible in the repository and what would make a missing one visible. A signal it could not read completely is marked not measured, never as a gap. A few checks per ten minutes per IP address. One call, no session needed (POSIX shell):",
+    freeText3:
+      "An indication from public data, not a compliance check, not a certificate and not legal advice. Private repositories and hosts other than GitHub cannot be checked.",
+    paidLabel: "Paid per call over x402",
+    paidText:
+      "The ownership check as a paid MCP tool. Endpoint: https://x402-mcp.tokenizen.nl/mcp. The tool is verify_ownership: it checks that an operator controls an endpoint, through a DNS TXT record or a well-known file. It costs 0.001 dollar per call, paid through x402 on Base mainnet. One real mainnet payment, made as a test, went through it end to end on 21 October 2026. Pay only if your operator has allowed x402 spending.",
+    scanLabel: "Smart contract scan",
+    scanText:
+      "The smart contract scan is sold over x402 on the scan page, next to its public scoreboard and what it missed. By default the official x402 client refuses payments above 1 dollar, so the quick scan costs exactly 1 dollar; the full scan costs 5 dollars and needs a client that allows it. The scan also has its own entry in the official MCP registry: io.github.holistis/bug-bounty-intelligence-mcp.",
+    scanLink: "The scan and its scoreboard",
+    installLabel: "Install in your own agent",
+    installIntro: "Both are in the official MCP registry (registry.modelcontextprotocol.io, read on 1 November 2026) and open source.",
+    installs: [
+      {
+        name: "io.github.holistis/capacity-attest",
+        text: "Signed delivery claims for x402 capacity trades: GPU-hours, storage, API credits, bandwidth. Two tools, record_delivery and get_delivery_history, over stdio (npx capacity-attest).",
+        href: "https://www.npmjs.com/package/capacity-attest",
+      },
+      {
+        name: "io.github.holistis/agent-receipt-verify",
+        text: "Checks x402 endpoint conformance before an agent pays, and links the receipt to its settlement.",
+        href: "https://www.npmjs.com/package/agent-receipt-verify",
+      },
+    ],
+    npm: "On npm",
+    notLabel: "What these tools are not",
+    notText:
+      "No score, no verdict, no ranking and no token of our own. A result is evidence about the one thing it names. It never says that an agent, a seller or a repository is safe.",
+    findLabel: "Where an agent finds this",
+    findText: "In llms.txt, in sitemap.xml and in the official MCP registry. There is no other discovery file yet.",
+  },
+  nl: {
+    chip: "voor agents",
+    title: "Gereedschap dat een AI-agent kan aanroepen",
+    lead: "Twee MCP-eindpunten die je vandaag kunt aanroepen en twee pakketten die je kunt installeren. Wat elk doet, wat het kost en wat het niet kan zeggen.",
+    metaTitle: "Voor AI-agents | tokenizen",
+    metaDescription:
+      "MCP-gereedschap van tokenizen: een gratis, alleen-lezen controle van acht beveiligingssignalen in een openbare GitHub-repository, een betaalde eigenaarscheck via x402 en open-sourcepakketten in het officiële MCP-register.",
+    freeLabel: "Gratis, zonder inloggen",
+    freeText1:
+      "De controle van acht beveiligingssignalen als een alleen-lezen hulpmiddel. Eindpunt: https://api.tokenizen.nl/mcp, streamable HTTP, alleen POST. Het hulpmiddel heet check_github_repo. Je geeft een openbare GitHub-repository als eigenaar/naam of als github.com-adres. Registernaam: io.github.holistis/cra-check.",
+    freeText2:
+      "Het meldt welke van acht gekozen signalen in de repository zichtbaar zijn en wat een ontbrekend signaal zichtbaar zou maken. Een signaal dat niet helemaal te lezen was, staat als niet gemeten, nooit als gat. Een paar controles per tien minuten per IP-adres. Eén aanroep, geen sessie nodig (POSIX-shell):",
+    freeText3:
+      "Een aanwijzing uit openbare gegevens, geen nalevingscontrole, geen certificaat en geen juridisch advies. Privé-repositories en andere hosts dan GitHub kunnen niet worden gecontroleerd.",
+    paidLabel: "Betaald per aanroep via x402",
+    paidText:
+      "De eigenaarscheck als betaald MCP-hulpmiddel. Eindpunt: https://x402-mcp.tokenizen.nl/mcp. Het hulpmiddel heet verify_ownership: het controleert dat een beheerder een eindpunt in handen heeft, via een DNS-TXT-record of een well-known-bestand. Het kost 0,001 dollar per aanroep, betaald via x402 op Base mainnet. Op 21 oktober 2026 liep één echte betaling op mainnet, gedaan als test, er van begin tot eind doorheen. Betaal alleen als je beheerder x402-uitgaven heeft toegestaan.",
+    scanLabel: "Smart-contractscan",
+    scanText:
+      "De scan van smart contracts wordt via x402 verkocht op de scanpagina, naast het openbare scorebord en wat hij gemist heeft. De officiële x402-client weigert standaard betalingen boven 1 dollar, dus de snelle scan kost precies 1 dollar; de volledige scan kost 5 dollar en heeft een client nodig die dat toestaat. De scan heeft ook een eigen vermelding in het officiële MCP-register: io.github.holistis/bug-bounty-intelligence-mcp.",
+    scanLink: "De scan en zijn scorebord",
+    installLabel: "Installeer in je eigen agent",
+    installIntro: "Beide staan in het officiële MCP-register (registry.modelcontextprotocol.io, gelezen op 1 november 2026) en zijn open source.",
+    installs: [
+      {
+        name: "io.github.holistis/capacity-attest",
+        text: "Ondertekende leveringsclaims voor x402-handel in capaciteit: GPU-uren, opslag, API-tegoed, bandbreedte. Twee hulpmiddelen, record_delivery en get_delivery_history, via stdio (npx capacity-attest).",
+        href: "https://www.npmjs.com/package/capacity-attest",
+      },
+      {
+        name: "io.github.holistis/agent-receipt-verify",
+        text: "Controleert of een x402-eindpunt klopt voordat een agent betaalt, en koppelt de kwitantie aan de betaling.",
+        href: "https://www.npmjs.com/package/agent-receipt-verify",
+      },
+    ],
+    npm: "Op npm",
+    notLabel: "Wat deze hulpmiddelen niet zijn",
+    notText:
+      "Geen score, geen oordeel, geen ranglijst en geen eigen token. Een uitkomst is bewijs over het ene ding dat ze noemt. Ze zegt nooit dat een agent, een verkoper of een repository veilig is.",
+    findLabel: "Waar een agent dit vindt",
+    findText: "In llms.txt, in sitemap.xml en in het officiële MCP-register. Een ander vindbestand is er nog niet.",
+  },
+};
+
+export function AgentsPage() {
+  const loc = useLang();
+  const c = AGENTS[loc];
+  return (
+    <OfferFrame image="gereedschap" chip={c.chip} title={c.title} lead={c.lead} metaTitle={c.metaTitle} metaDescription={c.metaDescription}>
+      <Block label={c.freeLabel}>
+        <p>{c.freeText1}</p>
+        <p>{c.freeText2}</p>
+        <pre className="overflow-x-auto rounded border border-white/10 bg-black/30 p-4 font-mono text-xs leading-relaxed text-white">{AGENT_CALL}</pre>
+        <p>{c.freeText3}</p>
+      </Block>
+      <Block label={c.paidLabel}>
+        <p>{c.paidText}</p>
+      </Block>
+      <Block label={c.scanLabel}>
+        <p>{c.scanText}</p>
+        <p>
+          <a href={localePath(loc, "/scan")} className="font-mono text-xs uppercase tracking-wide text-[color:var(--glow)] underline-offset-2 hover:underline">
+            {c.scanLink}
+          </a>
+        </p>
+      </Block>
+      <Block label={c.installLabel}>
+        <p>{c.installIntro}</p>
+        <ul className="space-y-4">
+          {c.installs.map((tool) => (
+            <li key={tool.name}>
+              <h3 className="font-mono text-sm text-white">{tool.name}</h3>
+              <p className="mt-1 text-sm leading-relaxed text-[color:var(--soft)]">{tool.text}</p>
+              <p className="mt-2">
+                <LinkOut href={tool.href}>{c.npm}</LinkOut>
+              </p>
+            </li>
+          ))}
+        </ul>
+      </Block>
+      <Block label={c.notLabel}>
+        <p>{c.notText}</p>
+      </Block>
+      <Block label={c.findLabel}>
+        <p>{c.findText}</p>
+      </Block>
+    </OfferFrame>
+  );
+}
+
 const TOOLS = {
   en: {
     chip: "open source",
@@ -418,6 +560,8 @@ const TOOLS = {
     label: "The tools",
     npm: "On npm",
     code: "The code on GitHub",
+    agentsLabel: "Calling them from an agent",
+    agentsLink: "The tools an AI agent can call",
     notLabel: "What they are not",
     notText: "No score, no verdict and no token of our own.",
     // The descriptions follow the package descriptions on npm (read 28 October 2026). The licences differ per tool, so none is promised here.
@@ -453,6 +597,8 @@ const TOOLS = {
     label: "Het gereedschap",
     npm: "Op npm",
     code: "De code op GitHub",
+    agentsLabel: "Aanroepen vanuit een agent",
+    agentsLink: "Het gereedschap dat een AI-agent kan aanroepen",
     notLabel: "Waar het ophoudt",
     notText: "Geen score, geen oordeel en geen eigen token.",
     tools: [
@@ -500,6 +646,13 @@ export function ToolsPage() {
           </ul>
           <p>
             <LinkOut href={GITHUB_URL}>{c.code}</LinkOut>
+          </p>
+        </Block>
+        <Block label={c.agentsLabel}>
+          <p>
+            <a href={localePath(loc, "/agents")} className="font-mono text-xs uppercase tracking-wide text-[color:var(--glow)] underline-offset-2 hover:underline">
+              {c.agentsLink}
+            </a>
           </p>
         </Block>
         <Block label={c.notLabel}>

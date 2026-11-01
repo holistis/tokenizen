@@ -209,6 +209,22 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/tools" />
   </url>
   <url>
+    <loc>https://tokenizen.nl/agents</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/agents" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/agents" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/agents" />
+  </url>
+  <url>
+    <loc>https://tokenizen.nl/nl/agents</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://tokenizen.nl/agents" />
+    <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/agents" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/agents" />
+  </url>
+  <url>
     <loc>https://tokenizen.nl/consultancy</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
