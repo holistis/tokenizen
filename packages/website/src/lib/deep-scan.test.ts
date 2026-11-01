@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { getQuote, getReport, getStatus, isStripeUrl, startCheckout } from "@/lib/deep-scan-api";
-import { euros, forgetToken, keepPolling, normaliseRepo, privateLink, readToken, saveToken, TERMS_VERSION, TOKEN_KEY } from "@/lib/deep-scan-logic";
+import { euros, forgetToken, keepPolling, MAX_SAVED, normaliseRepo, orderConfirmation, privateLink, readToken, savedOrders, saveToken, TERMS_VERSION, TOKEN_KEY } from "@/lib/deep-scan-logic";
 
 const TOKEN = "A".repeat(43);
 const memory = () => {
@@ -33,28 +33,67 @@ describe("euros", () => {
 });
 
 describe("the private key of a report", () => {
-  it("comes from the address first, then from storage, and only in the right form", () => {
+  it("comes from the address first, then from the newest saved key, and only in the right form", () => {
     const s = memory();
-    saveToken(s, TOKEN);
-    expect(s.m.get(TOKEN_KEY)).toBe(TOKEN);
+    saveToken(s, TOKEN, "2026-11-01T10:00:00.000Z");
     expect(readToken(`#${"B".repeat(43)}`, s)).toBe("B".repeat(43));
     expect(readToken("", s)).toBe(TOKEN);
     expect(readToken("#kort", s)).toBe(TOKEN);
     s.setItem(TOKEN_KEY, "../../x");
     expect(readToken("", s)).toBeNull();
+    s.setItem(TOKEN_KEY, JSON.stringify([{ token: "../../x", at: "z" }, { token: 5, at: "z" }, null]));
+    expect(readToken("", s)).toBeNull();
     expect(readToken("", null)).toBeNull();
+  });
+  it("keeps a list: a second order does not push out the first, the newest is read, the same key is not saved twice, and the list stops at ten", () => {
+    const s = memory();
+    const keys = Array.from({ length: MAX_SAVED + 3 }, (_, i) => String.fromCharCode(65 + i).repeat(43));
+    keys.slice(0, 2).forEach((k, i) => saveToken(s, k, `2026-11-01T10:0${i}:00.000Z`));
+    expect(savedOrders(s).map((o) => o.token)).toEqual([keys[1], keys[0]]);
+    expect(readToken("", s)).toBe(keys[1]);
+    saveToken(s, keys[0], "2026-11-01T11:00:00.000Z");
+    expect(savedOrders(s).map((o) => o.token)).toEqual([keys[0], keys[1]]);
+    keys.slice(2).forEach((k) => saveToken(s, k));
+    expect(savedOrders(s)).toHaveLength(MAX_SAVED);
+    expect(savedOrders(s)[0].token).toBe(keys[keys.length - 1]);
+  });
+  it("forgets one key or all of them", () => {
+    const s = memory();
+    saveToken(s, TOKEN); saveToken(s, "B".repeat(43));
+    forgetToken(s, "B".repeat(43));
+    expect(savedOrders(s).map((o) => o.token)).toEqual([TOKEN]);
+    forgetToken(s, TOKEN);
+    expect(s.m.has(TOKEN_KEY)).toBe(false);
+    saveToken(s, TOKEN); saveToken(s, "B".repeat(43));
+    forgetToken(s);
+    expect(savedOrders(s)).toEqual([]);
   });
   it("survives storage that is not available, and refuses a key of the wrong form", () => {
     expect(readToken("", throwing)).toBeNull();
     expect(saveToken(throwing, TOKEN)).toBe(false);
     expect(() => forgetToken(throwing)).not.toThrow();
     expect(saveToken(memory(), "nope")).toBe(false);
-    const s = memory(); saveToken(s, TOKEN); forgetToken(s);
-    expect(readToken("", s)).toBeNull();
+    expect(saveToken(null, TOKEN)).toBe(false);
   });
   it("puts the key after the # in the private link, in the language of the reader", () => {
     expect(privateLink("https://tokenizen.nl", "en", TOKEN)).toBe(`https://tokenizen.nl/scan/status#${TOKEN}`);
     expect(privateLink("https://tokenizen.nl", "nl", TOKEN)).toBe(`https://tokenizen.nl/nl/scan/status#${TOKEN}`);
+  });
+});
+
+describe("the order confirmation", () => {
+  const base = { repo: "owner/name", lines: 3792, priceCents: 7584, paidAt: "2026-11-01T12:30:00.000Z", agreedAt: "2026-11-01T12:29:10.000Z", termsVersion: "2026-11-01", consent: "I agree.", locale: "en" as const };
+  it("names what was bought, the price, both times, the version of the terms and the sentence agreed to", () => {
+    const t = orderConfirmation(base);
+    for (const x of ["owner/name", "3792", "€75.84", "2026-11-01T12:30:00.000Z", "2026-11-01T12:29:10.000Z", "Version of the terms: 2026-11-01", "I agree."]) expect(t, x).toContain(x);
+    expect(t).not.toMatch(/[–—]/);
+  });
+  it("is in the reader's language and says so when a time is missing or wrong", () => {
+    const t = orderConfirmation({ ...base, locale: "nl", paidAt: null, agreedAt: "geen datum", termsVersion: null });
+    expect(t).toContain("Betaald op (UTC): onbekend");
+    expect(t).toContain("Akkoord gegeven op (UTC): onbekend");
+    expect(t).toContain("Versie van de voorwaarden: onbekend");
+    expect(t.replace(/\s/g, " ")).toContain("€ 75,84");
   });
 });
 
@@ -84,7 +123,7 @@ describe("the calls to the scan service", () => {
     const calls: Array<{ url: string; init: RequestInit }> = [];
     await getStatus(TOKEN, fakeFetch(200, { ok: true }, calls));
     await getReport(TOKEN, fakeFetch(200, { ok: true }, calls));
-    await startCheckout(TOKEN, TERMS_VERSION, fakeFetch(200, { ok: true, url: "x" }, calls));
+    await startCheckout(TOKEN, TERMS_VERSION, "nl", fakeFetch(200, { ok: true, url: "x" }, calls));
     await getQuote("owner/name", fakeFetch(200, { ok: true }, calls));
     expect(calls.map((c) => c.url.replace(/^https?:\/\/[^/]+/, ""))).toEqual(["/v1/status", "/v1/report", "/v1/checkout", "/v1/quote"]);
     for (const c of calls) {
@@ -92,7 +131,7 @@ describe("the calls to the scan service", () => {
       expect(c.url).not.toContain(TOKEN);
       expect(JSON.parse(String(c.init.body))).toBeTypeOf("object");
     }
-    expect(JSON.parse(String(calls[2].init.body))).toEqual({ token: TOKEN, akkoord: true, voorwaardenVersie: TERMS_VERSION });
+    expect(JSON.parse(String(calls[2].init.body))).toEqual({ token: TOKEN, akkoord: true, voorwaardenVersie: TERMS_VERSION, taal: "nl" });
   });
   it("turns a refusal, a broken answer and a lost connection into a failure with a status", async () => {
     expect(await getQuote("a/b", fakeFetch(422, { ok: false, fout: "repository niet gevonden of niet openbaar" }))).toEqual({ ok: false, status: 422, error: "repository niet gevonden of niet openbaar" });

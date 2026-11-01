@@ -29,9 +29,13 @@ describe("the deep scan page", () => {
   for (const locale of ["en", "nl"] as const) {
     it(`states the price rule, the refund rule and what the scan is not, in ${locale}`, () => {
       const t = text(locale, <DeepScanPage />);
-      expect(t).toContain(locale === "nl" ? "0,02 euro per regel, minimum 2 euro" : "0.02 euro per line, minimum 2 euro");
+      expect(t).toContain(locale === "nl" ? "0,02 euro per regel Solidity in scope, minimum 2 euro, maximum 12.000 regels" : "0.02 euro per line of Solidity in scope, minimum 2 euro, maximum 12,000 lines");
       expect(t).toContain(locale === "nl" ? "volledig terug" : "in full");
       expect(t).toMatch(locale === "nl" ? /niet is: een audit/ : /not: an audit/);
+      expect(t).toMatch(locale === "nl" ? /nog niet op een openbare maatstaf gemeten/ : /not yet measured this deep scan on a public benchmark/);
+      expect(t).toMatch(locale === "nl" ? /6 uur/ : /6 hours/);
+      expect(t).toMatch(locale === "nl" ? /geen hypothese/ : /no hypotheses/);
+      expect(t).toMatch(locale === "nl" ? /minder dan de helft/ : /fewer than half/);
       expect(t).not.toMatch(/[–—]/);
       expect(t).not.toContain("**");
       expect(t).not.toMatch(/guarantee|garantie|gegarandeerd/i);
@@ -49,6 +53,25 @@ describe("the deep scan page", () => {
       expect(t).toMatch(locale === "nl" ? /minimum van 2 euro/ : /minimum of 2 euro/);
     });
   }
+  for (const locale of ["en", "nl"] as const) {
+    it(`has the refund rule of the page in the terms too, with the same limits, in ${locale}`, () => {
+      const tt = locale === "nl" ? termsNl : terms;
+      expect(tt).toMatch(locale === "nl" ? /6 uur/ : /6 hours/);
+      expect(tt).toMatch(locale === "nl" ? /minder dan de helft/ : /fewer than half/);
+      expect(tt).toMatch(locale === "nl" ? /12\.000 regels/ : /12,000 lines/);
+      expect(tt).toContain("info@tokenizen.nl");
+      expect(tt).not.toMatch(/[–—]/);
+    });
+  }
+  it("every site address in the terms points to a page that exists, and a Dutch text links to the Dutch page", () => {
+    const known = new Set(["privacy", "terms", "scoreboard", "deep-scan", "deep-scan-terms", "notes", "signal-log", "cra-check"]);
+    for (const [name, text, lang] of [["en", terms, "en"], ["nl", termsNl, "nl"]] as const) {
+      for (const m of text.matchAll(/tokenizen\.nl\/([a-z]{2})\/([a-z-]+)/g)) {
+        expect(m[1], `${name}: ${m[0]}`).toBe(lang);
+        expect(known.has(m[2]), `${name}: ${m[0]}`).toBe(true);
+      }
+    }
+  });
   it("the terms version of the page is the date of the terms files", () => {
     expect(TERMS_VERSION).toBe("2026-11-01");
     expect(terms).toContain("Last changed: 1 November 2026.");

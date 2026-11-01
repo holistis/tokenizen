@@ -126,6 +126,11 @@ describe("linkify", () => {
     const words = parts.map((p) => (isValidElement(p) ? (p as ReactElement<LinkProps>).props.children : p)).join("");
     expect(words).toBe(text);
   });
+  it("links an address under /nl/ as well, so a Dutch text does not send a reader to the English page", () => {
+    const text = "Zie tokenizen.nl/nl/privacy of tokenizen.nl/nl/scoreboard.";
+    const links = linkify(text).filter((p): p is ReactElement<LinkProps> => isValidElement(p));
+    expect(links.map((l) => l.props.href)).toEqual(["https://tokenizen.nl/nl/privacy", "https://tokenizen.nl/nl/scoreboard"]);
+  });
 });
 
 const PAGES = [

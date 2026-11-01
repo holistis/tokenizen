@@ -34,31 +34,50 @@ interface MinimalStorage {
   removeItem(key: string): void;
 }
 
-/** The key of a report: from the address after the # (that part never goes to a server), else from the browser's storage. Storage can be unavailable or empty. */
-export function readToken(hash: string, storage: MinimalStorage | null): string | null {
-  const fromHash = hash.replace(/^#/, "");
-  if (TOKEN_RE.test(fromHash)) return fromHash;
+export const MAX_SAVED = 10;
+export interface SavedOrder { token: string; at: string }
+
+/** The keys this browser saved at checkout, newest first. Storage can be unavailable, empty or hold something else: then the list is empty. */
+export function savedOrders(storage: MinimalStorage | null): SavedOrder[] {
   try {
-    const stored = storage?.getItem(TOKEN_KEY) ?? null;
-    return stored !== null && TOKEN_RE.test(stored) ? stored : null;
+    const raw = storage?.getItem(TOKEN_KEY) ?? null;
+    if (raw === null) return [];
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter((x): x is SavedOrder => Boolean(x) && typeof x === "object" && TOKEN_RE.test(String((x as SavedOrder).token)) && typeof (x as SavedOrder).at === "string")
+      .map((x) => ({ token: x.token, at: x.at.slice(0, 40) }))
+      .slice(0, MAX_SAVED);
   } catch {
-    return null;
+    return [];
   }
 }
 
-export function saveToken(storage: MinimalStorage | null, token: string): boolean {
-  if (!TOKEN_RE.test(token)) return false;
+/** The key of a report: from the address after the # (that part never goes to a server), else the newest saved one. */
+export function readToken(hash: string, storage: MinimalStorage | null): string | null {
+  const fromHash = hash.replace(/^#/, "");
+  if (TOKEN_RE.test(fromHash)) return fromHash;
+  return savedOrders(storage)[0]?.token ?? null;
+}
+
+/** Called when the reader goes to the payment page, not when a price is shown: a price nobody paid for leaves nothing behind. Keeps the newest ten. */
+export function saveToken(storage: MinimalStorage | null, token: string, at: string = new Date().toISOString()): boolean {
+  if (!TOKEN_RE.test(token) || storage === null) return false;
   try {
-    storage?.setItem(TOKEN_KEY, token);
-    return storage !== null;
+    const rest = savedOrders(storage).filter((o) => o.token !== token);
+    storage.setItem(TOKEN_KEY, JSON.stringify([{ token, at }, ...rest].slice(0, MAX_SAVED)));
+    return true;
   } catch {
     return false;
   }
 }
 
-export function forgetToken(storage: MinimalStorage | null): void {
+export function forgetToken(storage: MinimalStorage | null, token?: string): void {
   try {
-    storage?.removeItem(TOKEN_KEY);
+    if (token === undefined) return storage?.removeItem(TOKEN_KEY);
+    const rest = savedOrders(storage).filter((o) => o.token !== token);
+    if (rest.length === 0) storage?.removeItem(TOKEN_KEY);
+    else storage?.setItem(TOKEN_KEY, JSON.stringify(rest));
   } catch {
     /* nothing to forget */
   }
@@ -71,6 +90,32 @@ export function privateLink(origin: string, locale: Locale, token: string): stri
 
 export type OrderState = "OFFERTE" | "WACHT_OP_BETALING" | "BETAALD" | "BEZIG" | "KLAAR" | "MISLUKT" | "AFWIJKEND" | "VERLOPEN";
 export const FINAL_STATES: readonly OrderState[] = ["KLAAR", "MISLUKT", "AFWIJKEND", "VERLOPEN"];
+
+export interface ConfirmationInput {
+  repo: string; lines: number; priceCents: number; paidAt: string | null; agreedAt: string | null; termsVersion: string | null; consent: string; locale: Locale;
+}
+
+/** The order confirmation a customer can keep: what was bought, for how much, when they agreed and to which sentence. Plain text, no markup. */
+export function orderConfirmation(i: ConfirmationInput): string {
+  const nl = i.locale === "nl";
+  const when = (iso: string | null) => (iso && !Number.isNaN(Date.parse(iso)) ? new Date(iso).toISOString() : nl ? "onbekend" : "unknown");
+  return [
+    nl ? "Bevestiging van je bestelling: diepe scan, tokenizen.nl" : "Confirmation of your order: deep scan, tokenizen.nl",
+    "",
+    `${nl ? "Repository" : "Repository"}: ${i.repo}`,
+    `${nl ? "Regels Solidity in scope" : "Lines of Solidity in scope"}: ${i.lines}`,
+    `${nl ? "Prijs (inclusief btw)" : "Price (VAT included)"}: ${euros(i.priceCents, i.locale)}`,
+    `${nl ? "Betaald op (UTC)" : "Paid at (UTC)"}: ${when(i.paidAt)}`,
+    `${nl ? "Akkoord gegeven op (UTC)" : "Agreement given at (UTC)"}: ${when(i.agreedAt)}`,
+    `${nl ? "Versie van de voorwaarden" : "Version of the terms"}: ${i.termsVersion ?? (nl ? "onbekend" : "unknown")}`,
+    "",
+    nl ? "De zin waarmee je akkoord ging:" : "The sentence you agreed to:",
+    i.consent,
+    "",
+    nl ? "Vragen: info@tokenizen.nl" : "Questions: info@tokenizen.nl",
+    "",
+  ].join("\n");
+}
 
 /** Polling stops when the order is in a state that does not change by itself (a refund still being made keeps it going). */
 export function keepPolling(state: OrderState, refund: boolean, refunded: boolean): boolean {

@@ -8,7 +8,7 @@ import {
   getQuote, getReport, getStatus, isStripeUrl, startCheckout, type ApiFailure, type Hypothesis, type OrderStatus, type Quote, type Report,
 } from "@/lib/deep-scan-api";
 import {
-  euros, forgetToken, keepPolling, normaliseRepo, privateLink, readToken, saveToken, TERMS_VERSION, type OrderState,
+  euros, forgetToken, keepPolling, normaliseRepo, orderConfirmation, privateLink, readToken, savedOrders, saveToken, TERMS_VERSION, type OrderState, type SavedOrder,
 } from "@/lib/deep-scan-logic";
 import { localePath } from "@/lib/locale-paths";
 
@@ -57,6 +57,8 @@ export interface Copy {
   labels: { where: string; abuse: string; impact: string; fix: string; confidence: string };
   reportNote: string;
   download: string;
+  confirmation: string;
+  savedTitle: string;
   forget: string;
 }
 
@@ -64,15 +66,17 @@ export const COPY: Record<Locale, Copy> = {
   en: {
     title: "Deep scan of a smart contract repository | tokenizen",
     description:
-      "Name a public GitHub repository, see the price before you pay, and get hypotheses about its Solidity code to check by hand. 0.02 euro per line, minimum 2 euro, a full refund if the scan fails or finds nothing.",
+      "Name a public GitHub repository, see the price before you pay, and get hypotheses about its Solidity code to check by hand. 0.02 euro per line, minimum 2 euro, a full refund if the scan fails, finds nothing or does not read your code.",
     chip: "deep scan",
     heading: "Hypotheses about your Solidity code, with the price shown first.",
     lead:
       "Name a public GitHub repository. We count the lines of Solidity the scan will read and show the price before you pay. After your payment an AI reader goes through the code, and you get a list of hypotheses to check by hand.",
-    priceRule: "0.02 euro per line, minimum 2 euro, VAT included. Tests, mocks, scripts, interfaces and bundled libraries are not counted.",
-    refundRule: "If the scan fails, or finishes and finds nothing it can defend with a code path, you get your money back in full.",
+    priceRule:
+      "0.02 euro per line of Solidity in scope, minimum 2 euro, maximum 12,000 lines, VAT included. Tests, mocks, scripts, interfaces and bundled libraries are not counted. The scan reads the code as it is when it starts, and a smaller repository does not lower the price.",
+    refundRule:
+      "You get your money back in full if the scan fails, if the report has no hypotheses, if part of the scan failed or it read fewer than half of the contract files, or if it has not started within 6 hours of your payment.",
     honest:
-      "What this is not: an audit, a certificate or a promise that nothing else is wrong. The scan misses real problems and names some that are not real. What it finds and misses on a public benchmark is on the scoreboard, with the judge named next to every number.",
+      "What this is not: an audit, a certificate or a promise that nothing else is wrong. The scan misses real problems and names some that are not real. We have not yet measured this deep scan on a public benchmark. How our earlier scans did is on the scoreboard, with the judge named next to every number.",
     scoreboard: "The scoreboard",
     formTitle: "Your repository",
     fieldLabel: "Repository",
@@ -101,7 +105,7 @@ export const COPY: Record<Locale, Copy> = {
     paying: "Taking you to the payment page",
     linkTitle: "Keep your private link",
     linkText:
-      "Your report can only be opened with this link, and anyone who has it can read the report. We saved it in this browser. Copy it somewhere you will find it again.",
+      "Your report can only be opened with this link, and anyone who has it can read the report. We save it in this browser when you go to the payment page. Copy it somewhere you will find it again.",
     copy: "Copy the link",
     copied: "Copied",
     statusTitle: "Your deep scan",
@@ -123,7 +127,7 @@ export const COPY: Record<Locale, Copy> = {
     checking: "Checking where your scan is",
     reportTitle: "Report",
     reportMeta: (lines, read, total) => `${lines.toLocaleString("en-IE")} lines of Solidity in scope. ${read} of ${total} contract files read.`,
-    partial: "Part of the code could not be read completely.",
+    partial: "Part of the scan failed, so your payment is refunded in full and you keep this report.",
     unread: "Not read:",
     nothingFound:
       "Nothing turned up that the scan could defend with a code path. That does not mean nothing is wrong. Your payment is refunded in full.",
@@ -131,25 +135,29 @@ export const COPY: Record<Locale, Copy> = {
     labels: { where: "Where", abuse: "How it could be abused", impact: "Impact", fix: "Suggested fix", confidence: "Confidence of the reader" },
     reportNote: "These are hypotheses from an AI reader, to be checked by hand. This is not an audit and not a guarantee that nothing else is wrong.",
     download: "Download as JSON",
-    forget: "Remove the saved key from this browser",
+    confirmation: "Download your order confirmation",
+    savedTitle: "Other reports saved in this browser",
+    forget: "Remove the saved keys from this browser",
   },
   nl: {
     title: "Diepe scan van een smart-contractrepository | tokenizen",
     description:
-      "Geef een openbare GitHub-repository op, zie de prijs voor je betaalt en krijg hypotheses over de Solidity-code om met de hand na te lopen. 0,02 euro per regel, minimum 2 euro, volledige terugbetaling als de scan mislukt of niets vindt.",
+      "Geef een openbare GitHub-repository op, zie de prijs voor je betaalt en krijg hypotheses over de Solidity-code om met de hand na te lopen. 0,02 euro per regel, minimum 2 euro, volledige terugbetaling als de scan mislukt, niets vindt of je code niet leest.",
     chip: "diepe scan",
     heading: "Hypotheses over je Solidity-code, met eerst de prijs.",
     lead:
       "Geef een openbare GitHub-repository op. We tellen de regels Solidity die de scan leest en tonen de prijs voor je betaalt. Na je betaling loopt een AI-lezer door de code en krijg je een lijst hypotheses om met de hand na te lopen.",
-    priceRule: "0,02 euro per regel, minimum 2 euro, inclusief btw. Tests, mocks, scripts, interfaces en meegeleverde bibliotheken tellen niet mee.",
-    refundRule: "Mislukt de scan, of is hij klaar en vindt hij niets wat hij met een codepad kan verdedigen, dan krijg je je geld volledig terug.",
+    priceRule:
+      "0,02 euro per regel Solidity in scope, minimum 2 euro, maximum 12.000 regels, inclusief btw. Tests, mocks, scripts, interfaces en meegeleverde bibliotheken tellen niet mee. De scan leest de code zoals hij is als hij start, en een kleinere repository verlaagt de prijs niet.",
+    refundRule:
+      "Je krijgt je geld volledig terug als de scan mislukt, als het rapport geen hypothese bevat, als een deel van de scan mislukte of hij minder dan de helft van de contractbestanden las, of als hij niet binnen 6 uur na je betaling is gestart.",
     honest:
-      "Wat dit niet is: een audit, een certificaat of een belofte dat er verder niets mis is. De scan mist echte problemen en noemt er een paar die niet echt zijn. Wat hij op een openbare maatstaf vindt en mist staat op het scorebord, met de rechter erbij bij elk getal.",
+      "Wat dit niet is: een audit, een certificaat of een belofte dat er verder niets mis is. De scan mist echte problemen en noemt er een paar die niet echt zijn. We hebben deze diepe scan nog niet op een openbare maatstaf gemeten. Hoe onze eerdere scans het deden staat op het scorebord, met de rechter erbij bij elk getal.",
     scoreboard: "Het scorebord",
     formTitle: "Jouw repository",
     fieldLabel: "Repository",
     placeholder: "owner/name",
-    hint: "Een openbare repository op github.com, als owner/name of met het adres ervan. Privé-repositories kunnen niet worden gescand.",
+    hint: "Een openbare repository op github.com, als owner/name of met het adres ervan. Privérepository's kunnen niet worden gescand.",
     quoteButton: "Toon de prijs",
     busy: "Regels tellen, dit kan een minuut duren",
     errors: {
@@ -173,7 +181,7 @@ export const COPY: Record<Locale, Copy> = {
     paying: "We brengen je naar de betaalpagina",
     linkTitle: "Bewaar je privélink",
     linkText:
-      "Je rapport is alleen te openen met deze link, en wie hem heeft kan het rapport lezen. We hebben hem in deze browser bewaard. Kopieer hem naar een plek waar je hem terugvindt.",
+      "Je rapport is alleen te openen met deze link, en wie hem heeft kan het rapport lezen. We bewaren hem in deze browser zodra je naar de betaalpagina gaat. Kopieer hem naar een plek waar je hem terugvindt.",
     copy: "Kopieer de link",
     copied: "Gekopieerd",
     statusTitle: "Jouw diepe scan",
@@ -195,7 +203,7 @@ export const COPY: Record<Locale, Copy> = {
     checking: "We kijken hoe het met je scan staat",
     reportTitle: "Rapport",
     reportMeta: (lines, read, total) => `${lines.toLocaleString("nl-NL")} regels Solidity in scope. ${read} van ${total} contractbestanden gelezen.`,
-    partial: "Een deel van de code kon niet volledig worden gelezen.",
+    partial: "Een deel van de scan mislukte, dus je betaling wordt volledig terugbetaald en je houdt dit rapport.",
     unread: "Niet gelezen:",
     nothingFound:
       "Er kwam niets boven wat de scan met een codepad kon verdedigen. Dat betekent niet dat er niets mis is. Je betaling wordt volledig terugbetaald.",
@@ -203,7 +211,9 @@ export const COPY: Record<Locale, Copy> = {
     labels: { where: "Waar", abuse: "Hoe het misbruikt kan worden", impact: "Gevolg", fix: "Voorgestelde oplossing", confidence: "Zekerheid van de lezer" },
     reportNote: "Dit zijn hypotheses van een AI-lezer, om met de hand na te lopen. Dit is geen audit en geen garantie dat er verder niets mis is.",
     download: "Download als JSON",
-    forget: "Haal de bewaarde sleutel uit deze browser",
+    confirmation: "Download je bestelbevestiging",
+    savedTitle: "Andere rapporten bewaard in deze browser",
+    forget: "Haal de bewaarde sleutels uit deze browser",
   },
 };
 
@@ -263,7 +273,6 @@ export function DeepScanPage() {
     setAgreed(false);
     const r = await getQuote(name);
     if (!r.ok) { setPhase("idle"); setQuote(null); return setError(failureText(r, c)); }
-    saveToken(storage(), r.token);
     setQuote(r);
     setPhase("quoted");
   }
@@ -272,9 +281,10 @@ export function DeepScanPage() {
     if (!quote || !agreed) return;
     setError(null);
     setPhase("paying");
-    const r = await startCheckout(quote.token, TERMS_VERSION);
+    const r = await startCheckout(quote.token, TERMS_VERSION, locale);
     if (!r.ok) { setPhase("quoted"); return setError(failureText(r, c)); }
     if (!isStripeUrl(r.url)) { setPhase("quoted"); return setError(c.errors.generic); }
+    saveToken(storage(), quote.token);
     window.location.assign(r.url);
   }
 
@@ -400,6 +410,7 @@ export function DeepScanStatusPage() {
   const [status, setStatus] = useState<OrderStatus | null>(null);
   const [report, setReport] = useState<Report | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
+  const [saved, setSaved] = useState<SavedOrder[]>([]);
   const stopped = useRef(false);
 
   useEffect(() => {
@@ -411,7 +422,7 @@ export function DeepScanStatusPage() {
   }, [c.statusTitle]);
 
   useEffect(() => {
-    const lees = () => { setStatus(null); setReport(null); setFailed(null); setToken(readToken(window.location.hash, storage())); };
+    const lees = () => { setStatus(null); setReport(null); setFailed(null); setSaved(savedOrders(storage())); setToken(readToken(window.location.hash, storage())); };
     lees();
     window.addEventListener("hashchange", lees);
     return () => window.removeEventListener("hashchange", lees);
@@ -452,15 +463,41 @@ export function DeepScanStatusPage() {
     URL.revokeObjectURL(url);
   }
 
+  function downloadConfirmation() {
+    if (!status) return;
+    const text = orderConfirmation({
+      repo: status.repo, lines: status.regels, priceCents: status.prijsCenten, paidAt: status.betaaldOp ?? null, agreedAt: status.akkoordOp ?? null,
+      termsVersion: status.akkoordVersie ?? null, consent: c.consent, locale,
+    });
+    const url = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
+    const a = document.createElement("a");
+    a.href = url; a.download = `tokenizen-deep-scan-order-${status.repo.replace("/", "-")}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  const others = saved.filter((o) => o.token !== token);
+
   return (
     <CinemaPage image="lens" chip={c.statusChip} title={c.statusTitle} lead={c.statusLead}>
       <div className="max-w-3xl space-y-6">
         {token === null ? <p>{c.noKey}</p> : token === undefined ? null : <StatusView status={status} report={report} c={c} />}
         {failed !== null && token ? <p role="alert" className="flex items-start gap-2 text-sm"><AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />{failed}</p> : null}
-        {report ? (
+        {report || (status?.betaald && status.akkoordOp) || saved.length > 0 ? (
           <div className="flex flex-wrap gap-3">
-            <Button type="button" variant="outline" onClick={download}>{c.download}</Button>
-            <Button type="button" variant="outline" onClick={() => { forgetToken(storage()); }}>{c.forget}</Button>
+            {report ? <Button type="button" variant="outline" onClick={download}>{c.download}</Button> : null}
+            {status?.betaald && status.akkoordOp ? <Button type="button" variant="outline" onClick={downloadConfirmation}>{c.confirmation}</Button> : null}
+            {saved.length > 0 ? <Button type="button" variant="outline" onClick={() => { forgetToken(storage()); setSaved([]); }}>{c.forget}</Button> : null}
+          </div>
+        ) : null}
+        {others.length > 0 ? (
+          <div className="space-y-1 text-sm">
+            <h3 className="font-semibold">{c.savedTitle}</h3>
+            <ul className="list-disc pl-5">
+              {others.map((o) => (
+                <li key={o.token}><a className="underline underline-offset-2 hover:text-primary" href={privateLink(window.location.origin, locale, o.token)}>{o.at.slice(0, 16).replace("T", " ")}</a></li>
+              ))}
+            </ul>
           </div>
         ) : null}
         <ConsentLinks c={c} locale={locale} />

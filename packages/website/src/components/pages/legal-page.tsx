@@ -54,7 +54,7 @@ export function parseLegalText(raw: string): LegalBlock[] {
   return blocks;
 }
 
-const LINKABLE = /(tokenizen\.nl\/en\/[a-z-]+|info@tokenizen\.nl)/g;
+const LINKABLE = /(tokenizen\.nl\/(?:en|nl)\/[a-z-]+|info@tokenizen\.nl)/g;
 
 export function linkify(text: string): ReactNode[] {
   return text.split(LINKABLE).map((part, i) => {

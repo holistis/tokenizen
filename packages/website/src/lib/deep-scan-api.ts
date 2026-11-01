@@ -33,6 +33,9 @@ export interface OrderStatus {
   terugbetaling: boolean;
   terugbetaald: boolean;
   rapportKlaar: boolean;
+  betaaldOp?: string | null;
+  akkoordOp?: string | null;
+  akkoordVersie?: string | null;
 }
 
 export interface Hypothesis {
@@ -90,8 +93,8 @@ async function post<T>(path: string, body: unknown, fetchFn: Fetch, timeoutMs: n
 export const getQuote = (repo: string, fetchFn: Fetch = fetch) => post<Quote>("/v1/quote", { repo }, fetchFn, 150_000);
 
 /** Starts the payment. On success the browser goes to the payment page of Stripe. */
-export const startCheckout = (token: string, termsVersion: string, fetchFn: Fetch = fetch) =>
-  post<{ ok: true; url: string }>("/v1/checkout", { token, akkoord: true, voorwaardenVersie: termsVersion }, fetchFn, 30_000);
+export const startCheckout = (token: string, termsVersion: string, taal: "en" | "nl", fetchFn: Fetch = fetch) =>
+  post<{ ok: true; url: string }>("/v1/checkout", { token, akkoord: true, voorwaardenVersie: termsVersion, taal }, fetchFn, 30_000);
 
 export const getStatus = (token: string, fetchFn: Fetch = fetch) => post<OrderStatus>("/v1/status", { token }, fetchFn, 20_000);
 
