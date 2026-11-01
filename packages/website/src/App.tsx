@@ -2,7 +2,7 @@ import { ThemeProvider } from "@/hooks/use-theme";
 import { usePageHead } from "@/i18n/context";
 import { Header } from "@/components/header";
 import { HomePage } from "@/components/home/home-page";
-import { AboutPage, ChecksPage, ConsultancyPage, ScanPage, SecurityPage, ToolsPage } from "@/components/pages/offer-pages";
+import { AboutPage, AgentsPage, ChecksPage, ConsultancyPage, ScanPage, SecurityPage, ToolsPage } from "@/components/pages/offer-pages";
 import { Footer } from "@/components/footer";
 import { NineWaysArticle } from "@/components/pages/nine-ways-article";
 import { HierarchyOfAgentTrustArticle } from "@/components/pages/hierarchy-of-agent-trust-article";
@@ -43,6 +43,7 @@ const ARTICLES: Record<string, () => JSX.Element> = {
   "/security": SecurityPage,
   "/scan": ScanPage,
   "/tools": ToolsPage,
+  "/agents": AgentsPage,
   "/consultancy": ConsultancyPage,
   "/about": AboutPage,
 };

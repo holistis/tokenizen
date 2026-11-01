@@ -9,10 +9,11 @@
 - [Security research](https://tokenizen.nl/security): on request; a published GitHub advisory with severity High and our account credited as reporter, our own record including what was rejected, and how we plan to show the rest; no fixed offer yet
 - [Smart contract scan](https://tokenizen.nl/scan): pay per scan over x402, with a public scoreboard that includes what it missed (version 3.1 found 8 of 105 known findings in its first 15 hypotheses, on contests that were no longer secret; in the sealed run the earlier versions found 1 and 4)
 - [Open-source tools](https://tokenizen.nl/tools): capacity-attest, agent-receipt-verify, x402-lint and muraqib-agent-watch
+- [For AI agents](https://tokenizen.nl/agents): the two MCP endpoints you can call today (a free read-only check of eight security signals in a public GitHub repository, and a paid ownership check at 0.001 dollar per call over x402), one example call, and the two packages in the official MCP registry
 - [Talk to Ahmed](https://tokenizen.nl/consultancy): a conversation about security, the EU Cyber Resilience Act or payments between agents
 - [Two brothers, one company](https://tokenizen.nl/about): Abdellah Ouadoudi does the technical work and the measuring, Ahmed Ouadoudi does the consultancy and communication
 
-Site language is Dutch. Source, package documentation and the specification are in a mix of Dutch and English. This file is English so agents can read it without translation.
+The site is in English, and every page also exists in Dutch under /nl. Source, package documentation and the specification are in a mix of Dutch and English. This file is English so agents can read it without translation.
 
 ## What Capacity Attest does
 

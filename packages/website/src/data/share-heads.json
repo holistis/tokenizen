@@ -26,6 +26,32 @@
         }
       ]
     },
+    "/agents": {
+      "lang": "en",
+      "title": "For AI agents | tokenizen",
+      "description": "MCP tools from tokenizen: a free read-only check of eight security signals in a public GitHub repository, a paid ownership check over x402, and open-source packages in the official MCP registry.",
+      "canonical": "https://tokenizen.nl/agents",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/agents",
+      "ogTitle": "For AI agents | tokenizen",
+      "ogDescription": "MCP tools from tokenizen: a free read-only check of eight security signals in a public GitHub repository, a paid ownership check over x402, and open-source packages in the official MCP registry.",
+      "twitterTitle": "For AI agents | tokenizen",
+      "twitterDescription": "MCP tools from tokenizen: a free read-only check of eight security signals in a public GitHub repository, a paid ownership check over x402, and open-source packages in the official MCP registry.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/agents"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/agents"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/agents"
+        }
+      ]
+    },
     "/blog": {
       "lang": "en",
       "title": "Blog | tokenizen",
@@ -205,6 +231,32 @@
         {
           "hreflang": "x-default",
           "href": "https://tokenizen.nl/about"
+        }
+      ]
+    },
+    "/nl/agents": {
+      "lang": "nl",
+      "title": "Voor AI-agenten | tokenizen",
+      "description": "MCP-gereedschap van tokenizen: een gratis, alleen-lezen controle van acht beveiligingssignalen in een openbare GitHub-repository, een betaalde eigenaarscheck via x402 en open-sourcepakketten in het officiele MCP-register.",
+      "canonical": "https://tokenizen.nl/nl/agents",
+      "ogLocale": "nl_NL",
+      "ogUrl": "https://tokenizen.nl/nl/agents",
+      "ogTitle": "Voor AI-agenten | tokenizen",
+      "ogDescription": "MCP-gereedschap van tokenizen: een gratis, alleen-lezen controle van acht beveiligingssignalen in een openbare GitHub-repository, een betaalde eigenaarscheck via x402 en open-sourcepakketten in het officiele MCP-register.",
+      "twitterTitle": "Voor AI-agenten | tokenizen",
+      "twitterDescription": "MCP-gereedschap van tokenizen: een gratis, alleen-lezen controle van acht beveiligingssignalen in een openbare GitHub-repository, een betaalde eigenaarscheck via x402 en open-sourcepakketten in het officiele MCP-register.",
+      "alternates": [
+        {
+          "hreflang": "en",
+          "href": "https://tokenizen.nl/agents"
+        },
+        {
+          "hreflang": "nl",
+          "href": "https://tokenizen.nl/nl/agents"
+        },
+        {
+          "hreflang": "x-default",
+          "href": "https://tokenizen.nl/agents"
         }
       ]
     },
