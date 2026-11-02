@@ -299,76 +299,60 @@ const SCAN = {
   en: {
     chip: "pay per scan",
     title: "Smart contract scan",
-    lead: "Scan a smart contract repository for 1 dollar and get, in a minute or two, the weak spots the model is most sure about, ready to check by hand. Every run and every miss is on a public scoreboard, and every delivered report goes on a dated list you can check yourself. It finds some of what a human audit finds, and we publish how much.",
+    lead: "Scan a smart contract repository and pay by card or iDEAL: 0.02 euro per line of Solidity, minimum 2 euro, and you see the price for your repository before you pay. You get the weak spots the scan found, ready to check by hand. It finds some of what a human audit finds, and we publish how much.",
     metaTitle: "Smart contract scan | tokenizen",
-    metaDescription: "A smart contract scan with a public scoreboard that includes what it missed. Pay per scan over x402.",
-    deepLabel: "Pay by card, price per line",
-    deepText: "Prefer a card or iDEAL to a crypto payment? The deep scan shows the price for your repository before you pay: 0.02 euro per line of Solidity, minimum 2 euro, and a full refund if the scan fails, finds nothing or reads less than half of your code.",
-    deepLink: "The deep scan",
+    metaDescription: "A smart contract scan you pay for by card or iDEAL, with a public scoreboard that includes what it missed.",
+    deepLabel: "Start a scan",
+    deepText: "You get a full refund if the scan fails, finds nothing or reads less than half of your code. Check the price of your repository first.",
+    deepLink: "Go to the deep scan",
     getLabel: "What you get",
-    getText:
-      "A report of AI-generated hypotheses about the Solidity code in a public GitHub repository, to be reviewed by hand. The quick scan costs 1 dollar and returns the 15 hypotheses the model is most sure about, usually within a minute or two. The full scan costs 5 dollars, adds 15 less certain ones, and is usually done within the hour. You pay in USDC on Base over x402, so you need an x402 client and USDC: paying by card or invoice is not possible yet. Before you pay, a free check tells you how much of your code the scan will read: https://x402.tokenizen.nl/api/bug-intel/precheck?repo=owner/name",
+    getText: "A report of AI-generated hypotheses about the Solidity code in a public GitHub repository, to be reviewed by hand. It is not an audit and gives no guarantee that a contract is safe.",
+    agentLabel: "For AI agents",
+    agentText: "AI agents can still buy the older scans over x402: the quick scan costs 1 dollar and returns 15 hypotheses, the full scan costs 5 dollars and adds 15 less certain ones, paid in USDC on Base. That is the weaker route: it found 8 of 105 known findings on harder contests, and its row is on the scoreboard. We want to offer agents the better scan too. Before you pay, a free check tells you how much of your code the scan will read: https://x402.tokenizen.nl/api/bug-intel/precheck?repo=owner/name",
     sources: "Price and payment address: the official sources",
     checkLabel: "How you check it",
     checkText:
-      "Every run on our fixed sets goes on the public scoreboard within 7 days, the misses included, under a public rule with an OpenTimestamps stamp. Where a row links to a pre-registration, the rule was written down in public before the run; for version 3.1 the rule is only in our own notes, so that row is less verifiable. Version 3.1 found 8 of 105 known findings in its first 15 hypotheses, on the same eight contests as our sealed run, which were no longer secret by then, after two changes at once. In the sealed run the earlier versions found 1 and 4. Every report we deliver is also put on a public list: the fingerprint of the report, the outcome, the coverage and the time, without the repository or the buyer. The head of that list is stamped with OpenTimestamps, which is outside our control and counts as confirmed some hours after it is made. The list is at https://api.tokenizen.nl/api/scan-receipts and you check your own report with one file, verify-scan-receipts.mjs on this site. This shows that a report existed on that date and was not changed afterwards. It does not show which version of the code was scanned, and it does not show that the code is safe. Our own test runs are not on the list. Each square below is one known finding.",
-    strip: "8 of 105 known findings found, 97 missed",
-    bestLabel: "Our best research result",
+      "Every run on our fixed sets goes on the public scoreboard within 7 days, the misses included, under a public rule with an OpenTimestamps stamp. Where a row links to a pre-registration, the rule was written down in public before the run; for version 3.1 the rule is only in our own notes, so that row is less verifiable. Every report we deliver is also put on a public list: the fingerprint of the report, the outcome, the coverage and the time, without the repository or the buyer. The head of that list is stamped with OpenTimestamps, which is outside our control and counts as confirmed some hours after it is made. The list is at https://api.tokenizen.nl/api/scan-receipts and you check your own report with one file, verify-scan-receipts.mjs on this site. This shows that a report existed on that date and was not changed afterwards. It does not show which version of the code was scanned, and it does not show that the code is safe. Our own test runs are not on the list.",
+    bestLabel: "How well it works",
     bestBig: "77 percent of 31 known findings",
     bestStrip: "24 of 31 known findings found, 7 missed",
-    bestText:
-      "Six of our research runs together found 24 of the 31 known High findings in 7 audits of the public EVMbench set, graded by a copy of the benchmark's own judge. One run alone finds 71 percent. This is our research setup and not the scan sold below, which is a cheaper and simpler route. The measurements of the scan sold below are on the scoreboard and are lower. Every verdict is in an open folder, and one command counts them again.",
+    bestText: "Six of our research runs together found 24 of the 31 known High findings in 7 audits of the public EVMbench set, graded by a copy of the benchmark's own judge. One run alone finds 71 percent. The scan you buy here is a cheaper and simpler route: it found 8 of 20 known findings (40 percent) on 5 of those audits, and 8 of 15 where its runs finished. Every verdict is in an open folder, and one command counts them again.",
     bestLink: "The results, judgements and hashes",
     board: "Open the scoreboard",
-    watchLabel: "Watch it in a minute",
-    watchText: "In one minute: what our scan found, what it missed, and how you can check it. We publish every run on our fixed test sets, the misses included, together with the programs that check the results. Every number in this film can be checked from open files and on-chain records.",
-    watchSub: "English, with English subtitles.",
     ruler: "The ruler: why a percentage needs its judge",
     rulerText: "In under two minutes: the leading scanner says 86 percent by its own count. We rebuilt its judge, counted the same reports with two open judges and got different numbers, and we show our own first miss. A percentage without its judge says nothing.",
     rulerSub: "English, with English subtitles.",
-    transcriptLabel: "Transcript",
-    filmTranscript: ["Eight of a hundred and five.","That is how many known findings version three point one of our scan found on eight audit contests. It missed ninety-seven.","We publish both numbers.","Every run goes on a public scoreboard within seven days. The bad ones too.","The rule is written down and time-stamped before the first run it covers.","Every report we deliver goes on a dated list. You check yours with one file.","When money moves, you read it back from the chain. One real payment on Base. One rating, written by the buyer. One hash that ties them together.","Everything we show, you can replay.","Check. Pay. Prove. tokenizen.nl"],
     openText:
       "The programs that check our payment receipts and the list of delivered reports are open source, under the MIT and Apache-2.0 licences, so you can read them, run them and fork them. The scan's own prompts and model settings are not published.",
-    notLabel: "Where it stops",
-    notText: "It is not an audit and gives no guarantee that a contract is safe. What it finds and what it misses is on the public scoreboard.",
   },
   nl: {
     chip: "per scan betalen",
     title: "Smart-contractscan",
-    lead: "Scan een smart-contractrepository voor 1 dollar en krijg binnen een minuut of twee de zwakke plekken waar het model het zekerst van is, klaar om met de hand na te lopen. Elke run en elke misser staat op een openbaar scorebord, en elk afgeleverd rapport komt op een gedateerde lijst die je zelf kunt nagaan. Hij vindt een deel van wat een menselijke audit vindt, en we publiceren hoeveel.",
+    lead: "Scan een smart-contractrepository en betaal met kaart of iDEAL: 0,02 euro per regel Solidity, minimum 2 euro, en je ziet de prijs voor jouw repository voordat je betaalt. Je krijgt de zwakke plekken die de scan vond, klaar om met de hand na te lopen. Hij vindt een deel van wat een menselijke audit vindt, en we publiceren hoeveel.",
     metaTitle: "Smart-contractscan | tokenizen",
-    metaDescription: "Een smart-contractscan met een openbaar scorebord dat ook laat zien wat hij miste. Betaal per scan via x402.",
-    deepLabel: "Betalen met kaart, prijs per regel",
-    deepText: "Liever met kaart of iDEAL dan met crypto? De diepe scan toont de prijs voor jouw repository voor je betaalt: 0,02 euro per regel Solidity, minimum 2 euro, en een volledige terugbetaling als de scan mislukt, niets vindt of minder dan de helft van je code leest.",
-    deepLink: "De diepe scan",
+    metaDescription: "Een smart-contractscan die je betaalt met kaart of iDEAL, met een openbaar scorebord dat ook laat zien wat hij miste.",
+    deepLabel: "Start een scan",
+    deepText: "Je krijgt je geld volledig terug als de scan mislukt, niets vindt of minder dan de helft van je code leest. Kijk eerst wat jouw repository kost.",
+    deepLink: "Naar de diepe scan",
     getLabel: "Wat je krijgt",
-    getText:
-      "Een rapport met door AI bedachte hypotheses over de Solidity-code in een openbare GitHub-repository, om met de hand na te lopen. De snelle scan kost 1 dollar en geeft de 15 hypotheses waar het model het zekerst van is, meestal binnen een minuut of twee. De volledige scan kost 5 dollar, voegt 15 minder zekere toe en is meestal binnen het uur klaar. Je betaalt in USDC op Base via x402, dus je hebt een x402-programma en USDC nodig: betalen met kaart of op factuur kan nog niet. Voor je betaalt vertelt een gratis check hoeveel van je code de scan leest: https://x402.tokenizen.nl/api/bug-intel/precheck?repo=eigenaar/naam",
+    getText: "Een rapport met door AI bedachte hypotheses over de Solidity-code in een openbare GitHub-repository, om met de hand na te lopen. Het is geen audit en geeft geen garantie dat een contract veilig is.",
+    agentLabel: "Voor AI-agents",
+    agentText: "AI-agents kunnen nog steeds de oudere scans kopen via x402: de snelle scan kost 1 dollar en geeft 15 hypotheses, de volledige scan kost 5 dollar en voegt 15 minder zekere toe, betaald in USDC op Base. Dat is de zwakkere route: hij vond 8 van de 105 bekende bevindingen op moeilijkere wedstrijden, en zijn rij staat op het scorebord. We willen agents ook de betere scan aanbieden. Voor je betaalt vertelt een gratis check hoeveel van je code de scan leest: https://x402.tokenizen.nl/api/bug-intel/precheck?repo=eigenaar/naam",
     sources: "Prijs en betaaladres: de officiële bronnen",
     checkLabel: "Zo ga je het na",
     checkText:
-      "Elke run op onze vaste sets komt binnen 7 dagen op het openbare scorebord, de missers inbegrepen, onder een openbare regel met een OpenTimestamps-stempel. Waar een rij naar een preregistratie verwijst, stond de regel vooraf openbaar opgeschreven; voor versie 3.1 staat de regel alleen in onze eigen notities, dus die rij is minder goed na te gaan. Versie 3.1 vond 8 van de 105 bekende bevindingen in zijn eerste 15 hypotheses, op dezelfde acht wedstrijden als onze verzegelde run, die toen niet meer geheim waren, na twee wijzigingen tegelijk. In de verzegelde run vonden de eerdere versies er 1 en 4. Elk rapport dat we afleveren komt ook op een openbare lijst: de vingerafdruk van het rapport, de uitkomst, de dekking en het tijdstip, zonder de repository of de koper. De kop van die lijst krijgt een stempel van OpenTimestamps, buiten onze controle, dat enkele uren na het zetten als bevestigd telt. De lijst staat op https://api.tokenizen.nl/api/scan-receipts en je controleert je eigen rapport met één bestand, verify-scan-receipts.mjs op deze site. Dat laat zien dat een rapport op die datum bestond en daarna niet is aangepast. Het laat niet zien welke versie van de code is gescand, en ook niet dat de code veilig is. Onze eigen proefruns staan niet op de lijst. Elk vierkantje hieronder is één bekende bevinding.",
-    strip: "8 van de 105 bekende bevindingen gevonden, 97 gemist",
-    bestLabel: "Ons beste onderzoeksresultaat",
+      "Elke run op onze vaste sets komt binnen 7 dagen op het openbare scorebord, de missers inbegrepen, onder een openbare regel met een OpenTimestamps-stempel. Waar een rij naar een preregistratie verwijst, stond de regel vooraf openbaar opgeschreven; voor versie 3.1 staat de regel alleen in onze eigen notities, dus die rij is minder goed na te gaan. Elk rapport dat we afleveren komt ook op een openbare lijst: de vingerafdruk van het rapport, de uitkomst, de dekking en het tijdstip, zonder de repository of de koper. De kop van die lijst krijgt een stempel van OpenTimestamps, buiten onze controle, dat enkele uren na het zetten als bevestigd telt. De lijst staat op https://api.tokenizen.nl/api/scan-receipts en je controleert je eigen rapport met één bestand, verify-scan-receipts.mjs op deze site. Dat laat zien dat een rapport op die datum bestond en daarna niet is aangepast. Het laat niet zien welke versie van de code is gescand, en ook niet dat de code veilig is. Onze eigen proefruns staan niet op de lijst.",
+    bestLabel: "Hoe goed het werkt",
     bestBig: "77 procent van 31 bekende bevindingen",
     bestStrip: "24 van de 31 bekende bevindingen gevonden, 7 gemist",
-    bestText:
-      "Zes van onze onderzoeksruns samen vonden 24 van de 31 bekende High-bevindingen in 7 audits van de openbare EVMbench-set, beoordeeld door een kopie van de eigen rechter van de benchmark. Eén run alleen vindt 71 procent. Dit is onze onderzoeksopstelling en niet de scan die hieronder wordt verkocht, dat is een goedkopere en eenvoudigere route. De metingen van de scan die hieronder wordt verkocht staan op het scorebord en liggen lager. Elk oordeel staat in een open map, en één commando telt ze opnieuw na.",
+    bestText: "Zes van onze onderzoeksruns samen vonden 24 van de 31 bekende High-bevindingen in 7 audits van de openbare EVMbench-set, beoordeeld door een kopie van de eigen rechter van de benchmark. Eén run alleen vindt 71 procent. De scan die je hier koopt is een goedkopere en eenvoudigere route: hij vond 8 van de 20 bekende bevindingen (40 procent) in 5 van die audits, en 8 van de 15 waar zijn runs afliepen. Elk oordeel staat in een open map, en één commando telt ze opnieuw na.",
     bestLink: "De resultaten, oordelen en hashes",
     board: "Open het scorebord",
-    watchLabel: "Kijk in een minuut",
-    watchText: "In een minuut: wat onze scan vond, wat hij miste en hoe je het nagaat. We publiceren elke run op onze vaste testsets, de missers erbij, samen met de programma's die de uitslagen nakijken. Elk getal in deze film is na te gaan met open bestanden en bewijs op de keten.",
-    watchSub: "Engels gesproken, met Engelse ondertitels.",
     ruler: "De liniaal: waarom een percentage zijn rechter nodig heeft",
     rulerText: "In bijna twee minuten: de marktleider zegt 86 procent volgens zijn eigen telling. Wij bouwden zijn rechter na, telden dezelfde rapporten met twee open rechters en kregen andere getallen, en we laten onze eigen eerste misser zien. Een percentage zonder zijn rechter zegt niets.",
     rulerSub: "Engels gesproken, met Engelse ondertitels.",
-    transcriptLabel: "Uitgeschreven tekst (Engels)",
-    filmTranscript: ["Eight of a hundred and five.","That is how many known findings version three point one of our scan found on eight audit contests. It missed ninety-seven.","We publish both numbers.","Every run goes on a public scoreboard within seven days. The bad ones too.","The rule is written down and time-stamped before the first run it covers.","Every report we deliver goes on a dated list. You check yours with one file.","When money moves, you read it back from the chain. One real payment on Base. One rating, written by the buyer. One hash that ties them together.","Everything we show, you can replay.","Check. Pay. Prove. tokenizen.nl"],
     openText:
       "De programma's waarmee je onze betaalbewijzen en de lijst met afgeleverde rapporten nakijkt zijn open source, onder de licenties MIT en Apache-2.0, dus je kunt ze lezen, draaien en forken. De prompts en modelinstellingen van de scan zelf zijn niet openbaar.",
-    notLabel: "Waar het ophoudt",
-    notText: "Geen audit en geen garantie dat een contract veilig is. Wat hij vindt en wat hij mist staat op het openbare scorebord.",
   },
 };
 
@@ -378,6 +362,18 @@ export function ScanPage() {
   const to = (rest: string) => localePath(loc, rest);
   return (
     <OfferFrame image="prisma" chip={c.chip} title={c.title} lead={c.lead} metaTitle={c.metaTitle} metaDescription={c.metaDescription}>
+      <Block label={c.deepLabel}>
+        <p>{c.deepText}</p>
+        <p>
+          <LinkOut href={to("/deep-scan")}>{c.deepLink}</LinkOut>
+        </p>
+      </Block>
+      <Block label={REPO_CHECK_COPY[loc].label}>
+        <RepoPriceCheck locale={loc} />
+      </Block>
+      <Block label={c.getLabel}>
+        <p>{c.getText}</p>
+      </Block>
       <Block label={c.bestLabel}>
         <p className="font-display text-3xl font-semibold tracking-tight text-primary md:text-5xl">{c.bestBig}</p>
         <MissStrip found={24} known={31} label={c.bestStrip} />
@@ -385,29 +381,9 @@ export function ScanPage() {
         <p>
           <LinkOut href="https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-11-02-our-scan-under-the-benchmark-judge/README.md">{c.bestLink}</LinkOut>
         </p>
-      </Block>
-      <Block label={c.watchLabel}>
-        <figure>
-          <video controls preload="none" playsInline poster="/media/tokenizen-film-60s-poster.jpg" className="aspect-video w-full rounded-lg border border-border bg-black">
-            <source src="/media/tokenizen-film-60s.mp4" type="video/mp4" />
-            <track kind="captions" srcLang="en" label="English" src="/media/tokenizen-film-60s.en.vtt" />
-            <p>
-              <a href="/media/tokenizen-film-60s.mp4">{c.watchLabel}</a>
-            </p>
-          </video>
-          <figcaption className="mt-3">
-            <p>{c.watchText}</p>
-            <p className="text-sm text-muted-foreground">{c.watchSub}</p>
-          </figcaption>
-          <details className="mt-3 text-sm text-muted-foreground">
-            <summary className="cursor-pointer font-mono text-xs uppercase tracking-wide">{c.transcriptLabel}</summary>
-            <ol className="mt-3 list-decimal space-y-1 pl-5">
-              {c.filmTranscript.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ol>
-          </details>
-        </figure>
+        <p>
+          <LinkOut href={to("/scoreboard")}>{c.board}</LinkOut>
+        </p>
       </Block>
       <Block label={c.ruler}>
         <figure>
@@ -424,35 +400,19 @@ export function ScanPage() {
           </figcaption>
         </figure>
       </Block>
-      <Block label={c.deepLabel}>
-        <p>{c.deepText}</p>
-        <p>
-          <LinkOut href={to("/deep-scan")}>{c.deepLink}</LinkOut>
-        </p>
-      </Block>
-      <Block label={c.getLabel}>
-        <p>{c.getText}</p>
+      <Block label={c.agentLabel}>
+        <p>{c.agentText}</p>
         <p>
           <LinkOut href={to("/notes/official-sources")}>{c.sources}</LinkOut>
         </p>
       </Block>
-      <Block label={REPO_CHECK_COPY[loc].label}>
-        <RepoPriceCheck locale={loc} />
-      </Block>
       <Block label={c.checkLabel}>
         <p>{c.checkText}</p>
-        <MissStrip label={c.strip} />
-        <p>
-          <LinkOut href={to("/scoreboard")}>{c.board}</LinkOut>
-        </p>
         <p>{c.openText}</p>
         <p className="flex flex-wrap gap-x-5 gap-y-2">
           <LinkOut href="https://github.com/holistis/tokenizen/blob/main/packages/website/public/verify-scan-receipts.mjs">verify-scan-receipts.mjs</LinkOut>
           <LinkOut href="https://github.com/holistis/agent-receipt-verify">agent-receipt-verify</LinkOut>
         </p>
-      </Block>
-      <Block label={c.notLabel}>
-        <p>{c.notText}</p>
       </Block>
     </OfferFrame>
   );

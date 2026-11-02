@@ -549,14 +549,14 @@
     "/nl/scan": {
       "lang": "nl",
       "title": "Smart-contractscan | tokenizen",
-      "description": "Een smart-contractscan met een openbaar scorebord dat ook laat zien wat hij miste. Betaal per scan via x402.",
+      "description": "Een smart-contractscan die je betaalt met kaart of iDEAL, met een openbaar scorebord dat ook laat zien wat hij miste.",
       "canonical": "https://tokenizen.nl/nl/scan",
       "ogLocale": "nl_NL",
       "ogUrl": "https://tokenizen.nl/nl/scan",
       "ogTitle": "Smart-contractscan | tokenizen",
-      "ogDescription": "Een smart-contractscan met een openbaar scorebord dat ook laat zien wat hij miste. Betaal per scan via x402.",
+      "ogDescription": "Een smart-contractscan die je betaalt met kaart of iDEAL, met een openbaar scorebord dat ook laat zien wat hij miste.",
       "twitterTitle": "Smart-contractscan | tokenizen",
-      "twitterDescription": "Een smart-contractscan met een openbaar scorebord dat ook laat zien wat hij miste. Betaal per scan via x402.",
+      "twitterDescription": "Een smart-contractscan die je betaalt met kaart of iDEAL, met een openbaar scorebord dat ook laat zien wat hij miste.",
       "alternates": [
         {
           "hreflang": "en",
@@ -1004,14 +1004,14 @@
     "/scan": {
       "lang": "en",
       "title": "Smart contract scan | tokenizen",
-      "description": "A smart contract scan with a public scoreboard that includes what it missed. Pay per scan over x402.",
+      "description": "A smart contract scan you pay for by card or iDEAL, with a public scoreboard that includes what it missed.",
       "canonical": "https://tokenizen.nl/scan",
       "ogLocale": "en_US",
       "ogUrl": "https://tokenizen.nl/scan",
       "ogTitle": "Smart contract scan | tokenizen",
-      "ogDescription": "A smart contract scan with a public scoreboard that includes what it missed. Pay per scan over x402.",
+      "ogDescription": "A smart contract scan you pay for by card or iDEAL, with a public scoreboard that includes what it missed.",
       "twitterTitle": "Smart contract scan | tokenizen",
-      "twitterDescription": "A smart contract scan with a public scoreboard that includes what it missed. Pay per scan over x402.",
+      "twitterDescription": "A smart contract scan you pay for by card or iDEAL, with a public scoreboard that includes what it missed.",
       "alternates": [
         {
           "hreflang": "en",
