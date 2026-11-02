@@ -308,7 +308,7 @@ const SCAN = {
     getLabel: "What you get",
     getText: "A report of AI-generated hypotheses about the Solidity code in a public GitHub repository, to be reviewed by hand. It is not an audit and gives no guarantee that a contract is safe.",
     agentLabel: "For AI agents",
-    agentText: "AI agents can still buy the older scans over x402: the quick scan costs 1 dollar and returns 15 hypotheses, the full scan costs 5 dollars and adds 15 less certain ones, paid in USDC on Base. That is the weaker route: it found 8 of 105 known findings on harder contests, and its row is on the scoreboard. Before you pay, a free check tells you how much of your code the scan will read: https://x402.tokenizen.nl/api/bug-intel/precheck?repo=owner/name",
+    agentText: "AI agents can buy the deep scan over x402, paid in USDC on Base, in three classes by lines of Solidity in scope: up to 1,000 lines 25 USDC, up to 3,000 lines 70 USDC, up to 6,000 lines 140 USDC. The repository is checked before anything is settled, and the payment is returned if the scan fails, finds nothing or reads less than half of the code. The older quick scan (1 dollar) and full scan (5 dollars) are still sold: they are the weaker route and found 8 of 105 known findings on harder contests, see the scoreboard. Before you pay, a free check tells you how much of your code the scan will read: https://x402.tokenizen.nl/api/bug-intel/precheck?repo=owner/name",
     sources: "Price and payment address: the official sources",
     checkLabel: "How you check it",
     checkText:
@@ -337,7 +337,7 @@ const SCAN = {
     getLabel: "Wat je krijgt",
     getText: "Een rapport met door AI bedachte hypotheses over de Solidity-code in een openbare GitHub-repository, om met de hand na te lopen. Het is geen audit en geeft geen garantie dat een contract veilig is.",
     agentLabel: "Voor AI-agents",
-    agentText: "AI-agents kunnen nog steeds de oudere scans kopen via x402: de snelle scan kost 1 dollar en geeft 15 hypotheses, de volledige scan kost 5 dollar en voegt 15 minder zekere toe, betaald in USDC op Base. Dat is de zwakkere route: hij vond 8 van de 105 bekende bevindingen op moeilijkere wedstrijden, en zijn rij staat op het scorebord. Voor je betaalt vertelt een gratis check hoeveel van je code de scan leest: https://x402.tokenizen.nl/api/bug-intel/precheck?repo=eigenaar/naam",
+    agentText: "AI-agents kunnen de diepe scan kopen via x402, betaald in USDC op Base, in drie klassen naar het aantal regels Solidity in scope: tot 1.000 regels 25 USDC, tot 3.000 regels 70 USDC, tot 6.000 regels 140 USDC. De repository wordt gecontroleerd voordat er iets wordt afgerekend, en de betaling gaat terug als de scan mislukt, niets vindt of minder dan de helft van de code leest. De oudere snelle scan (1 dollar) en volledige scan (5 dollar) worden nog verkocht: dat is de zwakkere route, die 8 van de 105 bekende bevindingen vond op moeilijkere wedstrijden, zie het scorebord. Voor je betaalt vertelt een gratis check hoeveel van je code de scan leest: https://x402.tokenizen.nl/api/bug-intel/precheck?repo=eigenaar/naam",
     sources: "Prijs en betaaladres: de officiële bronnen",
     checkLabel: "Zo ga je het na",
     checkText:
