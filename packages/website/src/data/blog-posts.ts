@@ -1114,6 +1114,14 @@ The older route had found 8 of 20. Four of the six extra findings come from one 
         note: "The cells come from table.json of the two result folders. One run per audit, so a single finding moves a cell. Under the benchmark's own grader the leader finds 4 of 6 on phi.",
       },
       {
+        type: "image",
+        src: "/media/scan-measured-photo-1.webp",
+        alt: "Five towers of stacked glass cubes on an oak workbench at dawn, most cubes glowing teal and a few dark, a brass ruler and a magnifying glass in front, a window with morning mist behind.",
+        caption: "Five audits, five towers: most cubes lit, a few dark. The picture does not show the real counts. Illustration generated with AI.",
+        width: 1376,
+        height: 774,
+      },
+      {
         type: "md",
         text: `## What it means
 
@@ -1134,6 +1142,14 @@ We think this is what the work should look like. A number you can recount is wor
 - The judge is a copy of the benchmark's grader, run through OpenRouter. It gave the same verdict as the benchmark's own answer on 30 of 31 findings when we checked it on the leader's report.
 
 If a number in the folder does not match when you run the check, tell us in issue 41 of the repository. We will correct it and keep the old text visible.`,
+      },
+      {
+        type: "image",
+        src: "/media/scan-measured-photo-2.webp",
+        alt: "Two pairs of hands at an old oak desk, one holding a brass magnifying glass over a handwritten ledger, the other on a laptop keyboard with a teal terminal on screen, a brass lamp and a cup of tea beside them.",
+        caption: "Recounting, by hand and by script. Illustration generated with AI.",
+        width: 1376,
+        height: 768,
       },
       { type: "mission" },
       {
