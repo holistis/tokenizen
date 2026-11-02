@@ -1000,6 +1000,22 @@ That is 70 percent, on five audits, with one run each. It makes no promise about
       },
       {
         type: "md",
+        text: `## And the 77 percent
+
+You may have seen 77 percent from us. It is real and just as recountable: six of our research runs together found 24 of the 31 known High findings on seven audits, graded by the same judge copy. It is a research result, so it sits above the bar of the scan you can buy, which is the bottom one in the picture: 14 of 20 on five audits.
+
+The leader's own report scores 80.6 percent under the same judge, so there is room above us, and the room is measured. Each bar has its folder, its verdicts and a script that recounts it.`,
+      },
+      {
+        type: "image",
+        src: "/media/recount-four-numbers.svg",
+        alt: "Four horizontal bars. The leader's report 80.6 percent, six of our research runs together 77.4 percent and one research run 71.0 percent, all on seven audits, and the scan you can buy 70.0 percent on five audits.",
+        caption: "Four numbers you can recount, each with its own set. Drawn from the tables of the two result folders, not a photograph.",
+        width: 1376,
+        height: 768,
+      },
+      {
+        type: "md",
         text: `## How it went
 
 We wrote our guess down before the second set of runs: 5 of 11 on three audits. The scan found 9. Our guess was too low, and we are glad to say so in public.
@@ -1009,13 +1025,19 @@ The older route had found 8 of 20. Four of the six extra findings come from one 
       {
         type: "facts",
         heading: "The numbers",
-        intro: "Five audits, 20 known High findings, one run each, a copy of the benchmark's own judge. Each number has the place where you can check it.",
+        intro: "The first number is the scan you can buy: five audits, 20 known High findings, one run each. The others are there for comparison. Each has the place where you can check it, and each is graded by a copy of the benchmark's own judge.",
         items: [
           {
             value: "14 of 20",
             label: "Known findings found by the setup behind the deep scan. 70.0 percent, one run per audit.",
             href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-02-shop-setup-five-audits",
             hrefLabel: "the folder",
+          },
+          {
+            value: "77.4 percent",
+            label: "Six of our research runs together on seven audits: 24 of 31 known findings. A research result, and not the scan you can buy.",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-11-02-our-scan-under-the-benchmark-judge/README.md",
+            hrefLabel: "the research folder",
           },
           {
             value: "15 of 20",
