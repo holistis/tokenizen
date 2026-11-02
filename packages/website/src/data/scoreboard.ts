@@ -111,15 +111,15 @@ export const SCORE_RUNS: ScoreRun[] = [
   {
     id: "shop-route-five",
     date: "2026-11-01",
-    title: "The scan sold in the shop on 5 EVMbench audits",
-    system: "The deep scan route of the shop as it was on 1 November 2026, one run per audit, graded by a copy of the benchmark's own judge",
+    title: "An earlier single-run version of the shop scan on 5 EVMbench audits",
+    system: "The earlier single-run route of 1 November 2026, one run per audit, graded by a copy of the benchmark's own judge. The setup the shop runs now reads in parts with a second round and has not been measured on these audits",
     set: "5 of the 7 audits of the research row, 20 known High findings",
     status: "measured",
     known: 20,
     found: 8,
     hypotheses: 27,
     tunedOn: "partly",
-    note: "8 of 20 (40.0 percent). The run on forte was stopped by our cost cap before it delivered a report and counts as zero for its 5 findings; where the runs finished it found 8 of 15 (53.3 percent). On the same 5 audits under the same judge the leader finds 15 of 20 and one of our research runs 14 of 20. One run per audit, so one finding moves the share by five points. The shop has changed since this measurement and has not been judged again. We have not checked which of these audits overlap our earlier tuning sets, so the row is labelled partly.",
+    note: "Correction on 2 November 2026: this row first said it measured the scan sold in the shop, under the title \"The scan sold in the shop on 5 EVMbench audits\". It did not: it is an earlier, simpler route, and the shop's current setup was built after this measurement. 8 of 20 (40.0 percent). The run on forte was stopped by our cost cap before it delivered a report and counts as zero for its 5 findings; where the runs finished it found 8 of 15 (53.3 percent). On the same 5 audits under the same judge the leader finds 15 of 20 and one of our research runs 14 of 20. One run per audit, so one finding moves the share by five points. The shop's current setup has not been measured on these audits yet. We have not checked which of these audits overlap our earlier tuning sets, so the row is labelled partly.",
     links: [{ label: "The results, judgements and hashes", href: `${REPO}/results/2026-11-02-our-scan-under-the-benchmark-judge/README.md` }],
   },
   {
@@ -348,10 +348,10 @@ export const SCORE_RUNS_NL: Record<string, RunTextNl> = {
     links: ["Hoe de rechters beslissen"],
   },
   "shop-route-five": {
-    title: "De scan die in de winkel wordt verkocht op 5 EVMbench-audits",
-    system: "De diepe-scanroute van de winkel zoals die op 1 november 2026 was, één run per audit, beoordeeld door een kopie van de eigen rechter van de benchmark",
+    title: "Een eerdere versie met één run van de winkelscan op 5 EVMbench-audits",
+    system: "De eerdere route met één run van 1 november 2026, één run per audit, beoordeeld door een kopie van de eigen rechter van de benchmark. De opzet die de winkel nu draait leest in delen met een tweede ronde en is op deze audits nog niet gemeten",
     set: "5 van de 7 audits van de onderzoeksrij, 20 bekende bevindingen van hoge ernst",
-    note: "8 van de 20 (40,0 procent). De run op forte werd door onze kostenbewaking gestopt voordat hij een rapport leverde en telt als nul voor zijn 5 bevindingen; waar de runs afliepen vond hij er 8 van de 15 (53,3 procent). Op dezelfde 5 audits onder dezelfde rechter vindt de leider er 15 van de 20 en een van onze onderzoeksruns 14 van de 20. Eén run per audit, dus één bevinding verschuift het aandeel met vijf punten. De winkel is sindsdien veranderd en is niet opnieuw beoordeeld. We hebben niet nagegaan welke van deze audits overlappen met onze eerdere afstelsets, dus de rij heet deels.",
+    note: "Correctie op 2 november 2026: deze rij zei eerst dat hij de scan mat die in de winkel wordt verkocht, onder de titel \"De scan die in de winkel wordt verkocht op 5 EVMbench-audits\". Dat klopte niet: het is een eerdere, eenvoudigere route, en de huidige opzet van de winkel is na deze meting gebouwd. 8 van de 20 (40,0 procent). De run op forte werd door onze kostenbewaking gestopt voordat hij een rapport leverde en telt als nul voor zijn 5 bevindingen; waar de runs afliepen vond hij er 8 van de 15 (53,3 procent). Op dezelfde 5 audits onder dezelfde rechter vindt de leider er 15 van de 20 en een van onze onderzoeksruns 14 van de 20. Eén run per audit, dus één bevinding verschuift het aandeel met vijf punten. De huidige opzet van de winkel is op deze audits nog niet gemeten. We hebben niet nagegaan welke van deze audits overlappen met onze eerdere afstelsets, dus de rij heet deels.",
     links: ["De resultaten, oordelen en hashes"],
   },
   "benchmark-judge-seven": {
