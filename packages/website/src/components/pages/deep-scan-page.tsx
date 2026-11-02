@@ -84,7 +84,7 @@ export const COPY: Record<Locale, Copy> = {
     refundRule:
       "You get your money back in full if the scan fails, if the report has no hypotheses, if it read less than half of the code in scope, or if it has not started within 6 hours after Stripe confirmed your payment to us.",
     honest:
-      "What this is not: an audit, a certificate or a promise that nothing else is wrong. The deep scan misses real problems and names some that are not real. On 5 audits of the public EVMbench set, one run each, the deep scan found 8 of 20 known findings (40 percent). That is a small test: read it as a rough indication and not as a quality figure. How our scans did, with the judge named next to every number, is on the scoreboard.",
+      "What this is not: an audit, a certificate or a promise that nothing else is wrong. The deep scan misses real problems and names some that are not real. An earlier single-run version of this scan found 8 of 20 known findings (40 percent) on 5 audits of the public EVMbench set, one run each. The version you buy now has not been measured on those audits yet. That is a small test: read it as a rough indication and not as a quality figure. How our scans did, with the judge named next to every number, is on the scoreboard.",
     scoreboard: "The scoreboard",
     formTitle: "Your repository",
     fieldLabel: "Repository",
@@ -168,7 +168,7 @@ export const COPY: Record<Locale, Copy> = {
     refundRule:
       "Je krijgt je geld volledig terug als de scan mislukt, als het rapport geen hypothese bevat, als hij minder dan de helft van de code in scope las, of als hij niet binnen 6 uur nadat Stripe je betaling aan ons bevestigde is gestart.",
     honest:
-      "Wat dit niet is: een audit, een certificaat of een belofte dat er verder niets mis is. De diepe scan mist echte problemen en noemt er een paar die niet echt zijn. Op 5 audits van de openbare EVMbench-set, elk één run, vond de diepe scan 8 van de 20 bekende bevindingen (40 procent). Dat is een kleine proef: lees het als een ruwe indicatie en niet als een kwaliteitscijfer. Hoe onze scans het deden, met de rechter erbij bij elk getal, staat op het scorebord.",
+      "Wat dit niet is: een audit, een certificaat of een belofte dat er verder niets mis is. De diepe scan mist echte problemen en noemt er een paar die niet echt zijn. Een eerdere versie met één run van deze scan vond 8 van de 20 bekende bevindingen (40 procent) op 5 audits van de openbare EVMbench-set, elk één run. De versie die je nu koopt is op die audits nog niet gemeten. Dat is een kleine proef: lees het als een ruwe indicatie en niet als een kwaliteitscijfer. Hoe onze scans het deden, met de rechter erbij bij elk getal, staat op het scorebord.",
     scoreboard: "Het scorebord",
     formTitle: "Jouw repository",
     fieldLabel: "Repository",
