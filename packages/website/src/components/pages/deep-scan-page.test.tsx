@@ -33,7 +33,7 @@ describe("the deep scan page", () => {
       expect(t).toContain(locale === "nl" ? "0,02 euro per regel Solidity in scope, minimum 2 euro, maximum 12.000 regels" : "0.02 euro per line of Solidity in scope, minimum 2 euro, maximum 12,000 lines");
       expect(t).toContain(locale === "nl" ? "volledig terug" : "in full");
       expect(t).toMatch(locale === "nl" ? /niet is: een audit/ : /not: an audit/);
-      expect(t).toMatch(locale === "nl" ? /één keer op één openbare wedstrijd/ : /once on one public contest/);
+      expect(t).toMatch(locale === "nl" ? /8 van de 20 bekende bevindingen \(40 procent\)/ : /8 of 20 known findings \(40 percent\)/);
       expect(t).not.toMatch(/nog niet op een openbare maatstaf|not yet measured/);
       expect(t).toMatch(locale === "nl" ? /6 uur/ : /6 hours/);
       expect(t).toMatch(locale === "nl" ? /geen hypothese/ : /no hypotheses/);
