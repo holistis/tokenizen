@@ -971,6 +971,161 @@ The folder holds all 234 verdicts and a script, node check.mjs, that recomputes 
       },
     ],
   },
+  {
+    slug: "the-scan-you-can-buy-measured",
+    date: "2026-11-02",
+    title: "We measured the scan you can buy. It found 14 of 20.",
+    dek: "For the first time the scan we sell was counted on five public audits, with every verdict open and a script that recounts it. The story, the table and the limits.",
+    description:
+      "Our deep scan found 14 of 20 known High findings on five public audits. Every verdict is open and one command recounts it. The story, the table and the limits.",
+    tags: ["Measurements", "Scan"],
+    readMinutes: 5,
+    kind: "blog",
+    blocks: [
+      {
+        type: "md",
+        text: `Until today we could not tell you how good the scan we sell really is. We had a number for our research runs, 77 percent when six of them were put together, and we had a number for an older, simpler route, 8 of 20. We did not have a number for the thing you actually buy.
+
+Today we do. We took the five audits of that older measurement, ran the current setup once on each, and let a copy of the benchmark's own judge grade the reports. It found 14 of the 20 known High findings.
+
+That is 70 percent, on five audits, with one run each. It makes no promise about your contracts, and it is the first honest count of the scan you can buy. Anyone can redo it: clone the folder, run one command, and the same 14 come out.`,
+      },
+      {
+        type: "image",
+        src: "/media/scan-measured-five-audits.svg",
+        alt: "Five columns of glowing teal cells on a dark blue background, one column per audit. Each cell is one known finding, lit when the scan found it and dashed when it did not. The headline reads 14 of 20.",
+        caption: "Each cell is one known finding. A lit cell is a finding the scan found. Drawn from the table of the measurement, not a photograph.",
+        width: 1376,
+        height: 768,
+      },
+      {
+        type: "md",
+        text: `## How it went
+
+We wrote our guess down before the second set of runs: 5 of 11 on three audits. The scan found 9. Our guess was too low, and we are glad to say so in public.
+
+The older route had found 8 of 20. Four of the six extra findings come from one audit, forte, where the old run had been stopped by its cost cap and counted as zero. On the other four audits the count went from 8 of 15 to 10 of 15. We would rather tell you that ourselves than let you work it out.`,
+      },
+      {
+        type: "facts",
+        heading: "The numbers",
+        intro: "Five audits, 20 known High findings, one run each, a copy of the benchmark's own judge. Each number has the place where you can check it.",
+        items: [
+          {
+            value: "14 of 20",
+            label: "Known findings found by the setup behind the deep scan. 70.0 percent, one run per audit.",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-02-shop-setup-five-audits",
+            hrefLabel: "the folder",
+          },
+          {
+            value: "15 of 20",
+            label: "What the leader's own report finds on the same five audits under our judge copy. The benchmark's own grader would give 16, because it counts one more finding on phi.",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-11-02-our-scan-under-the-benchmark-judge/README.md",
+            hrefLabel: "the comparison",
+          },
+          {
+            value: "8 of 20",
+            label: "What our older, simpler route found on the same five audits. It is the number we corrected on 2 November.",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-11-02-our-scan-under-the-benchmark-judge/README.md",
+            hrefLabel: "the correction",
+          },
+          {
+            value: "5.88 dollars",
+            label: "What the five scans cost in model fees, without the judge.",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-11-02-shop-setup-five-audits/table.json",
+            hrefLabel: "table.json",
+          },
+        ],
+      },
+      {
+        type: "matrix",
+        heading: "Audit by audit",
+        intro: "Found out of known, per audit. A green cell means all found, amber some, grey none. The leader column is the leader's report under our judge copy.",
+        columns: ["The scan you can buy now", "Our older route", "The leader"],
+        rows: [
+          {
+            label: "nextgen",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-11-02-shop-setup-five-audits/table.json",
+            cells: [
+              { text: "2 of 2", tone: "yes" },
+              { text: "2 of 2", tone: "yes" },
+              { text: "2 of 2", tone: "yes" },
+            ],
+          },
+          {
+            label: "size",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-11-02-shop-setup-five-audits/table.json",
+            cells: [
+              { text: "1 of 4", tone: "partial" },
+              { text: "1 of 4", tone: "partial" },
+              { text: "3 of 4", tone: "partial" },
+            ],
+          },
+          {
+            label: "phi",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-11-02-shop-setup-five-audits/table.json",
+            cells: [
+              { text: "4 of 6", tone: "partial" },
+              { text: "2 of 6", tone: "partial" },
+              { text: "3 of 6", tone: "partial" },
+            ],
+          },
+          {
+            label: "secondswap",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-11-02-shop-setup-five-audits/table.json",
+            cells: [
+              { text: "3 of 3", tone: "yes" },
+              { text: "3 of 3", tone: "yes" },
+              { text: "3 of 3", tone: "yes" },
+            ],
+          },
+          {
+            label: "forte",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-11-02-shop-setup-five-audits/table.json",
+            cells: [
+              { text: "4 of 5", tone: "partial" },
+              { text: "0 of 5, stopped by its cost cap", tone: "no" },
+              { text: "4 of 5", tone: "partial" },
+            ],
+          },
+        ],
+        note: "The cells come from table.json of the two result folders. One run per audit, so a single finding moves a cell. Under the benchmark's own grader the leader finds 4 of 6 on phi.",
+      },
+      {
+        type: "md",
+        text: `## What it means
+
+For us it gives the coming weeks a floor to build on. We know where the scan stands, so every change from here is measured against 14 of 20 and not against a feeling. We also know where it is weakest, size and phi, and where it needs to read more, because the runs did not open every file.
+
+For you, if you build or buy security tooling for agents and contracts, it gives you something to ask every vendor for: the outputs, the judge and a script that recounts them. We publish ours. The settings of the scan stay ours, and the measurement stays open.
+
+We think this is what the work should look like. A number you can recount is worth more than a bigger number you have to believe, and we are proud that ours can be checked by someone who has never met us. We would like to see more of it around us, from the engineers who build next to us and from the ones who build against us.
+
+## What we do not claim
+
+- Five audits and one run each. One finding moves the share by five points.
+- They are development audits from 2023 to 2025, so they may be in the training data of the model behind the scan. This is not a result on new contracts.
+- The hardest audit, noya, is not in the set.
+- Two runs, size and nextgen, hit our own cost limit of 1.50 dollars and were stopped. We have not measured what the shop's own limits would do on them.
+- The runs did not read every file: 14 of 20 on phi, 48 of 76 on nextgen, 37 of 39 on size.
+- The cheaper 1 and 5 USDC routes are older and are not measured here.
+- The judge is a copy of the benchmark's grader, run through OpenRouter. It gave the same verdict as the benchmark's own answer on 30 of 31 findings when we checked it on the leader's report.
+
+If a number in the folder does not match when you run the check, tell us in issue 41 of the repository. We will correct it and keep the old text visible.`,
+      },
+      { type: "mission" },
+      {
+        type: "cta",
+        heading: "Recount it, or put the scan to work",
+        text: "The folder has every verdict, the exact reports the judge read, and a script that recounts them with no network and no key. The scan itself is for sale for agents over x402 and for people with a card or iDEAL.",
+        links: [
+          { label: "The folder with the verdicts", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-02-shop-setup-five-audits" },
+          { label: "The scoreboard", href: "https://tokenizen.nl/scoreboard" },
+          { label: "The deep scan", href: "https://tokenizen.nl/deep-scan" },
+        ],
+      },
+    ],
+  },
 ];
 
 export function postPath(slug: string): string {

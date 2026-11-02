@@ -936,6 +936,19 @@
       "twitterDescription": "Our contract scan on the EVMbench ruler: 29 of 117 found, 2.9 percent precision, 18 audits with nothing. Every verdict is public. What the ruler cannot see.",
       "alternates": []
     },
+    "/notes/the-scan-you-can-buy-measured": {
+      "lang": "en",
+      "title": "We measured the scan you can buy. It found 14 of 20. | tokenizen",
+      "description": "Our deep scan found 14 of 20 known High findings on five public audits. Every verdict is open and one command recounts it. The story, the table and the limits.",
+      "canonical": "https://tokenizen.nl/notes/the-scan-you-can-buy-measured",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/the-scan-you-can-buy-measured",
+      "ogTitle": "We measured the scan you can buy. It found 14 of 20. | tokenizen",
+      "ogDescription": "Our deep scan found 14 of 20 known High findings on five public audits. Every verdict is open and one command recounts it. The story, the table and the limits.",
+      "twitterTitle": "We measured the scan you can buy. It found 14 of 20. | tokenizen",
+      "twitterDescription": "Our deep scan found 14 of 20 known High findings on five public audits. Every verdict is open and one command recounts it. The story, the table and the limits.",
+      "alternates": []
+    },
     "/notes/we-measured-our-scan": {
       "lang": "en",
       "title": "We measured our scan. It found 4 of 105. | tokenizen",
