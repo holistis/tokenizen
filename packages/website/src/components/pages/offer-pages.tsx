@@ -29,8 +29,8 @@ function useLang(): Locale {
 
 export function Block({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <section className="grid gap-3 border-t border-white/10 pt-6 first:border-t-0 first:pt-0 lg:grid-cols-[14rem_1fr] lg:gap-8">
-      <h2 className="font-mono text-xs font-medium uppercase tracking-[0.15em] text-[color:var(--glow)]">{label}</h2>
+    <section className="grid gap-4 rounded-2xl border border-white/10 bg-black/40 p-6 shadow-[0_10px_40px_-14px_rgba(0,0,0,0.7)] backdrop-blur-md transition-colors hover:border-white/20 md:p-8 lg:grid-cols-[14rem_1fr] lg:gap-10">
+      <h2 className="border-l-2 border-[color:var(--glow)] pl-3 font-mono text-xs font-semibold uppercase leading-snug tracking-[0.15em] text-[color:var(--glow)]">{label}</h2>
       <div className="max-w-3xl space-y-4 text-base leading-relaxed text-[color:var(--soft)]">{children}</div>
     </section>
   );
@@ -75,7 +75,7 @@ function OfferFrame({
   useMeta(metaTitle, metaDescription);
   return (
     <CinemaPage image={image} chip={chip} title={title} lead={lead}>
-      <div className="space-y-10">{children}</div>
+      <div className="space-y-5 md:space-y-6">{children}</div>
     </CinemaPage>
   );
 }
@@ -308,7 +308,7 @@ const SCAN = {
     getLabel: "What you get",
     getText: "A report of AI-generated hypotheses about the Solidity code in a public GitHub repository, to be reviewed by hand. It is not an audit and gives no guarantee that a contract is safe.",
     agentLabel: "For AI agents",
-    agentText: "AI agents can still buy the older scans over x402: the quick scan costs 1 dollar and returns 15 hypotheses, the full scan costs 5 dollars and adds 15 less certain ones, paid in USDC on Base. That is the weaker route: it found 8 of 105 known findings on harder contests, and its row is on the scoreboard. We want to offer agents the better scan too. Before you pay, a free check tells you how much of your code the scan will read: https://x402.tokenizen.nl/api/bug-intel/precheck?repo=owner/name",
+    agentText: "AI agents can still buy the older scans over x402: the quick scan costs 1 dollar and returns 15 hypotheses, the full scan costs 5 dollars and adds 15 less certain ones, paid in USDC on Base. That is the weaker route: it found 8 of 105 known findings on harder contests, and its row is on the scoreboard. Before you pay, a free check tells you how much of your code the scan will read: https://x402.tokenizen.nl/api/bug-intel/precheck?repo=owner/name",
     sources: "Price and payment address: the official sources",
     checkLabel: "How you check it",
     checkText:
@@ -337,7 +337,7 @@ const SCAN = {
     getLabel: "Wat je krijgt",
     getText: "Een rapport met door AI bedachte hypotheses over de Solidity-code in een openbare GitHub-repository, om met de hand na te lopen. Het is geen audit en geeft geen garantie dat een contract veilig is.",
     agentLabel: "Voor AI-agents",
-    agentText: "AI-agents kunnen nog steeds de oudere scans kopen via x402: de snelle scan kost 1 dollar en geeft 15 hypotheses, de volledige scan kost 5 dollar en voegt 15 minder zekere toe, betaald in USDC op Base. Dat is de zwakkere route: hij vond 8 van de 105 bekende bevindingen op moeilijkere wedstrijden, en zijn rij staat op het scorebord. We willen agents ook de betere scan aanbieden. Voor je betaalt vertelt een gratis check hoeveel van je code de scan leest: https://x402.tokenizen.nl/api/bug-intel/precheck?repo=eigenaar/naam",
+    agentText: "AI-agents kunnen nog steeds de oudere scans kopen via x402: de snelle scan kost 1 dollar en geeft 15 hypotheses, de volledige scan kost 5 dollar en voegt 15 minder zekere toe, betaald in USDC op Base. Dat is de zwakkere route: hij vond 8 van de 105 bekende bevindingen op moeilijkere wedstrijden, en zijn rij staat op het scorebord. Voor je betaalt vertelt een gratis check hoeveel van je code de scan leest: https://x402.tokenizen.nl/api/bug-intel/precheck?repo=eigenaar/naam",
     sources: "Prijs en betaaladres: de officiële bronnen",
     checkLabel: "Zo ga je het na",
     checkText:
@@ -365,7 +365,7 @@ export function ScanPage() {
       <Block label={c.deepLabel}>
         <p>{c.deepText}</p>
         <p>
-          <LinkOut href={to("/deep-scan")}>{c.deepLink}</LinkOut>
+          <a href={to("/deep-scan")} className="btn-glow">{c.deepLink}</a>
         </p>
       </Block>
       <Block label={REPO_CHECK_COPY[loc].label}>
