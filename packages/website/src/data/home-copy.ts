@@ -69,9 +69,9 @@ const OFFERS_EN: Offer[] = [
     id: "scan",
     status: "pay per scan",
     name: "Smart contract scan",
-    line: "A security scan of smart contract code: it returns possible weak spots for you to check. It finds some of what a human audit finds, and we publish how much.",
+    line: "Our cyber security scan reads smart contract code and returns possible weak spots for you to check. It finds some of what a human audit finds, and we publish how much. People pay by card or iDEAL, AI agents pay over x402.",
     gets: "A report of AI-generated hypotheses about the Solidity code in a public GitHub repository, to be reviewed by hand. You pay per scan in USDC over x402.",
-    verify: "The public scoreboard lists every run. Version 3.1 found 8 of 105 known findings in its first 15 hypotheses, on contests that were no longer secret, after two changes at once. In the sealed run the earlier versions found 1 and 4. The rule of the sealed run was written down in public before it; for 3.1 it is only in our own notes.",
+    verify: "The public scoreboard lists every run. Version 3.1 found 8 of 105 known findings in its first 15 hypotheses, on contests that were no longer secret, after two changes at once. In the sealed run the earlier versions found 1 and 4. The rule of the sealed run was written down in public before it; for 3.1 it is only in our own notes. On 2 November 2026 the scan you buy found 14 of 20 known High bugs on five audits, and six of our research runs together found 77.4 percent (24 of 31) on seven; the result folders hold every verdict and a script that recounts them.",
     not: "Not an audit and no guarantee that a contract is safe. What it finds and misses is on the public scoreboard.",
     price: "Deep scan by card or iDEAL: 0.02 euro per line of Solidity, minimum 2 euro, and a full refund if the scan fails, finds nothing or reads less than half of your code. For AI agents an older x402 route remains: quick scan 1 dollar, full scan 5 dollars, paid in USDC on Base. Payment address: the official sources.",
     cta: { label: "Open the scoreboard", href: "/scoreboard" },
@@ -138,9 +138,9 @@ const OFFERS_NL: Offer[] = [
     id: "scan",
     status: "per scan betalen",
     name: "Smart-contractscan",
-    line: "Een beveiligingsscan van smart-contractcode: hij geeft mogelijke zwakke plekken terug om na te lopen. Hij vindt een deel van wat een menselijke audit vindt, en we publiceren hoeveel.",
+    line: "Onze cyber security scan leest smart-contractcode en geeft mogelijke zwakke plekken terug om na te lopen. Hij vindt een deel van wat een menselijke audit vindt, en we publiceren hoeveel. Mensen betalen met kaart of iDEAL, AI-agents betalen via x402.",
     gets: "Een rapport met door AI bedachte hypotheses over de Solidity-code in een openbare GitHub-repository, om met de hand na te lopen. Je betaalt per scan in USDC via x402.",
-    verify: "Het openbare scorebord noemt elke run. Versie 3.1 vond 8 van de 105 bekende bevindingen in zijn eerste 15 hypotheses, op wedstrijden die niet meer geheim waren, na twee wijzigingen tegelijk. In de verzegelde run vonden de eerdere versies er 1 en 4. De regel van de verzegelde run stond vooraf openbaar; voor 3.1 staat hij alleen in onze eigen notities.",
+    verify: "Het openbare scorebord noemt elke run. Versie 3.1 vond 8 van de 105 bekende bevindingen in zijn eerste 15 hypotheses, op wedstrijden die niet meer geheim waren, na twee wijzigingen tegelijk. In de verzegelde run vonden de eerdere versies er 1 en 4. De regel van de verzegelde run stond vooraf openbaar; voor 3.1 staat hij alleen in onze eigen notities. Op 2 november 2026 vond de scan die je koopt 14 van de 20 bekende High-bugs in vijf audits, en zes van onze onderzoeksruns samen vonden 77,4 procent (24 van 31) in zeven; de resultaatmappen bevatten elk oordeel en een script dat alles opnieuw telt.",
     not: "Geen audit en geen garantie dat een contract veilig is. Wat hij vindt en mist staat op het openbare scorebord.",
     price: "Diepe scan met kaart of iDEAL: 0,02 euro per regel Solidity, minimum 2 euro, en een volledige terugbetaling als de scan mislukt, niets vindt of minder dan de helft van je code leest. Voor AI-agents blijft een oudere x402-route: snelle scan 1 dollar, volledige scan 5 dollar, betaald in USDC op Base. Betaaladres: de officiële bronnen.",
     cta: { label: "Open het scorebord", href: "/scoreboard" },
@@ -352,6 +352,8 @@ export interface CinemaCopy {
   tilePrice: Record<Offer["id"], string>;
   /** The homepage names no person; the conversation card is called by what it is. The offer page keeps its own name. */
   tileName: Partial<Record<Offer["id"], string>>;
+  /** A number printed big on a tile, with the words that say exactly what it counts. */
+  tileStat: Partial<Record<Offer["id"], { value: string; label: string }>>;
   pillars: Pillar[];
   mission: { label: string; mission: { label: string; title: string; text: string }; vision: { label: string; title: string; text: string } };
   talk: { heading: string; body: string; button: string; secondary: string; subject: string };
@@ -374,7 +376,13 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
       tools: "Free",
       talk: "No fixed offer yet",
     },
-    tileName: { scan: "Security scan for smart contracts", talk: "Talk to us" },
+    tileName: { scan: "Cyber security scan for smart contracts", talk: "Talk to us" },
+    tileStat: {
+      scan: {
+        value: "77.4%",
+        label: "of the known High bugs found by six of our research runs together (24 of 31). The scan you buy found 14 of 20 on five audits. Every verdict is open.",
+      },
+    },
     pillars: [
       {
         id: "betrouwbaarheid",
@@ -442,7 +450,13 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
       tools: "Gratis",
       talk: "Nog geen vast aanbod",
     },
-    tileName: { scan: "Beveiligingsscan voor smart contracts", talk: "Praat met ons" },
+    tileName: { scan: "Cyber security scan voor smart contracts", talk: "Praat met ons" },
+    tileStat: {
+      scan: {
+        value: "77,4%",
+        label: "van de bekende High-bugs gevonden door zes van onze onderzoeksruns samen (24 van 31). De scan die je koopt vond er 14 van de 20 in vijf audits. Elk oordeel is open.",
+      },
+    },
     pillars: [
       {
         id: "betrouwbaarheid",

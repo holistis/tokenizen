@@ -82,6 +82,12 @@ export function OfferTiles({ locale }: { locale: Locale }) {
                 </a>
               </h3>
               <p className="mt-3 flex-1 text-sm leading-relaxed text-[color:var(--soft)]">{offer.line}</p>
+              {CINEMA[locale].tileStat[offer.id] ? (
+                <p className="mt-5 flex items-baseline gap-3">
+                  <span className="glow-text font-signage text-5xl font-bold leading-none">{CINEMA[locale].tileStat[offer.id]?.value}</span>
+                  <span className="text-xs leading-snug text-[color:var(--soft)]">{CINEMA[locale].tileStat[offer.id]?.label}</span>
+                </p>
+              ) : null}
               <p className="mt-6 font-mono text-xs text-white/90">{CINEMA[locale].tilePrice[offer.id]}</p>
               <p className="mt-3 inline-flex items-center gap-1 font-mono text-xs uppercase tracking-wide text-[color:var(--glow)]">
                 {c.open}
