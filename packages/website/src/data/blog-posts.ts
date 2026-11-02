@@ -974,17 +974,17 @@ The folder holds all 234 verdicts and a script, node check.mjs, that recomputes 
   {
     slug: "the-scan-you-can-buy-measured",
     date: "2026-11-02",
-    title: "Our smart contract security scan found 14 of 20 known bugs. Anyone can recount it.",
-    dek: "On five public audits our scan found 14 of 20 known High-severity bugs, one run each. Our research runs together reach 77.4 percent on seven. Every verdict is open and one command recounts it.",
+    title: "Our cyber security scan for smart contracts found 14 of 20 known bugs. Anyone can recount it.",
+    dek: "On five public audits our cyber security scan for smart contracts found 14 of 20 known High-severity bugs, one run each. Our research runs together reach 77.4 percent on seven. Every verdict is open and one command recounts it.",
     description:
-      "Our smart contract security scan found 14 of 20 known bugs on five public audits. Research runs reach 77.4 percent. Every verdict is open and recountable.",
+      "Our cyber security scan for smart contracts found 14 of 20 known bugs on five public audits. Research runs reach 77.4 percent. Every verdict is open.",
     tags: ["Measurements", "Scan"],
     readMinutes: 5,
     kind: "blog",
     blocks: [
       {
         type: "md",
-        text: `Until today we could not tell you how good our smart contract security scan really is. It reads the Solidity code of a project and reports the bugs it thinks are there. We had a number for our research runs, 77 percent when six of them were put together, and we had a number for an older, simpler route, 8 of 20. We did not have a number for the thing you actually buy.
+        text: `Until today we could not tell you how good our cyber security scan for smart contracts really is. It reads the Solidity code of a project and reports the bugs it thinks are there. We had a number for our research runs, 77 percent when six of them were put together, and we had a number for an older, simpler route, 8 of 20. We did not have a number for the thing you actually buy.
 
 Today we do. We took the five audits of that older measurement, ran the current setup once on each, and let a copy of the benchmark's own judge grade the reports. It found 14 of the 20 known High findings.
 

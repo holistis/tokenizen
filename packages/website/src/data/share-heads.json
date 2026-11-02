@@ -938,15 +938,15 @@
     },
     "/notes/the-scan-you-can-buy-measured": {
       "lang": "en",
-      "title": "Our smart contract security scan found 14 of 20 known bugs. Anyone can recount it. | tokenizen",
-      "description": "Our smart contract security scan found 14 of 20 known bugs on five public audits. Research runs reach 77.4 percent. Every verdict is open and recountable.",
+      "title": "Our cyber security scan for smart contracts found 14 of 20 known bugs. Anyone can recount it. | tokenizen",
+      "description": "Our cyber security scan for smart contracts found 14 of 20 known bugs on five public audits. Research runs reach 77.4 percent. Every verdict is open.",
       "canonical": "https://tokenizen.nl/notes/the-scan-you-can-buy-measured",
       "ogLocale": "en_US",
       "ogUrl": "https://tokenizen.nl/notes/the-scan-you-can-buy-measured",
-      "ogTitle": "Our smart contract security scan found 14 of 20 known bugs. Anyone can recount it. | tokenizen",
-      "ogDescription": "Our smart contract security scan found 14 of 20 known bugs on five public audits. Research runs reach 77.4 percent. Every verdict is open and recountable.",
-      "twitterTitle": "Our smart contract security scan found 14 of 20 known bugs. Anyone can recount it. | tokenizen",
-      "twitterDescription": "Our smart contract security scan found 14 of 20 known bugs on five public audits. Research runs reach 77.4 percent. Every verdict is open and recountable.",
+      "ogTitle": "Our cyber security scan for smart contracts found 14 of 20 known bugs. Anyone can recount it. | tokenizen",
+      "ogDescription": "Our cyber security scan for smart contracts found 14 of 20 known bugs on five public audits. Research runs reach 77.4 percent. Every verdict is open.",
+      "twitterTitle": "Our cyber security scan for smart contracts found 14 of 20 known bugs. Anyone can recount it. | tokenizen",
+      "twitterDescription": "Our cyber security scan for smart contracts found 14 of 20 known bugs on five public audits. Research runs reach 77.4 percent. Every verdict is open.",
       "alternates": []
     },
     "/notes/we-measured-our-scan": {
