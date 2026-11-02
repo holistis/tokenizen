@@ -42,7 +42,7 @@ export function Hero({ locale }: { locale: Locale }) {
           </div>
         </div>
       </div>
-      <ul className="mt-12 grid gap-3 sm:grid-cols-3 lg:mt-16">
+      <ul className="mt-12 grid gap-3 sm:grid-cols-2 lg:mt-16">
         {c.chips.map((chip) => (
           <li key={chip.label}>
             <a
