@@ -974,21 +974,21 @@ The folder holds all 234 verdicts and a script, node check.mjs, that recomputes 
   {
     slug: "the-scan-you-can-buy-measured",
     date: "2026-11-02",
-    title: "We measured the scan you can buy. It found 14 of 20.",
-    dek: "For the first time the scan we sell was counted on five public audits, with every verdict open and a script that recounts it. The story, the table and the limits.",
+    title: "Our smart contract security scan found 14 of 20 known bugs. Anyone can recount it.",
+    dek: "On five public audits our scan found 14 of 20 known High-severity bugs, one run each. Our research runs together reach 77.4 percent on seven. Every verdict is open and one command recounts it.",
     description:
-      "Our deep scan found 14 of 20 known High findings on five public audits. Every verdict is open and one command recounts it. The story, the table and the limits.",
+      "Our smart contract security scan found 14 of 20 known bugs on five public audits. Research runs reach 77.4 percent. Every verdict is open and recountable.",
     tags: ["Measurements", "Scan"],
     readMinutes: 5,
     kind: "blog",
     blocks: [
       {
         type: "md",
-        text: `Until today we could not tell you how good the scan we sell really is. We had a number for our research runs, 77 percent when six of them were put together, and we had a number for an older, simpler route, 8 of 20. We did not have a number for the thing you actually buy.
+        text: `Until today we could not tell you how good our smart contract security scan really is. It reads the Solidity code of a project and reports the bugs it thinks are there. We had a number for our research runs, 77 percent when six of them were put together, and we had a number for an older, simpler route, 8 of 20. We did not have a number for the thing you actually buy.
 
 Today we do. We took the five audits of that older measurement, ran the current setup once on each, and let a copy of the benchmark's own judge grade the reports. It found 14 of the 20 known High findings.
 
-That is 70 percent, on five audits, with one run each. It makes no promise about your contracts, and it is the first honest count of the scan you can buy. Anyone can redo it: clone the folder, run one command, and the same 14 come out.`,
+That is 70 percent, on five audits, with one run each. It makes no promise about your contracts, and it is the first honest count of the scan we sell. Anyone can redo it: clone the folder, run one command, and the same 14 come out.`,
       },
       {
         type: "image",
@@ -1063,7 +1063,7 @@ The older route had found 8 of 20. Four of the six extra findings come from one 
         type: "matrix",
         heading: "Audit by audit",
         intro: "Found out of known, per audit. A green cell means all found, amber some, grey none. The leader column is the leader's report under our judge copy.",
-        columns: ["The scan you can buy now", "Our older route", "The leader"],
+        columns: ["Our scan, as sold now", "Our older route", "The leader"],
         rows: [
           {
             label: "nextgen",
