@@ -623,3 +623,53 @@
     transform: none;
   }
 }
+
+/* De tekstblokken van een subpagina: glas, om en om links en rechts, zoals op de hoofdpagina. */
+.cinema-body {
+  display: grid;
+  gap: 1.5rem;
+}
+.cinema-body > * {
+  width: 100%;
+  max-width: 54rem !important;
+  background: rgba(8, 12, 13, 0.64);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1.25rem;
+  padding: 1.75rem;
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+@media (min-width: 768px) {
+  .cinema-body > * {
+    padding: 2.25rem;
+  }
+  .cinema-body > :nth-child(even) {
+    margin-left: auto;
+  }
+}
+
+/* Leespagina: de foto blijft staan, de tekst schuift er over op glas. */
+.reading {
+  position: relative;
+  isolation: isolate;
+}
+.reading-media {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+}
+.reading-media .scene-img {
+  transform: none;
+  will-change: auto;
+}
+.reading-shade {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(6, 9, 10, 0.8), rgba(6, 9, 10, 0.45) 60%, rgba(6, 9, 10, 0.2)),
+    linear-gradient(180deg, rgba(6, 9, 10, 0.5), rgba(6, 9, 10, 0.88));
+}

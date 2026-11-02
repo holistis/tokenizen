@@ -19,6 +19,7 @@
 // Dutch index says that in a line rather than leaving a reader to wonder.
 
 import { useEffect } from "react";
+import { ReadingPage } from "@/components/home/cinema";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { BLOG_POSTS, postPath, type PostKind } from "@/data/blog-posts";
@@ -175,8 +176,7 @@ function PostIndex({ kind }: { kind: PostKind }) {
   const [featured, ...rest] = entriesOfKind(kind);
 
   return (
-    <article className="border-t border-border py-16 md:py-24">
-      <div className="container max-w-3xl">
+    <ReadingPage image="logboek">
         <a
           href={prefix || "/"}
           className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -258,8 +258,7 @@ function PostIndex({ kind }: { kind: PostKind }) {
             </ul>
           </>
         ) : null}
-      </div>
-    </article>
+      </ReadingPage>
   );
 }
 

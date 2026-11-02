@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { ReadingPage } from "@/components/home/cinema";
 import { ArrowLeft } from "lucide-react";
 
 const TITLE = "I checked 600 live x402 services. None of them signs a receipt. | tokenizen";
@@ -43,8 +44,7 @@ export function ZeroOf600Article() {
   useArticleMeta();
 
   return (
-    <article className="border-t border-border py-16 md:py-24">
-      <div className="container max-w-3xl">
+    <ReadingPage image="betaling">
         <a
           href="/notes"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -190,7 +190,6 @@ export function ZeroOf600Article() {
           </a>
           .
         </P>
-      </div>
-    </article>
+      </ReadingPage>
   );
 }

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { ReadingPage } from "@/components/home/cinema";
 import { ArrowLeft, ArrowUpRight, Radar } from "lucide-react";
 
 import { BadgeSnippet } from "@/components/trust-radar/badge-snippet";
@@ -48,8 +49,7 @@ export function TrustRadarPage() {
   useArticleMeta(t.trustRadar.metaTitle, t.trustRadar.metaDescription);
 
   return (
-    <article className="border-t border-border py-16 md:py-24">
-      <div className="container max-w-3xl">
+    <ReadingPage image="weegschaal">
         <a
           href="/"
           className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-wide text-muted-foreground hover:text-foreground"
@@ -102,7 +102,6 @@ export function TrustRadarPage() {
             ))}
           </div>
         )}
-      </div>
-    </article>
+      </ReadingPage>
   );
 }

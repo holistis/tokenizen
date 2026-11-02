@@ -5,6 +5,7 @@
 // mission block and the call to action. A new post is data, not a new page.
 
 import { useEffect } from "react";
+import { ReadingPage } from "@/components/home/cinema";
 import type { JSX, ReactNode } from "react";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 
@@ -228,8 +229,7 @@ export function BlogPostPage({ post }: { post: BlogPost }) {
   }, [title, post.description]);
 
   return (
-    <article className="border-t border-border py-16 md:py-24">
-      <div className="container max-w-3xl">
+    <ReadingPage image="logboek">
         <a
           href={`${prefix}${post.kind === "blog" ? "/blog" : "/notes"}`}
           className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -252,7 +252,6 @@ export function BlogPostPage({ post }: { post: BlogPost }) {
         <p className="mt-4 text-lg leading-relaxed text-muted-foreground">{post.dek}</p>
 
         {post.blocks.map((block, index) => renderBlock(block, index, prefix))}
-      </div>
-    </article>
+      </ReadingPage>
   );
 }

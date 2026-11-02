@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { ReadingPage } from "@/components/home/cinema";
 import { ArrowLeft, Mail } from "lucide-react";
 
 const TITLE = "Nine ways to fake a delivery claim, and why none of them fully worked | tokenizen";
@@ -48,8 +49,7 @@ export function NineWaysArticle() {
   useArticleMeta();
 
   return (
-    <article className="border-t border-border py-16 md:py-24">
-      <div className="container max-w-3xl">
+    <ReadingPage image="betaling">
         <a
           href="/"
           className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-wide text-muted-foreground hover:text-foreground"
@@ -154,7 +154,6 @@ export function NineWaysArticle() {
             {CONTACT_EMAIL}
           </a>
         </div>
-      </div>
-    </article>
+      </ReadingPage>
   );
 }
