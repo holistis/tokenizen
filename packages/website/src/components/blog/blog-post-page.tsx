@@ -125,7 +125,7 @@ function MatrixBlock({ block, prefix }: { block: Extract<PostBlock, { type: "mat
       <h2 className="font-display text-xl font-semibold tracking-tight md:text-2xl">{block.heading}</h2>
       <p className="mt-3 text-base leading-relaxed text-muted-foreground">{block.intro}</p>
       <div className="mt-6 overflow-x-auto rounded-lg border border-border bg-card">
-        <table className="w-full min-w-[44rem] border-collapse text-left text-sm">
+        <table className={`w-full border-collapse text-left text-sm ${block.columns.length > 4 ? "min-w-[44rem]" : ""}`}>
           <thead>
             <tr className="border-b border-border">
               <th scope="col" className="px-4 py-3 font-mono text-xs uppercase tracking-wide text-muted-foreground">
