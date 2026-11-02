@@ -1036,6 +1036,12 @@ The older route had found 8 of 20. Four of the six extra findings come from one 
             hrefLabel: "the folder",
           },
           {
+            value: "17 of 90",
+            label: "Hypotheses the scan wrote that match a known finding when two open judges name the same one: 18.9 percent. It is a floor, because a real bug the audit did not list counts as a miss.",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-11-02-shop-setup-five-audits/README.md",
+            hrefLabel: "the precision section",
+          },
+          {
             value: "77.4 percent",
             label: "Six of our research runs together on seven audits: 24 of 31 known findings. A research result, and not the scan you can buy.",
             href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-11-02-our-scan-under-the-benchmark-judge/README.md",
@@ -1141,6 +1147,7 @@ We think this is what the work should look like. A number you can recount is wor
 - Two runs, size and nextgen, hit our own cost limit of 1.50 dollars and were stopped. We have not measured what the shop's own limits would do on them.
 - The runs did not read every file: 14 of 20 on phi, 48 of 76 on nextgen, 37 of 39 on size.
 - The cheaper 1 and 5 USDC routes are older and are not measured here.
+- The precision figure comes from two open judges that are stricter than the grader copy: they find 9 of the 20 strictly where the copy found 14. Another vendor's precision cannot be set next to it.
 - The judge is a copy of the benchmark's grader, run through OpenRouter. It gave the same verdict as the benchmark's own answer on 30 of 31 findings when we checked it on the leader's report.
 
 If a number in the folder does not match when you run the check, tell us in issue 41 of the repository. We will correct it and keep the old text visible.`,
