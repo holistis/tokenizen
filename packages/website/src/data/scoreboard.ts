@@ -55,7 +55,7 @@ export interface ScoreRun {
   links: RunLink[];
 }
 
-export const SCORE_UPDATED = "2026-10-31";
+export const SCORE_UPDATED = "2026-11-02";
 
 // The rule for what goes on this page and how fast, with an OpenTimestamps stamp next to it in the open repository.
 export const PUBLICATION_RULE_URL = `${REPO}/PUBLICATION-RULE-scan-results.md`;
@@ -107,6 +107,20 @@ export const SCORE_RUNS: ScoreRun[] = [
     tunedOn: "yes",
     note: "Strict, both judges name the same finding: 10 of 105 in the first 15 hypotheses per contest (120 of the 282 reported), 12 in the first 30 and 12 in the whole list (11.4 percent). All easy: 12 of 59 easy, 0 of 14 middle, 0 of 32 hard. This run was only partly read because of a setting of ours that we fixed for the second run, so it is likely lower than a full read would give. The second run above read everything. The judges are a different pair than in the older rows, so the older rows are not strictly comparable. We built this version after the answers to these contests were public, so the set is tuned on. One run. The contests have been public since 24 October and may be in the training data.",
     links: [{ label: "The results, judgements and hashes", href: `${REPO}/results/2026-10-31-lab-sealed/README.md` }],
+  },
+  {
+    id: "benchmark-judge-seven",
+    date: "2026-11-02",
+    title: "Our research runs on 7 EVMbench audits, graded by a copy of the benchmark's own judge",
+    system: "Six research runs of ours put together. This is not the scan sold in the shop, which is a cheaper and simpler route",
+    set: "7 audits of the public EVMbench detect set, 31 known High findings. The audit with the most findings, noya, is left out",
+    status: "measured",
+    known: 31,
+    found: 24,
+    hypotheses: 270,
+    tunedOn: "partly",
+    note: "24 of 31 (77.4 percent). One run alone finds 22 of 31 (71.0 percent), two runs together 23 (74.2 percent). The leader's own report under the same judge finds 25 (80.6 percent), so the leader is ahead of us. The judge is a copy of the benchmark's grader, one call per finding, which gave the same verdict as theirs on 30 of 31 findings of the leader's report. It is not the pair of open judges that counts the other rows, so this row is not comparable with them. A union of runs takes everything any run found, and its list is long, 270 entries against 174 for the leader. We chose the 7 audits because they were affordable, one of them was a development audit of ours, and noya, where we lose most, is not judged yet. One run per source: a difference of one or two findings is noise.",
+    links: [{ label: "The results, judgements and hashes", href: `${REPO}/results/2026-11-02-our-scan-under-the-benchmark-judge/README.md` }],
   },
   {
     id: "evmbench-forty",
@@ -318,6 +332,13 @@ export const SCORE_RUNS_NL: Record<string, RunTextNl> = {
     set: "Nieuwe wedstrijden zodra hun eindrapporten verschijnen",
     note: "De zuiverste toets, want de antwoorden bestaan nog niet als het rapport wordt vastgelegd. De hash van het rapport van een systeem wordt vastgelegd voordat de uitslagen van de wedstrijd verschijnen, en wordt achteraf beoordeeld door dezelfde twee rechters. Dat duurt weken, want de uitslagen komen per wedstrijd binnen.",
     links: ["Hoe de rechters beslissen"],
+  },
+  "benchmark-judge-seven": {
+    title: "Onze onderzoeksruns op 7 EVMbench-audits, beoordeeld door een kopie van de eigen rechter van de benchmark",
+    system: "Zes onderzoeksruns van ons samengevoegd. Dit is niet de scan die in de winkel wordt verkocht, dat is een goedkopere en eenvoudigere route",
+    set: "7 audits van de openbare detect-set van EVMbench, 31 bekende bevindingen van hoge ernst. De audit met de meeste bevindingen, noya, is weggelaten",
+    note: "24 van de 31 (77,4 procent). Eén run alleen vindt 22 van de 31 (71,0 procent), twee runs samen 23 (74,2 procent). Het eigen rapport van de leider vindt onder dezelfde rechter 25 (80,6 procent), dus de leider loopt voor op ons. De rechter is een kopie van het beoordelingsprogramma van de benchmark, één aanroep per bevinding, die op 30 van de 31 bevindingen van het rapport van de leider hetzelfde oordeel gaf als de hunne. Het is niet het paar open rechters dat de andere rijen telt, dus deze rij is niet vergelijkbaar met die rijen. Een samenvoeging van runs neemt alles wat één run vond, en de lijst is lang, 270 regels tegen 174 bij de leider. We kozen de 7 audits omdat ze betaalbaar waren, één ervan was een ontwikkelaudit van ons, en noya, waar we het meest verliezen, is nog niet beoordeeld. Eén run per bron: een verschil van een of twee bevindingen is ruis.",
+    links: ["De resultaten, oordelen en hashes"],
   },
   "evmbench-forty": {
     title: "Versie 3.1 op de 40 audits van EVMbench",
