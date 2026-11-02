@@ -988,7 +988,9 @@ The folder holds all 234 verdicts and a script, node check.mjs, that recomputes 
 
 Today we do. We took the five audits of that older measurement, ran the current setup once on each, and let a copy of the benchmark's own judge grade the reports. It found 14 of the 20 known High findings.
 
-That is 70 percent, on five audits, with one run each. It makes no promise about your contracts, and it is the first honest count of the scan we sell. Anyone can redo it: clone the folder, run one command, and the same 14 come out.`,
+That is 70 percent, on five audits, with one run each. It makes no promise about your contracts, and it is the first honest count of the scan we sell. Anyone can redo it: clone the folder, run one command, and the same 14 come out.
+
+The scan is for people and for AI agents. A person pays by card or iDEAL, and an AI agent pays over x402 in USDC on Base.`,
       },
       {
         type: "image",
