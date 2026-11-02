@@ -313,11 +313,11 @@ const SCAN = {
     checkText:
       "Every run on our fixed sets goes on the public scoreboard within 7 days, the misses included, under a public rule with an OpenTimestamps stamp. Where a row links to a pre-registration, the rule was written down in public before the run; for version 3.1 the rule is only in our own notes, so that row is less verifiable. Version 3.1 found 8 of 105 known findings in its first 15 hypotheses, on the same eight contests as our sealed run, which were no longer secret by then, after two changes at once. In the sealed run the earlier versions found 1 and 4. Every report we deliver is also put on a public list: the fingerprint of the report, the outcome, the coverage and the time, without the repository or the buyer. The head of that list is stamped with OpenTimestamps, which is outside our control and counts as confirmed some hours after it is made. The list is at https://api.tokenizen.nl/api/scan-receipts and you check your own report with one file, verify-scan-receipts.mjs on this site. This shows that a report existed on that date and was not changed afterwards. It does not show which version of the code was scanned, and it does not show that the code is safe. Our own test runs are not on the list. Each square below is one known finding.",
     strip: "8 of 105 known findings found, 97 missed",
-    bestLabel: "Our best result",
+    bestLabel: "Our best research result",
     bestBig: "77 percent of 31 known findings",
     bestStrip: "24 of 31 known findings found, 7 missed",
     bestText:
-      "Six of our research runs together found 24 of the 31 known High findings in 7 audits of the public EVMbench set, graded by a copy of the benchmark's own judge. One run alone finds 71 percent. This is our research setup and not the scan sold below, which is a cheaper and simpler route. Every verdict is in an open folder, and one command counts them again.",
+      "Six of our research runs together found 24 of the 31 known High findings in 7 audits of the public EVMbench set, graded by a copy of the benchmark's own judge. One run alone finds 71 percent. This is our research setup and not the scan sold below, which is a cheaper and simpler route. The measurements of the scan sold below are on the scoreboard and are lower. Every verdict is in an open folder, and one command counts them again.",
     bestLink: "The results, judgements and hashes",
     board: "Open the scoreboard",
     watchLabel: "Watch it in a minute",
@@ -350,11 +350,11 @@ const SCAN = {
     checkText:
       "Elke run op onze vaste sets komt binnen 7 dagen op het openbare scorebord, de missers inbegrepen, onder een openbare regel met een OpenTimestamps-stempel. Waar een rij naar een preregistratie verwijst, stond de regel vooraf openbaar opgeschreven; voor versie 3.1 staat de regel alleen in onze eigen notities, dus die rij is minder goed na te gaan. Versie 3.1 vond 8 van de 105 bekende bevindingen in zijn eerste 15 hypotheses, op dezelfde acht wedstrijden als onze verzegelde run, die toen niet meer geheim waren, na twee wijzigingen tegelijk. In de verzegelde run vonden de eerdere versies er 1 en 4. Elk rapport dat we afleveren komt ook op een openbare lijst: de vingerafdruk van het rapport, de uitkomst, de dekking en het tijdstip, zonder de repository of de koper. De kop van die lijst krijgt een stempel van OpenTimestamps, buiten onze controle, dat enkele uren na het zetten als bevestigd telt. De lijst staat op https://api.tokenizen.nl/api/scan-receipts en je controleert je eigen rapport met één bestand, verify-scan-receipts.mjs op deze site. Dat laat zien dat een rapport op die datum bestond en daarna niet is aangepast. Het laat niet zien welke versie van de code is gescand, en ook niet dat de code veilig is. Onze eigen proefruns staan niet op de lijst. Elk vierkantje hieronder is één bekende bevinding.",
     strip: "8 van de 105 bekende bevindingen gevonden, 97 gemist",
-    bestLabel: "Ons beste resultaat",
+    bestLabel: "Ons beste onderzoeksresultaat",
     bestBig: "77 procent van 31 bekende bevindingen",
     bestStrip: "24 van de 31 bekende bevindingen gevonden, 7 gemist",
     bestText:
-      "Zes van onze onderzoeksruns samen vonden 24 van de 31 bekende High-bevindingen in 7 audits van de openbare EVMbench-set, beoordeeld door een kopie van de eigen rechter van de benchmark. Eén run alleen vindt 71 procent. Dit is onze onderzoeksopstelling en niet de scan die hieronder wordt verkocht, dat is een goedkopere en eenvoudigere route. Elk oordeel staat in een open map, en één commando telt ze opnieuw na.",
+      "Zes van onze onderzoeksruns samen vonden 24 van de 31 bekende High-bevindingen in 7 audits van de openbare EVMbench-set, beoordeeld door een kopie van de eigen rechter van de benchmark. Eén run alleen vindt 71 procent. Dit is onze onderzoeksopstelling en niet de scan die hieronder wordt verkocht, dat is een goedkopere en eenvoudigere route. De metingen van de scan die hieronder wordt verkocht staan op het scorebord en liggen lager. Elk oordeel staat in een open map, en één commando telt ze opnieuw na.",
     bestLink: "De resultaten, oordelen en hashes",
     board: "Open het scorebord",
     watchLabel: "Kijk in een minuut",
