@@ -13,12 +13,18 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
 import type { CraChecker } from "./cra-check.js";
+import type { X402Checker } from "./x402-check.js";
 
 export const CRA_MCP_TOOL = "check_github_repo";
+export const X402_MCP_TOOL = "check_x402_endpoint";
 
 const DESCRIPTION =
   "Reads up to about thirty public pages of a public GitHub repository and reports which of eight security signals are visible: a security policy that names a contact or a reporting link, a software bill of materials, proof of where releases come from, a lockfile, automatic updates of dependencies, security scans in CI, recent maintenance and a licence. For each signal that is not visible the answer says what would make it visible; a signal that could not be read completely is marked not measured, never as a gap. " +
   "The eight signals are a selection related to topics in the EU Cyber Resilience Act. This is an indication from public data, not a compliance check, not a certificate and not legal advice; private repositories and hosts other than GitHub cannot be checked. Read only. Limited to a few checks per ten minutes per address.";
+
+const X402_DESCRIPTION =
+  "Makes one anonymous request to a public x402 payment endpoint, without ever paying, and reports whether its payment request passes the official buyer schema and how far up the receipt ladder the seller gets (does it name what it sells, does it sign its offer, does it return a signed receipt). Use it before an agent pays an endpoint it has not used before. " +
+  "The answer carries verdicts only, never the endpoint's raw headers or body. It is an indication from one request, not an endorsement, not a security review and not a promise that the seller will deliver; every answer says what it did not measure.";
 
 const jsonRpcError = (code: number, message: string) => ({ jsonrpc: "2.0", error: { code, message }, id: null });
 
@@ -27,7 +33,7 @@ const asText = (value: unknown, isError = false) => ({
   ...(isError ? { isError: true } : {}),
 });
 
-export function createCraMcpServer(checker: CraChecker): McpServer {
+export function createCraMcpServer(checker: CraChecker, x402Checker?: X402Checker): McpServer {
   const server = new McpServer({ name: "tokenizen-cra-check", version: "0.1.0" });
   server.registerTool(
     CRA_MCP_TOOL,
@@ -57,18 +63,45 @@ export function createCraMcpServer(checker: CraChecker): McpServer {
       }
     },
   );
+  if (x402Checker) {
+    server.registerTool(
+      X402_MCP_TOOL,
+      {
+        title: "Check a public x402 payment endpoint before paying it",
+        description: X402_DESCRIPTION,
+        inputSchema: {
+          url: z.string().min(1).max(2048).describe("The https address of the paid route to check"),
+          method: z.enum(["GET", "POST"]).optional().describe("The method the route is paid with; POST when not given"),
+        },
+        annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+      },
+      async ({ url, method }) => {
+        const outcome = await x402Checker.check(url, method ?? "POST");
+        switch (outcome.kind) {
+          case "done":
+            return asText({ ok: true, cached: outcome.cached, ...outcome.result });
+          case "invalid":
+            return asText(outcome.error, true);
+          case "limited":
+            return asText(`${outcome.error} (retry after about ${outcome.retryAfterSeconds} seconds)`, true);
+          default:
+            return asText("the check could not be completed, please try again later", true);
+        }
+      },
+    );
+  }
   return server;
 }
 
 /** POST /mcp: one JSON-RPC request in, the answer out. */
-export function handleCraMcp(checker: CraChecker) {
+export function handleCraMcp(checker: CraChecker, x402Checker?: X402Checker) {
   return async (req: ExpressRequest, res: ExpressResponse): Promise<void> => {
     res.setHeader("Cache-Control", "no-store");
     if (!checker.enabled) {
       res.status(503).json(jsonRpcError(-32000, "this check is not switched on on this server"));
       return;
     }
-    const server = createCraMcpServer(checker);
+    const server = createCraMcpServer(checker, x402Checker);
     // Plain JSON answers: nothing here streams, and a proxy in front has nothing to hold open.
     const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
     transport.onerror = (err) => console.error(`cra-mcp: transport error (${err instanceof Error ? err.name : "unknown"})`);
