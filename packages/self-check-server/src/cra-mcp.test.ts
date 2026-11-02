@@ -4,7 +4,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { createAttesterIdentity } from "trust-attest-server/dist/attester-identity.js";
 import { createApp } from "./app.js";
-import { bodyCallsATool, CRA_MCP_TOOL } from "./cra-mcp.js";
+import { bodyCallsATool, CRA_MCP_TOOL, X402_MCP_TOOL } from "./cra-mcp.js";
 
 const NOW = Date.parse("2026-10-28T12:00:00Z");
 
@@ -65,14 +65,33 @@ describe("the CRA check as an MCP tool", () => {
     server?.close();
   });
 
-  it("lists one read-only tool and says up front that it is not a compliance check", async () => {
+  it("lists two read-only tools and says up front that the CRA check is not a compliance check", async () => {
     await start();
     const { tools } = await (await connect()).listTools();
-    expect(tools.map((t) => t.name)).toEqual([CRA_MCP_TOOL]);
+    expect(tools.map((t) => t.name)).toEqual([CRA_MCP_TOOL, X402_MCP_TOOL]);
     const tool = tools[0]!;
     expect(tool.annotations).toMatchObject({ readOnlyHint: true, destructiveHint: false, openWorldHint: true });
     expect(tool.description).toContain("not a compliance check");
     expect(tool.description).not.toMatch(/[—–]/);
+  });
+
+  it("offers the x402 check as a second read-only tool that never pays and says what it is not", async () => {
+    await start();
+    const { tools } = await (await connect()).listTools();
+    const tool = tools.find((t) => t.name === X402_MCP_TOOL)!;
+    expect(tool.annotations).toMatchObject({ readOnlyHint: true, destructiveHint: false, openWorldHint: true });
+    expect(tool.description).toContain("without ever paying");
+    expect(tool.description).toContain("not an endorsement");
+    expect(tool.description).not.toMatch(/[—–]/);
+  });
+
+  it("turns a bad address and a bad argument of the x402 tool into plain errors, and asks the checker nothing for a host that is not public", async () => {
+    await start();
+    const client = await connect();
+    const bad = await client.callTool({ name: X402_MCP_TOOL, arguments: { url: "not a url" } });
+    expect(bad.isError).toBe(true);
+    await expect(client.callTool({ name: X402_MCP_TOOL, arguments: { url: "" } })).resolves.toMatchObject({ isError: true });
+    await expect(client.callTool({ name: X402_MCP_TOOL, arguments: { url: "https://example.org/x", method: "DELETE" } })).resolves.toMatchObject({ isError: true });
   });
 
   it("returns the same dated report as the HTTP route", async () => {
@@ -105,7 +124,7 @@ describe("the CRA check as an MCP tool", () => {
     expect(garbage.status).toBeGreaterThanOrEqual(400);
     expect(garbage.status).toBeLessThan(500);
     const { tools } = await (await connect()).listTools();
-    expect(tools).toHaveLength(1);
+    expect(tools).toHaveLength(2);
   });
 
   it("refuses a batch, so that many tool calls cannot ride on one request", async () => {

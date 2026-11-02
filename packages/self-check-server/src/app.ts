@@ -382,7 +382,7 @@ export function createApp(options: CreateAppOptions = {}): Express {
   const countedToolCalls: RequestHandler[] = options.usageWriter
     ? [(req, res, next) => (bodyCallsATool(req.body) ? usageLog("mcp", options.usageWriter!)(req, res, next) : next())]
     : [];
-  app.post("/mcp", ...countedToolCalls, craMcpRejectBatch, craMcpLimitedAsToolResult, mcpLimiter, handleCraMcp(craChecker));
+  app.post("/mcp", ...countedToolCalls, craMcpRejectBatch, craMcpLimitedAsToolResult, mcpLimiter, handleCraMcp(craChecker, x402Checker));
   app.get("/mcp", craMcpMethodNotAllowed);
   app.delete("/mcp", craMcpMethodNotAllowed);
 
