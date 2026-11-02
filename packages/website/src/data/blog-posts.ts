@@ -1048,6 +1048,12 @@ The older route had found 8 of 20. Four of the six extra findings come from one 
             hrefLabel: "the six more audits",
           },
           {
+            value: "7 of 12",
+            label: "Faults inserted today into three public projects, found strictly with two open judges. 8 of 12 with the grader copy, and no false match on the clean copies. Simple, synthetic faults.",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-11-02-injected-bugs-test/README.md",
+            hrefLabel: "the inserted-faults test",
+          },
+          {
             value: "77.4 percent",
             label: "Six of our research runs together on seven audits: 24 of 31 known findings. A research result, and not the scan you can buy.",
             href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-11-02-our-scan-under-the-benchmark-judge/README.md",
@@ -1128,6 +1134,14 @@ The older route had found 8 of 20. Four of the six extra findings come from one 
         note: "The cells come from table.json of the two result folders. One run per audit, so a single finding moves a cell. Under the benchmark's own grader the leader finds 4 of 6 on phi.",
       },
       {
+        type: "md",
+        text: `## Faults we inserted today
+
+The audits above were seen by older versions of our scan, so we also tested it on faults that did not exist this morning. With a fixed seed and a public script we inserted twelve faults, four each, into three public projects: a removed access control, a removed check, or a comparison shifted by one. We ran the scan on each copy and on a clean copy as a control. It found 8 of the 12 with the grader copy and 7 strictly with the two open judges, and on the clean copies the judges found no match at all in 21 hypotheses. The faults are simple and synthetic, so this shows that the scan finds new instances of these kinds of fault, and not that it finds new kinds of bugs. The code around them can still be in a model's training data.
+
+The test also found a bug in our own scan: for a small project it was given no list of files and in some runs read none. We fixed it and put the fix on the shop's server the same night. Anyone can rebuild the test with the script and the seed, re-judge it with their own model, and a GitHub runner recounts every result folder each week.`,
+      },
+      {
         type: "image",
         src: "/media/scan-measured-photo-1.webp",
         alt: "Five towers of stacked glass cubes on an oak workbench at dawn, most cubes glowing teal and a few dark, a brass ruler and a magnifying glass in front, a window with morning mist behind.",
@@ -1155,6 +1169,7 @@ We think this is what the work should look like. A number you can recount is wor
 - The cheaper 1 and 5 USDC routes are older and are not measured here.
 - The precision figure comes from two open judges that are stricter than the grader copy: they find 9 of the 20 strictly where the copy found 14. Another vendor's precision cannot be set next to it.
 - The six more audits we measured afterwards are not fresh: earlier versions of our scan ran on all of them. They show the same setup on more audits, with 11 of 14 known findings strictly and 11 of 54 hypotheses matching, and they are not a result on new contracts.
+- The faults we inserted today are simple and synthetic: a removed line or a shifted sign. They show that the scan finds new instances of those kinds, not new kinds of bugs.
 - The judge is a copy of the benchmark's grader, run through OpenRouter. It gave the same verdict as the benchmark's own answer on 30 of 31 findings when we checked it on the leader's report.
 
 If a number in the folder does not match when you run the check, tell us in issue 41 of the repository. We will correct it and keep the old text visible.`,
