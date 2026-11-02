@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { ReadingPage } from "@/components/home/cinema";
 import { ArrowLeft } from "lucide-react";
 
 import { MarkdownLite } from "@/components/markdown-lite";
@@ -81,8 +82,7 @@ export function RevocationsArticle() {
   }, []);
 
   return (
-    <article className="border-t border-border py-16 md:py-24">
-      <div className="container max-w-3xl">
+    <ReadingPage image="kluis">
         <a
           href="/notes"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -97,7 +97,6 @@ export function RevocationsArticle() {
           733,203 attestations were taken back
         </h1>
         <MarkdownLite source={BODY} />
-      </div>
-    </article>
+      </ReadingPage>
   );
 }

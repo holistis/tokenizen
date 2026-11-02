@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { ReadingPage } from "@/components/home/cinema";
 import { ArrowLeft, Mail } from "lucide-react";
 
 const TITLE = "The Hierarchy of Agent Trust | tokenizen";
@@ -26,8 +27,7 @@ export function HierarchyOfAgentTrustArticle() {
   useArticleMeta();
 
   return (
-    <article className="border-t border-border py-16 md:py-24">
-      <div className="container max-w-3xl">
+    <ReadingPage image="kluis">
         <a
           href="/"
           className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-wide text-muted-foreground hover:text-foreground"
@@ -181,7 +181,6 @@ export function HierarchyOfAgentTrustArticle() {
             {CONTACT_EMAIL}
           </a>
         </div>
-      </div>
-    </article>
+      </ReadingPage>
   );
 }

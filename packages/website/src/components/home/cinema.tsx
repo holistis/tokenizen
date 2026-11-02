@@ -274,7 +274,22 @@ export function CinemaPage({ image, chip, title, lead, children }: { image: stri
   return (
     <div className="cinema">
       <PageHero image={image} chip={chip} title={title} lead={lead} />
-      <div className="container py-12 md:py-16">{children}</div>
+      <div className="container cinema-body py-12 md:py-16">{children}</div>
+    </div>
+  );
+}
+
+/** A reading page (blog, notes, articles): the same photograph and pane of glass as the other pages, the text on the glass. */
+export function ReadingPage({ image, children }: { image: string; children: ReactNode }) {
+  return (
+    <div className="cinema reading">
+      <div className="reading-media" aria-hidden="true">
+        <Photo name={image} eager className="scene-img" />
+      </div>
+      <div className="reading-shade" aria-hidden="true" />
+      <div className="container relative py-14 md:py-20">
+        <div className="glass mx-auto max-w-3xl">{children}</div>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { ReadingPage } from "@/components/home/cinema";
 import { ArrowLeft } from "lucide-react";
 
 import { MarkdownLite } from "@/components/markdown-lite";
@@ -122,8 +123,7 @@ export function ReceiptCannotNameArticle() {
   }, []);
 
   return (
-    <article className="border-t border-border py-16 md:py-24">
-      <div className="container max-w-3xl">
+    <ReadingPage image="betaling">
         <a
           href="/notes"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -138,7 +138,6 @@ export function ReceiptCannotNameArticle() {
           A signed receipt that cannot name its own payment
         </h1>
         <MarkdownLite source={BODY} />
-      </div>
-    </article>
+      </ReadingPage>
   );
 }

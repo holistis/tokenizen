@@ -29,9 +29,9 @@ function useLang(): Locale {
 
 export function Block({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <section className="grid gap-4 rounded-2xl border border-white/10 bg-black/40 p-6 shadow-[0_10px_40px_-14px_rgba(0,0,0,0.7)] backdrop-blur-md transition-colors hover:border-white/20 md:p-8 lg:grid-cols-[14rem_1fr] lg:gap-10">
-      <h2 className="border-l-2 border-[color:var(--glow)] pl-3 font-mono text-xs font-semibold uppercase leading-snug tracking-[0.15em] text-[color:var(--glow)]">{label}</h2>
-      <div className="max-w-3xl space-y-4 text-base leading-relaxed text-[color:var(--soft)]">{children}</div>
+    <section className="pane">
+      <h2 className="mb-5 border-l-2 border-[color:var(--glow)] pl-3 font-display text-2xl leading-tight md:text-3xl">{label}</h2>
+      <div className="space-y-4 text-base leading-relaxed text-[color:var(--soft)]">{children}</div>
     </section>
   );
 }
@@ -75,7 +75,7 @@ function OfferFrame({
   useMeta(metaTitle, metaDescription);
   return (
     <CinemaPage image={image} chip={chip} title={title} lead={lead}>
-      <div className="space-y-5 md:space-y-6">{children}</div>
+      <>{children}</>
     </CinemaPage>
   );
 }
