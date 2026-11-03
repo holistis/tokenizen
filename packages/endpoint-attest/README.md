@@ -12,7 +12,7 @@ capacity-attest answers "did the seller deliver what was paid for". An endpoint 
 
 ## How it works
 
-1. **The owner proves control of the endpoint.** Two ACME-style methods, both stateless (no server-side session to manage): a DNS TXT record at `_endpoint-attest.<host>`, or a file at the RFC 8615 well-known path `/.well-known/endpoint-attest.txt`. The token to publish is an HMAC of the endpoint, the owner's address and a shared secret, so it is bound to that exact host and that exact owner. It cannot be reused on a different endpoint or claimed by a different owner.
+1. **The owner proves control of the endpoint.** Two ACME-style methods, both stateless (no server-side session to manage): a DNS TXT record at `_endpoint-attest.<host>`, or a file at the RFC 8615 well-known path `/.well-known/endpoint-attest.txt`. The token to publish is an HMAC of the endpoint, the owner's address and a shared secret, so it is bound to that exact endpoint and that owner address. It cannot be reused on a different endpoint or claimed under a different owner address. What it proves is control of the host (a TXT record under the host, or a file at the root of the origin), not of one path on it, and the owner address is a label the requester names: nobody proves they hold that address's key. See "What this does not do".
 2. **A distinct attester runs checks and signs.** The attester can never be the owner (`verifyAttestation` rejects that as `attester_is_owner`). It records what it actually checked (`checksPerformed` must be non-empty, so "passed" can never be read as a blanket safety claim), an outcome, and a hash of its findings.
 3. **The attestation is content-addressed and signed.** `computeAttestationId` hashes the canonical JSON of the content (reusing capacity-attest's `canonicalize`), and `signAttestation` produces an EIP-191 signature over that id (reusing capacity-attest's signing primitives). Anyone can recompute the id and the signer independently, without trusting this package's code.
 4. **The attestation always expires.** `expiresAt` is required, must be after `checkedAt` and at most 366 days after it, and the ownership proof may be at most 30 days older than `checkedAt`. There is no way to construct a non-expiring attestation; `verifyAttestation` treats an expired one as failed by default (`ignoreExpiry` exists only for callers who explicitly want to inspect an expired record).
@@ -59,13 +59,15 @@ Full working example with a real local HTTP server proving the whole flow, inclu
 ## What this does not do
 
 - It does not re-check the ownership proof when it verifies an attestation. `verifyAttestation` checks the content id, the signature, that the attester is not the owner, and expiry. Anyone with a key can sign a well-formed attestation that names any endpoint and any owner address, and it will verify. To trust that the owner proved control, re-run `verifyOwnership` with guarded `deps`, or rely on the attester you trust.
+- It does not prove control of a path. Both methods prove control of the host (DNS) or of the root of the origin (the well-known file). On an origin shared by several parties, for example one that hosts every tenant under its own path, someone who can publish a file at the origin root, or who runs another tenant's path on that origin, can pass the check for an endpoint that is not theirs. Use it for endpoints that have their own host.
+- It does not prove that the owner address belongs to the requester. The token is bound to the owner address the requester typed in, but the person who publishes it only shows they control the endpoint. An attestation can therefore name an address whose holder never asked for it. Read `ownerAddress` as "the address this attestation was requested for", not as an identity check.
 - It does not run the checks for you. `checksPerformed` and `findingsHash` are supplied by whatever attester process calls this library; this package only handles ownership proof, signing and verification.
 - It does not publish attestations anywhere. Unlike capacity-attest, there is no built-in EAS/on-chain publishing path here yet. Storage and distribution are left to the caller.
 - It is not a guarantee. An attestation records what a specific attester checked at a specific time. It says nothing about what changed afterward, and `checksPerformed` should always be read literally, not as "this endpoint is safe".
 
 ## Status
 
-43 tests passing (`npm test`), clean typecheck and build. Not yet published to npm. No independent, external review of this code has been done; see [capacity-attest's own security notes](../capacity-attest/docs/SECURITY-REVIEW-2026-09-11.md) for how that project handles the same honesty requirement, which this package follows too.
+78 tests passing (`npm test`), clean typecheck and build. Not yet published to npm. No independent, external review of this code has been done; see [capacity-attest's own security notes](../capacity-attest/docs/SECURITY-REVIEW-2026-09-11.md) for how that project handles the same honesty requirement, which this package follows too.
 
 ## Verifying your own implementation
 
