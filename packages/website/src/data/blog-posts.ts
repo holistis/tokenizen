@@ -1049,7 +1049,7 @@ The older route had found 8 of 20. Four of the six extra findings come from one 
           },
           {
             value: "7 of 12",
-            label: "Faults inserted today into three public projects, found strictly with two open judges. 8 of 12 with the grader copy, and no false match on the clean copies. Simple, synthetic faults.",
+            label: "Faults inserted today into three public projects, found strictly with two open judges. 8 of 12 with the grader copy, and no false match on the clean copies. One answer with a mistyped id (H-4 for H-04) is voided; counted, it would be 8 of 12. Simple, synthetic faults.",
             href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-11-02-injected-bugs-test/README.md",
             hrefLabel: "the inserted-faults test",
           },
