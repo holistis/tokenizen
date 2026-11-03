@@ -1037,7 +1037,7 @@ The older route had found 8 of 20. Four of the six extra findings come from one 
           },
           {
             value: "17 of 90",
-            label: "Hypotheses the scan wrote that match a known finding when two open judges name the same one: 18.9 percent. It is a floor, because a real bug the audit did not list counts as a miss.",
+            label: "Hypotheses the scan wrote that match a known finding when two open judges name the same one: 18.9 percent as counted, 21.1 percent if two answers that wrote H-3 for H-03 are counted, a gap an outside reader found. It is a floor, because a real bug the audit did not list counts as a miss.",
             href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/results/2026-11-02-shop-setup-five-audits/README.md",
             hrefLabel: "the precision section",
           },
