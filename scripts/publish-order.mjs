@@ -28,8 +28,9 @@ import { fileURLToPath } from "node:url";
 
 const STEPS = [
   { dir: "net-guard", workflow: "publish-net-guard.yml", why: "depends on no other workspace" },
-  { dir: "endpoint-attest", workflow: "publish-endpoint-attest.yml", why: "needs capacity-attest, already on npm" },
-  { dir: "trust-attest-server", workflow: "publish-trust-attest-server.yml", why: "needs both packages above" },
+  { dir: "capacity-attest", workflow: "publish-capacity-attest.yml", why: "endpoint-attest needs ^0.9.0 and npm has only 0.8.0" },
+  { dir: "endpoint-attest", workflow: "publish-endpoint-attest.yml", why: "needs capacity-attest 0.9.x, published in the step above" },
+  { dir: "trust-attest-server", workflow: "publish-trust-attest-server.yml", why: "needs capacity-attest and endpoint-attest above" },
   { dir: "x402-lint", workflow: "publish-x402-lint.yml", why: "needs net-guard" },
 ];
 
