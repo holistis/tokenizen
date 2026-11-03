@@ -1241,14 +1241,14 @@ A checker nobody has tried to fool is a checker you cannot trust yet. So we wrot
 
 There are two things to test, and each needs its own plant.
 
-- Test the scan: plant faults. Copy a contract, add known faults at places given by a published seed, run the scan on the planted copy and on the untouched original, and count how many planted faults it names. The seed fixes where the faults go, so anyone can plant the same ones. It does not fix what the scan or the judge does on a given day, which is why the run is repeated and why we say how much one run can move.
+- Test the scan: plant faults. Copy a contract, add known faults at places given by a published seed, run the scan on the planted copy and on the untouched original, and count how many planted faults it names. The seed fixes where the faults go, so anyone can plant the same ones. It does not fix what the scan or the judge does on a given day, so one run can move a count by a finding or two. We say so next to every number.
 - Test the checker: plant a made-up finding id, or a flipped verdict, into a copy of the evidence and run the check. A checker that works says CAUGHT. A blind one says all good.
 
-The second test needs no scan and runs in seconds. The first works on any scan that can read a repository: [the folder with our planted-faults run](https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-02-injected-bugs-test) explains how to run your own tool on the same planted copies. The folder also lists every change we made to the setup after the first runs, so you can see which numbers were fixed in advance and which were not.
+The second test needs no scan and runs in seconds. The first works on any scan that can read a repository: [the folder with our planted-faults run](https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-02-injected-bugs-test) explains how to run your own tool on the same planted copies. Our own run of it is there too, with its limits.
 
 ## Run it yourself
 
-You need Node 22 or newer and nothing else. The first command recounts one result folder from its verdict files and checks its hashes, offline. The second runs the checker test on our own folders: it copies the 7 result folders that have a check script, plants a made-up finding id and a flipped verdict in each copy, and prints CAUGHT, BLIND or N/A. Right now it prints one BLIND, the third checker on our public to-do list, so expect it to end with an error. That is the honest state.
+You need git and Node 22 or newer, and nothing else. The first command recounts one result folder from its verdict files and checks its hashes, offline. The second runs the checker test on our own folders: it copies the 7 result folders that have a check script, plants a made-up finding id and a flipped verdict in each copy, and prints CAUGHT, BLIND or N/A. Right now it prints one BLIND, the third checker on our public to-do list, so expect it to end with an error. That is the honest state.
 
 \`\`\`
 git clone https://github.com/holistis/bug-bounty-intelligence-mcp
@@ -1262,7 +1262,7 @@ These two commands do not test anybody else's scan. For that, use the planted-fa
       {
         type: "facts",
         heading: "The numbers, each with its limit",
-        intro: "Four numbers from the film. Each is a measurement of one setup on specific audits, with the limit written next to it. Read them as that, and not as a promise about what a scan will find for you.",
+        intro: "Four numbers from the film. Each is a measurement of one setup on specific audits or planted copies, with the limit written next to it. Read them as that, and not as a promise about what a scan will find for you.",
         items: [
           {
             value: "14 of 20",
@@ -1272,13 +1272,13 @@ These two commands do not test anybody else's scan. For that, use the planted-fa
           },
           {
             value: "77.4 percent",
-            label: "24 of 31 known findings on seven audits when six research runs are combined. One run alone found 22 of 31. The combined list has 270 entries against 70 for one run, the biggest audit (20 of the 51 known findings) is left out, and this is not the scan we sell.",
+            label: "24 of 31 known findings on seven audits when six research runs are combined. One run alone found 22 of 31. The combined list has 270 entries against 70 for one run. The biggest audit (20 of the 51 known findings) is left out, and it is the one where we lose most. One of the seven audits was a development audit, and this is not the scan we sell.",
             href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-02-our-scan-under-the-benchmark-judge",
             hrefLabel: "Evidence folder: research runs",
           },
           {
             value: "18.9 percent",
-            label: "Precision, strict: 17 of 90 findings match a known finding when two open judges that we ran ourselves both name it, and 17 to 20 with voided answers counted. A finding that matches no listed High finding may still be a real bug.",
+            label: "Precision, strict: 17 of 90 findings match a known finding when two open-weight judges that we ran ourselves both name it, and 17 to 20 with voided answers counted. These judges are stricter than the grader copy: they find 9 of the 20 known findings (13 with one judge), the copy 14. A finding that matches no listed High finding may still be a real bug.",
             href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-02-shop-setup-five-audits",
             hrefLabel: "Evidence folder: five audits",
           },
@@ -1294,7 +1294,7 @@ These two commands do not test anybody else's scan. For that, use the planted-fa
         type: "md",
         text: `## What we do not claim
 
-- We do not claim our scan is the best. Under the same judge, the leader on the public benchmark is ahead of our research runs by one finding on the combined list and by three on a single run, and four in five of our findings match no listed bug.
+- We do not claim our scan is the best. Under our judge, the leader we compare against on the public benchmark is ahead of our research runs by one finding on the combined list and by three on a single run. Under the benchmark's own grader the gap on the combined list may be two. And four in five of the findings of our deep scan match no listed High finding.
 - We do not claim the 77.4 percent describes the scan you can buy. It comes from six research runs combined, and one run alone found 22 of 31.
 - We do not claim an unmatched finding is wrong. It may be a real bug that nobody has listed.
 - We do not claim the planted faults look like real ones. They are simple and synthetic.
