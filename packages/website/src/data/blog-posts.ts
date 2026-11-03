@@ -1330,6 +1330,62 @@ Three first issues were open, each scoped to one folder or one audit. Two were t
       },
     ],
   },
+  {
+    slug: "we-closed-two-gaps-in-our-own-tools",
+    kind: "note",
+    date: "2026-11-03",
+    title: "We reread our own tools: two gaps closed in capacity-attest 0.9.1, two packages that now install",
+    dek: "capacity-attest 0.9.1 closes two gaps in its server. endpoint-attest and trust-attest-server, which could not be installed outside our repository, now can, with build provenance.",
+    description:
+      "capacity-attest 0.9.1 closes two server gaps; endpoint-attest and trust-attest-server now install from npm with build provenance. Limits included.",
+    tags: ["Tools", "Security"],
+    readMinutes: 2,
+    blocks: [
+      {
+        type: "md",
+        text: `On 3 November 2026 we reread our own open tools and found two gaps in the capacity-attest server, both now closed. Version 0.9.1 is on npm and is the version running at capacity-attest.tokenizen.nl.
+
+The first gap was a server-side request forgery risk. Two free routes that look up an agent's ERC-8004 identity took an RPC address from an anonymous caller and connected to it, internal addresses included. They now go through net-guard, our outbound check, and an internal address is refused with a plain message.
+
+The second gap was in the paid route that publishes reputation feedback. The caller chose the contract our server's key called and the RPC our owner check asked, so the caller's contract, not our fee, set the gas cost of a call. A flat fee and an hourly cap already limited how many calls there could be. By default the route now accepts only the canonical ERC-8004 registries on Base, always uses the server's own RPC and sets a fixed gas limit.
+
+These routes were added on 22 October. The paid route leaves a public trace, so we looked at it: the server's signing key has sent 13 transactions on Base in total, the last on 23 October. Four were calls to the two canonical ERC-8004 registries and nine were plain transfers of at most 0.0003 ETH. None went to any other contract. The two free routes leave no trace on chain. We also read the server log: it records starts and stops, not requests, so we cannot tell whether those two routes were ever called with such an address.
+
+We also published two packages that could not be installed yet. trust-attest-server 0.1.0 has been on npm since 29 September, but it needs endpoint-attest, which was not published, so installing it outside our own repository failed; its README said so. endpoint-attest 0.1.0 and trust-attest-server 0.1.1 are on npm now, published after capacity-attest 0.9.1, which endpoint-attest needs. In an empty folder, npm install trust-attest-server works, and npm audit signatures then shows verified build provenance for our four packages in that tree: capacity-attest, endpoint-attest, trust-attest-server and tokenizen-net-guard.
+
+endpoint-attest has two upper bounds too: an attestation may span at most 366 days from its check date to its expiry, and its ownership proof may be at most 30 days older than that check.`,
+      },
+      {
+        type: "facts",
+        heading: "What you can check",
+        intro: "Each card links to the place where a stranger can look.",
+        items: [
+          { value: "0.9.1", label: "capacity-attest on npm: the version that closes both gaps. Its changelog says what changed", href: "https://github.com/holistis/tokenizen/blob/main/packages/capacity-attest/CHANGELOG.md", hrefLabel: "The changelog (in Dutch)" },
+          { value: "13 transactions", label: "the whole history of the server's signing key on Base: four calls to the canonical registries, nine plain ETH transfers, none to another contract (read on 3 November 2026)", href: "https://basescan.org/address/0xF2b3679bE59ADaC8981A2b4095ff772736120339", hrefLabel: "The address on Base" },
+          { value: "3 packages", label: "capacity-attest 0.9.1, endpoint-attest 0.1.0 and trust-attest-server 0.1.1 install from an empty folder and carry build provenance on npm (checked on 3 November 2026)", href: "https://www.npmjs.com/package/trust-attest-server", hrefLabel: "On npm" },
+          { value: "366 and 30 days", label: "the upper bounds in endpoint-attest: days from check date to expiry, and age of the ownership proof at the check", href: "https://github.com/holistis/tokenizen/blob/main/packages/endpoint-attest/src/schema.ts", hrefLabel: "The rules in the code" },
+        ],
+      },
+      {
+        type: "md",
+        text: `## What we do not claim
+
+This is our own reading and our own tests, not an independent audit, and there may be other gaps. We have not asked anyone outside Tokenizen to review these changes. Build provenance shows which workflow built a package from which commit, not that the code is right. The check of the signing key covers Base only. endpoint-attest carries an ownership proof but does not re-check it when an attestation is verified; its README says so.
+
+We are Tokenizen (tokenizen.nl) and we build these tools ourselves, so we are not neutral here.`,
+      },
+      {
+        type: "cta",
+        heading: "Run it yourself",
+        text: "Install in an empty folder and run npm audit signatures. If something described here does not hold, tell us.",
+        links: [
+          { label: "trust-attest-server on npm", href: "https://www.npmjs.com/package/trust-attest-server" },
+          { label: "capacity-attest on npm", href: "https://www.npmjs.com/package/capacity-attest" },
+          { label: "The code", href: "https://github.com/holistis/tokenizen" },
+        ],
+      },
+    ],
+  },
 ];
 
 export function postPath(slug: string): string {

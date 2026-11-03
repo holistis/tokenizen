@@ -962,6 +962,19 @@
       "twitterDescription": "Our cyber security scan for smart contracts found 14 of 20 known bugs on five public audits. Research runs reach 77.4 percent. Every verdict is open.",
       "alternates": []
     },
+    "/notes/we-closed-two-gaps-in-our-own-tools": {
+      "lang": "en",
+      "title": "We reread our own tools: two gaps closed in capacity-attest 0.9.1, two packages that now install | tokenizen",
+      "description": "capacity-attest 0.9.1 closes two server gaps; endpoint-attest and trust-attest-server now install from npm with build provenance. Limits included.",
+      "canonical": "https://tokenizen.nl/notes/we-closed-two-gaps-in-our-own-tools",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/we-closed-two-gaps-in-our-own-tools",
+      "ogTitle": "We reread our own tools: two gaps closed in capacity-attest 0.9.1, two packages that now install | tokenizen",
+      "ogDescription": "capacity-attest 0.9.1 closes two server gaps; endpoint-attest and trust-attest-server now install from npm with build provenance. Limits included.",
+      "twitterTitle": "We reread our own tools: two gaps closed in capacity-attest 0.9.1, two packages that now install | tokenizen",
+      "twitterDescription": "capacity-attest 0.9.1 closes two server gaps; endpoint-attest and trust-attest-server now install from npm with build provenance. Limits included.",
+      "alternates": []
+    },
     "/notes/we-measured-our-scan": {
       "lang": "en",
       "title": "We measured our scan. It found 4 of 105. | tokenizen",
