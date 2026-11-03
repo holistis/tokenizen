@@ -5,6 +5,8 @@ import {
   computeAttestationId,
   attestationPreimage,
   isExpired,
+  MAX_ATTESTATION_LIFE_DAYS,
+  MAX_OWNERSHIP_PROOF_AGE_DAYS,
   type AttestationContent,
   type EndpointAttestation,
 } from "./schema.js";
@@ -75,6 +77,52 @@ describe("schema: the three honesty constraints are enforced, not documented", (
 
   it("accepts the valid baseline", () => {
     expect(() => AttestationContentSchema.parse(content())).not.toThrow();
+  });
+});
+
+describe("schema: the upper bounds that keep 'always expires' and 'control was proven' honest", () => {
+  const DAY = 24 * 60 * 60 * 1000;
+  const at = (offsetMs: number) => new Date(Date.parse(CHECKED_AT) + offsetMs).toISOString();
+  const proofAt = (offsetMs: number) => ({ ...content().ownershipProof, verifiedAt: at(offsetMs) });
+
+  it("accepts a lifetime of exactly MAX_ATTESTATION_LIFE_DAYS and refuses one second more", () => {
+    expect(MAX_ATTESTATION_LIFE_DAYS).toBe(366);
+    expect(() => AttestationContentSchema.parse(content({ expiresAt: at(366 * DAY) }))).not.toThrow();
+    expect(() => AttestationContentSchema.parse(content({ expiresAt: at(366 * DAY + 1000) }))).toThrow(/at most 366 days/);
+  });
+
+  it("refuses an expiry in the year 9999, which would be a non-expiring attestation in all but name", () => {
+    expect(() => AttestationContentSchema.parse(content({ expiresAt: "9999-12-31T23:59:59.000Z" }))).toThrow(/at most 366 days/);
+  });
+
+  it("accepts an ownership proof exactly MAX_OWNERSHIP_PROOF_AGE_DAYS old and refuses one second older", () => {
+    expect(MAX_OWNERSHIP_PROOF_AGE_DAYS).toBe(30);
+    expect(() => AttestationContentSchema.parse(content({ ownershipProof: proofAt(-30 * DAY) }))).not.toThrow();
+    expect(() => AttestationContentSchema.parse(content({ ownershipProof: proofAt(-30 * DAY - 1000) }))).toThrow(/at most 30 days before checkedAt/);
+  });
+
+  it("signAttestation refuses content outside the limits, so a signature is never produced for it", async () => {
+    const attester = ethers.Wallet.createRandom();
+    await expect(
+      signAttestation(attester, content({ attesterAddress: attester.address, expiresAt: at(367 * DAY) })),
+    ).rejects.toThrow(/at most 366 days/);
+    await expect(
+      signAttestation(attester, content({ attesterAddress: attester.address, ownershipProof: proofAt(-31 * DAY) })),
+    ).rejects.toThrow(/at most 30 days before checkedAt/);
+  });
+
+  it("verifyAttestation is not ok for an attestation whose expiry was stretched beyond the limit, even when its signature is genuine", async () => {
+    const attester = ethers.Wallet.createRandom();
+    const stretched = content({ attesterAddress: attester.address, expiresAt: at(400 * DAY) });
+    // A hostile signer cannot get an id from this package for such content, so they hash it some other way and sign that.
+    const attestationId = "0x" + "b".repeat(64);
+    const signature = await attester.signMessage(attestationId);
+    const result = verifyAttestation({ ...stretched, attestationId, signature }, { now: new Date(at(DAY)) });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.reason).toBe("attestation_id_mismatch");
+      expect(result.detail).toMatch(/at most 366 days/);
+    }
   });
 });
 

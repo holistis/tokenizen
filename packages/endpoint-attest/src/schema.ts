@@ -30,10 +30,14 @@
 //      never be read as "this endpoint is secure", only as "these named
 //      checks passed at that moment". A blanket safety claim is not
 //      expressible in this format, by construction.
-//   3. `ownershipProof` is REQUIRED. This format cannot express an
-//      attestation about a party that did not prove control of the endpoint,
-//      which is what keeps it a voluntary certificate rather than an
-//      unsolicited exposure report about a bystander.
+//   3. `ownershipProof` is REQUIRED and may be at most MAX_OWNERSHIP_PROOF_AGE_DAYS
+//      older than `checkedAt`. The format CARRIES the proof (method, token, location,
+//      time); it does not RE-CHECK it. verifyAttestation checks the id, the signature,
+//      attester != owner and expiry, nothing more. Whoever relies on an attestation
+//      re-runs verifyOwnership (with guarded deps) or trusts the attester's word that
+//      the owner proved control. Anyone with a key can sign a well-formed attestation
+//      naming any endpoint and any owner address; the signature says who signed, not
+//      that the owner asked.
 
 import { createHash } from "node:crypto";
 import { z } from "zod";
@@ -75,7 +79,7 @@ export const OwnershipProofSchema = z.strictObject({
 export type OwnershipProof = z.infer<typeof OwnershipProofSchema>;
 
 export const AttestationContentObject = z.object({
-  /** The endpoint this attestation is about. Normalised to its origin plus path, no credentials, no fragment. */
+  /** The endpoint this attestation is about. Expected in normalised form (origin plus path, no credentials, no fragment); this package does not enforce that. */
   endpoint: z.string().min(1).max(2048),
   /** The operator who requested this attestation and proved control of `endpoint`. */
   ownerAddress: z.string().regex(ETH_ADDRESS_RE, "ownerAddress must be a 0x-prefixed 20-byte address"),
@@ -92,12 +96,32 @@ export const AttestationContentObject = z.object({
   expiresAt: IsoTimestamp,
 });
 
+/** The longest an attestation may live, checkedAt to expiresAt. Without an upper bound "always expires" would still allow the year 9999. */
+export const MAX_ATTESTATION_LIFE_DAYS = 366;
+/** How much older than checkedAt the ownership proof may be. Control is re-proven for every attestation, so a stale proof is not carried forward. */
+export const MAX_OWNERSHIP_PROOF_AGE_DAYS = 30;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 export const AttestationContentSchema = AttestationContentObject.superRefine((content, ctx) => {
   if (Date.parse(content.expiresAt) <= Date.parse(content.checkedAt)) {
     ctx.addIssue({
       code: "custom",
       path: ["expiresAt"],
       message: "expiresAt must be strictly after checkedAt: an attestation that expires at or before the moment it was made asserts nothing",
+    });
+  }
+  if (Date.parse(content.expiresAt) - Date.parse(content.checkedAt) > MAX_ATTESTATION_LIFE_DAYS * DAY_MS) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["expiresAt"],
+      message: `expiresAt must be at most ${MAX_ATTESTATION_LIFE_DAYS} days after checkedAt: a far-future expiry is a non-expiring attestation by another name`,
+    });
+  }
+  if (Date.parse(content.checkedAt) - Date.parse(content.ownershipProof.verifiedAt) > MAX_OWNERSHIP_PROOF_AGE_DAYS * DAY_MS) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["ownershipProof", "verifiedAt"],
+      message: `ownershipProof.verifiedAt must be at most ${MAX_OWNERSHIP_PROOF_AGE_DAYS} days before checkedAt: control is re-proven for each attestation`,
     });
   }
   if (Date.parse(content.ownershipProof.verifiedAt) > Date.parse(content.checkedAt)) {
