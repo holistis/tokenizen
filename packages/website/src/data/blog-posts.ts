@@ -1330,6 +1330,59 @@ Three first issues were open, each scoped to one folder or one audit. Two were t
       },
     ],
   },
+  {
+    slug: "we-closed-two-gaps-in-our-own-tools",
+    kind: "note",
+    date: "2026-11-03",
+    title: "We read our own tools like an outsider, found two gaps and closed them",
+    dek: "capacity-attest 0.9.1 closes two gaps in its server. endpoint-attest and trust-attest-server, announced earlier but not installable, are now on npm with build provenance.",
+    description:
+      "capacity-attest 0.9.1 closes two server gaps; endpoint-attest and trust-attest-server now install from npm with build provenance. Limits included.",
+    tags: ["Tools", "Security"],
+    readMinutes: 2,
+    blocks: [
+      {
+        type: "md",
+        text: `On 3 November 2026 we read our own open tools the way an outsider would, and we found two real gaps in the capacity-attest server. Both are closed. Version 0.9.1 is on npm and is the version running at capacity-attest.tokenizen.nl.
+
+The first gap was a server-side request forgery risk. Two free routes that look up an agent's ERC-8004 identity took an RPC address from an anonymous caller and connected to it, internal addresses included. They now send every request through net-guard, the same outbound check our other servers use, and an internal address is refused with a plain message.
+
+The second gap was in the paid route that publishes reputation feedback. The caller's own contract could decide what the transaction cost us in gas. The route now accepts only the canonical ERC-8004 registries on Base, always uses the server's own RPC and sets a fixed gas limit.
+
+While doing this we found that two packages we had already announced, endpoint-attest and trust-attest-server, could not be installed from npm, because they depended on versions that were not published. They are published now, in order, together with capacity-attest 0.9.1. In an empty folder, npm install trust-attest-server works, and npm audit signatures then shows verified build provenance for all of them.
+
+endpoint-attest also got two upper bounds: an attestation may live at most 366 days, and the ownership proof it carries may be at most 30 days older than the check. An expiry in the year 9999 used to be accepted.`,
+      },
+      {
+        type: "facts",
+        heading: "What you can check",
+        intro: "Each card links to the place where a stranger can look.",
+        items: [
+          { value: "0.9.1", label: "capacity-attest on npm: the version that closes both gaps. Its changelog says what changed", href: "https://github.com/holistis/tokenizen/blob/main/packages/capacity-attest/CHANGELOG.md", hrefLabel: "The changelog" },
+          { value: "3 packages", label: "capacity-attest 0.9.1, endpoint-attest 0.1.0 and trust-attest-server 0.1.1 install from an empty folder and carry build provenance on npm (checked on 3 November 2026)", href: "https://www.npmjs.com/package/trust-attest-server", hrefLabel: "On npm" },
+          { value: "366 and 30 days", label: "the new upper bounds in endpoint-attest: the life of an attestation, and the age of its ownership proof at the time of the check", href: "https://github.com/holistis/tokenizen/blob/main/packages/endpoint-attest/src/schema.ts", hrefLabel: "The rules in the code" },
+        ],
+      },
+      {
+        type: "md",
+        text: `## What we do not claim
+
+This is our own reading and our own tests, not an independent audit, and nobody outside Tokenizen has reviewed these changes. It does not say that these tools have no other gaps. We make no claim about whether anyone used the old behaviour of the capacity-attest server before 0.9.1. Build provenance on npm shows which workflow built a package from which commit; it does not show that the code is free of mistakes. endpoint-attest carries an ownership proof but does not check it again when an attestation is verified, and its README says so.
+
+We are Tokenizen (tokenizen.nl) and we build these tools ourselves, so we are not neutral here.`,
+      },
+      {
+        type: "cta",
+        heading: "Run it yourself",
+        text: "Install in an empty folder and run npm audit signatures. If something described here does not hold, tell us.",
+        links: [
+          { label: "trust-attest-server on npm", href: "https://www.npmjs.com/package/trust-attest-server" },
+          { label: "capacity-attest on npm", href: "https://www.npmjs.com/package/capacity-attest" },
+          { label: "The code", href: "https://github.com/holistis/tokenizen" },
+        ],
+      },
+    ],
+  },
 ];
 
 export function postPath(slug: string): string {
