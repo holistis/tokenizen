@@ -2,6 +2,13 @@
 
 Alle noemenswaardige wijzigingen aan dit package worden hier bijgehouden.
 
+## 0.9.1
+Beveiligingsreparatie, na een adversariële lezing op 2026-11-03. 0.9.0 is nooit gepubliceerd; dit is de eerste uitgave van die lijn.
+- De HTTP-server stuurt resolve_agent_identity en get_agent_snapshot nu door net-guard (guardedContractFactory, guardedChainIdFactory in erc8004.ts). Voorheen verbond de server met elk adres dat een anonieme beller als rpcUrl gaf, ook interne, en de foutmelding ging terug naar de beller.
+- De betaalde route publish_reputation_feedback accepteert alleen de canonieke ERC-8004-registries (Reputation en Identity op Base; uit te breiden met PUBLISH_FEEDBACK_REPUTATION_REGISTRIES en PUBLISH_FEEDBACK_IDENTITY_REGISTRIES), gebruikt altijd de eigen RPC van de server en heeft een vaste gaslimiet (PUBLISH_FEEDBACK_GAS_LIMIT, standaard 600000; de livebewijs-transactie gebruikte 211.403). Voorheen koos de beller het contract, de RPC voor de eigenaarscontrole en daarmee de gaskosten.
+- publishReputationFeedback() kreeg een optionele vijfde parameter met een gasLimit; zonder die parameter verandert er niets.
+- De MCP-serverversie in de HTTP-server komt nu uit package.json (stond vast op 0.8.0).
+
 ## 0.9.0
 
 **Optionele bazaar-discovery voor `record_delivery` en `publish_reputation_feedback`, nieuwe env-vlag `CAPACITY_ATTEST_BAZAAR`.**

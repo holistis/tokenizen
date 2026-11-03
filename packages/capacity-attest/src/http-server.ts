@@ -114,7 +114,10 @@ import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { ClaimContentSchema, DeliveryClaimObject, DeliveryClaimSchema, StrictDeliveryClaimSchema, type DeliveryClaim } from "./schema.js";
 import { verifyClaim } from "./signing.js";
 import { getDeliveryHistory, recordDelivery } from "./tools.js";
-import { resolveAgentIdentity, ResolveAgentIdentityInputSchema } from "./erc8004.js";
+import { resolveAgentIdentity, ResolveAgentIdentityInputSchema, guardedContractFactory, guardedChainIdFactory } from "./erc8004.js";
+import { createRequire } from "node:module";
+
+const PACKAGE_VERSION: string = (createRequire(import.meta.url)("../package.json") as { version: string }).version;
 import { receiptDigest, checkReceiptBinding, compareClaimToReceipt } from "./receipt-check.js";
 import { recoverReceiptSigner } from "./receipt-issue.js";
 import { publishReputationFeedback, PublishReputationFeedbackInputSchema } from "./erc8004-reputation.js";
@@ -292,6 +295,32 @@ const PUBLISH_FEEDBACK_MAX_PER_HOUR = Number(process.env.PUBLISH_FEEDBACK_MAX_PE
 // public endpoint, matching RECORD_DELIVERY_NETWORK's default chain.
 const REPUTATION_PUBLISHER_RPC_URL = process.env.REPUTATION_PUBLISHER_RPC_URL || "https://mainnet.base.org";
 
+// The paid route writes with THIS server's wallet. The contract it calls, and the registry it trusts for the owner check, must not be
+// chosen by an anonymous caller. An adversarial read on 2026-11-03 found that a caller could point both, and the RPC, at things of their
+// own, so the gas cost of one call was decided by the caller's contract and not by the flat fee or the hourly cap. Only the canonical
+// registries below are accepted (Base mainnet, the ones the live proof used); widen them with the two environment variables, which are
+// comma-separated "eip155:<chainId>:<address>" lists. The RPC for this route is always the server's own, and the gas limit is explicit
+// (the live proof transaction used 211,403 gas).
+const splitRefs = (v: string): string[] => v.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+export const PUBLISH_FEEDBACK_REPUTATION_REGISTRIES = splitRefs(
+  process.env.PUBLISH_FEEDBACK_REPUTATION_REGISTRIES ?? "eip155:8453:0x8004BAa17C55a88189AE136b182e5fdA19dE9b63",
+);
+export const PUBLISH_FEEDBACK_IDENTITY_REGISTRIES = splitRefs(
+  process.env.PUBLISH_FEEDBACK_IDENTITY_REGISTRIES ?? "eip155:8453:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+);
+const PUBLISH_FEEDBACK_GAS_LIMIT = BigInt(process.env.PUBLISH_FEEDBACK_GAS_LIMIT ?? "600000");
+
+/** null when both registries are allowlisted, otherwise the reason to refuse (before payment, and again after settlement). */
+export function checkPublishFeedbackRegistries(input: { reputationRegistryRef: string; agentRegistryRef: string }): string | null {
+  if (!PUBLISH_FEEDBACK_REPUTATION_REGISTRIES.includes(input.reputationRegistryRef.trim().toLowerCase())) {
+    return `registry_not_allowed: this server only publishes to these ERC-8004 Reputation Registries: ${PUBLISH_FEEDBACK_REPUTATION_REGISTRIES.join(", ")}`;
+  }
+  if (!PUBLISH_FEEDBACK_IDENTITY_REGISTRIES.includes(input.agentRegistryRef.trim().toLowerCase())) {
+    return `registry_not_allowed: this server only checks agent identity against these ERC-8004 Identity Registries: ${PUBLISH_FEEDBACK_IDENTITY_REGISTRIES.join(", ")}`;
+  }
+  return null;
+}
+
 // Exported so a test can prove the exact thing that silently broke in
 // production, 2026-10-22: new ethers.Wallet(privateKey) with NO provider
 // argument signs fine (every unit test here that only checks signing
@@ -367,13 +396,22 @@ if (REPUTATION_PUBLISHER_PRIVATE_KEY && PUBLISH_FEEDBACK_PAY_TO) {
         // possibly-divergent copy of an already-done check.
         const parsed = PublishReputationFeedbackInputSchema.safeParse(rawArgs);
         if (!parsed.success) throw new Error(`invalid_input: ${parsed.error.issues.map((i) => i.message).join("; ")}`);
+        const refusedRegistry = checkPublishFeedbackRegistries(parsed.data);
+        if (refusedRegistry) throw new Error(refusedRegistry);
         if (!consumeFeedbackPublishSlot()) {
           throw new Error(
             `hourly_cap_exceeded: this server publishes at most ${PUBLISH_FEEDBACK_MAX_PER_HOUR} feedback entries ` +
               "per rolling hour, across all callers, to bound its own wallet's spend regardless of fee income — try again later",
           );
         }
-        const result = await publishReputationFeedback(signer, parsed.data);
+        // The RPC is the server's own, never the caller's; identity lookups go through net-guard; the gas is capped.
+        const result = await publishReputationFeedback(
+          signer,
+          { ...parsed.data, rpcUrl: REPUTATION_PUBLISHER_RPC_URL },
+          undefined,
+          (i) => resolveAgentIdentity(i, guardedContractFactory, guardedChainIdFactory),
+          { gasLimit: PUBLISH_FEEDBACK_GAS_LIMIT },
+        );
         if (!result.ok) throw new Error(result.reason);
       },
     },
@@ -413,7 +451,7 @@ function fabricationSignalsFromClaims(claims: DeliveryClaim[]): { totalClaims: n
 }
 
 function buildServer(): McpServer {
-  const server = new McpServer({ name: "capacity-attest-http", version: "0.8.0" });
+  const server = new McpServer({ name: "capacity-attest-http", version: PACKAGE_VERSION });
 
   server.registerTool(
     "get_delivery_history",
@@ -750,7 +788,7 @@ function buildServer(): McpServer {
       inputSchema: ResolveAgentIdentityInputSchema.shape,
     },
     async (args) => {
-      const identity = await resolveAgentIdentity(args);
+      const identity = await resolveAgentIdentity(args, guardedContractFactory, guardedChainIdFactory);
       if (!identity.ok) return errorResult(identity.reason);
       try {
         const deliveryHistory = await getDeliveryHistory(identity.owner);
@@ -772,7 +810,7 @@ function buildServer(): McpServer {
       inputSchema: ResolveAgentIdentityInputSchema.shape,
     },
     async (args) => {
-      const result = await resolveAgentIdentity(args);
+      const result = await resolveAgentIdentity(args, guardedContractFactory, guardedChainIdFactory);
       if (!result.ok) return errorResult(result.reason);
       return textResult(result);
     },
@@ -828,7 +866,8 @@ function buildServer(): McpServer {
           "presence of its own can still get a delivery claim's `delivered` fact mirrored on-chain as ERC-8004 " +
           "feedback. Re-verifies the claim's own signature, and re-verifies agentId's registered owner actually " +
           "matches claim.sellerAddress before writing anything (publishReputationFeedback()'s own guard; the " +
-          "registry contract itself separately refuses self-feedback). TWO independent brakes protect this " +
+          "registry contract itself separately refuses self-feedback). Only the canonical ERC-8004 registries named in the refusal message " +
+          "are accepted, and the server uses its own RPC, so rpcUrl is ignored. TWO independent brakes protect this " +
           "server's own wallet: a flat fee per call identical for every caller, AND a global cap " +
           `(currently ${PUBLISH_FEEDBACK_MAX_PER_HOUR} per rolling hour) shared across ALL callers regardless of ` +
           "who is paying — see this file's own header comment for why both are needed. KNOWN, ACCEPTED " +
@@ -854,6 +893,8 @@ function buildServer(): McpServer {
           return errorResult(`invalid_claim: ${(e as Error).message}`);
         }
         if (!verdict.ok) return errorResult(`signature_invalid: ${verdict.reason}`);
+        const refusedRegistry = checkPublishFeedbackRegistries(parsed.data);
+        if (refusedRegistry) return errorResult(refusedRegistry);
         if (!canPublishFeedbackNow()) {
           return errorResult(
             `hourly_cap_exceeded: this server publishes at most ${PUBLISH_FEEDBACK_MAX_PER_HOUR} feedback entries ` +

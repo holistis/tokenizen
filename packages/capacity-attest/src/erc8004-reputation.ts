@@ -140,6 +140,7 @@ export interface ReputationWriteContract {
     endpoint: string,
     feedbackURI: string,
     feedbackHash: string,
+    overrides?: { gasLimit?: bigint },
   ): Promise<ethers.ContractTransactionResponse>;
 }
 
@@ -169,6 +170,9 @@ export async function publishReputationFeedback(
   input: PublishReputationFeedbackInput,
   contractFactory: ReputationContractFactory = defaultReputationContractFactory,
   identityResolver: IdentityResolver = resolveAgentIdentity,
+  // A server that pays gas for callers sets an explicit gasLimit, so the cost of one call is bounded by this number and not by
+  // whatever the target contract decides to burn. Undefined keeps the old behaviour (ethers estimates).
+  overrides?: { gasLimit?: bigint },
 ): Promise<PublishReputationFeedbackResult> {
   const match = AGENT_REGISTRY_REF_RE.exec(input.reputationRegistryRef);
   if (!match) {
@@ -231,7 +235,9 @@ export async function publishReputationFeedback(
   try {
     const contract = contractFactory(registryAddress, signer);
     tx = await withTimeout(
-      contract.giveFeedback(BigInt(input.agentId), BigInt(value), VALUE_DECIMALS, TAG1, tag2, "", feedbackURI, feedbackHash),
+      overrides
+        ? contract.giveFeedback(BigInt(input.agentId), BigInt(value), VALUE_DECIMALS, TAG1, tag2, "", feedbackURI, feedbackHash, overrides)
+        : contract.giveFeedback(BigInt(input.agentId), BigInt(value), VALUE_DECIMALS, TAG1, tag2, "", feedbackURI, feedbackHash),
       CALL_TIMEOUT_MS,
     );
   } catch (e) {
