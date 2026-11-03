@@ -4,7 +4,7 @@ Time-bounded, owner-requested security attestations for a network endpoint (for 
 
 This is deliberately narrow. It is not a security score, not a reputation system, and the format is built for checks the owner asked for: it has a required field that records how the owner proved control. Whether that proof was real is for the verifier to re-check (see "What this does not do"). Every attestation expires, after at most 366 days.
 
-Status: new, not yet published to npm. Built to be reused by anything that needs "does this endpoint's operator have a recent, verifiable, opt-in check on record", the same way [capacity-attest](../capacity-attest) answers "was this delivery actually made". It reuses capacity-attest's canonical JSON hashing and EIP-191 signing rather than reimplementing them, but it is a separate package: capacity-attest's claim schema is closed by design (see its `ASSET_TYPES` enum), and an endpoint attestation is a different kind of claim about a different kind of thing.
+Status: new, first release 0.1.0. Built to be reused by anything that needs "does this endpoint's operator have a recent, verifiable, opt-in check on record", the same way [capacity-attest](../capacity-attest) answers "was this delivery actually made". It reuses capacity-attest's canonical JSON hashing and EIP-191 signing rather than reimplementing them, but it is a separate package: capacity-attest's claim schema is closed by design (see its `ASSET_TYPES` enum), and an endpoint attestation is a different kind of claim about a different kind of thing.
 
 ## Why this is a separate package, not a new claim type in capacity-attest
 
@@ -67,7 +67,7 @@ Full working example with a real local HTTP server proving the whole flow, inclu
 
 ## Status
 
-78 tests passing (`npm test`), clean typecheck and build. Not yet published to npm. No independent, external review of this code has been done; see [capacity-attest's own security notes](../capacity-attest/docs/SECURITY-REVIEW-2026-09-11.md) for how that project handles the same honesty requirement, which this package follows too.
+78 tests passing (`npm test`), clean typecheck and build. No independent, external review of this code has been done; see [capacity-attest's own security notes](../capacity-attest/docs/SECURITY-REVIEW-2026-09-11.md) for how that project handles the same honesty requirement, which this package follows too.
 
 ## Verifying your own implementation
 
