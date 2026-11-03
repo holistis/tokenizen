@@ -964,14 +964,14 @@
     },
     "/notes/we-closed-two-gaps-in-our-own-tools": {
       "lang": "en",
-      "title": "We read our own tools like an outsider, found two gaps and closed them | tokenizen",
+      "title": "We reread our own tools: two gaps closed in capacity-attest 0.9.1, two packages that now install | tokenizen",
       "description": "capacity-attest 0.9.1 closes two server gaps; endpoint-attest and trust-attest-server now install from npm with build provenance. Limits included.",
       "canonical": "https://tokenizen.nl/notes/we-closed-two-gaps-in-our-own-tools",
       "ogLocale": "en_US",
       "ogUrl": "https://tokenizen.nl/notes/we-closed-two-gaps-in-our-own-tools",
-      "ogTitle": "We read our own tools like an outsider, found two gaps and closed them | tokenizen",
+      "ogTitle": "We reread our own tools: two gaps closed in capacity-attest 0.9.1, two packages that now install | tokenizen",
       "ogDescription": "capacity-attest 0.9.1 closes two server gaps; endpoint-attest and trust-attest-server now install from npm with build provenance. Limits included.",
-      "twitterTitle": "We read our own tools like an outsider, found two gaps and closed them | tokenizen",
+      "twitterTitle": "We reread our own tools: two gaps closed in capacity-attest 0.9.1, two packages that now install | tokenizen",
       "twitterDescription": "capacity-attest 0.9.1 closes two server gaps; endpoint-attest and trust-attest-server now install from npm with build provenance. Limits included.",
       "alternates": []
     },
