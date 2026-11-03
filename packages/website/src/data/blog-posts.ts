@@ -1195,6 +1195,141 @@ If a number in the folder does not match when you run the check, tell us in issu
       },
     ],
   },
+  {
+    slug: "a-test-for-any-ai-scan",
+    date: "2026-11-03",
+    title: "A test for any AI smart contract security scan. Even ours.",
+    dek: "An outside reviewer put a made-up finding id into a copy of our evidence, and our checker said all good. So we wrote the test down, with the numbers it gives and the limit of each.",
+    description:
+      "How to test any AI smart contract security scan, ours included: plant faults, rerun, count, and check the checker. Every number comes with its limit.",
+    tags: ["Measurements", "Tools"],
+    readMinutes: 5,
+    kind: "blog",
+    blocks: [
+      {
+        type: "md",
+        text: `A score is a number somebody else counted. Whether it deserves belief depends on the checker that did the counting, and on whether anyone has tried to fool that checker on purpose.
+
+This week an outside reviewer tried it on ours. The reviewer put a made-up finding id into a copy of our evidence and ran our checker. It said all good. We ran the same trick against every checker of ours: five of them can be reached with a made-up id, and three of those five said all good. Two are fixed. The third is on our public to-do list. Every correction is in [ERRATA.md](https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/ERRATA.md), with who found it and how.
+
+A checker nobody has tried to fool is a checker you cannot trust yet. So we wrote the test down. The film below runs for 84 seconds. Under it is what it says, with every number next to its limit.`,
+      },
+      {
+        type: "video",
+        src: "/media/a-test-for-any-ai-scan.mp4",
+        poster: "/media/a-test-for-any-ai-scan-poster.jpg",
+        caption: "84 seconds: the test, four numbers with their limits, and an invitation. The soundtrack is licensed from Pixabay.",
+        transcript: [
+          "Someone planted a fake finding in our evidence.",
+          "Three of the five checkers a fake ID can reach said: all good.",
+          "Two fixed. The third is on our public to-do list.",
+          "The test: plant a fault. Public seed. Rerun it. Count what it finds.",
+          "Fourteen of twenty known bugs found by the setup behind our deep scan. Five older audits, one run each, judged by a copy of the benchmark grader.",
+          "Seventy-seven point four percent with six research runs combined, on seven affordable audits. One run alone found 22 of 31. The hardest audit is left out. Not the product.",
+          "Eighteen point nine percent precision, strict: seventeen of ninety findings match a known bug. An unmatched finding may still be a real bug.",
+          "Eight of twelve planted faults found by the grader copy, seven to eight by the open judges. On clean code the open judges matched none of 21 findings to a fault.",
+          "Not the best yet. Four in five findings do not match a known bug. We publish the misses.",
+          "On our way, in the open. Open source under MIT: evidence folders, check scripts, the fault planter and the re-judge tool. Closed: the scan engine.",
+          "Our ruler is open source, so everyone can check it, and everyone can make it stronger.",
+          "Break our ruler. Your name on the catch. The future of cyber security is verifiable. Machines lift. Humans steer.",
+          "tokenizen.nl and github.com/holistis",
+        ],
+      },
+      {
+        type: "md",
+        text: `## Two tests, not one
+
+There are two things to test, and each needs its own plant.
+
+- Test the scan: plant faults. Copy a contract, add known faults at places given by a published seed, run the scan on the planted copy and on the untouched original, and count how many planted faults it names. The seed fixes where the faults go, so anyone can plant the same ones. It does not fix what the scan or the judge does on a given day, so one run can move a count by a finding or two. We say so next to every number.
+- Test the checker: plant a made-up finding id, or a flipped verdict, into a copy of the evidence and run the check. A checker that works says CAUGHT. A blind one says all good.
+
+The second test needs no scan and runs in seconds. The first works on any scan that can read a repository: [the folder with our planted-faults run](https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-02-injected-bugs-test) explains how to run your own tool on the same planted copies. Our own run of it is there too, with its limits.
+
+## Run it yourself
+
+You need git and Node 22 or newer, and nothing else. The first command recounts one result folder from its verdict files and checks its hashes, offline. The second runs the checker test on our own folders: it copies the 7 result folders that have a check script, plants a made-up finding id and a flipped verdict in each copy, and prints CAUGHT, BLIND or N/A. Right now it prints one BLIND, the third checker on our public to-do list, so expect it to end with an error. We would rather show you that than hide it.
+
+\`\`\`
+git clone https://github.com/holistis/bug-bounty-intelligence-mcp
+cd bug-bounty-intelligence-mcp
+node results/2026-11-02-shop-setup-five-audits/check.mjs
+node tools/checker-selftest.mjs
+\`\`\`
+
+These two commands do not test anybody else's scan. For that, use the planted-faults folder above.`,
+      },
+      {
+        type: "facts",
+        heading: "The numbers, each with its limit",
+        intro: "Four numbers from the film. Each is a measurement of one setup on specific audits or planted copies, with the limit written next to it. Read them as that, and not as a promise about what a scan will find for you.",
+        items: [
+          {
+            value: "14 of 20",
+            label: "Known High-severity bugs found by the setup behind our deep scan on five older audits, one run each, counted with a copy of the benchmark grader. These are development audits from 2023 to 2025 that the model may have seen. A cost cap stopped two runs, and the runs did not read every source file.",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-02-shop-setup-five-audits",
+            hrefLabel: "The five audits, folder and recount script",
+          },
+          {
+            value: "77.4 percent",
+            label: "24 of 31 known findings on seven audits when six research runs are combined. One run alone found 22 of 31. The combined list has 270 entries against 70 for one run. The biggest audit (20 of the 51 known findings) is left out, and it is the one where we lose most. One of the seven audits was a development audit, and this is not the scan we sell.",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-02-our-scan-under-the-benchmark-judge",
+            hrefLabel: "The seven audits with six research runs",
+          },
+          {
+            value: "18.9 percent",
+            label: "Precision, strict: 17 of 90 findings match a known finding when two open-weight judges that we ran ourselves both name it, and 17 to 20 with voided answers counted. These judges are stricter than the grader copy: they find 9 of the 20 known findings (13 with one judge), the copy 14. A finding that matches no listed High finding may still be a real bug.",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-02-shop-setup-five-audits",
+            hrefLabel: "Judges and precision, same folder as the first number",
+          },
+          {
+            value: "8 of 12",
+            label: "Planted faults found by the benchmark-grader copy, and 7 to 8 by the open judges. On the clean copies the open judges matched none of 21 findings to a fault, so they invented no matches there. That does not measure false alarms, and the grader copy was not run on the clean copies. The faults are simple and synthetic.",
+            href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-02-injected-bugs-test",
+            hrefLabel: "The planted faults and their control copies",
+          },
+        ],
+      },
+      {
+        type: "md",
+        text: `## What we do not claim
+
+- Our scan is not the best. Under our judge, the leader we compare against on the public benchmark is ahead of our research runs by one finding on the combined list and by three on a single run. Under the benchmark's own grader the gap on the combined list may be two. And four in five of the findings of our deep scan match no listed High finding.
+- The 77.4 percent does not describe the scan you can buy. It comes from six research runs combined, and one run alone found 22 of 31.
+- An unmatched finding is not necessarily wrong. It may be a real bug that nobody has listed.
+- The planted faults do not look like real ones. They are simple and synthetic.
+- Our checkers can still be fooled. One still says all good to a made-up id, and it is on our public to-do list.
+- Our judges may be wrong. Nobody has yet checked by hand whether they name the right finding, and doing so is one of the first issues below.
+- You cannot rerun the scan. The engine is closed. What a stranger can recount is the evidence: the verdicts, the hashes and the totals.
+
+## Knowledge, attitude, behavior: what we hope changes
+
+We want to change three things in the people who read security scores, in this order.
+
+- What they know. A number means what it counts and nothing more. We print the count, the limit and the link together, so a reader sees what a score can say and where it stops.
+- How they feel about a limit. A limit stated up front is information. We state ours, and we would like that to become ordinary, for us and for anyone who publishes a score.
+- What they do. The next time you read a score anywhere, ask where the checker is and whether anyone tried to fool it. If you want to help, run the two commands, label a finding that no judge matched, or try to break a checker.
+
+## Why the ruler is open
+
+By ruler we mean the evidence folders, the check scripts, the fault planter and the re-judge tool: everything that measures a scan, as opposed to the scan itself. We want a digital world that is safe, reliable and lasting, where machines do the heavy lifting and humans keep their hands on the wheel. A measurement that only its maker can run proves little, so the ruler is open source under MIT, and texts in it that come from others keep their own licences. The scan engine stays closed.
+
+Three first issues are open, each scoped to one folder or one audit: write the check that catches a made-up finding id, check by hand whether our judges name the right finding, or label the findings no judge matched. Your commits keep your name, and your name goes into the README of the folder you worked on. It is unpaid, public and yours.`,
+      },
+      {
+        type: "cta",
+        heading: "Break our ruler. Put your name on the catch.",
+        text: "Start with the two commands. If one of our checks says all good when it should not, that is the most useful report you can send us.",
+        links: [
+          { label: "Verify us in two minutes", href: "https://github.com/holistis/bug-bounty-intelligence-mcp#verify-us-in-two-minutes" },
+          { label: "The three first issues", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/labels/good%20first%20issue" },
+          { label: "How reviews and credit work", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/CONTRIBUTING.md" },
+          { label: "Every correction, and who found it", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/ERRATA.md" },
+          { label: "The scoreboard", href: "https://tokenizen.nl/scoreboard" },
+        ],
+      },
+    ],
+  },
 ];
 
 export function postPath(slug: string): string {

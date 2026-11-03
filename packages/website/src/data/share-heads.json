@@ -780,6 +780,19 @@
       "twitterDescription": "A receipt that verifies, carries an authorized signature, and cannot tell you which payment it is about. What that costs, who caught the error in it, and what changed the same day.",
       "alternates": []
     },
+    "/notes/a-test-for-any-ai-scan": {
+      "lang": "en",
+      "title": "A test for any AI smart contract security scan. Even ours. | tokenizen",
+      "description": "How to test any AI smart contract security scan, ours included: plant faults, rerun, count, and check the checker. Every number comes with its limit.",
+      "canonical": "https://tokenizen.nl/notes/a-test-for-any-ai-scan",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/a-test-for-any-ai-scan",
+      "ogTitle": "A test for any AI smart contract security scan. Even ours. | tokenizen",
+      "ogDescription": "How to test any AI smart contract security scan, ours included: plant faults, rerun, count, and check the checker. Every number comes with its limit.",
+      "twitterTitle": "A test for any AI smart contract security scan. Even ours. | tokenizen",
+      "twitterDescription": "How to test any AI smart contract security scan, ours included: plant faults, rerun, count, and check the checker. Every number comes with its limit.",
+      "alternates": []
+    },
     "/notes/check-pay-prove": {
       "lang": "en",
       "title": "Check. Pay. Prove. | tokenizen",
