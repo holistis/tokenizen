@@ -1210,7 +1210,7 @@ If a number in the folder does not match when you run the check, tell us in issu
         type: "md",
         text: `A score is a number somebody else counted. Whether it deserves belief depends on the checker that did the counting, and on whether anyone has tried to fool that checker on purpose.
 
-This week an outside reviewer tried it on ours. The reviewer put a made-up finding id into a copy of our evidence and ran our checker. It said all good. We ran the same trick against every checker of ours: five of them can be reached with a made-up id, and three of those five said all good. Two are fixed. The third is on our public to-do list. Every correction is in [ERRATA.md](https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/ERRATA.md), with who found it and how.
+This week an outside reviewer tried it on ours. The reviewer put a made-up finding id into a copy of our evidence and ran our checker. It said all good. We ran the same trick against every checker of ours: five of them can be reached with a made-up id, and three of those five said all good. All three are fixed now: two by us, and the third, in the EVMbench folder, by an outside contributor. Every correction is in [ERRATA.md](https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/ERRATA.md), with who found it and how.
 
 A checker nobody has tried to fool is a checker you cannot trust yet. So we wrote the test down. The film below runs for 84 seconds. Under it is what it says, with every number next to its limit.`,
       },
@@ -1218,7 +1218,7 @@ A checker nobody has tried to fool is a checker you cannot trust yet. So we wrot
         type: "video",
         src: "/media/a-test-for-any-ai-scan.mp4",
         poster: "/media/a-test-for-any-ai-scan-poster.jpg",
-        caption: "84 seconds: the test, four numbers with their limits, and an invitation. The soundtrack is licensed from Pixabay.",
+        caption: "84 seconds: the test, four numbers with their limits, and an invitation. Filmed before the third checker was fixed; it is fixed now. The soundtrack is licensed from Pixabay.",
         transcript: [
           "Someone planted a fake finding in our evidence.",
           "Three of the five checkers a fake ID can reach said: all good.",
@@ -1248,7 +1248,7 @@ The second test needs no scan and runs in seconds. The first works on any scan t
 
 ## Run it yourself
 
-You need git and Node 22 or newer, and nothing else. The first command recounts one result folder from its verdict files and checks its hashes, offline. The second runs the checker test on our own folders: it copies the 7 result folders that have a check script, plants a made-up finding id and a flipped verdict in each copy, and prints CAUGHT, BLIND or N/A. Right now it prints one BLIND, the third checker on our public to-do list, so expect it to end with an error. We would rather show you that than hide it.
+You need git and Node 22 or newer, and nothing else. The first command recounts one result folder from its verdict files and checks its hashes, offline. The second runs the checker test on our own folders: it copies the 7 result folders that have a check script, plants a made-up finding id and a flipped verdict in each copy, and prints CAUGHT, BLIND or N/A. Today it prints no BLIND. The last one, the EVMbench folder, was fixed by an outside contributor on 3 November, and the repository README shows how to run the test on the state before our fixes, to see where we started.
 
 \`\`\`
 git clone https://github.com/holistis/bug-bounty-intelligence-mcp
@@ -1278,7 +1278,7 @@ These two commands do not test anybody else's scan. For that, use the planted-fa
           },
           {
             value: "18.9 percent",
-            label: "Precision, strict: 17 of 90 findings match a known finding when two open-weight judges that we ran ourselves both name it, and 17 to 20 with voided answers counted. These judges are stricter than the grader copy: they find 9 of the 20 known findings (13 with one judge), the copy 14. A finding that matches no listed High finding may still be a real bug.",
+            label: "Precision, strict: 17 of 90 findings match a known finding when two open-weight judges that we ran ourselves both name it, and 17 to 20 with voided answers counted. These judges are stricter than the grader copy: they find 9 of the 20 known findings (13 with one judge), the copy 14. A finding that matches no listed High finding may still be a real bug. A hand check of these 17 by an outside reader found 15 naming the same bug and 2 arguable.",
             href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-02-shop-setup-five-audits",
             hrefLabel: "Judges and precision, same folder as the first number",
           },
@@ -1298,8 +1298,8 @@ These two commands do not test anybody else's scan. For that, use the planted-fa
 - The 77.4 percent does not describe the scan you can buy. It comes from six research runs combined, and one run alone found 22 of 31.
 - An unmatched finding is not necessarily wrong. It may be a real bug that nobody has listed.
 - The planted faults do not look like real ones. They are simple and synthetic.
-- Our checkers can still be fooled. One still says all good to a made-up id, and it is on our public to-do list.
-- Our judges may be wrong. Nobody has yet checked by hand whether they name the right finding, and doing so is one of the first issues below.
+- Our checkers can still be fooled. The test plants two kinds of fault, a made-up id and a flipped verdict, and every other way to fool a checker is untested.
+- Our judges may be wrong. Somebody outside our team checked the 17 strict matches by hand: 15 name the same bug and 2 are arguable. The 25 matches that rest on one judge, and every other audit, have not been checked.
 - You cannot rerun the scan. The engine is closed. What a stranger can recount is the evidence: the verdicts, the hashes and the totals.
 
 ## Knowledge, attitude, behavior: what we hope changes
@@ -1314,7 +1314,7 @@ We want to change three things in the people who read security scores, in this o
 
 By ruler we mean the evidence folders, the check scripts, the fault planter and the re-judge tool: everything that measures a scan, as opposed to the scan itself. We want a digital world that is safe, reliable and lasting, where machines do the heavy lifting and humans keep their hands on the wheel. A measurement that only its maker can run proves little, so the ruler is open source under MIT, and texts in it that come from others keep their own licences. The scan engine stays closed.
 
-Three first issues are open, each scoped to one folder or one audit: write the check that catches a made-up finding id, check by hand whether our judges name the right finding, or label the findings no judge matched. Your commits keep your name, and your name goes into the README of the folder you worked on. It is unpaid, public and yours.`,
+Three first issues were open, each scoped to one folder or one audit. Two were taken and finished by outside contributors on the day they were opened: the check that catches a made-up finding id, and a hand check of the 17 strict matches. The third is still open: label the findings no judge matched. Your commits keep your name, and your name goes into the README of the folder you worked on. It is unpaid, public and yours.`,
       },
       {
         type: "cta",
@@ -1322,7 +1322,7 @@ Three first issues are open, each scoped to one folder or one audit: write the c
         text: "Start with the two commands. If one of our checks says all good when it should not, that is the most useful report you can send us.",
         links: [
           { label: "Verify us in two minutes", href: "https://github.com/holistis/bug-bounty-intelligence-mcp#verify-us-in-two-minutes" },
-          { label: "The three first issues", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/labels/good%20first%20issue" },
+          { label: "The first issue still open", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/labels/good%20first%20issue" },
           { label: "How reviews and credit work", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/CONTRIBUTING.md" },
           { label: "Every correction, and who found it", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/ERRATA.md" },
           { label: "The scoreboard", href: "https://tokenizen.nl/scoreboard" },
