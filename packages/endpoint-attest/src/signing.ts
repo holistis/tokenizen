@@ -30,11 +30,19 @@ export interface SignedAttestationParts {
   signature: string;
 }
 
-/** Sign an attestation as the attester. Returns the content-addressed id alongside the signature so a caller can assemble a full EndpointAttestation. */
+/** How far ahead of "now" a checkedAt may be before the attestation is refused. Covers clock differences between machines, nothing more. */
+export const MAX_CLOCK_SKEW_MS = 5 * 60 * 1000;
+
+/** Sign an attestation as the attester. Returns the content-addressed id alongside the signature so a caller can assemble a full EndpointAttestation. Refuses a checkedAt in the future, because the 366 day bound counts from checkedAt. */
 export async function signAttestation(
   attester: ethers.Signer,
   content: AttestationContent,
+  opts: { now?: Date } = {},
 ): Promise<SignedAttestationParts> {
+  const now = opts.now ?? new Date();
+  if (Date.parse(content.checkedAt) > now.getTime() + MAX_CLOCK_SKEW_MS) {
+    throw new Error("checkedAt is in the future: the attestation would outlive the 366 day bound that counts from checkedAt");
+  }
   const attestationId = computeAttestationId(content);
   const signature = await attester.signMessage(attestationId);
   return { attestationId, signature };
@@ -45,6 +53,7 @@ export type VerifyReason =
   | "signature_recovery_failed"
   | "signature_does_not_match_attester"
   | "attester_is_owner"
+  | "checked_in_future"
   | "expired";
 
 export type VerifyResult = { ok: true } | { ok: false; reason: VerifyReason; detail?: string };
@@ -100,6 +109,12 @@ export function verifyAttestation(attestation: EndpointAttestation, opts: Verify
 
   if (attestation.attesterAddress.toLowerCase() === attestation.ownerAddress.toLowerCase()) {
     return { ok: false, reason: "attester_is_owner" };
+  }
+
+  // The 366 day bound counts from checkedAt, which the attester writes. Without this a far-future checkedAt would give a far-future expiry.
+  // Not skipped by ignoreExpiry: an attestation checked in the future was never valid, however old it is when someone looks at it.
+  if (Date.parse(attestation.checkedAt) > (opts.now ?? new Date()).getTime() + MAX_CLOCK_SKEW_MS) {
+    return { ok: false, reason: "checked_in_future" };
   }
 
   if (!opts.ignoreExpiry && isExpired(attestation, opts.now ?? new Date())) {

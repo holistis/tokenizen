@@ -10,6 +10,8 @@ export {
   attestationPreimage,
   computeAttestationId,
   isExpired,
+  MAX_ATTESTATION_LIFE_DAYS,
+  MAX_OWNERSHIP_PROOF_AGE_DAYS,
   type OwnershipMethod,
   type Outcome,
   type OwnershipProof,
@@ -20,6 +22,7 @@ export {
 export {
   signAttestation,
   verifyAttestation,
+  MAX_CLOCK_SKEW_MS,
   type SignedAttestationParts,
   type VerifyResult,
   type VerifyReason,
