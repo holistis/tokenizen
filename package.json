@@ -10,6 +10,7 @@
   "scripts": {
     "check-own-deps": "node scripts/check-own-deps-published.mjs",
     "check-own-deps-test": "node --test scripts/check-own-deps-published.test.mjs",
+    "publish-workflows-test": "node --test scripts/publish-workflows-deps.test.mjs",
     "claims-check": "node scripts/claims-check.mjs",
     "claims-check-test": "node --test scripts/claims-check.test.mjs",
     "scoreboard-regel": "node scripts/scoreboard-regel.mjs",

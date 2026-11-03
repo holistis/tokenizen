@@ -35,6 +35,10 @@ jobs:
         working-directory: .
         run: npm ci
 
+      - name: Build net-guard (workspace dependency)
+        working-directory: packages/net-guard
+        run: npm run build
+
       - name: Typecheck
         run: npm run typecheck
 
