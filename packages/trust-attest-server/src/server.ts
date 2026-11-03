@@ -34,6 +34,7 @@
 // network, without going through a real MCP client/stdio transport.
 
 import { createHash } from "node:crypto";
+import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -58,6 +59,8 @@ import { guardedFetch, resolveTxtGuarded } from "tokenizen-net-guard";
 import { runChecks, type CheckDeps, type CheckFinding, type CheckResult } from "./checks.js";
 import { runActiveToolChainCheck, type ToolFetchDeps } from "./fetch-tools.js";
 import { createAttesterIdentity, type AttesterIdentity, type OwnershipContext } from "./attester-identity.js";
+
+const PACKAGE_VERSION: string = (createRequire(import.meta.url)("../package.json") as { version: string }).version;
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -358,7 +361,7 @@ function identity(): AttesterIdentity {
 
 const server = new McpServer({
   name: "trust-attest-server",
-  version: "0.1.0",
+  version: PACKAGE_VERSION,
 });
 
 server.registerTool(
