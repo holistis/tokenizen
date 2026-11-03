@@ -67,6 +67,10 @@ jobs:
       - name: Test the own-dependency guard
         run: npm run check-own-deps-test
 
+      # A publish workflow has to build every sibling package its package needs, in order. CI builds in the right order by itself, so only this test notices when a publish workflow does not.
+      - name: Test that the publish workflows build what they need
+        run: npm run publish-workflows-test
+
       # The published test vectors are what other projects pin and build their
       # own verifiers against, so the format they describe has to keep
       # verifying. These two scripts are deliberate reimplementations: they

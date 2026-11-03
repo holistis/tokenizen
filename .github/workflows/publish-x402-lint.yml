@@ -45,6 +45,10 @@ jobs:
         working-directory: .
         run: npm run build -w tokenizen-net-guard
 
+      - name: Build net-guard (workspace dependency)
+        working-directory: packages/net-guard
+        run: npm run build
+
       - name: Typecheck
         run: npm run typecheck
 
