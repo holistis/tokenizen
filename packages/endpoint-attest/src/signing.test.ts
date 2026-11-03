@@ -10,7 +10,7 @@ import {
   type AttestationContent,
   type EndpointAttestation,
 } from "./schema.js";
-import { signAttestation, verifyAttestation } from "./signing.js";
+import { signAttestation, verifyAttestation, MAX_CLOCK_SKEW_MS } from "./signing.js";
 
 const OWNER = "0x00000000000000000000000000000000000000aa";
 const CHECKED_AT = "2026-09-28T12:00:00.000Z";
@@ -77,6 +77,47 @@ describe("schema: the three honesty constraints are enforced, not documented", (
 
   it("accepts the valid baseline", () => {
     expect(() => AttestationContentSchema.parse(content())).not.toThrow();
+  });
+});
+
+describe("a checkedAt in the future would stretch the 366 day bound, so it is refused", () => {
+  const NOW = new Date("2026-11-03T12:00:00.000Z");
+  const FUTURE = new Date(NOW.getTime() + MAX_CLOCK_SKEW_MS + 1000).toISOString();
+  const futureContent = (attester: ethers.HDNodeWallet) => {
+    const checkedAt = FUTURE;
+    const expiresAt = new Date(Date.parse(checkedAt) + 366 * 24 * 60 * 60 * 1000).toISOString();
+    const verifiedAt = new Date(Date.parse(checkedAt) - 60 * 60 * 1000).toISOString();
+    return content({ attesterAddress: attester.address, checkedAt, expiresAt, ownershipProof: { ...content().ownershipProof, verifiedAt } });
+  };
+
+  it("signAttestation refuses a checkedAt more than the clock skew ahead of now", async () => {
+    const attester = ethers.Wallet.createRandom();
+    await expect(signAttestation(attester, futureContent(attester), { now: NOW })).rejects.toThrow(/in the future/);
+  });
+
+  it("signAttestation accepts a checkedAt exactly at the clock skew", async () => {
+    const attester = ethers.Wallet.createRandom();
+    const c = futureContent(attester);
+    const edge = new Date(NOW.getTime() + MAX_CLOCK_SKEW_MS).toISOString();
+    const ok = {
+      ...c,
+      checkedAt: edge,
+      expiresAt: new Date(Date.parse(edge) + 24 * 60 * 60 * 1000).toISOString(),
+      ownershipProof: { ...c.ownershipProof, verifiedAt: new Date(Date.parse(edge) - 1000).toISOString() },
+    };
+    await expect(signAttestation(attester, ok, { now: NOW })).resolves.toBeDefined();
+  });
+
+  it("verifyAttestation reports checked_in_future for a genuinely signed attestation made with a skewed clock, also with ignoreExpiry", async () => {
+    const attester = ethers.Wallet.createRandom();
+    const c = futureContent(attester);
+    // The signer is told the future is now, as an attester with a wrong clock would be.
+    const { attestationId, signature } = await signAttestation(attester, c, { now: new Date(FUTURE) });
+    const full = { ...c, attestationId, signature };
+    expect(verifyAttestation(full, { now: NOW })).toEqual({ ok: false, reason: "checked_in_future" });
+    expect(verifyAttestation(full, { now: NOW, ignoreExpiry: true })).toEqual({ ok: false, reason: "checked_in_future" });
+    // The same attestation is fine once the real time has caught up.
+    expect(verifyAttestation(full, { now: new Date(Date.parse(FUTURE) + 1000) }).ok).toBe(true);
   });
 });
 
