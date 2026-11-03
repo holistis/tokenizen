@@ -31,6 +31,7 @@
 // open-source package to leak or rate-limit on other people's behalf.
 
 import { ethers } from "ethers";
+import { guardedEthersFetchRequest } from "tokenizen-net-guard";
 import * as z from "zod/v4";
 
 // The EIP's own compound reference format: "{namespace}:{chainId}:
@@ -126,6 +127,21 @@ export type ChainIdFactory = (rpcUrl: string) => Promise<bigint>;
 
 const defaultChainIdFactory: ChainIdFactory = async (rpcUrl) => {
   const network = await new ethers.JsonRpcProvider(rpcUrl).getNetwork();
+  return network.chainId;
+};
+
+// A SERVER that takes rpcUrl from an anonymous caller must not use the two defaults above: they open a connection to whatever
+// address the caller names (internal ones too) and the error text goes back to the caller. These two send every request through
+// net-guard (no loopback, private, link-local or metadata addresses; bounded time and size). The library defaults stay unguarded
+// on purpose: the caller of a library owns the machine it runs on. Found by an adversarial read on 2026-11-03: the HTTP server's
+// resolve_agent_identity and get_agent_snapshot routes used the unguarded defaults.
+export const guardedContractFactory: ContractFactory = (registryAddress, rpcUrl) => {
+  const provider = new ethers.JsonRpcProvider(guardedEthersFetchRequest(rpcUrl));
+  return new ethers.Contract(registryAddress, ERC721_READ_ABI, provider) as unknown as Erc721ReadContract;
+};
+
+export const guardedChainIdFactory: ChainIdFactory = async (rpcUrl) => {
+  const network = await new ethers.JsonRpcProvider(guardedEthersFetchRequest(rpcUrl)).getNetwork();
   return network.chainId;
 };
 
