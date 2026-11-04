@@ -143,7 +143,7 @@ Eight checks read it back from the chain. The video shows four: the rater is the
           {
             value: "33 to 20 to 4",
             label:
-              "Secrets still leaking in 68 test cases of an open-source AI coding tool with more than 10,000 stars: before, after the maintainers' own fixes, and with our fix (pull request open).",
+              "Secrets still leaking in 68 test cases of an open-source AI coding tool with more than 10,000 stars: before, after the maintainers' own fixes, and with our fix (our pull request is merged).",
             href: "https://github.com/tigerless-labs/autoharness/pull/278",
             hrefLabel: "Our pull request",
           },

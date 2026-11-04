@@ -195,7 +195,7 @@ export const HOME: Record<Locale, HomeCopy> = {
       eyebrow: "tokenizen.nl · Eindhoven",
       h1a: "A payment proves money moved.",
       h1b: "We make what arrived checkable.",
-      body: "AI agents now pay each other. Our open-source receipts record what the seller offered and what the buyer says arrived, each signed by its own side, so anyone can check them. We also find leaks in real software and show the numbers. In an open-source AI tool with more than 10,000 stars, 33 secrets leaked before, 20 after the maintainers' own fixes and 4 with ours (pull request open). Check your repository free in a minute, see the price of a smart contract scan before you pay, and keep a log whose timestamp is outside our control. Every number below links to the commands, so you can run it yourself.",
+      body: "AI agents now pay each other. Our open-source receipts record what the seller offered and what the buyer says arrived, each signed by its own side, so anyone can check them. We also find leaks in real software and show the numbers. In an open-source AI tool with more than 10,000 stars, 33 secrets leaked before, 20 after the maintainers' own fixes and 4 with ours (our pull request is merged). Check your repository free in a minute, see the price of a smart contract scan before you pay, and keep a log whose timestamp is outside our control. Every number below links to the commands, so you can run it yourself.",
       ctaPrimary: "Check your repository",
       ctaSecondary: "See what we offer",
       chips: [
@@ -269,7 +269,7 @@ export const HOME: Record<Locale, HomeCopy> = {
       eyebrow: "tokenizen.nl · Eindhoven",
       h1a: "Een betaling bewijst dat er geld ging.",
       h1b: "Wij maken nagaanbaar wat er aankwam.",
-      body: "AI-agents betalen elkaar nu. Onze open-source bonnetjes leggen vast wat de verkoper aanbood en wat de koper zegt te hebben ontvangen, elk ondertekend door de eigen kant, zodat iedereen het kan nagaan. Daarnaast vinden wij lekken in echte software en laten de cijfers zien. In een open-source AI-gereedschap met meer dan 10.000 sterren lekten 33 geheimen, na de eigen reparaties van de makers nog 20 en met de onze nog 4 (pull request open). Check je repository gratis in een minuut, zie de prijs van een smart-contractscan voordat je betaalt en houd een logboek bij met een tijdstempel buiten onze controle. Elk getal hieronder linkt naar de commando's, dus je kunt het zelf draaien.",
+      body: "AI-agents betalen elkaar nu. Onze open-source bonnetjes leggen vast wat de verkoper aanbood en wat de koper zegt te hebben ontvangen, elk ondertekend door de eigen kant, zodat iedereen het kan nagaan. Daarnaast vinden wij lekken in echte software en laten de cijfers zien. In een open-source AI-gereedschap met meer dan 10.000 sterren lekten 33 geheimen, na de eigen reparaties van de makers nog 20 en met de onze nog 4 (onze pull request is samengevoegd). Check je repository gratis in een minuut, zie de prijs van een smart-contractscan voordat je betaalt en houd een logboek bij met een tijdstempel buiten onze controle. Elk getal hieronder linkt naar de commando's, dus je kunt het zelf draaien.",
       ctaPrimary: "Check jouw repository",
       ctaSecondary: "Bekijk ons aanbod",
       chips: [
