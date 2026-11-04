@@ -2,6 +2,11 @@
 
 Alle noemenswaardige wijzigingen aan dit package worden hier bijgehouden.
 
+## 0.9.2
+Verzoeklog, na de nameting bij 0.9.1 (de serverlog schreef alleen starten en stoppen, dus achteraf was niet te zien of een route was misbruikt).
+- De HTTP-server schrijft nu per verzoek een regel JSON: tijdstip, soort gebeurtenis, en de toolnaam (of de methodenaam bij een andere aanroep). Een geweigerd verzoek door de ratelimiet en een fout waarbij de uitgaande bewaker (net-guard) iets weigerde krijgen een eigen regel, zonder het adres. Nooit de inhoud van een verzoek, geen parameters, geen IP-adres, geen geheimen.
+- Een toolnaam die geen gewone naam is komt niet in de log, zodat een aanvaller geen tekst in de log kan zetten. De test in request-log.test.ts bewaakt dat; het weghalen van de bewaker-registratie laat een test falen.
+
 ## 0.9.1
 Beveiligingsreparatie, na een adversariële lezing op 2026-11-03. 0.9.0 is nooit gepubliceerd; dit is de eerste uitgave van die lijn.
 - De HTTP-server stuurt resolve_agent_identity en get_agent_snapshot nu door net-guard (guardedContractFactory, guardedChainIdFactory in erc8004.ts). Voorheen verbond de server met elk adres dat een anonieme beller als rpcUrl gaf, ook interne, en de foutmelding ging terug naar de beller.

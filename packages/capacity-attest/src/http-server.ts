@@ -418,12 +418,34 @@ if (REPUTATION_PUBLISHER_PRIVATE_KEY && PUBLISH_FEEDBACK_PAY_TO) {
   });
 }
 
+// Request log (4 Nov 2026). Until then the server wrote only starts and stops, so nobody could tell afterwards whether a route had been
+// misused. One JSON line per event: the time, the kind of event, the tool name and whether the outbound guard refused something.
+// NEVER the content of a request: no addresses, no parameters, no caller IP, no secrets. The test in request-log.test.ts keeps it that way.
+const GUARD_REFUSAL = /not publicly routable|link-local|loopback|private address|refused by the outbound guard/i;
+const SAFE_NAME = /^[a-z0-9_]{1,64}$/;
+const SAFE_METHOD = /^[a-z/_]{1,64}$/;
+
+export function logEvent(event: string, fields: Record<string, string | number | boolean> = {}): void {
+  console.log(JSON.stringify({ t: new Date().toISOString(), event, ...fields }));
+}
+
+/** The tool name of a JSON-RPC tools/call body, or the method name of any other call. Nothing else is read from the body. */
+export function requestKind(body: unknown): { tool: string } | { method: string } {
+  const b = body as { method?: unknown; params?: { name?: unknown } } | null | undefined;
+  if (b && typeof b === "object" && !Array.isArray(b) && typeof b.method === "string" && SAFE_METHOD.test(b.method)) {
+    if (b.method === "tools/call" && typeof b.params?.name === "string" && SAFE_NAME.test(b.params.name)) return { tool: b.params.name };
+    return { method: b.method };
+  }
+  return { method: "unknown" };
+}
+
 function textResult(value: unknown): { content: Array<{ type: "text"; text: string }> } {
   const text = typeof value === "string" ? value : JSON.stringify(value, null, 2);
   return { content: [{ type: "text", text }] };
 }
 
-function errorResult(message: string): { content: Array<{ type: "text"; text: string }>; isError: true } {
+export function errorResult(message: string): { content: Array<{ type: "text"; text: string }>; isError: true } {
+  logEvent("tool_error", { guard_refused: GUARD_REFUSAL.test(message) });
   return { content: [{ type: "text", text: `Error: ${message}` }], isError: true };
 }
 
@@ -995,6 +1017,7 @@ export function createApp() {
 
     const ip = clientIp(req);
     if (isRateLimited(ip)) {
+      logEvent("rate_limited");
       res
         .writeHead(429, { "content-type": "application/json", "retry-after": "60" })
         .end(JSON.stringify({ error: "rate limit exceeded, max 30 requests per minute" }));
@@ -1011,6 +1034,8 @@ export function createApp() {
       res.writeHead(400, { "content-type": "application/json" }).end(JSON.stringify({ error: "invalid request body" }));
       return;
     }
+
+    logEvent("request", requestKind(parsedBody));
 
     // Stateless mode (sessionIdGenerator: undefined): this is a public,
     // read-only server with no per-caller state worth tracking across
