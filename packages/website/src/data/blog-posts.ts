@@ -1210,7 +1210,7 @@ If a number in the folder does not match when you run the check, tell us in issu
         type: "md",
         text: `A score is a number somebody else counted. Whether it deserves belief depends on the checker that did the counting, and on whether anyone has tried to fool that checker on purpose.
 
-This week an outside reviewer tried it on ours. The reviewer put a made-up finding id into a copy of our evidence and ran our checker. It said all good. We ran the same trick against every checker of ours: five of them can be reached with a made-up id, and three of those five said all good. All three are fixed now: two by us, and the third, in the EVMbench folder, by an outside contributor. Every correction is in [ERRATA.md](https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/ERRATA.md), with who found it and how.
+This week Darja Rihla tried it on ours. Darja Rihla put a made-up finding id into a copy of our evidence and ran our checker ([pull request 74](https://github.com/holistis/bug-bounty-intelligence-mcp/pull/74)). It said all good. We ran the same trick against every checker of ours: five of them can be reached with a made-up id, and three of those five said all good. All three are fixed now: two by us, and the third, in the EVMbench folder, by an outside contributor. Every correction is in [ERRATA.md](https://github.com/holistis/bug-bounty-intelligence-mcp/blob/main/ERRATA.md), with who found it and how.
 
 A checker nobody has tried to fool is a checker you cannot trust yet. So we wrote the test down. The film below runs for 84 seconds. Under it is what it says, with every number next to its limit.`,
       },
@@ -1314,7 +1314,13 @@ We want to change three things in the people who read security scores, in this o
 
 By ruler we mean the evidence folders, the check scripts, the fault planter and the re-judge tool: everything that measures a scan, as opposed to the scan itself. We want a digital world that is safe, reliable and lasting, where machines do the heavy lifting and humans keep their hands on the wheel. A measurement that only its maker can run proves little, so the ruler is open source under MIT, and texts in it that come from others keep their own licences. The scan engine stays closed.
 
-Three first issues were open, each scoped to one folder or one audit. Two were taken and finished by outside contributors on the day they were opened: the check that catches a made-up finding id, and a hand check of the 17 strict matches. The third is still open: label the findings no judge matched. Your commits keep your name, and your name goes into the README of the folder you worked on. It is unpaid, public and yours.`,
+Three first issues were open, each scoped to one folder or one audit. Two were taken and finished by outside contributors on the day they were opened: the check that catches a made-up finding id, and a hand check of the 17 strict matches. The third is still open: label the findings no judge matched. Your commits keep your name, and your name goes into the README of the folder you worked on. It is unpaid, public and yours.
+
+## The people who tested the ruler
+
+A ruler is worth something once a stranger has tried to bend it. Darja Rihla (darjarihla-prog) opened three pull requests in two days. [Pull request 74](https://github.com/holistis/bug-bounty-intelligence-mcp/pull/74) put the made-up id into a copy of our evidence. In [pull request 89](https://github.com/holistis/bug-bounty-intelligence-mcp/pull/89) came the ids of the 117 known findings of the EVMbench folder, with a check that rejects an unknown id. Then [pull request 92](https://github.com/holistis/bug-bounty-intelligence-mcp/pull/92) validated five of our unmatched findings from the Forte audit by hand, with eleven tests anyone can run. We ran all eleven on the pinned commit, the source files match the hashes in the report, and the eleven pass.
+
+That last piece matters for one number on this page. Our precision counts a finding only when it matches a known bug, so it is a floor, and a person who reads the code can move it. The work of Darja Rihla is the first step in turning that floor into a measured number. The credit is in the errata, next to the pull requests.`,
       },
       {
         type: "cta",
