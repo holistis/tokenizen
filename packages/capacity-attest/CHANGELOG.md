@@ -2,6 +2,9 @@
 
 Alle noemenswaardige wijzigingen aan dit package worden hier bijgehouden.
 
+## 0.10.0
+Nieuwe, optionele export `checkClaimFreshness` (`src/freshness.ts`). `verifyClaim()` controleert alleen de handtekening, niet hoe oud een claim is; een cryptografisch geldige handtekening over een allang verouderde claim blijft `ok: true`. Deze losse functie checkt het al verplichte, mee-ondertekende `timestamp`-veld tegen een zelf gekozen maximale leeftijd, zodat een verifier zijn eigen versheidseis kan afdwingen zonder een door ons bijgehouden lijst te hoeven vertrouwen. Toegevoegd (geen bestaand veld of gedrag gewijzigd), dus een bestaande, al ondertekende claim hasht nog steeds identiek.
+
 ## 0.9.2
 Verzoeklog, na de nameting bij 0.9.1 (de serverlog schreef alleen starten en stoppen, dus achteraf was niet te zien of een route was misbruikt).
 - De HTTP-server schrijft nu per verzoek een regel JSON: tijdstip, soort gebeurtenis, en de toolnaam (of de methodenaam bij een andere aanroep). Een geweigerd verzoek door de ratelimiet en een fout waarbij de uitgaande bewaker (net-guard) iets weigerde krijgen een eigen regel, zonder het adres. Nooit de inhoud van een verzoek, geen parameters, geen IP-adres, geen geheimen.
