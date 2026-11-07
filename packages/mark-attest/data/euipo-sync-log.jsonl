@@ -1,0 +1,1 @@
+{"timestamp":"2026-11-07T14:54:07.312Z","status":"error","ftpHost":"ftp.euipo.europa.eu","ftpPath":"/Trademark/Full","filesDownloaded":0,"marksParsed":0,"alert":true,"alertReason":"list /Trademark/Full failed after 3 attempts: exit 28, stderr: "}
