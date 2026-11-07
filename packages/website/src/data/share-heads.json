@@ -767,6 +767,19 @@
       "twitterDescription": "Every revocation in the three largest EAS indexers is an issuer withdrawing its own statement. What that measures, and what it cannot fix.",
       "alternates": []
     },
+    "/notes/a-signed-receipt-for-every-name": {
+      "lang": "en",
+      "title": "A signed receipt for every name in the battery chain | tokenizen",
+      "description": "Al-Muqarin compares names with a public list and returns a signed, dated receipt. Open source, Apache-2.0, limits stated up front.",
+      "canonical": "https://tokenizen.nl/notes/a-signed-receipt-for-every-name",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/a-signed-receipt-for-every-name",
+      "ogTitle": "A signed receipt for every name in the battery chain | tokenizen",
+      "ogDescription": "Al-Muqarin compares names with a public list and returns a signed, dated receipt. Open source, Apache-2.0, limits stated up front.",
+      "twitterTitle": "A signed receipt for every name in the battery chain | tokenizen",
+      "twitterDescription": "Al-Muqarin compares names with a public list and returns a signed, dated receipt. Open source, Apache-2.0, limits stated up front.",
+      "alternates": []
+    },
     "/notes/a-signed-receipt-that-cannot-name-its-own-payment": {
       "lang": "en",
       "title": "A signed receipt that cannot name its own payment | tokenizen",

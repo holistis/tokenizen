@@ -1394,6 +1394,135 @@ We are Tokenizen (tokenizen.nl) and we build these tools ourselves, so we are no
       },
     ],
   },
+  {
+    slug: "a-signed-receipt-for-every-name",
+    kind: "blog",
+    date: "2026-11-08",
+    title: "A signed receipt for every name in the battery chain",
+    dek: "Al-Muqarin sets what a company says next to a public list and hands back a signed, dated answer that a stranger can check for changes. Open source from the first day, with its limits written down.",
+    description:
+      "Al-Muqarin compares names with a public list and returns a signed, dated receipt. Open source, Apache-2.0, limits stated up front.",
+    tags: ["Tools", "Supply chain"],
+    readMinutes: 6,
+    blocks: [
+      {
+        type: "image",
+        src: "/media/al-muqarin-horizon.svg",
+        alt: "A planet at dawn seen from space, with a chain of fifteen small lit points hanging above its edge, each linked to the one before it.",
+        caption: "Illustration, not a photograph. A chain of receipts above the horizon. Each point refers to the one before it.",
+        width: 1600,
+        height: 560,
+      },
+      {
+        type: "md",
+        text: `## The transition runs on claims
+
+Every battery has a story. The metal came out of a mine, a refinery turned it into feedstock, a factory built a cell from it, and somewhere a paper says that all is in order. Each step rests on a claim.
+
+Most claims are never checked. The rest are checked with an answer that nobody can repeat later: a screen, a tick mark, an email. A stable planet needs more than good intentions. It needs checks that give the same answer today and in ten years, to anyone who wants to run them.
+
+Al-Muqarin, Arabic for the one who compares, is our first step. You give it a name, say a supplier. It sets the name next to a public list and hands back a receipt that is signed and dated. Anyone with the public key can check that it is ours and has not been changed.`,
+      },
+      {
+        type: "image",
+        src: "/media/al-muqarin-chain.svg",
+        alt: "Four links of a battery chain drawn as silhouettes: a terraced mine, a refinery with a stack, three battery cells, and a skyline with a wind turbine. A line of four linked points runs above them, one over each link.",
+        caption: "Illustration. Every link in the chain is a claim. A receipt makes one of them checkable.",
+        width: 1200,
+        height: 300,
+      },
+      {
+        type: "md",
+        text: `## A receipt says this, and never that
+
+The first list is the financial sanctions list of the European Union. A receipt has one of four outcomes.
+
+- TREFFER: the same name is on the list. Whether it is the same party is for a person to judge.
+- KANDIDAAT: a nearly identical name is on the list. Look for yourself.
+- ONMEETBAAR: not everything could be measured. This is never green.
+- GEEN_TREFFER_IN_LIJST: no match was found under our matching rules, in that version of the list, on that date. Nothing more than that, and the matching can miss things (see the limits below).
+
+The word safe appears nowhere. The receipt is signed with a key and carries the date of the list it was compared with, so a reader can see that it has not been changed. Each new version of the list points to the one before it. If you keep track of the last run number you saw, you notice at once when somebody puts an older list back.
+
+The core has no dependencies and no network code, and a test scans the source for network calls. Only the feeder that fetches the list and the small counter that answers questions talk to the network.`,
+      },
+      {
+        type: "facts",
+        heading: "The numbers, and where to check them",
+        intro: "Each number counts one thing. The link opens the place where a stranger can count it too.",
+        items: [
+          {
+            value: "445 tests",
+            label: "Automated tests in the repository. They need no network and run with one command, npm test, in about ten seconds.",
+            href: "https://github.com/holistis/al-muqarin/tree/main/test",
+            hrefLabel: "The test folder",
+          },
+          {
+            value: "371 planted faults",
+            label: "Faults that a proof plants in the code on purpose, one at a time. The tests must catch every one, or the proof fails. A fault that makes the tests loop for ever is stopped by a time limit and counted apart. Run it with npm run mutatie.",
+            href: "https://github.com/holistis/al-muqarin/blob/main/tools/mutatie-proef.mjs",
+            hrefLabel: "The fault planter and its list",
+          },
+          {
+            value: "0 dependencies",
+            label: "Packages needed from outside. No network calls in the checking code either: a test scans the source for them and fails if it finds one.",
+            href: "https://github.com/holistis/al-muqarin/blob/main/package.json",
+            hrefLabel: "package.json",
+          },
+          {
+            value: "4 outcomes",
+            label: "The only answers a receipt can give. None of them means safe, and a measurement that could not be made is never shown as green.",
+            href: "https://github.com/holistis/al-muqarin#readme",
+            hrefLabel: "The readme",
+          },
+        ],
+      },
+      {
+        type: "md",
+        text: `## A checker that checks itself
+
+A tool that checks others has to be checked itself. So the proof plants a fault in the code, runs the tests, and demands that a test fails. It does this 371 times, once per fault. If a fault slips through, the proof fails. A fault that makes the tests loop for ever is stopped after four minutes and counted apart.
+
+The proof showed holes in our own tests. We closed them and ran the proof again. That is the work a comparer needs before anyone builds on its answer.
+
+## Where this goes
+
+Clean energy needs batteries in numbers we have never built. Every battery needs trust in a long chain of people who often never meet. We take one link of that chain: the question of who you do business with. It is small, and it can be cheap, fast and open to everyone.
+
+Our aim is a world where a claim about a supplier arrives with a receipt, the way an invoice arrives with a number. Whoever sees a receipt does not have to take our word for it: it names the list version it used, and its signature shows that it has not been changed.
+
+We believe public lists, free code and signed receipts can become a norm together. A large vision starts as a small tool that does its job every day. That is where we start.
+
+## What we do not claim
+
+- The tool compares names with one list, by the spelling of the name. A company that trades under another name can go unnoticed.
+- Matching can miss a listed party. In our own measurement, a party written in another Latin spelling of its name was missed in about a third of the tries, and other edits of a name in up to 4 percent. The numbers are in docs/KNOWN-LIMITS.md. So GEEN_TREFFER_IN_LIJST can be wrong.
+- A match says nothing about the party behind the name. That judgement stays with a person.
+- An empty result is not a clean bill. It says that no match was found under these rules, in this version of the list, on that date.
+- Ownership is not followed, only names. Sanctions can also reach companies owned or controlled by a listed party, and this tool does not look at that.
+- Country claims need a second list, and nothing that feeds such a list exists yet, so on a live setup they come back ONMEETBAAR for now.
+- It is not an audit, not a certification and not legal advice.
+- This is our own build and our own review. No independent reader has been through it yet. Anyone who wants to read it or break it is welcome. The known limits are written down in docs/KNOWN-LIMITS.md.
+- The comparison itself was measured on a copy of the real EU list dated 23 October (see the known limits). What is still ahead is the first automatic run of the feeder on a server: the EU source answered every request we sent on 7 and 8 November with a server error (HTTP 500), from two different machines, so no signed snapshot of the live list exists yet and the counter answers ONMEETBAAR for everything.
+
+## Next steps
+
+- Now: the comparer itself, the command line and a small counter you run yourself. Free and open under Apache-2.0.
+- Next: more public lists next to the EU list.
+- Later: for anyone who wants extra certainty, such as a kept archive of daily lists and monitoring, a paid layer. The core stays free.`,
+      },
+      {
+        type: "cta",
+        heading: "Try it in a minute",
+        text: "The demo uses made-up names, throw-away keys and no network. It is not the EU list. If a receipt says something it should not, that is the most useful report you can send us.",
+        links: [
+          { label: "The code and the one-minute demo", href: "https://github.com/holistis/al-muqarin#try-it-in-a-minute-demo-data-no-network" },
+          { label: "The known limits", href: "https://github.com/holistis/al-muqarin/blob/main/docs/KNOWN-LIMITS.md" },
+          { label: "How to report a problem", href: "https://github.com/holistis/al-muqarin/blob/main/SECURITY.md" },
+        ],
+      },
+    ],
+  },
 ];
 
 export function postPath(slug: string): string {
