@@ -6,6 +6,13 @@ dist/
 # Local ledger data (append-only demo/test output) — never commit generated claims.
 packages/*/data/*.jsonl
 
+# mark-attest EUIPO open-data sync: the derived index and raw downloads are
+# large and reproducible from EUIPO any time — only the small sync log,
+# which the sync script itself commits, is tracked.
+packages/mark-attest/data/euipo-raw/
+packages/mark-attest/data/euipo-index.jsonl
+!packages/mark-attest/data/euipo-sync-log.jsonl
+
 # Real env files — only .env.example files are tracked.
 .env
 .env.local
