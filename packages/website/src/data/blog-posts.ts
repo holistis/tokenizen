@@ -1401,7 +1401,7 @@ We are Tokenizen (tokenizen.nl) and we build these tools ourselves, so we are no
     title: "A signed receipt for every name in the battery chain",
     dek: "Al-Muqarin sets what a company says next to a public list and hands back a signed, dated answer that a stranger can check for changes. Open source from the first day, with its limits written down.",
     description:
-      "Al-Muqarin compares names with a public list and returns a signed, dated receipt. Open source, Apache-2.0, limits stated up front.",
+      "Al-Muqarin compares names with public lists and returns a signed, dated receipt. Open source, Apache-2.0, limits stated up front.",
     tags: ["Tools", "Supply chain"],
     readMinutes: 6,
     blocks: [
@@ -1435,7 +1435,7 @@ Al-Muqarin, Arabic for the one who compares, is our first step. You give it a na
         type: "md",
         text: `## A receipt says this, and never that
 
-The first list is the financial sanctions list of the European Union. A receipt has one of four outcomes.
+It compares with the financial sanctions and export-control lists of the European Union, the United Kingdom and the United States. A fifth, the UN Security Council list, can be added but is off by default, because the UN terms of use do not clearly allow it; almost all of it is on the other lists. A receipt has one of four outcomes.
 
 - TREFFER: the same name is on the list. Whether it is the same party is for a person to judge.
 - KANDIDAAT: a nearly identical name is on the list. Look for yourself.
@@ -1452,13 +1452,13 @@ The core has no dependencies and no network code, and a test scans the source fo
         intro: "Each number counts one thing. The link opens the place where a stranger can count it too.",
         items: [
           {
-            value: "445 tests",
+            value: "568 tests",
             label: "Automated tests in the repository. They need no network and run with one command, npm test, in about ten seconds.",
             href: "https://github.com/holistis/al-muqarin/tree/main/test",
             hrefLabel: "The test folder",
           },
           {
-            value: "371 planted faults",
+            value: "548 planted faults",
             label: "Faults that a proof plants in the code on purpose, one at a time. The tests must catch every one, or the proof fails. A fault that makes the tests loop for ever is stopped by a time limit and counted apart. Run it with npm run mutatie.",
             href: "https://github.com/holistis/al-muqarin/blob/main/tools/mutatie-proef.mjs",
             hrefLabel: "The fault planter and its list",
@@ -1495,7 +1495,7 @@ We believe public lists, free code and signed receipts can become a norm togethe
 
 ## What we do not claim
 
-- The tool compares names with one list, by the spelling of the name. A company that trades under another name can go unnoticed.
+- The tool compares names with the lists it is asked for, by the spelling of the name. A company that trades under another name can go unnoticed.
 - Matching can miss a listed party. In our own measurement, a party written in another Latin spelling of its name was missed in about a third of the tries, and other edits of a name in up to 4 percent. The numbers are in docs/KNOWN-LIMITS.md. So GEEN_TREFFER_IN_LIJST can be wrong.
 - A match says nothing about the party behind the name. That judgement stays with a person.
 - An empty result is not a clean bill. It says that no match was found under these rules, in this version of the list, on that date.
@@ -1503,12 +1503,12 @@ We believe public lists, free code and signed receipts can become a norm togethe
 - Country claims need a second list, and nothing that feeds such a list exists yet, so on a live setup they come back ONMEETBAAR for now.
 - It is not an audit, not a certification and not legal advice.
 - This is our own build and our own review. No independent reader has been through it yet. Anyone who wants to read it or break it is welcome. The known limits are written down in docs/KNOWN-LIMITS.md.
-- The comparison itself was measured on a copy of the real EU list dated 23 October (see the known limits). What is still ahead is the first automatic run of the feeder on a server: the EU source answered every request we sent on 7 and 8 November with a server error (HTTP 500), from two different machines, so no signed snapshot of the live list exists yet and the counter answers ONMEETBAAR for everything.
+- The comparison itself was measured on copies of each real list (see the known limits). Since 8 November the UK list, the OFAC list and the US Consolidated Screening List are fetched and signed automatically, twice a day, on our server. The EU source answered every request we sent on 7 and 8 November with a server error (HTTP 500), from two different machines, so no signed snapshot of the EU list exists yet; until it answers again the counter looks only at the other lists and says so in every receipt.
 
 ## Next steps
 
 - Now: the comparer itself, the command line and a small counter you run yourself. Free and open under Apache-2.0.
-- Next: more public lists next to the EU list.
+- Next: the EU list, as soon as its file service answers again, and more public lists whose terms are clear.
 - Later: for anyone who wants extra certainty, such as a kept archive of daily lists and monitoring, a paid layer. The core stays free.`,
       },
       {
