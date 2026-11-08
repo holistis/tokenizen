@@ -60,3 +60,9 @@ updates:
         update-types:
           - minor
           - patch
+  # The base image of the capacity-attest container is pinned by digest. Dependabot moves the digest when a new build of the same tag appears.
+  - package-ecosystem: docker
+    directory: "/packages/capacity-attest"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 2
