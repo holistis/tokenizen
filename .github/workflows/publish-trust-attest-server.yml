@@ -25,11 +25,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 22
+          node-version: 24
           registry-url: https://registry.npmjs.org
 
-      - name: Update npm (trusted publishing + provenance need npm >= 11.5.1)
-        run: npm install -g npm@latest
+      - name: Check npm (trusted publishing and provenance need npm 11.5.1 or newer; the npm that ships with Node 24 is new enough)
+        run: |
+
+          node -e "const v=require('child_process').execSync('npm --version').toString().trim().split('.').map(Number);if(v[0]<11||(v[0]===11&&(v[1]<5||(v[1]===5&&v[2]<1)))){console.error('npm too old: '+v.join('.'));process.exit(1)}"
 
       - name: Install dependencies (workspace root)
         working-directory: .
