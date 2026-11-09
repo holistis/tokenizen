@@ -344,6 +344,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://tokenizen.nl/notes/ofsi-conlist-returns-409-where-the-list-went</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://tokenizen.nl/notes/the-scan-you-can-buy-measured</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>

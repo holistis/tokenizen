@@ -1523,6 +1523,61 @@ We believe public lists, free code and signed receipts can become a norm togethe
       },
     ],
   },
+  {
+    slug: "ofsi-conlist-returns-409-where-the-list-went",
+    kind: "note",
+    date: "2026-11-09",
+    title: "The old OFSI sanctions list address answers 409. The UK Sanctions List replaced it.",
+    dek: "On 9 November 2026 the old address of the British OFSI list answered with an error. The list closed on 28 January 2026. This note gives the new addresses and what we measured in the new CSV.",
+    description: "The old OFSI ConList address returns 409. The UK Sanctions List replaced it. New addresses, the report-date line and what we measured on 9 November 2026.",
+    tags: ["Supply chain", "Measurements"],
+    readMinutes: 3,
+    blocks: [
+      {
+        type: "md",
+        text: `## What broke
+
+Some programs download the British financial sanctions list from an address on ofsistorage.blob.core.windows.net that ends in ConList.csv or ConList.xml. On 9 November 2026 we asked three of those addresses with a plain GET. All three answered HTTP 409 with the message "Public access is not permitted on this storage account".
+
+We do not know why the storage account now refuses requests. The British government states that the OFSI Consolidated List closed on 28 January 2026 and that the UK Sanctions List is the only source for all UK sanctions designations ([OFSI list page](https://www.gov.uk/government/publications/financial-sanctions-consolidated-list-of-targets), [UK Sanctions List page](https://www.gov.uk/government/publications/the-uk-sanctions-list)).
+
+## Where the list is now
+
+The UK Sanctions List is published at two addresses on sanctionslist.fcdo.gov.uk. On 9 November 2026 both answered HTTP 200:
+
+- [UK-Sanctions-List.csv](https://sanctionslist.fcdo.gov.uk/docs/UK-Sanctions-List.csv), 50,354,956 bytes
+- [UK-Sanctions-List.xml](https://sanctionslist.fcdo.gov.uk/docs/UK-Sanctions-List.xml), 22,084,218 bytes
+
+## What to check when you switch
+
+We read the CSV of 9 November 2026 and measured the following. We did not compare it with the old ConList files, which we could not reach on 9 November 2026, so treat this as a list of things to look at and not as a list of differences.
+
+- The first line is not the header. It reads "Report Date: 03-Nov-2026". The header row is line 2. A reader that expects the header on line 1 takes the report date line for the column names.
+- The header has 58 columns, and each of the 58,836 rows after it has 58 fields. No field contains a line break.
+- The rows are not one per party. The 58,836 rows carry 6,420 different values of Unique ID. The XML file has 6,420 UniqueID elements.
+- The column Name type does not keep one spelling. We found "Primary Name", "Primary name", "Primary Name Variation", "Primary name variation", "Alias" and "ALias", and 64 rows where it is empty.
+- Dates in the column Last Updated are written day, month, year, for example 04/08/2026. The first number goes up to 31 and the second up to 12.
+- Ship IMO numbers are written with the prefix in the column IMO number, for example IMO9562233.
+
+## If you cannot update yet
+
+Until your program is updated, download one of the files yourself and load it by hand. Keep the report date from the first line of the CSV with your copy, so you know how old the list is.
+
+## What we did about it
+
+A search on GitHub on 9 November 2026 found 118 public repositories that mention the old address or the file name ConList. The search is incomplete, and some of them only mention it in text. In the open issue trackers of several projects whose code, as we read it, pointed at the old address, we reported the line and the measurement. One owner showed us that later migrations had already replaced the value, so that report was our mistake: we had read the first migration and not the ones after it. Al-Muqarin, our open-source name checker, reads the UK list from the XML file at the new address.`,
+      },
+      {
+        type: "cta",
+        heading: "Compare a name with this list",
+        text: "Al-Muqarin sets a name next to the UK list and the lists of the EU and the US, and returns a signed, dated answer. It is open source and its README says what it does not do.",
+        links: [
+          { label: "A signed receipt for every name", href: "/notes/a-signed-receipt-for-every-name" },
+          { label: "Al-Muqarin on GitHub", href: "https://github.com/holistis/al-muqarin" },
+        ],
+      },
+    ],
+  },
 ];
 
 export function postPath(slug: string): string {
