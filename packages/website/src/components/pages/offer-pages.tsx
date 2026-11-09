@@ -1,7 +1,7 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { ArrowUpRight, Mail } from "lucide-react";
 
-import { CinemaPage } from "@/components/home/cinema";
+import { CinemaPage, Tilt } from "@/components/home/cinema";
 import { Brothers } from "@/components/home/lower-sections";
 import { ChainDemo } from "@/components/matrix/chain-demo";
 import { MeasureGrids } from "@/components/matrix/measure-grid";
@@ -563,124 +563,345 @@ export function AgentsPage() {
   );
 }
 
+// The tools page is an overview: every tool we offer, in groups, one plain line each and one way in. The long explanation of why the receipts
+// exist (problem, why now, the two pillars, how it works, limits, status) is still on this page, but folded away under the overview.
+const MUQARIN_GITHUB = "https://github.com/holistis/al-muqarin";
+
+interface ToolCard {
+  name: string;
+  text: string;
+  href: string;
+  /** Leaves the site: opens in a new tab and keeps its own address. */
+  external?: boolean;
+  cta: string;
+  tag: string;
+  price?: string;
+  /** A second way in, for a tool that has both an explanation and its code. */
+  secondary?: { href: string; label: string };
+}
+
+interface ToolGroup {
+  label: string;
+  intro: string;
+  cards: ToolCard[];
+}
+
 const TOOLS = {
   en: {
-    chip: "open source",
-    title: "Open-source tools",
-    lead: "Run them yourself, so you do not have to believe us.",
-    metaTitle: "Open-source tools | tokenizen",
-    metaDescription: "Open-source tools for payments between agents: capacity-attest, agent-receipt-verify, x402-lint and muraqib-agent-watch.",
-    label: "The tools",
-    npm: "On npm",
-    code: "The code on GitHub",
-    agentsLabel: "Calling them from an agent",
+    chip: "tools",
+    title: "Tools",
+    lead: "Everything we offer to check something, on one page. Pick one.",
+    metaTitle: "Tools | tokenizen",
+    metaDescription:
+      "All tokenizen tools in one place: free checks, open-source tools for payments between agents and for sanctions lists, a weekly log and a smart contract scan.",
+    code: "All the code on GitHub",
+    agentsLabel: "For AI agents",
     agentsLink: "The tools an AI agent can call",
-    notLabel: "What they are not",
     notText: "No score, no verdict and no token of our own.",
-    // The descriptions follow the package descriptions on npm (read 28 October 2026). The licences differ per tool, so none is promised here.
-    tools: [
+    moreLabel: "Why the receipts exist and how they work",
+    moreHint: "Open for the background: the problem, why now, how it works, where it stops and where we stand.",
+    groups: [
       {
-        name: "capacity-attest",
-        text: "After an x402 payment for capacity, the paying agent leaves a signed claim of what it says was delivered. A record, not a score and not a verdict.",
-        href: "https://www.npmjs.com/package/capacity-attest",
+        label: "Free checks, in your browser",
+        intro: "No account. Each one says what it looked at.",
+        cards: [
+          {
+            name: "Check a GitHub repository",
+            text: "Name a public repository and see which of eight security signals are visible in it.",
+            href: "/cra-check",
+            cta: "Open the check",
+            tag: "free",
+          },
+          {
+            name: "Check an x402 payment endpoint",
+            text: "One anonymous request that never pays. You see whether the payment request is correct.",
+            href: "/x402-check",
+            cta: "Open the check",
+            tag: "free",
+          },
+          {
+            name: "Prove an endpoint is yours",
+            text: "A live check that you control an endpoint. No account.",
+            href: "/check",
+            cta: "Open the check",
+            tag: "free",
+          },
+        ],
       },
       {
-        name: "agent-receipt-verify",
-        text: "Checks x402 endpoint conformance before an agent pays, and links the receipt to its settlement.",
-        href: "https://www.npmjs.com/package/agent-receipt-verify",
+        label: "Open-source tools, for developers",
+        intro: "Run them yourself, so you do not have to believe us.",
+        cards: [
+          {
+            name: "capacity-attest",
+            text: "After a payment, the buyer signs what arrived. A record, not a score.",
+            href: "https://www.npmjs.com/package/capacity-attest",
+            external: true,
+            cta: "On npm",
+            tag: "open source",
+          },
+          {
+            name: "agent-receipt-verify",
+            text: "Checks whether a payment endpoint follows the rules before an agent pays.",
+            href: "https://www.npmjs.com/package/agent-receipt-verify",
+            external: true,
+            cta: "On npm",
+            tag: "open source",
+          },
+          {
+            name: "x402-lint",
+            text: "Checks a seller's own 402 response against the real schema.",
+            href: "https://www.npmjs.com/package/@alghanima/x402-lint",
+            external: true,
+            cta: "On npm",
+            tag: "open source",
+          },
+          {
+            name: "muraqib-agent-watch",
+            text: "Shows what the tools of an MCP server can do, and which ones state no safeguard.",
+            href: "https://www.npmjs.com/package/muraqib-agent-watch",
+            external: true,
+            cta: "On npm",
+            tag: "open source",
+          },
+          {
+            name: "Al-Muqarin",
+            text: "Compares a name with sanctions lists and gives a signed answer. If a list did not arrive, it says so and never says safe.",
+            href: "/notes/a-signed-receipt-for-every-name",
+            cta: "Read how it works",
+            tag: "open source",
+            secondary: { href: MUQARIN_GITHUB, label: "The code on GitHub" },
+          },
+        ],
       },
       {
-        name: "x402-lint",
-        text: "Checks an x402 seller's own payment-required (402) response against the real client-side schema.",
-        href: "https://www.npmjs.com/package/@alghanima/x402-lint",
+        label: "Paid",
+        intro: "Two tools that cost money. Both say what they are not.",
+        cards: [
+          {
+            name: "Signal log",
+            text: "Every week the same eight signals for your repositories, in a log with a timestamp outside our control.",
+            href: "/signal-log",
+            cta: "See the offer",
+            tag: "early access",
+            price: "9.95 or 29.95 euro per month, VAT included",
+          },
+          {
+            name: "Smart contract scan",
+            text: "Reads smart contract code and returns possible weak spots to check by hand. We publish what it misses.",
+            href: "/scan",
+            cta: "See the scan",
+            tag: "pay per scan",
+            price: "From 2 euro per scan",
+          },
+        ],
       },
-      {
-        name: "muraqib-agent-watch",
-        text: "A free, instant capability check for an MCP server: it lists what its tools say they can do (money, files, outbound messages, destructive actions, credentials) and flags tools that do not state their own safeguard.",
-        href: "https://www.npmjs.com/package/muraqib-agent-watch",
-      },
-    ],
+    ] satisfies ToolGroup[],
   },
   nl: {
-    chip: "open source",
-    title: "Open-sourcegereedschap",
-    lead: "Draai het zelf, dan hoef je ons niet te geloven.",
-    metaTitle: "Open-sourcegereedschap | tokenizen",
-    metaDescription: "Open-sourcegereedschap voor betalingen tussen agenten: capacity-attest, agent-receipt-verify, x402-lint en muraqib-agent-watch.",
-    label: "Het gereedschap",
-    npm: "Op npm",
-    code: "De code op GitHub",
-    agentsLabel: "Aanroepen vanuit een agent",
+    chip: "gereedschap",
+    title: "Gereedschap",
+    lead: "Alles wat wij aanbieden om iets na te gaan, op één plek. Kies er een.",
+    metaTitle: "Gereedschap | tokenizen",
+    metaDescription:
+      "Al het gereedschap van tokenizen op één plek: gratis checks, open-sourcegereedschap voor betalingen tussen agenten en voor sanctielijsten, een wekelijks logboek en een smart-contractscan.",
+    code: "Alle code op GitHub",
+    agentsLabel: "Voor AI-agenten",
     agentsLink: "Het gereedschap dat een AI-agent kan aanroepen",
-    notLabel: "Waar het ophoudt",
     notText: "Geen score, geen oordeel en geen eigen token.",
-    tools: [
+    moreLabel: "Waarom de bonnetjes bestaan en hoe ze werken",
+    moreHint: "Open voor de achtergrond: het probleem, waarom nu, hoe het werkt, waar het ophoudt en hoe ver we zijn.",
+    groups: [
       {
-        name: "capacity-attest",
-        text: "Na een x402-betaling voor capaciteit laat de betalende agent een ondertekende claim achter van wat volgens hem is geleverd. Een vastlegging, geen score en geen oordeel.",
-        href: "https://www.npmjs.com/package/capacity-attest",
+        label: "Gratis checks, in je browser",
+        intro: "Geen account. Elke check zegt wat hij heeft bekeken.",
+        cards: [
+          {
+            name: "Check een GitHub-repository",
+            text: "Noem een openbare repository en zie welke van acht beveiligingssignalen erin zichtbaar zijn.",
+            href: "/cra-check",
+            cta: "Open de check",
+            tag: "gratis",
+          },
+          {
+            name: "Check een x402-betaalpunt",
+            text: "Eén anonieme aanvraag die nooit betaalt. Je ziet of het betaalverzoek klopt.",
+            href: "/x402-check",
+            cta: "Open de check",
+            tag: "gratis",
+          },
+          {
+            name: "Bewijs dat een endpoint van jou is",
+            text: "Een live check dat jij een endpoint beheert. Geen account.",
+            href: "/check",
+            cta: "Open de check",
+            tag: "gratis",
+          },
+        ],
       },
       {
-        name: "agent-receipt-verify",
-        text: "Controleert of een x402-endpoint zich aan de regels houdt voordat een agent betaalt, en koppelt het bonnetje aan zijn afwikkeling.",
-        href: "https://www.npmjs.com/package/agent-receipt-verify",
+        label: "Open-sourcegereedschap, voor ontwikkelaars",
+        intro: "Draai het zelf, dan hoef je ons niet te geloven.",
+        cards: [
+          {
+            name: "capacity-attest",
+            text: "Na een betaling tekent de koper wat er is aangekomen. Een vastlegging, geen score.",
+            href: "https://www.npmjs.com/package/capacity-attest",
+            external: true,
+            cta: "Op npm",
+            tag: "open source",
+          },
+          {
+            name: "agent-receipt-verify",
+            text: "Controleert of een betaalpunt de regels volgt voordat een agent betaalt.",
+            href: "https://www.npmjs.com/package/agent-receipt-verify",
+            external: true,
+            cta: "Op npm",
+            tag: "open source",
+          },
+          {
+            name: "x402-lint",
+            text: "Controleert het eigen 402-antwoord van een verkoper tegen het echte schema.",
+            href: "https://www.npmjs.com/package/@alghanima/x402-lint",
+            external: true,
+            cta: "Op npm",
+            tag: "open source",
+          },
+          {
+            name: "muraqib-agent-watch",
+            text: "Laat zien wat de tools van een MCP-server kunnen, en welke geen beveiliging noemen.",
+            href: "https://www.npmjs.com/package/muraqib-agent-watch",
+            external: true,
+            cta: "Op npm",
+            tag: "open source",
+          },
+          {
+            name: "Al-Muqarin",
+            text: "Vergelijkt een naam met sanctielijsten en geeft een ondertekend antwoord. Kwam een lijst niet binnen, dan zegt hij dat en zegt hij nooit veilig.",
+            href: "/notes/a-signed-receipt-for-every-name",
+            cta: "Lees hoe het werkt",
+            tag: "open source",
+            secondary: { href: MUQARIN_GITHUB, label: "De code op GitHub" },
+          },
+        ],
       },
       {
-        name: "x402-lint",
-        text: "Controleert het eigen payment-required-antwoord (402) van een x402-verkoper tegen het echte schema aan de koperskant.",
-        href: "https://www.npmjs.com/package/@alghanima/x402-lint",
+        label: "Betaald",
+        intro: "Twee dingen die geld kosten. Beide zeggen wat ze niet zijn.",
+        cards: [
+          {
+            name: "Signal log",
+            text: "Elke week dezelfde acht signalen van jouw repositories, in een logboek met een tijdstempel buiten onze controle.",
+            href: "/signal-log",
+            cta: "Bekijk het aanbod",
+            tag: "vroege toegang",
+            price: "9,95 of 29,95 euro per maand, inclusief btw",
+          },
+          {
+            name: "Smart-contractscan",
+            text: "Leest smart-contractcode en geeft mogelijke zwakke plekken om met de hand na te lopen. We publiceren wat hij mist.",
+            href: "/scan",
+            cta: "Bekijk de scan",
+            tag: "per scan betalen",
+            price: "Vanaf 2 euro per scan",
+          },
+        ],
       },
-      {
-        name: "muraqib-agent-watch",
-        text: "Een gratis, directe capaciteitscheck voor een MCP-server: hij laat zien wat de tools zeggen te kunnen (geld, bestanden, uitgaande berichten, destructieve acties, inloggegevens) en markeert tools die hun eigen beveiliging niet noemen.",
-        href: "https://www.npmjs.com/package/muraqib-agent-watch",
-      },
-    ],
+    ] satisfies ToolGroup[],
   },
 };
+
+function ToolTile({ card, loc }: { card: ToolCard; loc: Locale }) {
+  const href = card.external ? card.href : localePath(loc, card.href);
+  return (
+    <Tilt className="tile h-full">
+      <p className="inline-flex w-fit rounded-full border border-white/20 px-3 py-0.5 font-mono text-[11px] uppercase tracking-wide text-[color:var(--glow)]">
+        {card.tag}
+      </p>
+      <h3 className="mt-4 font-display text-2xl leading-tight">
+        <a
+          href={href}
+          {...(card.external ? { target: "_blank", rel: "noreferrer noopener" } : {})}
+          className="after:absolute after:inset-0 after:content-['']"
+        >
+          {card.name}
+        </a>
+      </h3>
+      <p className="mt-2 flex-1 text-sm leading-relaxed text-[color:var(--soft)]">{card.text}</p>
+      {card.price ? <p className="mt-4 font-mono text-xs text-white/90">{card.price}</p> : null}
+      <p className="mt-4 inline-flex items-center gap-1 font-mono text-xs uppercase tracking-wide text-[color:var(--glow)]">
+        {card.cta}
+        <ArrowUpRight className="size-3.5" aria-hidden="true" />
+      </p>
+      {card.secondary ? (
+        <a
+          href={card.secondary.href}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="relative z-10 mt-3 w-fit font-mono text-xs uppercase tracking-wide text-[color:var(--soft)] underline-offset-2 hover:text-[color:var(--glow)] hover:underline"
+        >
+          {card.secondary.label}
+        </a>
+      ) : null}
+    </Tilt>
+  );
+}
 
 export function ToolsPage() {
   const loc = useLang();
   const c = TOOLS[loc];
+  // An old link to one of the folded sections (tokenizen.nl/tools#hoe-het-werkt) opens the fold and scrolls to that section.
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    const id = window.location.hash.replace(/^#/, "");
+    const target = id ? document.getElementById(id) : null;
+    if (target?.closest("details")) {
+      setOpen(true);
+      window.requestAnimationFrame(() => target.scrollIntoView());
+    }
+  }, []);
   return (
     <>
       <OfferFrame image="gereedschap" chip={c.chip} title={c.title} lead={c.lead} metaTitle={c.metaTitle} metaDescription={c.metaDescription}>
-        <Block label={c.label}>
-          <ul className="space-y-4">
-            {c.tools.map((tool) => (
-              <li key={tool.name}>
-                <h3 className="font-mono text-sm text-white">{tool.name}</h3>
-                <p className="mt-1 text-sm leading-relaxed text-[color:var(--soft)]">{tool.text}</p>
-                <p className="mt-2">
-                  <LinkOut href={tool.href}>{c.npm}</LinkOut>
-                </p>
-              </li>
-            ))}
-          </ul>
-          <p>
-            <LinkOut href={GITHUB_URL}>{c.code}</LinkOut>
-          </p>
-        </Block>
+        {c.groups.map((group) => (
+          <Block key={group.label} label={group.label}>
+            <p>{group.intro}</p>
+            <ul className={group.cards.length === 2 ? "grid gap-5 sm:grid-cols-2" : "grid gap-5 sm:grid-cols-2 lg:grid-cols-3"}>
+              {group.cards.map((card) => (
+                <li key={card.name}>
+                  <ToolTile card={card} loc={loc} />
+                </li>
+              ))}
+            </ul>
+          </Block>
+        ))}
         <Block label={c.agentsLabel}>
           <p>
             <a href={localePath(loc, "/agents")} className="font-mono text-xs uppercase tracking-wide text-[color:var(--glow)] underline-offset-2 hover:underline">
               {c.agentsLink}
             </a>
           </p>
-        </Block>
-        <Block label={c.notLabel}>
           <p>{c.notText}</p>
+          <p>
+            <LinkOut href={GITHUB_URL}>{c.code}</LinkOut>
+          </p>
         </Block>
       </OfferFrame>
       <div className="cinema">
-        <Problem />
-        <WhyNow />
-        <Product />
-        <SecondPillar />
-        <HowItWorks />
-        <Boundaries />
-        <OpenSource />
-        <Status />
+        <div className="container pb-16">
+          <details className="pane" open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
+            <summary className="cursor-pointer font-display text-2xl leading-tight md:text-3xl">{c.moreLabel}</summary>
+            <p className="mt-3 text-sm text-[color:var(--soft)]">{c.moreHint}</p>
+            <Problem />
+            <WhyNow />
+            <Product />
+            <SecondPillar />
+            <HowItWorks />
+            <Boundaries />
+            <OpenSource />
+            <Status />
+          </details>
+        </div>
       </div>
     </>
   );

@@ -15,14 +15,10 @@ export function legacyAnchorTarget(hash: string, locale: "en" | "nl"): string | 
   return `${localePath(locale, "/tools")}#${id}`;
 }
 
-// The photograph behind each pillar, in the order of the pillars. Left and right alternate so the eye moves down the page.
-const PILLAR_STAGE = [
-  { image: "kluis", side: "left" },
-  { image: "techniek", side: "right" },
-  { image: "uniek", side: "left" },
-] as const;
+// The photograph behind the reliability section.
+const PILLAR_STAGE = [{ image: "kluis", side: "left" }] as const;
 
-/** The homepage, one screen at a time: what we do, the three pillars, security, mission and vision, the free check, the misses, a conversation. */
+/** The homepage, one screen at a time: what we do, why you can check it, security, mission and vision, the free check, the misses, a conversation. */
 export function HomePage() {
   const { locale } = useLocale();
   const loc = locale === "nl" ? "nl" : "en";

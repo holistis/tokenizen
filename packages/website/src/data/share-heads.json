@@ -678,15 +678,15 @@
     },
     "/nl/tools": {
       "lang": "nl",
-      "title": "Open-sourcegereedschap | tokenizen",
-      "description": "Open-sourcegereedschap voor betalingen tussen agenten: capacity-attest, agent-receipt-verify, x402-lint en muraqib-agent-watch.",
+      "title": "Gereedschap | tokenizen",
+      "description": "Al het gereedschap van tokenizen op één plek: gratis checks, open-sourcegereedschap voor betalingen tussen agenten en voor sanctielijsten, een wekelijks logboek en een smart-contractscan.",
       "canonical": "https://tokenizen.nl/nl/tools",
       "ogLocale": "nl_NL",
       "ogUrl": "https://tokenizen.nl/nl/tools",
-      "ogTitle": "Open-sourcegereedschap | tokenizen",
-      "ogDescription": "Open-sourcegereedschap voor betalingen tussen agenten: capacity-attest, agent-receipt-verify, x402-lint en muraqib-agent-watch.",
-      "twitterTitle": "Open-sourcegereedschap | tokenizen",
-      "twitterDescription": "Open-sourcegereedschap voor betalingen tussen agenten: capacity-attest, agent-receipt-verify, x402-lint en muraqib-agent-watch.",
+      "ogTitle": "Gereedschap | tokenizen",
+      "ogDescription": "Al het gereedschap van tokenizen op één plek: gratis checks, open-sourcegereedschap voor betalingen tussen agenten en voor sanctielijsten, een wekelijks logboek en een smart-contractscan.",
+      "twitterTitle": "Gereedschap | tokenizen",
+      "twitterDescription": "Al het gereedschap van tokenizen op één plek: gratis checks, open-sourcegereedschap voor betalingen tussen agenten en voor sanctielijsten, een wekelijks logboek en een smart-contractscan.",
       "alternates": [
         {
           "hreflang": "en",
@@ -770,14 +770,14 @@
     "/notes/a-signed-receipt-for-every-name": {
       "lang": "en",
       "title": "A signed receipt for every name in the battery chain | tokenizen",
-      "description": "Al-Muqarin compares names with a public list and returns a signed, dated receipt. Open source, Apache-2.0, limits stated up front.",
+      "description": "Al-Muqarin compares names with public lists and returns a signed, dated receipt. Open source, Apache-2.0, limits stated up front.",
       "canonical": "https://tokenizen.nl/notes/a-signed-receipt-for-every-name",
       "ogLocale": "en_US",
       "ogUrl": "https://tokenizen.nl/notes/a-signed-receipt-for-every-name",
       "ogTitle": "A signed receipt for every name in the battery chain | tokenizen",
-      "ogDescription": "Al-Muqarin compares names with a public list and returns a signed, dated receipt. Open source, Apache-2.0, limits stated up front.",
+      "ogDescription": "Al-Muqarin compares names with public lists and returns a signed, dated receipt. Open source, Apache-2.0, limits stated up front.",
       "twitterTitle": "A signed receipt for every name in the battery chain | tokenizen",
-      "twitterDescription": "Al-Muqarin compares names with a public list and returns a signed, dated receipt. Open source, Apache-2.0, limits stated up front.",
+      "twitterDescription": "Al-Muqarin compares names with public lists and returns a signed, dated receipt. Open source, Apache-2.0, limits stated up front.",
       "alternates": []
     },
     "/notes/a-signed-receipt-that-cannot-name-its-own-payment": {
@@ -1185,15 +1185,15 @@
     },
     "/tools": {
       "lang": "en",
-      "title": "Open-source tools | tokenizen",
-      "description": "Open-source tools for payments between agents: capacity-attest, agent-receipt-verify, x402-lint and muraqib-agent-watch.",
+      "title": "Tools | tokenizen",
+      "description": "All tokenizen tools in one place: free checks, open-source tools for payments between agents and for sanctions lists, a weekly log and a smart contract scan.",
       "canonical": "https://tokenizen.nl/tools",
       "ogLocale": "en_US",
       "ogUrl": "https://tokenizen.nl/tools",
-      "ogTitle": "Open-source tools | tokenizen",
-      "ogDescription": "Open-source tools for payments between agents: capacity-attest, agent-receipt-verify, x402-lint and muraqib-agent-watch.",
-      "twitterTitle": "Open-source tools | tokenizen",
-      "twitterDescription": "Open-source tools for payments between agents: capacity-attest, agent-receipt-verify, x402-lint and muraqib-agent-watch.",
+      "ogTitle": "Tools | tokenizen",
+      "ogDescription": "All tokenizen tools in one place: free checks, open-source tools for payments between agents and for sanctions lists, a weekly log and a smart contract scan.",
+      "twitterTitle": "Tools | tokenizen",
+      "twitterDescription": "All tokenizen tools in one place: free checks, open-source tools for payments between agents and for sanctions lists, a weekly log and a smart contract scan.",
       "alternates": [
         {
           "hreflang": "en",

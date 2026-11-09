@@ -9,7 +9,7 @@ export const GITHUB_URL = "https://github.com/holistis/tokenizen";
 export const CONTACT_EMAIL = "info@tokenizen.nl";
 
 export interface Offer {
-  id: "checks" | "signal-log" | "security" | "scan" | "tools" | "talk";
+  id: "checks" | "signal-log" | "security" | "scan" | "tools" | "sanctions" | "talk";
   status: string;
   name: string;
   line: string;
@@ -31,6 +31,17 @@ const OFFERS_EN: Offer[] = [
     not: "No score, no verdict, no token of our own.",
     price: "Free",
     cta: { label: "See the tools", href: "/tools" },
+  },
+  {
+    id: "sanctions",
+    status: "open source",
+    name: "Al-Muqarin, a sanctions list check",
+    line: "Compares a company name with public sanctions lists and returns a signed, dated answer. If a list did not arrive, it says so and never says safe.",
+    gets: "A signed receipt with one of four outcomes: match, candidate, not measurable, or no match in the list.",
+    verify: "Anyone can rerun the tests and the planted faults, and check the signed lists without us.",
+    not: "Never a statement that a name is safe. Not legal advice and not a screening certificate.",
+    price: "Free",
+    cta: { label: "Read how it works", href: "/notes/a-signed-receipt-for-every-name" },
   },
   {
     id: "checks",
@@ -102,6 +113,17 @@ const OFFERS_NL: Offer[] = [
     cta: { label: "Bekijk het gereedschap", href: "/tools" },
   },
   {
+    id: "sanctions",
+    status: "open source",
+    name: "Al-Muqarin, een sanctielijst-check",
+    line: "Vergelijkt een bedrijfsnaam met openbare sanctielijsten en geeft een ondertekend, gedateerd antwoord. Kwam een lijst niet binnen, dan zegt hij dat en zegt hij nooit veilig.",
+    gets: "Een ondertekend bonnetje met een van vier uitkomsten: treffer, kandidaat, niet te meten, of geen treffer in de lijst.",
+    verify: "Iedereen kan de tests en de geplante fouten opnieuw draaien, en de ondertekende lijsten zonder ons nalopen.",
+    not: "Nooit een uitspraak dat een naam veilig is. Geen juridisch advies en geen screeningscertificaat.",
+    price: "Gratis",
+    cta: { label: "Lees hoe het werkt", href: "/notes/a-signed-receipt-for-every-name" },
+  },
+  {
     id: "checks",
     status: "gratis",
     name: "Gratis checks",
@@ -170,7 +192,6 @@ export interface HomeCopy {
     ctaSecondary: string;
     chips: Array<{ value: string; label: string; href: string }>;
   };
-  offers: { heading: string; intro: string; get: string; verify: string; not: string; price: string };
   check: { heading: string; body: string; placeholder: string; button: string; fine: string; label: string };
   proof: { heading: string; body: string; sealed: string; scoreboard: string };
   brothers: {
@@ -204,14 +225,6 @@ export const HOME: Record<Locale, HomeCopy> = {
         { value: "109", label: "public repositories in ten EU countries measured on eight security signals, our misses published", href: "/notes/eight-security-signals-109-repositories" },
         { value: "Recount", label: "our scan results come with every verdict and a script that recounts them, the leader's higher score included. Someone outside our team has already recounted them", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-02-our-scan-under-the-benchmark-judge" },
       ],
-    },
-    offers: {
-      heading: "Six things we do. What you get, how you check it, what it is not.",
-      intro: "Each one comes with the way to check it and with its limit, on the same card. Security research and talking to Ahmed have no fixed offer yet.",
-      get: "What you get",
-      verify: "How you check it",
-      not: "Where it stops",
-      price: "Price",
     },
     check: {
       heading: "Now check yours.",
@@ -278,14 +291,6 @@ export const HOME: Record<Locale, HomeCopy> = {
         { value: "109", label: "openbare repositories in tien EU-landen gemeten op acht beveiligingssignalen, onze missers gepubliceerd", href: "/notes/eight-security-signals-109-repositories" },
         { value: "Tel na", label: "onze scanresultaten komen met elk oordeel en een script dat alles opnieuw telt, ook het hogere cijfer van de leider. Iemand buiten ons team heeft het al nagerekend", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-02-our-scan-under-the-benchmark-judge" },
       ],
-    },
-    offers: {
-      heading: "Zes dingen die wij doen. Wat je krijgt, hoe je het nagaat, wat het niet is.",
-      intro: "Bij elk staat de manier om het na te gaan en de grens ervan, op dezelfde kaart. Beveiligingsonderzoek en praten met Ahmed hebben nog geen vast aanbod.",
-      get: "Wat je krijgt",
-      verify: "Zo ga je het na",
-      not: "Waar het ophoudt",
-      price: "Prijs",
     },
     check: {
       heading: "Check nu de jouwe.",
@@ -365,7 +370,7 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
   en: {
     offers: {
       heading: "What we do.",
-      intro: "Six things. Each has its own page with what you get, how you check it and what it is not.",
+      intro: "Seven things. Pick one to read what you get, how you check it and what it is not.",
       open: "Open",
     },
     tilePrice: {
@@ -374,6 +379,7 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
       security: "No fixed offer yet",
       scan: "From 2 euro per scan",
       tools: "Free",
+      sanctions: "Free",
       talk: "No fixed offer yet",
     },
     tileName: { scan: "Cyber security scan for smart contracts", talk: "Talk to us" },
@@ -390,27 +396,9 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
         title: "Our numbers say where to check them.",
         points: [
           "Each result lists the public pages that were asked for, and whether that worked.",
-          "The timestamp on a Signal log can be checked without us.",
-          "Our misses sit on the same page as our hits.",
-        ],
-      },
-      {
-        id: "techniek",
-        label: "Technique",
-        title: "We measure first and claim after.",
-        points: [
           "Eight security signals, measured over 109 public repositories on 28 October 2026. The method is in a published note.",
-          "A log in which every line holds the hash of the line before it, with a timestamp from OpenTimestamps.",
-          "Open-source tools on GitHub and npm: capacity-attest, agent-receipt-verify, x402-lint and muraqib-agent-watch.",
-        ],
-      },
-      {
-        id: "uniek",
-        label: "What sets us apart",
-        title: "Dates you can check without us.",
-        points: [
-          "The timestamp of a Signal log comes from OpenTimestamps, which is outside our control, and shows that the log existed by that date.",
-          "We publish what our scan missed: 97 of 105 known findings in its run on eight audit contests.",
+          "A Signal log is a log in which every line holds the hash of the line before it. Its timestamp comes from OpenTimestamps, outside our control, and shows that the log existed by that date.",
+          "Our misses sit on the same page as our hits. Our scan missed 97 of 105 known findings in its run on eight audit contests.",
         ],
       },
     ],
@@ -439,7 +427,7 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
   nl: {
     offers: {
       heading: "Wat wij doen.",
-      intro: "Zes dingen. Elk heeft een eigen pagina met wat je krijgt, hoe je het nagaat en wat het niet is.",
+      intro: "Zeven dingen. Kies er een om te lezen wat je krijgt, hoe je het nagaat en wat het niet is.",
       open: "Open",
     },
     tilePrice: {
@@ -448,6 +436,7 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
       security: "Nog geen vast aanbod",
       scan: "Vanaf 2 euro per scan",
       tools: "Gratis",
+      sanctions: "Gratis",
       talk: "Nog geen vast aanbod",
     },
     tileName: { scan: "Cyber security scan voor smart contracts", talk: "Praat met ons" },
@@ -464,27 +453,9 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
         title: "Bij onze getallen staat waar je ze nagaat.",
         points: [
           "Elke uitslag noemt de openbare pagina's die zijn opgevraagd, en of dat lukte.",
-          "De tijdstempel op een Signal log is zonder ons te controleren.",
-          "Onze missers staan op dezelfde pagina als onze successen.",
-        ],
-      },
-      {
-        id: "techniek",
-        label: "Techniek",
-        title: "Eerst meten, dan pas iets beweren.",
-        points: [
           "Acht beveiligingssignalen, gemeten bij 109 openbare repositories op 28 oktober 2026. De methode staat in een gepubliceerde notitie.",
-          "Een logboek waarin elke regel de hash van de regel ervoor bevat, met een tijdstempel van OpenTimestamps.",
-          "Open-sourcegereedschap op GitHub en npm: capacity-attest, agent-receipt-verify, x402-lint en muraqib-agent-watch.",
-        ],
-      },
-      {
-        id: "uniek",
-        label: "Wat ons onderscheidt",
-        title: "Datums die je zonder ons kunt nagaan.",
-        points: [
-          "De tijdstempel van een Signal log komt van OpenTimestamps, dat buiten onze controle staat, en laat zien dat het logboek op die datum al bestond.",
-          "Wij publiceren wat onze scan miste: 97 van de 105 bekende bevindingen in de run op acht auditwedstrijden.",
+          "Een Signal log is een logboek waarin elke regel de hash van de regel ervoor bevat. De tijdstempel komt van OpenTimestamps, buiten onze controle, en laat zien dat het logboek op die datum al bestond.",
+          "Onze missers staan op dezelfde pagina als onze successen. Onze scan miste 97 van de 105 bekende bevindingen in de run op acht auditwedstrijden.",
         ],
       },
     ],
