@@ -1523,6 +1523,61 @@ We believe public lists, free code and signed receipts can become a norm togethe
       },
     ],
   },
+  {
+    slug: "ofsi-conlist-returns-409-where-the-list-went",
+    kind: "note",
+    date: "2026-11-09",
+    title: "The old OFSI sanctions list address answers 409. The list moved.",
+    dek: "Programs that fetch the British sanctions list from the old storage address have been getting an error since the list closed on 28 January 2026. Here is where it went and what to check when you switch.",
+    description: "The old OFSI ConList address returns 409. The UK Sanctions List replaced it. New addresses, the report-date line and what we measured on 9 November 2026.",
+    tags: ["Supply chain", "Measurements"],
+    readMinutes: 3,
+    blocks: [
+      {
+        type: "md",
+        text: `## What broke
+
+Many programs download the British financial sanctions list from an address on ofsistorage.blob.core.windows.net that ends in ConList.csv or ConList.xml. On 9 November 2026 we asked three of those addresses with a plain GET. All three answered HTTP 409 with the message "Public access is not permitted on this storage account".
+
+The cause is on the government side. A notice from the Isle of Man government, dated 21 January 2026, says that the OFSI Consolidated List closes on 28 January 2026 and that the UK Sanctions List becomes the only source for UK designations ([the notice](https://www.gov.im/news/2026/jan/21/reminder-the-ofsi-consolidated-list-of-asset-freeze-targets-is-closing/)).
+
+## Where the list is now
+
+The Foreign, Commonwealth and Development Office (FCDO) publishes the UK Sanctions List itself. On 9 November 2026 both files answered HTTP 200:
+
+- [UK-Sanctions-List.csv](https://sanctionslist.fcdo.gov.uk/docs/UK-Sanctions-List.csv), 50,354,956 bytes
+- [UK-Sanctions-List.xml](https://sanctionslist.fcdo.gov.uk/docs/UK-Sanctions-List.xml), 22,084,218 bytes
+
+## What to check when you switch
+
+We read the CSV of 9 November 2026 and measured the following. We did not compare it with the old ConList files, which can no longer be reached, so treat this as a list of things to look at and not as a list of differences.
+
+- The first line is not the header. It reads "Report Date: 03-Nov-2026". The header row is line 2. A reader that expects the header on line 1 takes the report date line for the column names.
+- The header has 58 columns, and each of the 58,836 rows after it has 58 fields. No field contains a line break.
+- There is one row per name, not one per party. The 58,836 rows carry 6,420 different values of Unique ID. The XML file has 6,420 UniqueID elements.
+- The column Name type does not keep one spelling. We found "Primary Name" and "Primary name", "Alias" and "ALias", and 64 rows where it is empty.
+- Dates in the column Last Updated are written day, month, year, for example 04/08/2026. The first number goes up to 31 and the second up to 12.
+- Ship IMO numbers are written with the prefix in the column IMO number, for example IMO9562233.
+
+## If you cannot update yet
+
+Until your program is updated, download one of the files yourself and load it by hand. Keep the report date from the first line of the CSV with your copy, so you know how old the list is.
+
+## What we did about it
+
+A search on GitHub on 9 November 2026 found 118 public repositories that mention the old address or the file name ConList. The search is incomplete, and some of them only mention it in text. In the open issue trackers of several projects whose code pointed at the old address, we reported the line and the measurement. One owner showed us that later migrations had already replaced the value, so that report was our mistake: we had read the first migration and not the ones after it. Al-Muqarin, our open-source name checker, reads the UK list from the XML file at the new address.`,
+      },
+      {
+        type: "cta",
+        heading: "Compare a name with this list",
+        text: "Al-Muqarin sets a name next to the UK list and the lists of the EU and the US, and returns a signed, dated answer. Open source, with its limits written down.",
+        links: [
+          { label: "A signed receipt for every name", href: "/notes/a-signed-receipt-for-every-name" },
+          { label: "Al-Muqarin on GitHub", href: "https://github.com/holistis/al-muqarin" },
+        ],
+      },
+    ],
+  },
 ];
 
 export function postPath(slug: string): string {
