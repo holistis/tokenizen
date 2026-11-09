@@ -9,7 +9,14 @@ import { checkResourceBinding } from "./resource-binding-check.js";
 
 let server: Server;
 let baseUrl: string;
-let mode: "rest-collapsing" | "rest-varying" | "mcp-collapsing" | "mcp-varying" | "mcp-unreadable" = "rest-collapsing";
+let mode:
+  | "rest-collapsing"
+  | "rest-varying"
+  | "mcp-collapsing"
+  | "mcp-varying"
+  | "mcp-unreadable"
+  | "rest-b-200-fake-resource"
+  | "rest-b-402-no-accepts" = "rest-collapsing";
 
 function paymentRequired(resourceUrl: string) {
   return {
@@ -44,6 +51,32 @@ beforeAll(async () => {
       // @x402/express's adapter.getUrl() (req.originalUrl) does when no fixed resource
       // string is configured.
       res.writeHead(402, { "content-type": "application/json" }).end(JSON.stringify(paymentRequired(`${baseUrl}${url.pathname}${url.search}`)));
+      return;
+    }
+    if (mode === "rest-b-200-fake-resource") {
+      // epistemedeus, x402-foundation/x402#3776: the second call ("order=bob") is a plain HTTP
+      // 200 whose body happens to be shaped like a payment-required object. Its schemaValid is
+      // null (checkRest never even reaches the schema, since status !== 402), but the old
+      // code still read rawPaymentRequired.resource.url and compared it as if it were real.
+      if (url.searchParams.get("order") === "bob") {
+        res.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify({ resource: { url: "https://example.test/other" } }));
+        return;
+      }
+      res.writeHead(402, { "content-type": "application/json" }).end(JSON.stringify(paymentRequired(`${baseUrl}/rest-route`)));
+      return;
+    }
+    if (mode === "rest-b-402-no-accepts") {
+      // Same bug, other direction: the second call IS a 402 with a resource.url, but its
+      // `accepts` array is missing, so @x402/core's own parsePaymentRequired() rejects it
+      // (schemaValid: false). A fixed resource.url that happens to be present is not evidence
+      // of anything if the rest of the challenge never validated.
+      if (url.searchParams.get("order") === "bob") {
+        res.writeHead(402, { "content-type": "application/json" }).end(
+          JSON.stringify({ x402Version: 2, error: "Payment required", resource: { url: `${baseUrl}/rest-route` } }),
+        );
+        return;
+      }
+      res.writeHead(402, { "content-type": "application/json" }).end(JSON.stringify(paymentRequired(`${baseUrl}/rest-route`)));
       return;
     }
     // MCP modes: read the real tools/call body, since the planted fault/safe behavior
@@ -104,6 +137,40 @@ describe("checkResourceBinding, REST transport", () => {
     expect(report.distinguishable).toBe(true);
     expect(report.resourceUrlA).not.toBe(report.resourceUrlB);
   });
+
+  it("RELEASE-BLOCKING FIX (epistemedeus): reports distinguishable:null, not true, when B is a plain HTTP 200 that merely LOOKS like a payment-required object", async () => {
+    mode = "rest-b-200-fake-resource";
+    const report = await checkResourceBinding(`${baseUrl}/rest-route?order=alice`, {
+      variantUrl: `${baseUrl}/rest-route?order=bob`,
+      fetchImpl: fetch,
+    });
+    expect(report.distinguishable).toBeNull();
+    expect(report.reportB!.schemaValid).not.toBe(true);
+    expect(report.reason).toMatch(/schema-valid/);
+  });
+
+  it("RELEASE-BLOCKING FIX (epistemedeus): reports distinguishable:null, not true, when B is a 402 with no valid accepts array", async () => {
+    mode = "rest-b-402-no-accepts";
+    const report = await checkResourceBinding(`${baseUrl}/rest-route?order=alice`, {
+      variantUrl: `${baseUrl}/rest-route?order=bob`,
+      fetchImpl: fetch,
+    });
+    expect(report.distinguishable).toBeNull();
+    expect(report.reportB!.schemaValid).toBe(false);
+    expect(report.reason).toMatch(/schema-valid/);
+  });
+
+  it("epistemedeus: rejects a variantUrl pointing at a different origin BEFORE making any probe, since that cannot isolate the request-tracking question", async () => {
+    mode = "rest-varying"; // irrelevant: rejected before any network call
+    const report = await checkResourceBinding(`${baseUrl}/rest-route?order=alice`, {
+      variantUrl: "https://totally-different.example/rest-route?order=bob",
+      fetchImpl: fetch,
+    });
+    expect(report.distinguishable).toBeNull();
+    expect(report.reportA).toBeNull();
+    expect(report.reportB).toBeNull();
+    expect(report.reason).toMatch(/different origin/);
+  });
 });
 
 describe("checkResourceBinding, MCP transport", () => {
@@ -149,5 +216,24 @@ describe("checkResourceBinding, MCP transport", () => {
     const report = await checkResourceBinding(baseUrl, { mcpToolName: "record_delivery", fetchImpl: fetch });
     expect(report.distinguishable).toBeNull();
     expect(report.reason).toMatch(/variantToolArguments/);
+    // Fixes "sends the same POST twice" (epistemedeus): with no variant given, this used to
+    // probe twice with identical arguments. One real probe is enough to say "nothing to
+    // compare against" — reportA and reportB are now the SAME object, not two separate calls.
+    expect(report.reportA).toBe(report.reportB);
+  });
+
+  it("epistemedeus: rejects IDENTICAL variantToolArguments BEFORE making any probe, since nothing was actually varied (his own test fixture's counter bug, reproduced here as a planted fault instead of relying on his report)", async () => {
+    mode = "mcp-collapsing"; // irrelevant: rejected before any network call
+    const identicalArgs = { deliveryId: "order-alice" };
+    const report = await checkResourceBinding(baseUrl, {
+      mcpToolName: "record_delivery",
+      mcpToolArguments: identicalArgs,
+      variantToolArguments: { ...identicalArgs }, // same content, different object identity
+      fetchImpl: fetch,
+    });
+    expect(report.distinguishable).toBeNull();
+    expect(report.reportA).toBeNull();
+    expect(report.reportB).toBeNull();
+    expect(report.reason).toMatch(/identical/);
   });
 });

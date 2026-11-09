@@ -35,8 +35,9 @@ export interface ResourceBindingReport {
   /** True if resource.url differed between the two probes (the facilitator-visible value DOES track the request). False if it collapsed to one value despite different input. Null if it could not be measured at all (see reason). */
   distinguishable: boolean | null;
   testedUrl: string;
-  reportA: ConformanceReport;
-  reportB: ConformanceReport;
+  /** Null when the inputs were rejected as non-comparable BEFORE any network call was made (see reason) — there is no probe to report. */
+  reportA: ConformanceReport | null;
+  reportB: ConformanceReport | null;
   resourceUrlA: string | null;
   resourceUrlB: string | null;
   reason?: string;
@@ -55,6 +56,15 @@ function extractResourceUrl(report: ConformanceReport): string | null {
   return typeof url === "string" ? url : null;
 }
 
+/** http://a.example/x and http://a.example/y share an origin; http://a.example and http://b.example do not. Null if either is not a parseable absolute URL. */
+function sameOrigin(a: string, b: string): boolean | null {
+  try {
+    return new URL(a).origin === new URL(b).origin;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Probes the same payment-gated endpoint/tool twice with two genuinely different inputs, and
  * reports whether the resource.url the seller returns (and, by the source trace above, would
@@ -63,11 +73,12 @@ function extractResourceUrl(report: ConformanceReport): string | null {
 export async function checkResourceBinding(resourceUrl: string, opts: ResourceBindingOptions = {}): Promise<ResourceBindingReport> {
   const isMcp = Boolean(opts.mcpToolName);
   if (isMcp && !opts.variantToolArguments) {
+    const single = await checkX402Conformance(resourceUrl, opts);
     return {
       distinguishable: null,
       testedUrl: resourceUrl,
-      reportA: await checkX402Conformance(resourceUrl, opts),
-      reportB: await checkX402Conformance(resourceUrl, opts),
+      reportA: single,
+      reportB: single,
       resourceUrlA: null,
       resourceUrlB: null,
       reason: "mcpToolName given without variantToolArguments: nothing to compare against",
@@ -86,10 +97,63 @@ export async function checkResourceBinding(resourceUrl: string, opts: ResourceBi
     };
   }
 
+  // Reject non-comparable inputs BEFORE making any network call: a verdict built from two
+  // probes that were never actually different inputs in the first place would be a guess
+  // wearing a true/false costume, not a measurement. (epistemedeus, x402-foundation/x402#3776,
+  // 2026-11-09: a counter bug in his own test fixture, not this function, made two IDENTICAL
+  // MCP argument sets look different; a REST variantUrl aimed at a different origin would
+  // "differ" for a reason that has nothing to do with whether resource.url tracks the request.)
+  if (isMcp) {
+    const baseArgs = JSON.stringify(opts.mcpToolArguments ?? {});
+    const variantArgs = JSON.stringify(opts.variantToolArguments);
+    if (baseArgs === variantArgs) {
+      return {
+        distinguishable: null,
+        testedUrl: resourceUrl,
+        reportA: null,
+        reportB: null,
+        resourceUrlA: null,
+        resourceUrlB: null,
+        reason: "variantToolArguments is identical to mcpToolArguments: nothing was actually varied between the two calls, so this cannot test whether resource.url tracks the request",
+      };
+    }
+  } else {
+    const origin = sameOrigin(resourceUrl, opts.variantUrl!);
+    if (origin === false) {
+      return {
+        distinguishable: null,
+        testedUrl: resourceUrl,
+        reportA: null,
+        reportB: null,
+        resourceUrlA: null,
+        resourceUrlB: null,
+        reason: `variantUrl targets a different origin than resourceUrl (${new URL(opts.variantUrl!).origin} vs ${new URL(resourceUrl).origin}): a difference there would not isolate whether resource.url tracks the REQUEST rather than just the host`,
+      };
+    }
+  }
+
   const reportA = await checkX402Conformance(resourceUrl, opts);
   const reportB = isMcp
     ? await checkX402Conformance(resourceUrl, { ...opts, mcpToolArguments: opts.variantToolArguments })
     : await checkX402Conformance(opts.variantUrl!, opts);
+
+  // RELEASE-BLOCKING FIX (epistemedeus, same thread): comparing resource.url is only
+  // meaningful once BOTH probes are an actual, schema-valid payment-required response. Before
+  // this check, a 402 with resource.url set but no valid `accepts` array, or a plain HTTP 200
+  // that happened to contain a JSON object shaped like {resource:{url:...}}, could still have
+  // its resource.url read and compared — producing a confident true/false verdict built on at
+  // least one response that was never a real x402 challenge in the first place.
+  if (reportA.schemaValid !== true || reportB.schemaValid !== true) {
+    return {
+      distinguishable: null,
+      testedUrl: resourceUrl,
+      reportA,
+      reportB,
+      resourceUrlA: extractResourceUrl(reportA),
+      resourceUrlB: extractResourceUrl(reportB),
+      reason: "one or both probes were not a schema-valid payment-required response (see reportA/reportB.schemaValid and .schemaErrors) — comparing resource.url across an invalid response proves nothing",
+    };
+  }
 
   const resourceUrlA = extractResourceUrl(reportA);
   const resourceUrlB = extractResourceUrl(reportB);
