@@ -1,0 +1,153 @@
+// resource-binding-check.test.ts — planted-fault tests: a deliberately collapsing fixture
+// AND a deliberately varying fixture, for both transports, proving this check actually
+// discriminates between them rather than always reporting the same verdict. A check with no
+// test that can make it fail is not a tested check (Test de tester discipline).
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { createServer, type Server } from "node:http";
+import { once } from "node:events";
+import { checkResourceBinding } from "./resource-binding-check.js";
+
+let server: Server;
+let baseUrl: string;
+let mode: "rest-collapsing" | "rest-varying" | "mcp-collapsing" | "mcp-varying" | "mcp-unreadable" = "rest-collapsing";
+
+function paymentRequired(resourceUrl: string) {
+  return {
+    x402Version: 2,
+    error: "Payment required to access this tool",
+    resource: { url: resourceUrl, description: "a test tool", mimeType: "application/json", serviceName: "resource-binding-check:test" },
+    accepts: [
+      {
+        scheme: "exact",
+        network: "eip155:8453",
+        amount: "50000",
+        asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        payTo: "0xF2b3679bE59ADaC8981A2b4095ff772736120339",
+        maxTimeoutSeconds: 300,
+        extra: { name: "USD Coin", version: "2" },
+      },
+    ],
+  };
+}
+
+beforeAll(async () => {
+  server = createServer(async (req, res) => {
+    const url = new URL(req.url ?? "/", "http://placeholder");
+    if (mode === "rest-collapsing") {
+      // The real bug this check exists to catch: resource.url is a FIXED string, same
+      // configured value for the client's /rest-route AND /rest-route?x=anything.
+      res.writeHead(402, { "content-type": "application/json" }).end(JSON.stringify(paymentRequired(`${baseUrl}/rest-route`)));
+      return;
+    }
+    if (mode === "rest-varying") {
+      // The safe case: resource.url is derived from the actual request, exactly like
+      // @x402/express's adapter.getUrl() (req.originalUrl) does when no fixed resource
+      // string is configured.
+      res.writeHead(402, { "content-type": "application/json" }).end(JSON.stringify(paymentRequired(`${baseUrl}${url.pathname}${url.search}`)));
+      return;
+    }
+    // MCP modes: read the real tools/call body, since the planted fault/safe behavior
+    // depends on whether the response reflects the call's own arguments.
+    let chunks = "";
+    for await (const chunk of req) chunks += chunk;
+    const rpc = JSON.parse(chunks) as { id: number; params?: { name?: string; arguments?: Record<string, unknown> } };
+    const toolName = rpc.params?.name ?? "unknown_tool";
+    const argumentsEcho = JSON.stringify(rpc.params?.arguments ?? {});
+
+    let text: string;
+    if (mode === "mcp-collapsing") {
+      // The real @x402/mcp pattern this check exists to catch: resource.url is
+      // `mcp://tool/<name>`, built from the tool NAME alone, identical no matter what
+      // arguments were actually sent.
+      text = JSON.stringify(paymentRequired(`mcp://tool/${toolName}`));
+    } else if (mode === "mcp-varying") {
+      // A hypothetical safer MCP adapter: resource.url incorporates the call's own
+      // arguments, so two different calls produce two different values.
+      text = JSON.stringify(paymentRequired(`mcp://tool/${toolName}?args=${encodeURIComponent(argumentsEcho)}`));
+    } else {
+      // mode === "mcp-unreadable": a tool that rejects bad input before any payment
+      // signal, so this check should honestly report "could not measure", not guess.
+      text = "Error: missing required field 'claim'";
+    }
+    res
+      .writeHead(200, { "content-type": "application/json" })
+      .end(JSON.stringify({ jsonrpc: "2.0", id: rpc.id, result: { isError: true, content: [{ type: "text", text }] } }));
+  });
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const addr = server.address();
+  if (!addr || typeof addr === "string") throw new Error("expected a real port");
+  baseUrl = `http://127.0.0.1:${addr.port}`;
+});
+
+afterAll(async () => {
+  await new Promise<void>((resolve) => server.close(() => resolve()));
+});
+
+describe("checkResourceBinding, REST transport", () => {
+  it("PLANTED FAULT: reports distinguishable:false when resource.url is a fixed string regardless of query", async () => {
+    mode = "rest-collapsing";
+    const report = await checkResourceBinding(`${baseUrl}/rest-route?order=alice`, {
+      variantUrl: `${baseUrl}/rest-route?order=bob`,
+      fetchImpl: fetch,
+    });
+    expect(report.distinguishable).toBe(false);
+    expect(report.resourceUrlA).toBe(report.resourceUrlB);
+  });
+
+  it("SAFE CASE: reports distinguishable:true when resource.url reflects the actual request", async () => {
+    mode = "rest-varying";
+    const report = await checkResourceBinding(`${baseUrl}/rest-route?order=alice`, {
+      variantUrl: `${baseUrl}/rest-route?order=bob`,
+      fetchImpl: fetch,
+    });
+    expect(report.distinguishable).toBe(true);
+    expect(report.resourceUrlA).not.toBe(report.resourceUrlB);
+  });
+});
+
+describe("checkResourceBinding, MCP transport", () => {
+  it("PLANTED FAULT: reports distinguishable:false for the real @x402/mcp pattern (resource.url = mcp://tool/<name>, ignores arguments)", async () => {
+    mode = "mcp-collapsing";
+    const report = await checkResourceBinding(baseUrl, {
+      mcpToolName: "record_delivery",
+      mcpToolArguments: { deliveryId: "order-alice" },
+      variantToolArguments: { deliveryId: "order-bob" },
+      fetchImpl: fetch,
+    });
+    expect(report.distinguishable).toBe(false);
+    expect(report.resourceUrlA).toBe("mcp://tool/record_delivery");
+    expect(report.resourceUrlB).toBe("mcp://tool/record_delivery");
+  });
+
+  it("SAFE CASE: reports distinguishable:true when the MCP adapter's resource.url incorporates arguments", async () => {
+    mode = "mcp-varying";
+    const report = await checkResourceBinding(baseUrl, {
+      mcpToolName: "record_delivery",
+      mcpToolArguments: { deliveryId: "order-alice" },
+      variantToolArguments: { deliveryId: "order-bob" },
+      fetchImpl: fetch,
+    });
+    expect(report.distinguishable).toBe(true);
+    expect(report.resourceUrlA).not.toBe(report.resourceUrlB);
+  });
+
+  it("reports distinguishable:null, not a guess, when a probe's resource.url cannot be read at all", async () => {
+    mode = "mcp-unreadable";
+    const report = await checkResourceBinding(baseUrl, {
+      mcpToolName: "record_delivery",
+      mcpToolArguments: {},
+      variantToolArguments: { deliveryId: "order-bob" },
+      fetchImpl: fetch,
+    });
+    expect(report.distinguishable).toBeNull();
+    expect(report.reason).toMatch(/resource\.url/);
+  });
+
+  it("reports distinguishable:null when called without a variant to compare against (nothing to measure)", async () => {
+    mode = "mcp-collapsing";
+    const report = await checkResourceBinding(baseUrl, { mcpToolName: "record_delivery", fetchImpl: fetch });
+    expect(report.distinguishable).toBeNull();
+    expect(report.reason).toMatch(/variantToolArguments/);
+  });
+});
