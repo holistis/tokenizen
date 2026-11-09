@@ -148,7 +148,7 @@ describe("the words", () => {
 
   it("give every offer its promise, its way to check it and its limit, in both languages", () => {
     for (const locale of ["en", "nl"] as const) {
-      expect(OFFERS[locale]).toHaveLength(6);
+      expect(OFFERS[locale]).toHaveLength(7);
       for (const o of OFFERS[locale]) {
         expect(o.gets.length, `${locale} ${o.id} gets`).toBeGreaterThan(20);
         expect(o.verify.length, `${locale} ${o.id} verify`).toBeGreaterThan(20);
@@ -236,10 +236,10 @@ describe("the words", () => {
 });
 
 describe("the homepage", () => {
-  it.each(["en", "nl"] as const)("renders in %s with one h1, the six offers and the three pillars", (locale) => {
+  it.each(["en", "nl"] as const)("renders in %s with one h1, the seven offers and the reliability section", (locale) => {
     const html = page(locale, <HomePage />);
     expect(html.match(/<h1/g)).toHaveLength(1);
-    expect(html.match(/id="aanbod-/g)).toHaveLength(6);
+    expect(html.match(/id="aanbod-/g)).toHaveLength(7);
     expect(html).toContain(HOME[locale].hero.h1a);
     expect(html).toContain(ADVISORY_URL);
     for (const pillar of CINEMA[locale].pillars) {
@@ -253,7 +253,7 @@ describe("the homepage", () => {
   // The visitor asked for: reliability, technique, what is unique, mission and vision, all on the homepage, each with its own picture.
   it("shows the pillars, security, mission and vision in order, between the offers and the conversation", () => {
     const html = page("en", <HomePage />);
-    const at = ["top", "aanbod", "betrouwbaarheid", "techniek", "uniek", "beveiliging", "missie", "nagaan", "onbekend", "praat"].map((id) => html.indexOf(`id="${id}"`));
+    const at = ["top", "aanbod", "betrouwbaarheid", "beveiliging", "missie", "nagaan", "onbekend", "praat"].map((id) => html.indexOf(`id="${id}"`));
     expect(at.every((i) => i > -1)).toBe(true);
     expect([...at].sort((a, b) => a - b)).toEqual(at);
     expect(html).toContain(CINEMA.en.mission.mission.title);
@@ -276,7 +276,7 @@ describe("the homepage", () => {
   it("uses only the pictures that exist, with a size, an empty alt, and the first one loaded at once", () => {
     const html = page("en", <HomePage />);
     const imgs = html.match(/<img [^>]*>/g) ?? [];
-    expect(imgs.length).toBeGreaterThanOrEqual(8);
+    expect(imgs.length).toBeGreaterThanOrEqual(6);
     imgs.forEach((tag, i) => {
       expect(tag).toContain('alt=""');
       expect(tag).toContain('width="1376"');

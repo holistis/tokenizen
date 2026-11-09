@@ -72,7 +72,7 @@ export function OfferTiles({ locale }: { locale: Locale }) {
         </div>
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {OFFERS[locale].map((offer) => (
-            <Tilt key={offer.id} as="article" className="tile">
+            <Tilt key={offer.id} as="article" className={offer.id === "talk" ? "tile sm:col-span-2 lg:col-span-3" : "tile"}>
               <p id={`aanbod-${offer.id}`} className="inline-flex w-fit rounded-full border border-white/20 px-3 py-0.5 font-mono text-[11px] uppercase tracking-wide text-[color:var(--glow)]">
                 {offer.status}
               </p>

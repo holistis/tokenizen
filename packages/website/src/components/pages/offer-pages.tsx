@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { ArrowUpRight, Mail } from "lucide-react";
 
 import { CinemaPage, Tilt } from "@/components/home/cinema";
@@ -576,6 +576,8 @@ interface ToolCard {
   cta: string;
   tag: string;
   price?: string;
+  /** A second way in, for a tool that has both an explanation and its code. */
+  secondary?: { href: string; label: string };
 }
 
 interface ToolGroup {
@@ -665,10 +667,10 @@ const TOOLS = {
           {
             name: "Al-Muqarin",
             text: "Compares a name with sanctions lists and gives a signed answer. If a list did not arrive, it says so and never says safe.",
-            href: MUQARIN_GITHUB,
-            external: true,
-            cta: "On GitHub",
+            href: "/notes/a-signed-receipt-for-every-name",
+            cta: "Read how it works",
             tag: "open source",
+            secondary: { href: MUQARIN_GITHUB, label: "The code on GitHub" },
           },
         ],
       },
@@ -776,10 +778,10 @@ const TOOLS = {
           {
             name: "Al-Muqarin",
             text: "Vergelijkt een naam met sanctielijsten en geeft een ondertekend antwoord. Kwam een lijst niet binnen, dan zegt hij dat en zegt hij nooit veilig.",
-            href: MUQARIN_GITHUB,
-            external: true,
-            cta: "Op GitHub",
+            href: "/notes/a-signed-receipt-for-every-name",
+            cta: "Lees hoe het werkt",
             tag: "open source",
+            secondary: { href: MUQARIN_GITHUB, label: "De code op GitHub" },
           },
         ],
       },
@@ -831,6 +833,16 @@ function ToolTile({ card, loc }: { card: ToolCard; loc: Locale }) {
         {card.cta}
         <ArrowUpRight className="size-3.5" aria-hidden="true" />
       </p>
+      {card.secondary ? (
+        <a
+          href={card.secondary.href}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="relative z-10 mt-3 w-fit font-mono text-xs uppercase tracking-wide text-[color:var(--soft)] underline-offset-2 hover:text-[color:var(--glow)] hover:underline"
+        >
+          {card.secondary.label}
+        </a>
+      ) : null}
     </Tilt>
   );
 }
@@ -838,6 +850,16 @@ function ToolTile({ card, loc }: { card: ToolCard; loc: Locale }) {
 export function ToolsPage() {
   const loc = useLang();
   const c = TOOLS[loc];
+  // An old link to one of the folded sections (tokenizen.nl/tools#hoe-het-werkt) opens the fold and scrolls to that section.
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    const id = window.location.hash.replace(/^#/, "");
+    const target = id ? document.getElementById(id) : null;
+    if (target?.closest("details")) {
+      setOpen(true);
+      window.requestAnimationFrame(() => target.scrollIntoView());
+    }
+  }, []);
   return (
     <>
       <OfferFrame image="gereedschap" chip={c.chip} title={c.title} lead={c.lead} metaTitle={c.metaTitle} metaDescription={c.metaDescription}>
@@ -867,7 +889,7 @@ export function ToolsPage() {
       </OfferFrame>
       <div className="cinema">
         <div className="container pb-16">
-          <details className="pane">
+          <details className="pane" open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
             <summary className="cursor-pointer font-display text-2xl leading-tight md:text-3xl">{c.moreLabel}</summary>
             <p className="mt-3 text-sm text-[color:var(--soft)]">{c.moreHint}</p>
             <Problem />
