@@ -171,6 +171,34 @@ describe("checkResourceBinding, REST transport", () => {
     expect(report.reportB).toBeNull();
     expect(report.reason).toMatch(/different origin/);
   });
+
+  it("epistemedeus (2nd replay): a variantUrl that differs only by a #fragment is the SAME request, rejected BEFORE any probe, because a fragment never reaches the server", async () => {
+    mode = "rest-varying"; // irrelevant: rejected before any network call
+    for (const variantUrl of [`${baseUrl}/paid#unused`, `${baseUrl}/paid#`]) {
+      const report = await checkResourceBinding(`${baseUrl}/paid`, { variantUrl, fetchImpl: fetch });
+      expect(report.distinguishable).toBeNull();
+      expect(report.reportA).toBeNull();
+      expect(report.reportB).toBeNull();
+      expect(report.reason).toMatch(/same request/);
+    }
+  });
+
+  it("positive control for the fragment rule: a fragment on top of a genuinely changed query is still probed and still distinguishable", async () => {
+    mode = "rest-varying";
+    const report = await checkResourceBinding(`${baseUrl}/rest-route?order=alice`, {
+      variantUrl: `${baseUrl}/rest-route?order=bob#frag`,
+      fetchImpl: fetch,
+    });
+    expect(report.reportA).not.toBeNull();
+    expect(report.distinguishable).toBe(true);
+  });
+
+  it("the order of query pairs is part of the request, so a reordered query is NOT rejected as identical (section 5.5: ?a=1&b=2 and ?b=2&a=1 are two attempts)", async () => {
+    mode = "rest-varying";
+    const report = await checkResourceBinding(`${baseUrl}/rest-route?a=1&b=2`, { variantUrl: `${baseUrl}/rest-route?b=2&a=1`, fetchImpl: fetch });
+    expect(report.reportA).not.toBeNull();
+    expect(report.distinguishable).toBe(true);
+  });
 });
 
 describe("checkResourceBinding, MCP transport", () => {
@@ -235,5 +263,34 @@ describe("checkResourceBinding, MCP transport", () => {
     expect(report.reportA).toBeNull();
     expect(report.reportB).toBeNull();
     expect(report.reason).toMatch(/identical/);
+  });
+
+  it("epistemedeus (2nd replay): the same arguments with the keys written in another order are identical DATA, rejected BEFORE any probe, at every depth", async () => {
+    mode = "mcp-varying"; // irrelevant: rejected before any network call
+    const cases: Array<[Record<string, unknown>, Record<string, unknown>]> = [
+      [{ x: 1, y: 2 }, { y: 2, x: 1 }],
+      [{ outer: { a: 1, b: [1, { p: 1, q: 2 }] } }, { outer: { b: [1, { q: 2, p: 1 }], a: 1 } }],
+    ];
+    for (const [a, b] of cases) {
+      const report = await checkResourceBinding(baseUrl, { mcpToolName: "record_delivery", mcpToolArguments: a, variantToolArguments: b, fetchImpl: fetch });
+      expect(report.distinguishable).toBeNull();
+      expect(report.reportA).toBeNull();
+      expect(report.reportB).toBeNull();
+      expect(report.reason).toMatch(/identical/);
+    }
+  });
+
+  it("positive controls for the structural rule: a changed value, a changed ARRAY ORDER and a changed type are real differences and ARE probed", async () => {
+    mode = "mcp-varying";
+    const cases: Array<[Record<string, unknown>, Record<string, unknown>]> = [
+      [{ x: 1 }, { x: 2 }],
+      [{ items: [1, 2] }, { items: [2, 1] }],
+      [{ x: 1 }, { x: "1" }],
+    ];
+    for (const [a, b] of cases) {
+      const report = await checkResourceBinding(baseUrl, { mcpToolName: "record_delivery", mcpToolArguments: a, variantToolArguments: b, fetchImpl: fetch });
+      expect(report.reportA).not.toBeNull();
+      expect(report.distinguishable).toBe(true);
+    }
   });
 });

@@ -56,6 +56,32 @@ function extractResourceUrl(report: ConformanceReport): string | null {
   return typeof url === "string" ? url : null;
 }
 
+/**
+ * JSON with the keys of every object sorted, array order kept (it is part of the data). Two argument sets that
+ * parse to the same data give the same string whatever order their keys were written in; a changed value, a
+ * changed array order or a changed type still gives a different string. (epistemedeus, x402#3776, second replay:
+ * comparing JSON.stringify output called {x:1,y:2} and {y:2,x:1} different.)
+ */
+function canonicalJson(value: unknown): string {
+  return JSON.stringify(value, (_key, v) => {
+    if (v && typeof v === "object" && !Array.isArray(v)) {
+      return Object.fromEntries(Object.entries(v as Record<string, unknown>).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
+    }
+    return v;
+  });
+}
+
+/** What a server receives for this URL: the fragment (#...) is never sent, so it is dropped. The order of query pairs is kept, it is part of the request. Null if not a parseable absolute URL. */
+function requestUrl(u: string): string | null {
+  try {
+    const parsed = new URL(u);
+    parsed.hash = "";
+    return parsed.href;
+  } catch {
+    return null;
+  }
+}
+
 /** http://a.example/x and http://a.example/y share an origin; http://a.example and http://b.example do not. Null if either is not a parseable absolute URL. */
 function sameOrigin(a: string, b: string): boolean | null {
   try {
@@ -104,8 +130,8 @@ export async function checkResourceBinding(resourceUrl: string, opts: ResourceBi
   // MCP argument sets look different; a REST variantUrl aimed at a different origin would
   // "differ" for a reason that has nothing to do with whether resource.url tracks the request.)
   if (isMcp) {
-    const baseArgs = JSON.stringify(opts.mcpToolArguments ?? {});
-    const variantArgs = JSON.stringify(opts.variantToolArguments);
+    const baseArgs = canonicalJson(opts.mcpToolArguments ?? {});
+    const variantArgs = canonicalJson(opts.variantToolArguments);
     if (baseArgs === variantArgs) {
       return {
         distinguishable: null,
@@ -114,10 +140,22 @@ export async function checkResourceBinding(resourceUrl: string, opts: ResourceBi
         reportB: null,
         resourceUrlA: null,
         resourceUrlB: null,
-        reason: "variantToolArguments is identical to mcpToolArguments: nothing was actually varied between the two calls, so this cannot test whether resource.url tracks the request",
+        reason: "variantToolArguments is identical to mcpToolArguments (the same data, whatever order the keys are written in): nothing was actually varied between the two calls, so this cannot test whether resource.url tracks the request",
       };
     }
   } else {
+    const sameRequestA = requestUrl(resourceUrl);
+    if (sameRequestA !== null && sameRequestA === requestUrl(opts.variantUrl!)) {
+      return {
+        distinguishable: null,
+        testedUrl: resourceUrl,
+        reportA: null,
+        reportB: null,
+        resourceUrlA: null,
+        resourceUrlB: null,
+        reason: "variantUrl is the same request as resourceUrl (the part after # is never sent to the server): nothing was actually varied between the two calls, so this cannot test whether resource.url tracks the request",
+      };
+    }
     const origin = sameOrigin(resourceUrl, opts.variantUrl!);
     if (origin === false) {
       return {
