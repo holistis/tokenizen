@@ -50,6 +50,27 @@ describe("signClaim + verifyClaim", () => {
     expect(verdict).toEqual({ ok: false, reason: "claimId_mismatch" });
   });
 
+  it("settlementRef is cryptografisch gebonden aan de rest van de claim (x402 PR #3604, §8): wijzigen na ondertekening wordt geweigerd, en twee claims die alleen in settlementRef verschillen krijgen een andere claimId en handtekening", async () => {
+    const buyer = testWallet();
+    const claimContent = content({}, buyer.address);
+    const { claimId, signature } = await signClaim(buyer, claimContent);
+
+    // Tamper: swap settlementRef after signing, keep the old claimId + signature.
+    const tampered = { ...claimContent, settlementRef: "0x" + "22".repeat(32), claimId, signature };
+    expect(verifyClaim(tampered)).toEqual({ ok: false, reason: "claimId_mismatch" });
+
+    // Two claims identical except for settlementRef produce different claimIds
+    // and signatures that do not cross-verify against each other's claimId.
+    const other = content({ settlementRef: "0x" + "33".repeat(32) }, buyer.address);
+    const otherSigned = await signClaim(buyer, other);
+    expect(otherSigned.claimId).not.toBe(claimId);
+    expect(otherSigned.signature).not.toBe(signature);
+    expect(verifyClaim({ ...claimContent, claimId: otherSigned.claimId, signature: otherSigned.signature })).toEqual({
+      ok: false,
+      reason: "claimId_mismatch",
+    });
+  });
+
   it("weigert een volstrekt ongeldige handtekening-string", () => {
     const buyer = testWallet();
     const claimContent = content({}, buyer.address);
