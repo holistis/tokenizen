@@ -486,11 +486,15 @@ export function buildFiscalControls(): FiscalControlsDocument {
     controls.push({
       tool: "record_delivery",
       paid: true,
+      paid_action_surface: "writes one signed delivery claim to this installation's local ledger after an x402 payment settles",
       signer_isolation: null,
       spend_cap_per_hour: null,
       spend_cap_scope: null,
       reservation_before_settlement: null,
       human_approval_threshold: null,
+      charge_evidence: "the buyer's own signed claim (claimId, signature) — see get_delivery_history",
+      audit_trail: "get_delivery_history and discover_delivery_history (public, re-verifiable by any installation, see discovery.ts)",
+      next_safe_threshold: null,
       revocation_path:
         "n/a — this tool holds no server-side signing key and spends no funds; it only writes a local ledger entry after settlement",
     });
@@ -499,11 +503,15 @@ export function buildFiscalControls(): FiscalControlsDocument {
     controls.push({
       tool: "publish_reputation_feedback",
       paid: true,
+      paid_action_surface: "broadcasts one on-chain ERC-8004 giveFeedback() transaction, paid for with this server's own gas",
       signer_isolation: true,
       spend_cap_per_hour: PUBLISH_FEEDBACK_MAX_PER_HOUR,
       spend_cap_scope: "global",
       reservation_before_settlement: true,
       human_approval_threshold: null,
+      charge_evidence: "the on-chain giveFeedback() transaction itself, plus this server's attemptId-correlated attempting/done log entries (see D-021 and the crash-safety fix above)",
+      audit_trail: "the ERC-8004 Reputation Registry contract on-chain (public, independent of this server)",
+      next_safe_threshold: null,
       revocation_path:
         "rotate REPUTATION_PUBLISHER_PRIVATE_KEY and redeploy — this signer only ever spends its own gas and never custodies caller funds",
     });

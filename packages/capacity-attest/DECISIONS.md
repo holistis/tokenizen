@@ -1530,3 +1530,26 @@ self-validatie voor serveren — beide toegevoegd. Getest: 12 nieuwe tests in
 `fiscal-controls.test.ts` (schema goed/fout, alle vier combinaties van wel/niet-geconfigureerde
 tools, de echte HTTP-route, method-check, query-string, misconfiguratie-faalpad), 783/783 totaal
 groen.
+
+**Dekking tegen de 7 velden die #1300's openingspost letterlijk voorstelt** (zelf opgehaald en
+gelezen, niet uit een samenvatting van een ander): `paid_action_surface`, `approval_source`,
+`spend_cap`, `charge_evidence`, `audit_trail`, `revocation_path`, `next_safe_threshold`. Alle
+zeven hebben nu een eerlijke plek in het schema:
+
+| Voorgesteld veld | Ons veld | Status |
+|---|---|---|
+| `paid_action_surface` | `paid_action_surface` | echte tekst per tool |
+| `approval_source` | `human_approval_threshold` | `null` = geen goedkeuringsdrempel ingesteld (een eerlijke "geen", geen gat) |
+| `spend_cap` | `spend_cap_per_hour`/`spend_cap_scope` | echt getal voor `publish_reputation_feedback` |
+| `charge_evidence` | `charge_evidence` | verwijst naar AL BESTAANDE tools (`get_delivery_history`, de on-chain tx zelf), geen nieuwe bouw |
+| `audit_trail` | `audit_trail` | verwijst naar AL BESTAANDE tools (`discover_delivery_history`, de ERC-8004 Reputation Registry zelf) |
+| `revocation_path` | `revocation_path` | echte tekst per tool, al aanwezig sinds de eerste versie |
+| `next_safe_threshold` | `next_safe_threshold` | eerlijk `null` voor beide tools — wij hebben GEEN automatisch-plafond-verhogen-mechanisme, dit veld bestaat zodat die afwezigheid een uitgesproken "nog niet" is, geen stil gat |
+
+Geen van de drie nieuwe velden (`charge_evidence`, `audit_trail`, `next_safe_threshold`) vroeg
+nieuwe bouw voor de eerste twee — ze wijzen alleen naar functionaliteit die dit package al had
+(`get_delivery_history`, `discover_delivery_history`, de ERC-8004-registry). `next_safe_threshold`
+is de enige eerlijke, nog openstaande "nee" in de hele tabel. Nieuwe test
+`fiscal-controls.test.ts`: "coverage against the 7 fields modelcontextprotocol/registry#1300
+actually proposed" — faalt zodra iemand een van de zeven velden hernoemt zonder de mapping hier bij
+te werken.

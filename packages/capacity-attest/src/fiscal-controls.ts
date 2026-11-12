@@ -17,9 +17,9 @@
 //     Nothing here describes what a SELLER's own server enforces.
 // This module is the SELLER-side piece: what does THIS server's own
 // wallet/signer risk, and what bounds that risk, stated before a caller ever
-// pays. Scope is deliberately narrow — the two things a caller actually
-// cannot find out any other way (does this tool hold a server-side signing
-// key, and is there a hard ceiling on what it can spend).
+// pays. Covers all 7 fields #1300's own opening post proposed — see the
+// field-by-field comment on FiscalControlSchema below for the exact mapping,
+// and which ones currently have a real, non-null value versus an honest null.
 //
 // WHY DERIVED, NOT HAND-WRITTEN: every field below reads an existing
 // constant or gate that already controls real behavior in http-server.ts
@@ -29,9 +29,25 @@
 // value changes and nobody remembers to update the copy.
 import { z } from "zod/v4";
 
+// The field names below are deliberately matched 1:1 to the 7 fields proposed in
+// modelcontextprotocol/registry#1300's own opening post, so a reader can check our
+// coverage directly against that proposal, not just against our own paraphrase of it:
+// paid_action_surface, approval_source (human_approval_threshold here — null means
+// "none", a number means "human, above this amount", same options the post itself
+// lists), spend_cap (spend_cap_per_hour/scope), charge_evidence, audit_trail,
+// revocation_path, next_safe_threshold. Added 12 nov 2026 after re-reading the
+// original post rather than relying on a paraphrase; charge_evidence and audit_trail
+// both point at a tool we already shipped (get_delivery_history / the Reputation
+// Registry itself), not new code. next_safe_threshold is honestly null for both
+// tools below — we have no auto-raise-the-cap mechanism, and this field exists so
+// that absence is a stated "not yet", never a silent gap.
 export const FiscalControlSchema = z.object({
   tool: z.string(),
   paid: z.literal(true),
+  paid_action_surface: z.string(),
+  charge_evidence: z.string().nullable(),
+  audit_trail: z.string().nullable(),
+  next_safe_threshold: z.string().nullable(),
   // Found by muraqib-al-khasm's adversarial review, 12 nov 2026: a plain
   // boolean cannot distinguish "no server-held signer at all" (record_delivery
   // — nothing to isolate) from "a signer exists but is NOT isolated" (a

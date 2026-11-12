@@ -7,7 +7,35 @@
 import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
 import { createServer as createHttpServer } from "node:http";
 import { once } from "node:events";
-import { validateFiscalControls } from "./fiscal-controls.js";
+import { FiscalControlSchema, validateFiscalControls } from "./fiscal-controls.js";
+
+// The 7 field names proposed in modelcontextprotocol/registry#1300's own opening
+// post, fetched and read directly (not from a paraphrase), 12 nov 2026. This test
+// exists so a future field rename or removal is caught here, not discovered later
+// by someone comparing our document against the actual GitHub thread by hand.
+const PROPOSAL_FIELDS = ["paid_action_surface", "approval_source", "spend_cap", "charge_evidence", "audit_trail", "revocation_path", "next_safe_threshold"];
+// Our own 1:1 (or split) mapping — see fiscal-controls.ts's header comment for why
+// approval_source maps to human_approval_threshold and spend_cap splits into two.
+const OUR_FIELD_FOR = {
+  paid_action_surface: "paid_action_surface",
+  approval_source: "human_approval_threshold",
+  spend_cap: "spend_cap_per_hour",
+  charge_evidence: "charge_evidence",
+  audit_trail: "audit_trail",
+  revocation_path: "revocation_path",
+  next_safe_threshold: "next_safe_threshold",
+};
+
+describe("coverage against the 7 fields modelcontextprotocol/registry#1300 actually proposed", () => {
+  it("every proposed field maps to a real field in our schema — a rename there must be caught here, not left to drift silently", () => {
+    const ourFields = Object.keys(FiscalControlSchema.shape);
+    for (const proposed of PROPOSAL_FIELDS) {
+      const ours = OUR_FIELD_FOR[proposed as keyof typeof OUR_FIELD_FOR];
+      expect(ours, `no mapping recorded for proposed field "${proposed}"`).toBeDefined();
+      expect(ourFields, `mapped field "${ours}" for "${proposed}" does not exist in FiscalControlSchema`).toContain(ours);
+    }
+  });
+});
 
 describe("validateFiscalControls", () => {
   it("accepts a well-formed document", () => {
@@ -17,11 +45,15 @@ describe("validateFiscalControls", () => {
         {
           tool: "publish_reputation_feedback",
           paid: true,
+          paid_action_surface: "broadcasts one on-chain transaction",
           signer_isolation: true,
           spend_cap_per_hour: 20,
           spend_cap_scope: "global",
           reservation_before_settlement: true,
           human_approval_threshold: null,
+          charge_evidence: "the on-chain transaction itself",
+          audit_trail: "the registry contract on-chain",
+          next_safe_threshold: null,
           revocation_path: "rotate the key and redeploy",
         },
       ],
