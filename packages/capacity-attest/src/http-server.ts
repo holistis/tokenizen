@@ -258,12 +258,12 @@ if (RECORD_DELIVERY_PAY_TO) {
 //      willing to keep paying the fee could still, in principle, outrun a
 //      gas-price spike or a wrong fee-margin assumption. The hourly cap
 //      bounds total spend regardless of how much anyone is willing to pay.
-// The cap is PEEKED (read-only) in the pre-payment handler, so a caller
-// already over the limit is never charged for a call that was always going
-// to be refused. It is only CONSUMED in onAfterSettlement, alongside the
-// real on-chain publish, for the same reason record_delivery's ledger write
-// lives there: nothing irreversible (a claimed slot, a real transaction)
-// happens before payment has genuinely cleared.
+// The cap is RESERVED (not just peeked) in the pre-payment handler — see the
+// FEEDBACK_RESERVATION_MS comment above for why this moved out of
+// onAfterSettlement on 12 nov 2026: a caller already over the limit is now
+// refused before payment is even attempted, not charged first and refused
+// after. onAfterSettlement only CONFIRMS the already-reserved slot into the
+// permanent record, alongside the real on-chain publish.
 // DEPLOYMENT NOTE, found on self-review (not yet relevant to any test here,
 // only to whoever sets real env vars on a real server): PUBLISH_FEEDBACK_PAY_TO
 // (where the fee lands) and the signer derived from
@@ -334,24 +334,68 @@ export function buildReputationPublisherSigner(privateKey: string, rpcUrl: strin
 }
 
 const FEEDBACK_HOUR_MS = 60 * 60 * 1000;
+// Scenario found 12 nov 2026 (koning: an agent's payment settles right as an hourly cap fills,
+// so it pays and gets nothing). The old design peeked the cap (read-only) BEFORE payment, then
+// only actually claimed a slot AFTER settlement — with real settlement latency (seconds) in
+// between, every concurrent caller's peek could see "room available" and get charged, and only
+// the first few to reach the post-settlement claim would actually win a slot. Fix: claim a slot
+// at the EARLIEST point the caller is committed to being charged (payment verified, settlement
+// about to be attempted — see the pre-payment handler below), not the latest. A caller who loses
+// the race is now refused HERE, before settlement is even attempted, so they are never charged.
+// This reservation self-expires if settlement never follows (the agent backs out, or the
+// facilitator fails) — generous vs. realistic settlement latency, short enough not to waste
+// capacity for long.
+const FEEDBACK_RESERVATION_MS = 10 * 60 * 1000;
 let feedbackPublishTimestamps: number[] = [];
+let feedbackReservationTimestamps: number[] = [];
+
+function liveReservationCount(now: number): number {
+  const cutoff = now - FEEDBACK_RESERVATION_MS;
+  feedbackReservationTimestamps = feedbackReservationTimestamps.filter((t) => t > cutoff);
+  return feedbackReservationTimestamps.length;
+}
 
 // Exported (not just internal) for the same reason createApp() is exported
 // below: a test can exercise this exact cap logic directly, without needing
 // a live chain or a fake JSON-RPC provider deep enough to satisfy
 // publishReputationFeedback()'s own contractFactory/identityResolver calls.
 
-/** Read-only: would a call right now still be under the cap? Never mutates state — consuming happens separately, only after settlement (see above). */
+/** Read-only: would a NEW reservation fit right now? Counts confirmed publishes (this rolling hour) plus still-pending reservations, so a flood of concurrent peeks can never all see "room available" the way the old post-settlement check could. Never mutates state. */
 export function canPublishFeedbackNow(): boolean {
-  const cutoff = Date.now() - FEEDBACK_HOUR_MS;
-  return feedbackPublishTimestamps.filter((t) => t > cutoff).length < PUBLISH_FEEDBACK_MAX_PER_HOUR;
+  const now = Date.now();
+  const confirmed = feedbackPublishTimestamps.filter((t) => t > now - FEEDBACK_HOUR_MS).length;
+  return confirmed + liveReservationCount(now) < PUBLISH_FEEDBACK_MAX_PER_HOUR;
 }
 
-/** Actually claims a slot. Returns false (and claims nothing) if the cap was already reached by the time this runs. */
+/**
+ * Claims a slot BEFORE settlement is attempted — see this file's hourly-cap comment above for
+ * why. Returns false (and claims nothing) if the cap, counting confirmed publishes plus other
+ * still-pending reservations, was already reached.
+ */
+export function reserveFeedbackPublishSlot(): boolean {
+  const now = Date.now();
+  const confirmed = feedbackPublishTimestamps.filter((t) => t > now - FEEDBACK_HOUR_MS).length;
+  if (confirmed + liveReservationCount(now) >= PUBLISH_FEEDBACK_MAX_PER_HOUR) return false;
+  feedbackReservationTimestamps.push(now);
+  return true;
+}
+
+/**
+ * Confirms an already-reserved slot into the permanent rolling-hour record, once settlement has
+ * actually succeeded. The cap itself was already enforced at reservation time
+ * (reserveFeedbackPublishSlot) — by the time this runs, the caller has already been charged, so
+ * this never re-refuses; refusing here would recreate exactly the charged-but-got-nothing race
+ * this two-step design exists to remove.
+ */
 export function consumeFeedbackPublishSlot(): boolean {
-  const cutoff = Date.now() - FEEDBACK_HOUR_MS;
-  feedbackPublishTimestamps = feedbackPublishTimestamps.filter((t) => t > cutoff);
-  if (feedbackPublishTimestamps.length >= PUBLISH_FEEDBACK_MAX_PER_HOUR) return false;
+  // Release the reservation this settlement corresponds to. Without this, a confirmed slot stayed
+  // counted TWICE for up to FEEDBACK_RESERVATION_MS — once here, once still sitting in
+  // feedbackReservationTimestamps — so every legitimate, fully successful publish wrongly halved
+  // the effective cap for the next 10 minutes. Caught by muraqib's own probe test, 12 nov 2026.
+  // Reservations are anonymous counters, not tied to a specific caller, so which one is released
+  // does not matter; FIFO is the simplest correct choice.
+  feedbackReservationTimestamps.shift();
+  feedbackPublishTimestamps = feedbackPublishTimestamps.filter((t) => t > Date.now() - FEEDBACK_HOUR_MS);
   feedbackPublishTimestamps.push(Date.now());
   return true;
 }
@@ -398,12 +442,9 @@ if (REPUTATION_PUBLISHER_PRIVATE_KEY && PUBLISH_FEEDBACK_PAY_TO) {
         if (!parsed.success) throw new Error(`invalid_input: ${parsed.error.issues.map((i) => i.message).join("; ")}`);
         const refusedRegistry = checkPublishFeedbackRegistries(parsed.data);
         if (refusedRegistry) throw new Error(refusedRegistry);
-        if (!consumeFeedbackPublishSlot()) {
-          throw new Error(
-            `hourly_cap_exceeded: this server publishes at most ${PUBLISH_FEEDBACK_MAX_PER_HOUR} feedback entries ` +
-              "per rolling hour, across all callers, to bound its own wallet's spend regardless of fee income — try again later",
-          );
-        }
+        // The cap was already enforced before the caller was ever charged — see
+        // reserveFeedbackPublishSlot. This just makes that reservation permanent.
+        consumeFeedbackPublishSlot();
         // Scenario found 12 nov 2026 (koning: "wat als het proces crasht tussen betalen en
         // leveren"): unlike record_delivery's local, near-instant ledger write, this attempt is
         // a real on-chain broadcast-and-confirm that can take seconds. Before this line there was
@@ -913,11 +954,12 @@ function buildServer(): McpServer {
         inputSchema: PublishReputationFeedbackInputSchema.shape,
       },
       publishFeedbackPaid(async (args: unknown) => {
-        // Pre-payment check only, same split as record_delivery: fails
-        // fast, before the caller is ever charged, on anything that could
-        // never succeed anyway. Does NOT publish anything and does NOT
-        // consume an hourly-cap slot — see consumeFeedbackPublishSlot's own
-        // comment for why that waits for onAfterSettlement.
+        // Pre-payment check, same split as record_delivery: fails fast, before the caller is
+        // ever charged, on anything that could never succeed anyway. Does NOT publish anything.
+        // DOES reserve an hourly-cap slot (not just peek) — this runs after payment is verified
+        // but before settlement is attempted, which is the earliest point a refusal here still
+        // means the caller is never charged. See reserveFeedbackPublishSlot's own comment, and
+        // this file's hourly-cap comment above, for why the cap moved here from onAfterSettlement.
         const parsed = PublishReputationFeedbackInputSchema.safeParse(args);
         if (!parsed.success) return errorResult(`invalid_input: ${parsed.error.issues.map((i) => i.message).join("; ")}`);
         let verdict: ReturnType<typeof verifyClaim>;
@@ -929,7 +971,7 @@ function buildServer(): McpServer {
         if (!verdict.ok) return errorResult(`signature_invalid: ${verdict.reason}`);
         const refusedRegistry = checkPublishFeedbackRegistries(parsed.data);
         if (refusedRegistry) return errorResult(refusedRegistry);
-        if (!canPublishFeedbackNow()) {
+        if (!reserveFeedbackPublishSlot()) {
           return errorResult(
             `hourly_cap_exceeded: this server publishes at most ${PUBLISH_FEEDBACK_MAX_PER_HOUR} feedback entries ` +
               "per rolling hour, across all callers — try again later",
