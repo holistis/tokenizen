@@ -33,8 +33,10 @@ import { z } from "zod/v4";
 // modelcontextprotocol/registry#1300's own opening post, so a reader can check our
 // coverage directly against that proposal, not just against our own paraphrase of it:
 // paid_action_surface, approval_source (human_approval_threshold here — null means
-// "none", a number means "human, above this amount", same options the post itself
-// lists), spend_cap (spend_cap_per_hour/scope), charge_evidence, audit_trail,
+// "none", a number means "human, above this amount"; this COLLAPSES the post's five
+// approval-source categories into just those two — policy-engine/allowance/budget-rule
+// are not separately representable yet, a real narrowing, not an equivalence),
+// spend_cap (spend_cap_per_hour/scope), charge_evidence, audit_trail,
 // revocation_path, next_safe_threshold. Added 12 nov 2026 after re-reading the
 // original post rather than relying on a paraphrase; charge_evidence and audit_trail
 // both point at a tool we already shipped (get_delivery_history / the Reputation
