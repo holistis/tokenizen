@@ -404,6 +404,17 @@ if (REPUTATION_PUBLISHER_PRIVATE_KEY && PUBLISH_FEEDBACK_PAY_TO) {
               "per rolling hour, across all callers, to bound its own wallet's spend regardless of fee income — try again later",
           );
         }
+        // Scenario found 12 nov 2026 (koning: "wat als het proces crasht tussen betalen en
+        // leveren"): unlike record_delivery's local, near-instant ledger write, this attempt is
+        // a real on-chain broadcast-and-confirm that can take seconds. Before this line there was
+        // NO durable trace that the fee had settled and a wallet-spending action was about to be
+        // attempted — a crash inside publishReputationFeedback (OOM, a PM2 restart, a deploy)
+        // would leave a payer who was genuinely charged with zero record anywhere that they were
+        // ever owed anything. attemptId correlates the two log lines below so an operator reading
+        // the log after a crash can see an "attempting" with no matching "done", which a clean
+        // throw/return never leaves (those always reach the second logEvent).
+        const attemptId = randomUUID();
+        logEvent("publish_feedback_attempting", { attemptId });
         // The RPC is the server's own, never the caller's; identity lookups go through net-guard; the gas is capped.
         const result = await publishReputationFeedback(
           signer,
@@ -412,6 +423,7 @@ if (REPUTATION_PUBLISHER_PRIVATE_KEY && PUBLISH_FEEDBACK_PAY_TO) {
           (i) => resolveAgentIdentity(i, guardedContractFactory, guardedChainIdFactory),
           { gasLimit: PUBLISH_FEEDBACK_GAS_LIMIT },
         );
+        logEvent("publish_feedback_done", { attemptId, ok: result.ok });
         if (!result.ok) throw new Error(result.reason);
       },
     },

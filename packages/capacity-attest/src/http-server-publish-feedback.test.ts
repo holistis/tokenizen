@@ -241,6 +241,37 @@ describe("http-server: publish_reputation_feedback registered when both env vars
       expect(handlerBody, "the handler must NOT itself consume an hourly-cap slot").not.toContain("consumeFeedbackPublishSlot(");
     },
   );
+
+  it(
+    "onAfterSettlement logs an 'attempting' line BEFORE the real chain call and a matching 'done' line after, so a crash mid-call leaves a trace",
+    async () => {
+      // Scenario found 12 nov 2026 (koning: a process crash between a settled payment and the
+      // actual on-chain write). Same source-text technique as the test above, for the same
+      // reason: a real crash-mid-await cannot be forced through a live async call here without
+      // the brittle fake-provider setup this file's own header already explains avoiding. What
+      // CAN be proven directly from the source: the durable trace exists, is written before the
+      // slow call (not after, which a crash would never reach), and both lines share one id.
+      const source = readFileSync(fileURLToPath(new URL("./http-server.ts", import.meta.url)), "utf-8");
+      const hooksStart = source.indexOf("onAfterSettlement: async ({ arguments: rawArgs })");
+      const hooksEnd = source.indexOf("});\n}", hooksStart);
+      const hookBody = source.slice(hooksStart, hooksEnd);
+
+      const attemptLogAt = hookBody.indexOf('logEvent("publish_feedback_attempting"');
+      const chainCallAt = hookBody.indexOf("await publishReputationFeedback(");
+      const doneLogAt = hookBody.indexOf('logEvent("publish_feedback_done"');
+      expect(attemptLogAt, "an 'attempting' log line must exist").toBeGreaterThan(-1);
+      expect(chainCallAt, "the real chain call must exist").toBeGreaterThan(-1);
+      expect(doneLogAt, "a 'done' log line must exist").toBeGreaterThan(-1);
+      expect(attemptLogAt, "'attempting' must be logged BEFORE the slow call, not after — a crash during the call must never reach it").toBeLessThan(chainCallAt);
+      expect(doneLogAt, "'done' must be logged after the call resolves").toBeGreaterThan(chainCallAt);
+
+      const attemptLine = hookBody.slice(attemptLogAt, hookBody.indexOf("\n", attemptLogAt));
+      const doneLine = hookBody.slice(doneLogAt, hookBody.indexOf("\n", doneLogAt));
+      expect(attemptLine).toContain("attemptId");
+      expect(doneLine, "the done line must carry the SAME correlation id, not a fresh one").toContain("attemptId");
+      expect(doneLine, "the done line must record success/failure, not just that the call returned").toContain("result.ok");
+    },
+  );
 });
 
 describe("http-server: the global hourly cap for publish_reputation_feedback (direct unit tests, no chain, no HTTP)", () => {
