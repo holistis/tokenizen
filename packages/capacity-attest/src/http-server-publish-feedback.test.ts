@@ -232,8 +232,8 @@ describe("http-server: publish_reputation_feedback registered when both env vars
       expect(handlerBody, "the handler must still validate (fail fast before payment)").toContain("verifyClaim(");
       expect(
         handlerBody,
-        "the handler must peek the cap (read-only) before payment, never consume it",
-      ).toContain("canPublishFeedbackNow(");
+        "the handler must reserve a cap slot before payment, so a caller who loses the race is refused before being charged, not after (scenario found 12 nov 2026)",
+      ).toContain("reserveFeedbackPublishSlot(");
       expect(
         handlerBody,
         "the handler must NOT itself call publishReputationFeedback — that would spend real gas before settlement is confirmed",
@@ -275,33 +275,59 @@ describe("http-server: publish_reputation_feedback registered when both env vars
 });
 
 describe("http-server: the global hourly cap for publish_reputation_feedback (direct unit tests, no chain, no HTTP)", () => {
-  it("consumes up to the configured cap, then refuses further slots without over-counting", async () => {
+  it("reserves up to the configured cap, then refuses further reservations without over-counting", async () => {
     vi.resetModules();
     process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR = "2";
     delete process.env.REPUTATION_PUBLISHER_PRIVATE_KEY; // this describe block never builds the paid tool itself
     delete process.env.PUBLISH_FEEDBACK_PAY_TO;
-    const { canPublishFeedbackNow, consumeFeedbackPublishSlot } = await import("./http-server.js");
+    const { canPublishFeedbackNow, reserveFeedbackPublishSlot } = await import("./http-server.js");
 
     expect(canPublishFeedbackNow()).toBe(true);
-    expect(consumeFeedbackPublishSlot()).toBe(true); // slot 1/2
+    expect(reserveFeedbackPublishSlot()).toBe(true); // slot 1/2
     expect(canPublishFeedbackNow()).toBe(true);
-    expect(consumeFeedbackPublishSlot()).toBe(true); // slot 2/2
+    expect(reserveFeedbackPublishSlot()).toBe(true); // slot 2/2
     expect(canPublishFeedbackNow()).toBe(false);
-    expect(consumeFeedbackPublishSlot()).toBe(false); // over cap — refused, and does not itself add a timestamp
-    expect(consumeFeedbackPublishSlot()).toBe(false); // still refused, proving the previous refusal didn't sneak a slot in
+    expect(reserveFeedbackPublishSlot()).toBe(false); // over cap — refused, and does not itself add a reservation
+    expect(reserveFeedbackPublishSlot()).toBe(false); // still refused, proving the previous refusal didn't sneak a slot in
 
     delete process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR;
   });
 
+  it(
+    "a caller who loses the cap race is refused at reservation time — before settlement, so before being charged (scenario found 12 nov 2026)",
+    async () => {
+      // This is the direct proof of the fix: the OLD design peeked (read-only) before payment and
+      // only claimed a slot after settlement, so every one of several concurrent callers could
+      // see "room available" during their peek and all get charged, with only the first few to
+      // reach the post-settlement claim actually winning a slot. Reserving here, at the same point
+      // the pre-payment handler runs (payment verified, settlement not yet attempted), means a
+      // caller who loses the race never reaches settlement at all.
+      vi.resetModules();
+      process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR = "2";
+      const { reserveFeedbackPublishSlot, consumeFeedbackPublishSlot } = await import("./http-server.js");
+
+      // Three concurrent callers all reach the pre-payment handler before any of them settles.
+      const reservations = [reserveFeedbackPublishSlot(), reserveFeedbackPublishSlot(), reserveFeedbackPublishSlot()];
+      expect(reservations, "exactly the first 2 (the cap) may proceed to settlement; the 3rd must be refused up front").toEqual([true, true, false]);
+
+      // The two winners settle (in any order) and are confirmed — confirming an
+      // already-reserved slot always succeeds, since the cap was already enforced above.
+      expect(consumeFeedbackPublishSlot()).toBe(true);
+      expect(consumeFeedbackPublishSlot()).toBe(true);
+
+      delete process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR;
+    },
+  );
+
   it("peeking (canPublishFeedbackNow) never itself consumes a slot", async () => {
     vi.resetModules();
     process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR = "1";
-    const { canPublishFeedbackNow, consumeFeedbackPublishSlot } = await import("./http-server.js");
+    const { canPublishFeedbackNow, reserveFeedbackPublishSlot } = await import("./http-server.js");
 
     for (let i = 0; i < 10; i++) expect(canPublishFeedbackNow()).toBe(true);
     // After ten pure peeks, the single real slot must still be available —
-    // if peeking secretly consumed, this would already be false.
-    expect(consumeFeedbackPublishSlot()).toBe(true);
+    // if peeking secretly reserved, this would already be false.
+    expect(reserveFeedbackPublishSlot()).toBe(true);
     expect(canPublishFeedbackNow()).toBe(false);
 
     delete process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR;
