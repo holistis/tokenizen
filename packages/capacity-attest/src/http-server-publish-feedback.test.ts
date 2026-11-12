@@ -332,4 +332,35 @@ describe("http-server: the global hourly cap for publish_reputation_feedback (di
 
     delete process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR;
   });
+
+  it(
+    "a confirmed slot is counted once, not twice — a fully successful publish must not shrink the cap for the next caller (found by muraqib's own audit, 12 nov 2026)",
+    async () => {
+      // The bug this guards against: consumeFeedbackPublishSlot() added a permanent timestamp
+      // but never released the matching reservation, so a confirmed slot stayed counted BOTH as
+      // confirmed AND as a still-pending reservation for up to FEEDBACK_RESERVATION_MS. Under
+      // normal, fully successful use (no race, nobody misbehaving), that silently halved the
+      // effective cap for the next ten minutes after every single successful publish.
+      vi.resetModules();
+      process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR = "4";
+      const { canPublishFeedbackNow, reserveFeedbackPublishSlot, consumeFeedbackPublishSlot } = await import("./http-server.js");
+
+      // Two full, successful reserve-then-confirm cycles — well under the cap of 4.
+      expect(reserveFeedbackPublishSlot()).toBe(true);
+      expect(consumeFeedbackPublishSlot()).toBe(true);
+      expect(reserveFeedbackPublishSlot()).toBe(true);
+      expect(consumeFeedbackPublishSlot()).toBe(true);
+
+      // 2 confirmed, 0 pending — there must still be room for 2 more, not 0.
+      expect(canPublishFeedbackNow(), "a legitimate caller must not be wrongly refused after two unrelated, fully successful publishes").toBe(true);
+      expect(reserveFeedbackPublishSlot()).toBe(true);
+      expect(canPublishFeedbackNow()).toBe(true);
+      expect(reserveFeedbackPublishSlot()).toBe(true);
+      // Now genuinely at the cap (2 confirmed + 2 reserved = 4) — this one must be refused.
+      expect(canPublishFeedbackNow()).toBe(false);
+      expect(reserveFeedbackPublishSlot()).toBe(false);
+
+      delete process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR;
+    },
+  );
 });

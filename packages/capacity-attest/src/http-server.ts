@@ -388,6 +388,13 @@ export function reserveFeedbackPublishSlot(): boolean {
  * this two-step design exists to remove.
  */
 export function consumeFeedbackPublishSlot(): boolean {
+  // Release the reservation this settlement corresponds to. Without this, a confirmed slot stayed
+  // counted TWICE for up to FEEDBACK_RESERVATION_MS — once here, once still sitting in
+  // feedbackReservationTimestamps — so every legitimate, fully successful publish wrongly halved
+  // the effective cap for the next 10 minutes. Caught by muraqib's own probe test, 12 nov 2026.
+  // Reservations are anonymous counters, not tied to a specific caller, so which one is released
+  // does not matter; FIFO is the simplest correct choice.
+  feedbackReservationTimestamps.shift();
   feedbackPublishTimestamps = feedbackPublishTimestamps.filter((t) => t > Date.now() - FEEDBACK_HOUR_MS);
   feedbackPublishTimestamps.push(Date.now());
   return true;
