@@ -219,6 +219,14 @@ curl -X POST http://localhost:8402/mcp \
   -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}'
 ```
 
+### Fiscal controls, before you ever pay
+
+`GET /.well-known/fiscal-controls.json` answers, statically and without payment or auth, which of this server's paid tools hold a server-side signing key, whether that key is isolated from caller funds, whether there is an hourly spend cap and whether it is enforced before or after settlement, and what the revocation path is if the key is ever compromised. This is a different layer from x402's own per-call price (`accepts[]`, only visible after a first attempt) and from the bazaar discovery extension below (what a tool does, not what it risks) — see `src/fiscal-controls.ts`'s header for the full reasoning. `validateFiscalControls()` from that same file lets anyone check this document's shape, including a third party's.
+
+```bash
+curl http://localhost:8402/.well-known/fiscal-controls.json
+```
+
 ## Architecture
 
 ```text

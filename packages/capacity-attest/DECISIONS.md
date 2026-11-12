@@ -1490,3 +1490,43 @@ sellerAddress nodig heeft, een echte volgorde-afhankelijkheid, niet alleen gemak
 de identiteitsresolutie, dan wordt deliveryHistory nooit geprobeerd (geen zinvol adres om op te
 zoeken) en komt de identiteitsfout apart terug. Puur samenstelling van twee al bestaande, al
 geteste functies, read-only, geen nieuw risico. Getest (2 nieuwe tests, 705/705 totaal groen).
+
+---
+
+## D-021: fiscal-controls — statisch, voor-de-koop veiligheidscontrole-document
+
+**Gebouwd:** `GET /.well-known/fiscal-controls.json` op `http-server.ts`, en het bijbehorende
+schema in het nieuwe `src/fiscal-controls.ts` (`FiscalControlsDocumentSchema`,
+`validateFiscalControls`). Aanleiding: modelcontextprotocol/registry#1300 ("Optional fiscal-safety
+metadata for paid MCP servers"), een publieke discussie waar bleek dat niemand een server-kant,
+statisch, VOOR-de-connectie document publiceert over de eigen geld-veiligheid van een betaalde
+tool — eigen concurrentiecheck bevestigde dit (x402's `accepts[]` is per-aanroep en pas zichtbaar
+na een eerste poging; de bazaar-discovery-extensie beschrijft WAT een tool doet, geen enkel
+veiligheidsveld; Google AP2 dekt alleen de koper-kant).
+
+**Wat het document zegt, per betaalde tool, puur AFGELEID uit dezelfde constantes die de echte
+tool-registratie al gebruiken (nooit een tweede, los getypte kopie):** of de server een eigen
+afgeschermde ondertekeningssleutel heeft (`signer_isolation`, drie standen: `null` = geen sleutel
+aanwezig, `false` = sleutel aanwezig maar niet geïsoleerd, `true` = geïsoleerd), een plafond per uur
+(`spend_cap_per_hour`/`spend_cap_scope`), of dat plafond VOOR of NA de afschrijving gecontroleerd
+wordt (`reservation_before_settlement` — rechtstreeks de vraag uit vondst 1 van
+`betaal-scenario-matrix.md` in wazir-al-ghanima), en het intrekkingspad bij een gecompromitteerde
+sleutel.
+
+**Veiligheidskeuzes, elk expliciet getest:** nooit rate-limited en geen betaling nodig (het hele
+punt is dat een vreemde dit kan lezen VOOR hij een aanroep riskeert); methode-check (alleen
+GET/HEAD, 405 op alles anders, zodat een POST niet stilletjes de 64KB-body-grens van `/mcp` omzeilt
+die hier niet van toepassing is); matched op `pathname`, niet de rauwe `req.url` (een query-string
+mag de discovery niet breken); een self-check tegen het eigen schema vóór het serveren (een kapotte
+`PUBLISH_FEEDBACK_MAX_PER_HOUR` geeft nu een nette 500 in plaats van stilletjes een schema-ongeldig
+document met een zelfverzekerde 200).
+
+**Gevonden door de eigen controleketen (muraqib/al-khasm/al-mustamil), niet door de koning of een
+buitenstaander, voor er iets gecommit was:** (1) `signer_isolation` was eerst een platte boolean,
+kon "geen sleutel" niet onderscheiden van een hypothetische toekomstige "sleutel aanwezig maar niet
+geïsoleerd" — gerepareerd naar de drie-standen hierboven; (2) een query-string achter de URL gaf
+een 404 (exacte-string-match i.p.v. pathname-match) — gerepareerd; (3) geen methode-check, geen
+self-validatie voor serveren — beide toegevoegd. Getest: 12 nieuwe tests in
+`fiscal-controls.test.ts` (schema goed/fout, alle vier combinaties van wel/niet-geconfigureerde
+tools, de echte HTTP-route, method-check, query-string, misconfiguratie-faalpad), 783/783 totaal
+groen.

@@ -125,6 +125,7 @@ import { discoverDeliveryHistory, localLedgerSource } from "./discovery.js";
 import { easSource, rpcAttestationReader, EAS_DEPLOYMENTS } from "./eas.js";
 import { httpClaimSource } from "./http-source.js";
 import { guardedFetch, guardedEthersFetchRequest } from "tokenizen-net-guard";
+import { validateFiscalControls, type FiscalControlsDocument } from "./fiscal-controls.js";
 
 const PORT = Number(process.env.PORT ?? 8402);
 const MAX_BODY_BYTES = 64 * 1024; // generous for an MCP JSON-RPC call, small enough to bound memory per request
@@ -469,6 +470,45 @@ if (REPUTATION_PUBLISHER_PRIVATE_KEY && PUBLISH_FEEDBACK_PAY_TO) {
       },
     },
   });
+}
+
+/**
+ * The seller-side half of the gap found 12 nov 2026 in modelcontextprotocol/registry
+ * discussion #1300 — see fiscal-controls.ts's own header for the full reasoning and
+ * why this is not the same thing as x402's per-call price, bazaar's what-it-does
+ * metadata, or AP2's buyer-side mandate. Every field reads a constant or gate that
+ * already controls real behavior above, in the same function scope, never a second,
+ * hand-typed copy of a true value.
+ */
+export function buildFiscalControls(): FiscalControlsDocument {
+  const controls: FiscalControlsDocument["controls"] = [];
+  if (recordDeliveryPaid) {
+    controls.push({
+      tool: "record_delivery",
+      paid: true,
+      signer_isolation: null,
+      spend_cap_per_hour: null,
+      spend_cap_scope: null,
+      reservation_before_settlement: null,
+      human_approval_threshold: null,
+      revocation_path:
+        "n/a — this tool holds no server-side signing key and spends no funds; it only writes a local ledger entry after settlement",
+    });
+  }
+  if (publishFeedbackPaid) {
+    controls.push({
+      tool: "publish_reputation_feedback",
+      paid: true,
+      signer_isolation: true,
+      spend_cap_per_hour: PUBLISH_FEEDBACK_MAX_PER_HOUR,
+      spend_cap_scope: "global",
+      reservation_before_settlement: true,
+      human_approval_threshold: null,
+      revocation_path:
+        "rotate REPUTATION_PUBLISHER_PRIVATE_KEY and redeploy — this signer only ever spends its own gas and never custodies caller funds",
+    });
+  }
+  return { version: "1", controls };
 }
 
 // Request log (4 Nov 2026). Until then the server wrote only starts and stops, so nobody could tell afterwards whether a route had been
@@ -1061,6 +1101,30 @@ export function createApp() {
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Mcp-Session-Id");
     if (req.method === "OPTIONS") {
       res.writeHead(204).end();
+      return;
+    }
+
+    // Deliberately served unconditionally, never rate-limited or paid: the whole point is that
+    // a caller can read this BEFORE deciding whether to risk a call at all. Matched on PATHNAME,
+    // not the raw url — found by muraqib-al-mustamil, 12 nov 2026: a reverse proxy, monitoring
+    // probe, or cache-busting "?v=..." behind the discovery URL must not silently 404 against
+    // the exact point of this file (readable BEFORE risking a call).
+    if (new URL(req.url ?? "/", "http://localhost").pathname === "/.well-known/fiscal-controls.json") {
+      if (req.method !== "GET" && req.method !== "HEAD") {
+        res.writeHead(405, { "content-type": "application/json", allow: "GET, HEAD" }).end(JSON.stringify({ error: "method not allowed" }));
+        return;
+      }
+      const doc = buildFiscalControls();
+      // Found by muraqib's own probe, 12 nov 2026: a misconfigured env var (e.g.
+      // PUBLISH_FEEDBACK_MAX_PER_HOUR="abc") could otherwise serve a schema-invalid
+      // document with a confident 200 — exactly the "worse than no promise" failure
+      // bazaar-discovery.ts's own header already warns about for a sibling file.
+      if (!validateFiscalControls(doc).valid) {
+        console.error("capacity-attest-http: buildFiscalControls() produced a schema-invalid document, refusing to serve it:", doc);
+        res.writeHead(500, { "content-type": "application/json" }).end(JSON.stringify({ error: "internal error" }));
+        return;
+      }
+      res.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify(doc));
       return;
     }
 
