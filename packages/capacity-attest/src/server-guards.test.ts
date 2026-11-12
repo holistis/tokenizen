@@ -61,6 +61,29 @@ describe("the paid publish route does not let the caller choose the contract, th
     expect(checkPublishFeedbackRegistries({ reputationRegistryRef: REPUTATION, agentRegistryRef: "eip155:8453:0x0000000000000000000000000000000000000bad" })).toMatch(/^registry_not_allowed: .*Identity Registries/);
   });
 
+  // Mutation-matrix "weghalen": an allowlist that silently loses its only entry (an unset env
+  // var reverting to a canonical default would hide this; an env var explicitly set to "" would
+  // not, since splitRefs("") -> [] rather than falling through to the default) must refuse
+  // EVERYTHING, never fail open. .includes() on an empty array is always false, so this is
+  // fail-safe by construction, but construction is not a test: prove it directly, on both lists,
+  // with a fresh module instance so the already-populated constants above cannot mask this.
+  it("refuses every registry, on both lists, if the allowlist is emptied, never falls open", async () => {
+    process.env.PUBLISH_FEEDBACK_REPUTATION_REGISTRIES = "";
+    process.env.PUBLISH_FEEDBACK_IDENTITY_REGISTRIES = "";
+    vi.resetModules();
+    try {
+      const fresh = await import("./http-server.js");
+      expect(fresh.PUBLISH_FEEDBACK_REPUTATION_REGISTRIES).toEqual([]);
+      expect(fresh.PUBLISH_FEEDBACK_IDENTITY_REGISTRIES).toEqual([]);
+      expect(fresh.checkPublishFeedbackRegistries({ reputationRegistryRef: REPUTATION, agentRegistryRef: IDENTITY })).toMatch(/^registry_not_allowed: .*Reputation Registries/);
+      expect(fresh.checkPublishFeedbackRegistries({ reputationRegistryRef: "", agentRegistryRef: "" })).toMatch(/^registry_not_allowed: .*Reputation Registries/);
+    } finally {
+      delete process.env.PUBLISH_FEEDBACK_REPUTATION_REGISTRIES;
+      delete process.env.PUBLISH_FEEDBACK_IDENTITY_REGISTRIES;
+      vi.resetModules();
+    }
+  });
+
   it("checks the registries both before payment (refuse) and again after settlement (throw, the authoritative gate)", () => {
     expect(SOURCE.match(/checkPublishFeedbackRegistries\(parsed\.data\)/g)).toHaveLength(2);
     expect(SOURCE).toContain("if (refusedRegistry) return errorResult(refusedRegistry);");
