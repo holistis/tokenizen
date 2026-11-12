@@ -11,6 +11,15 @@ describe("isBlockedAddress", () => {
     expect(isBlockedAddress("100.64.0.1", 4).blocked).toBe(true); // CGNAT
     expect(isBlockedAddress("0.0.0.0", 4).blocked).toBe(true);
   });
+  it("blocks the seven IPv4 ranges that had no case here (documentation, benchmarking, multicast, reserved, IETF protocol assignments) — an accidental removal from BLOCKED_IPV4_RANGES must fail one of these, not silently narrow the guard", () => {
+    expect(isBlockedAddress("192.0.0.1", 4).blocked).toBe(true); // IETF protocol assignments
+    expect(isBlockedAddress("192.0.2.1", 4).blocked).toBe(true); // documentation (TEST-NET-1)
+    expect(isBlockedAddress("198.18.0.1", 4).blocked).toBe(true); // benchmarking
+    expect(isBlockedAddress("198.51.100.1", 4).blocked).toBe(true); // documentation (TEST-NET-2)
+    expect(isBlockedAddress("203.0.113.1", 4).blocked).toBe(true); // documentation (TEST-NET-3)
+    expect(isBlockedAddress("224.0.0.1", 4).blocked).toBe(true); // multicast
+    expect(isBlockedAddress("240.0.0.1", 4).blocked).toBe(true); // reserved
+  });
   it("allows real public addresses", () => {
     expect(isBlockedAddress("8.8.8.8", 4).blocked).toBe(false);
     expect(isBlockedAddress("93.184.216.34", 4).blocked).toBe(false);
