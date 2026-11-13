@@ -1495,6 +1495,10 @@ geteste functies, read-only, geen nieuw risico. Getest (2 nieuwe tests, 705/705 
 
 ## D-021: fiscal-controls — statisch, voor-de-koop veiligheidscontrole-document
 
+**Deels ingehaald door D-022 (13 nov 2026):** het document-schema hieronder was versie "1";
+`spend_cap_per_hour` als kaal getal en `signer_isolation` zonder eigen uitleg zijn vervangen, zie
+D-022 voor waarom en wat.
+
 **Gebouwd:** `GET /.well-known/fiscal-controls.json` op `http-server.ts`, en het bijbehorende
 schema in het nieuwe `src/fiscal-controls.ts` (`FiscalControlsDocumentSchema`,
 `validateFiscalControls`). Aanleiding: modelcontextprotocol/registry#1300 ("Optional fiscal-safety
@@ -1553,3 +1557,80 @@ is de enige eerlijke, nog openstaande "nee" in de hele tabel. Nieuwe test
 `fiscal-controls.test.ts`: "coverage against the 7 fields modelcontextprotocol/registry#1300
 actually proposed" — faalt zodra iemand een van de zeven velden hernoemt zonder de mapping hier bij
 te werken.
+
+---
+
+## D-022: fiscal-controls v2 — eerlijke eenheden, echte betaal-koppeling, en wat bewust NIET vandaag gebouwd is
+
+**Aanleiding:** YE-YI7 draaide het gemergede 0.11.0-pakket zelf (niet alleen gelezen) en stelde drie
+scherpe vragen. Los daarvan, dezelfde avond, leverde een tweede, onafhankelijke strategische lezing
+(ChatGPT, via de koning) een eigen, deels overlappende analyse op — inclusief een ONAFHANKELIJK
+gevonden bevestiging van het reserverings-probleem hieronder, zonder ons eigen plan gezien te
+hebben. Twee bronnen die hetzelfde vinden zonder van elkaar te weten is een sterk signaal.
+
+**1. `spend_cap_per_hour` was een kaal getal.** YE-YI7 letterlijk: "A client should not read this as
+a monetary ceiling on its own purchases." Het getal is een AANTAL betaalde pogingen, niet bewezen
+succesvolle on-chain uitkomsten, en het leeft alleen in het geheugen van dit ene server-proces
+(reset bij herstart, niet gedeeld tussen eventuele meerdere instanties). Niets daarvan stond
+expliciet in v1. Opgelost: `spend_cap` is nu een object met `unit` ("paid-attempts"/"currency"),
+`max_per_window`, `window_seconds`, `scope` ("server-instance"/"all-instances"/"per-caller"),
+`persistence`, `reset_on_restart`, `reservation_before_settlement`, en
+`pending_reservation_ttl_seconds` — elk feit een eigen, verplicht veld.
+
+**2. De binnenkomende betaling werd nergens aan de actie gekoppeld.** Bevestigd door de echte
+broncode van `@x402/mcp` te lezen (niet de typedefinitie alleen): `onAfterSettlement` krijgt
+`settlement` (een echte `SettleResponse`: `transaction`, `network`, `payer`, rechtstreeks uit de
+facilitator se `/settle`-antwoord), maar geen van onze twee hooks las dat veld. Nu loggen beide
+hooks `settlement.transaction`/`network`/`payer` VOOR de bijbehorende actie, en `charge_evidence`
+noemt de binnenkomende betaling en de uitgaande actie als TWEE aparte feiten, nooit als een.
+
+**3. `signer_isolation: true` zonder uitleg nodigt uit tot overclaim.** Een tweede, onafhankelijke
+lezing wees erop dat "true" kan worden gelezen als hardware-/TEE-niveau sleutelisolatie, terwijl de
+echte situatie een env-var-sleutel in een in-process signer is — wel geïsoleerd van de beller se
+geld en invloed, niet van het geheugen van dit proces zelf. Nieuw, verplicht veld `signer_custody`
+legt dit vast; een zod-`superRefine` dwingt af dat het nooit `null` mag zijn zodra
+`signer_isolation` dat niet is.
+
+**4. Een echte, los van dit alles gevonden fout: de late-bevestiging na een verlopen reservering.**
+Zowel onze eigen controleketen als de tweede, externe lezing vonden — onafhankelijk van elkaar —
+dat een reservering die langer leeft dan `FEEDBACK_RESERVATION_MS` kan verlopen (en uit de levende
+lijst verdwijnen) voordat haar eigen, trage afschrijving alsnog bevestigd wordt. De eerste analyse
+("de verkeerde reservering wordt vrijgegeven") bleek bij nader, precies naspeuren grotendeels
+onschadelijk: reserveringen zijn verwisselbare tellers, dus WELKE specifieke reservering vrijkomt
+bij twee afschrijvingen die in andere volgorde afronden maakt voor het totaal niets uit. Het ECHTE,
+nauwere gat: bevestigen gebeurt onvoorwaardelijk (moet ook, de koper is al echt belast), maar als er
+niets levends meer over is om vrij te geven, gebeurde dat tot nu toe onzichtbaar. Opgelost:
+reserveringen krijgen een eigen id (voor logboek-herkenbaarheid, geen kanaal bestaat om een id van
+de prepayment-handler naar `onAfterSettlement` door te geven — onderzocht en bevestigd via de
+`@x402/mcp`-broncode: `onBeforeExecution` kan geen eigen foutmelding geven, `MCPToolContext` geeft
+de handler geen `paymentPayload`), en het late-geval logt nu expliciet
+(`publish_feedback_confirmed_after_reservation_expired`) in plaats van stil te gebeuren.
+
+**5. Een mislukte actie NA een gelukte betaling was niet uit te leggen van "nooit betaald".** Een
+gegooide fout na settlement heette gewoon de interne `reason`-tekst. Nu begint die altijd met
+`payment_settled_action_failed:` en zegt expliciet dat een nieuwe poging geen tweede, onterechte
+afschrijving zou moeten verwachten op te lossen.
+
+**Bewust NIET vandaag gebouwd, met reden, niet vergeten — volgende bouwronde:**
+- Duurzame (SQLite/Postgres), instantie-overschrijdende opslag voor het plafond. Dit package draait
+  vandaag als één proces; gedeelde opslag bouwen voor een situatie die nog niet bestaat is vroegtijdig.
+  `spend_cap.scope: "server-instance"` + `persistence: "in-memory"` zegt dit nu tenminste eerlijk.
+- Een volledig onafhankelijke on-chain verifier die ook het BEDRAG en de ONTVANGER van de
+  afschrijving controleert (niet alleen wie betaalde — dat laatste kan al via het bestaande
+  `eip3009-authorizer-from-tx.ts`, hergebruikt, niet herbouwd). Vereist een los, apart aan te roepen
+  stuk, niet synchroon in het hete betaalpad (een nieuwe RPC-aanroep op elke betaalde aanroep is een
+  nieuw latency- en faalrisico dat niet zomaar aan het hete pad toegevoegd moet worden).
+- Een los, door een vreemde partij te draaien controleprogramma (`fiscal-check`) en een echte
+  koppeling met het officiële MCP-register se `_meta`-veld — ONGETEST of het register zo'n veld
+  echt bewaart en teruggeeft; eerst dat uitzoeken, dan pas bouwen.
+- Een schone-installatie-test (`npm pack`, leeg mapje) en een echte, kleine, bewust gedane betaling
+  op mainnet als demonstratie — waardevol, maar een zaak voor na deze ronde, niet ervoor.
+- De volledige 35-punten aanvalslijst (betaling/settlement, reserveringen/plafonds, bewijs/
+  integriteit, discovery/consument, herstel/productie) die een tweede, onafhankelijke lezing
+  voorstelde — een goed, bewaard register voor de volgende rondes, niet iets om in één keer af te
+  vinken.
+
+**Getest:** 25+ nieuwe/herschreven tests over `fiscal-controls.ts`, `fiscal-controls.test.ts`,
+`http-server.ts`, `http-server-publish-feedback.test.ts`, `http-server-record-delivery.test.ts`.
+Elke nieuwe regel bewezen met een geplante weglating (de test gaat rood zonder de fix, groen
+erna). Volledige suite: 791/791 groen.
