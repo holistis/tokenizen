@@ -95,6 +95,65 @@ async function readBounded(response: Response, maxBytes: number): Promise<string
   return Buffer.concat(chunks.map((c) => Buffer.from(c))).toString("utf-8");
 }
 
+export interface FetchJsonBoundedOptions {
+  /** Per-request timeout in ms. */
+  timeoutMs?: number;
+  /** Refuse a response body larger than this many bytes, checked WHILE streaming, before JSON.parse ever runs. */
+  maxResponseBytes?: number;
+  /** Injection seam for tests: a fetch-shaped function. Defaults to the global fetch. */
+  fetchImpl?: typeof fetch;
+}
+
+/**
+ * Fetch `url` and return its body parsed as JSON — the exact
+ * fetch-with-timeout, bounded-read-before-parsing, "every failure mode
+ * becomes HttpSourceError, never a raw network/parse exception" sequence
+ * httpClaimSource.fetchForSeller uses below, pulled out so a second caller
+ * with a different expected JSON SHAPE (fiscal-check-bin.ts's CLI fetches a
+ * `{version, controls}` document, not a claims array) can reuse the same
+ * guard instead of inlining a second copy of this sequence. Deliberately
+ * does NOT check the parsed shape itself — same division of responsibility
+ * as readBounded/this module's own header comment: a generic fetch-and-parse
+ * guard stays generic, and each caller checks the shape IT expects
+ * (httpClaimSource's own Array.isArray check stays in fetchForSeller, right
+ * next to the DeliveryClaim[] cast it guards).
+ */
+export async function fetchJsonBounded(url: string | URL, opts: FetchJsonBoundedOptions = {}): Promise<unknown> {
+  const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const maxResponseBytes = opts.maxResponseBytes ?? DEFAULT_MAX_RESPONSE_BYTES;
+  const fetchImpl = opts.fetchImpl ?? fetch;
+
+  let response: Response;
+  try {
+    response = await fetchImpl(url, { signal: AbortSignal.timeout(timeoutMs) });
+  } catch (e) {
+    throw new HttpSourceError(`request to ${url} failed: ${(e as Error).message}`);
+  }
+  if (!response.ok) {
+    throw new HttpSourceError(`${url} responded ${response.status} ${response.statusText}`);
+  }
+
+  // A stall DURING body streaming (headers already arrived, response.ok
+  // already true, but the body never finishes within timeoutMs) is a
+  // SEPARATE failure moment from the connect-phase catch above: the same
+  // AbortSignal also governs the body read, so it rejects too, but with a
+  // raw DOMException (name "TimeoutError"), not HttpSourceError. Wrap it
+  // here so every documented failure mode really does surface as
+  // HttpSourceError, matching this function's own doc comment.
+  let text: string;
+  try {
+    text = await readBounded(response, maxResponseBytes);
+  } catch (e) {
+    if (e instanceof HttpSourceError) throw e; // already correct: the byte-cap-exceeded case
+    throw new HttpSourceError(`reading response body from ${url} failed: ${(e as Error).message}`);
+  }
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    throw new HttpSourceError(`response from ${url} was not valid JSON: ${(e as Error).message}`);
+  }
+}
+
 /**
  * A ClaimSource over a plain HTTP endpoint. GETs
  * `${endpointUrl}?seller=<sellerAddress>` and expects a JSON array back.
@@ -122,36 +181,7 @@ export function httpClaimSource(endpointUrl: string, opts: HttpClaimSourceOption
       const url = new URL(endpointUrl);
       url.searchParams.set("seller", sellerAddress);
 
-      let response: Response;
-      try {
-        response = await fetchImpl(url, { signal: AbortSignal.timeout(timeoutMs) });
-      } catch (e) {
-        throw new HttpSourceError(`request to ${url} failed: ${(e as Error).message}`);
-      }
-      if (!response.ok) {
-        throw new HttpSourceError(`${url} responded ${response.status} ${response.statusText}`);
-      }
-
-      // A stall DURING body streaming (headers already arrived, response.ok
-      // already true, but the body never finishes within timeoutMs) is a
-      // SEPARATE failure moment from the connect-phase catch above: the same
-      // AbortSignal also governs the body read, so it rejects too, but with
-      // a raw DOMException (name "TimeoutError"), not HttpSourceError. Wrap
-      // it here so every documented failure mode really does surface as
-      // HttpSourceError, matching this function's own doc comment.
-      let text: string;
-      try {
-        text = await readBounded(response, maxResponseBytes);
-      } catch (e) {
-        if (e instanceof HttpSourceError) throw e; // already correct: the byte-cap-exceeded case
-        throw new HttpSourceError(`reading response body from ${url} failed: ${(e as Error).message}`);
-      }
-      let parsed: unknown;
-      try {
-        parsed = JSON.parse(text);
-      } catch (e) {
-        throw new HttpSourceError(`response from ${url} was not valid JSON: ${(e as Error).message}`);
-      }
+      const parsed = await fetchJsonBounded(url, { timeoutMs, maxResponseBytes, fetchImpl });
       if (!Array.isArray(parsed)) {
         throw new HttpSourceError(`response from ${url} was valid JSON but not an array`);
       }

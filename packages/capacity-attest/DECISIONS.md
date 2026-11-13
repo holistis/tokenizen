@@ -1495,6 +1495,10 @@ geteste functies, read-only, geen nieuw risico. Getest (2 nieuwe tests, 705/705 
 
 ## D-021: fiscal-controls — statisch, voor-de-koop veiligheidscontrole-document
 
+**Deels ingehaald door D-022 (13 nov 2026):** het document-schema hieronder was versie "1";
+`spend_cap_per_hour` als kaal getal en `signer_isolation` zonder eigen uitleg zijn vervangen, zie
+D-022 voor waarom en wat.
+
 **Gebouwd:** `GET /.well-known/fiscal-controls.json` op `http-server.ts`, en het bijbehorende
 schema in het nieuwe `src/fiscal-controls.ts` (`FiscalControlsDocumentSchema`,
 `validateFiscalControls`). Aanleiding: modelcontextprotocol/registry#1300 ("Optional fiscal-safety
@@ -1553,3 +1557,169 @@ is de enige eerlijke, nog openstaande "nee" in de hele tabel. Nieuwe test
 `fiscal-controls.test.ts`: "coverage against the 7 fields modelcontextprotocol/registry#1300
 actually proposed" — faalt zodra iemand een van de zeven velden hernoemt zonder de mapping hier bij
 te werken.
+
+---
+
+## D-022: fiscal-controls v2 — eerlijke eenheden, echte betaal-koppeling, en wat bewust NIET vandaag gebouwd is
+
+**Aanleiding:** YE-YI7 draaide het gemergede 0.11.0-pakket zelf (niet alleen gelezen) en stelde drie
+scherpe vragen. Los daarvan, dezelfde avond, leverde een tweede, onafhankelijke strategische lezing
+(ChatGPT, via de koning) een eigen, deels overlappende analyse op — inclusief een ONAFHANKELIJK
+gevonden bevestiging van het reserverings-probleem hieronder, zonder ons eigen plan gezien te
+hebben. Twee bronnen die hetzelfde vinden zonder van elkaar te weten is een sterk signaal.
+
+**1. `spend_cap_per_hour` was een kaal getal.** YE-YI7 letterlijk: "A client should not read this as
+a monetary ceiling on its own purchases." Het getal is een AANTAL betaalde pogingen, niet bewezen
+succesvolle on-chain uitkomsten, en het leeft alleen in het geheugen van dit ene server-proces
+(reset bij herstart, niet gedeeld tussen eventuele meerdere instanties). Niets daarvan stond
+expliciet in v1. Opgelost: `spend_cap` is nu een object met `unit` ("paid-attempts"/"currency"),
+`max_per_window`, `window_seconds`, `scope` ("server-instance"/"all-instances"/"per-caller"),
+`persistence`, `reset_on_restart`, `reservation_before_settlement`, en
+`pending_reservation_ttl_seconds` — elk feit een eigen, verplicht veld.
+
+**2. De binnenkomende betaling werd nergens aan de actie gekoppeld.** Bevestigd door de echte
+broncode van `@x402/mcp` te lezen (niet de typedefinitie alleen): `onAfterSettlement` krijgt
+`settlement` (een echte `SettleResponse`: `transaction`, `network`, `payer`, rechtstreeks uit de
+facilitator se `/settle`-antwoord), maar geen van onze twee hooks las dat veld. Nu loggen beide
+hooks `settlement.transaction`/`network`/`payer` VOOR de bijbehorende actie, en `charge_evidence`
+noemt de binnenkomende betaling en de uitgaande actie als TWEE aparte feiten, nooit als een.
+
+**3. `signer_isolation: true` zonder uitleg nodigt uit tot overclaim.** Een tweede, onafhankelijke
+lezing wees erop dat "true" kan worden gelezen als hardware-/TEE-niveau sleutelisolatie, terwijl de
+echte situatie een env-var-sleutel in een in-process signer is — wel geïsoleerd van de beller se
+geld en invloed, niet van het geheugen van dit proces zelf. Nieuw, verplicht veld `signer_custody`
+legt dit vast; een zod-`superRefine` dwingt af dat het nooit `null` mag zijn zodra
+`signer_isolation` dat niet is.
+
+**4. Een echte, los van dit alles gevonden fout: de late-bevestiging na een verlopen reservering.**
+Zowel onze eigen controleketen als de tweede, externe lezing vonden — onafhankelijk van elkaar —
+dat een reservering die langer leeft dan `FEEDBACK_RESERVATION_MS` kan verlopen (en uit de levende
+lijst verdwijnen) voordat haar eigen, trage afschrijving alsnog bevestigd wordt. De eerste analyse
+("de verkeerde reservering wordt vrijgegeven") bleek bij nader, precies naspeuren grotendeels
+onschadelijk: reserveringen zijn verwisselbare tellers, dus WELKE specifieke reservering vrijkomt
+bij twee afschrijvingen die in andere volgorde afronden maakt voor het totaal niets uit. Het ECHTE,
+nauwere gat: bevestigen gebeurt onvoorwaardelijk (moet ook, de koper is al echt belast), maar als er
+niets levends meer over is om vrij te geven, gebeurde dat tot nu toe onzichtbaar. Opgelost:
+reserveringen krijgen een eigen id (voor logboek-herkenbaarheid, geen kanaal bestaat om een id van
+de prepayment-handler naar `onAfterSettlement` door te geven — onderzocht en bevestigd via de
+`@x402/mcp`-broncode: `onBeforeExecution` kan geen eigen foutmelding geven, `MCPToolContext` geeft
+de handler geen `paymentPayload`), en het late-geval logt nu expliciet
+(`publish_feedback_confirmed_after_reservation_expired`) in plaats van stil te gebeuren.
+
+**5. Een mislukte actie NA een gelukte betaling was niet uit te leggen van "nooit betaald".** Een
+gegooide fout na settlement heette gewoon de interne `reason`-tekst. Nu begint die altijd met
+`payment_settled_action_failed:` en zegt expliciet dat een nieuwe poging geen tweede, onterechte
+afschrijving zou moeten verwachten op te lossen.
+
+**Bewust NIET vandaag gebouwd, met reden, niet vergeten — volgende bouwronde:**
+- Duurzame (SQLite/Postgres), instantie-overschrijdende opslag voor het plafond. Dit package draait
+  vandaag als één proces; gedeelde opslag bouwen voor een situatie die nog niet bestaat is vroegtijdig.
+  `spend_cap.scope: "server-instance"` + `persistence: "in-memory"` zegt dit nu tenminste eerlijk.
+- Een volledig onafhankelijke on-chain verifier die ook het BEDRAG en de ONTVANGER van de
+  afschrijving controleert (niet alleen wie betaalde — dat laatste kan al via het bestaande
+  `eip3009-authorizer-from-tx.ts`, hergebruikt, niet herbouwd). Vereist een los, apart aan te roepen
+  stuk, niet synchroon in het hete betaalpad (een nieuwe RPC-aanroep op elke betaalde aanroep is een
+  nieuw latency- en faalrisico dat niet zomaar aan het hete pad toegevoegd moet worden).
+- Een los, door een vreemde partij te draaien controleprogramma (`fiscal-check`) en een echte
+  koppeling met het officiële MCP-register se `_meta`-veld — ONGETEST of het register zo'n veld
+  echt bewaart en teruggeeft; eerst dat uitzoeken, dan pas bouwen.
+- Een schone-installatie-test (`npm pack`, leeg mapje) en een echte, kleine, bewust gedane betaling
+  op mainnet als demonstratie — waardevol, maar een zaak voor na deze ronde, niet ervoor.
+- De volledige 35-punten aanvalslijst (betaling/settlement, reserveringen/plafonds, bewijs/
+  integriteit, discovery/consument, herstel/productie) die een tweede, onafhankelijke lezing
+  voorstelde — een goed, bewaard register voor de volgende rondes, niet iets om in één keer af te
+  vinken.
+
+**Getest:** 25+ nieuwe/herschreven tests over `fiscal-controls.ts`, `fiscal-controls.test.ts`,
+`http-server.ts`, `http-server-publish-feedback.test.ts`, `http-server-record-delivery.test.ts`.
+Elke nieuwe regel bewezen met een geplante weglating (de test gaat rood zonder de fix, groen
+erna). Volledige suite na de eerste ronde: 791/791 groen; na de zes reparaties uit de laatste
+controleronde hieronder: 795/795 groen.
+
+**Vóór merge, door onze eigen controleketen op de PR zelf gevonden en gerepareerd (13 nov 2026),
+niet door de koning of een buitenstaander:**
+- **Een echte, publiekelijk zichtbare toeschrijvingsfout.** Een eerste versie van een
+  codecommentaar hier zette een Nederlandse zin tussen aanhalingstekens onder de naam van YE-YI7
+  — een echte, met naam genoemde buitenstaander — terwijl die zin in werkelijkheid van de tweede,
+  onafhankelijke lezing kwam (YE-YI7 schrijft uitsluitend Engels, en zei dit letterlijk nooit).
+  Gevonden door muraqib-al-khasm's eigen controle tegen de echte, opgehaalde GitHub-thread, niet
+  aangenomen. Dit is geen stijlfout: het legt een echt mens woorden in de mond. Rechtgezet in
+  `fiscal-controls.ts` en `fiscal-controls.test.ts`, met uitleg waarom en hoe het gebeurde, zodat
+  het zichtbaar blijft in plaats van stilletjes verdwenen te zijn. Precedent voor dit soort fout:
+  zie dit bestand se eigen `CORRECTIE (2026-09-07)`, hoger in deze lijst — de tweede keer dat
+  precies deze fout-klasse (een derde partij woorden toeschrijven die zij niet zei) hier gevonden
+  wordt.
+- **`signer_custody: ""` (lege string) gaf dezelfde valse "basis bewezen"-indruk als een echte
+  uitleg.** De `superRefine` controleerde alleen op `null`, niet op een lege of blanco string —
+  precies het gat dat het veld zegt te dichten. Gevonden door muraqib-al-mustamil se adversariële
+  test. Gerepareerd: `.trim().length === 0` telt nu ook als "geen basis".
+- **`validateFiscalControls()` zelf kon crashen** op een vijandig object met een gooiende getter
+  (niet bereikbaar via echte JSON-over-HTTP, wel via een los JS-object) — terwijl de hele reden
+  van bestaan van deze functie is dat ze NOOIT een niet-vertrouwde invoer mag vertrouwen, ook niet
+  qua vorm. Een `try/catch` om de echte validatie repareert dit.
+- **Onbegrensde loggbare velden.** `settlement.transaction`/`network`/`payer` komen van de
+  facilitator als kale, ongevalideerde strings. `logEvent()` kapt nu elk tekstveld af op 500
+  tekens, generiek voor alle toekomstige aanroepen, niet alleen deze twee.
+- **Inconsistente foutmelding.** `record_delivery`'s `payment_settled_action_failed`-fout noemde
+  geen transactiereferentie, `publish_reputation_feedback`'s wel. Nu gelijk.
+- **Geen compatibiliteitsvermelding bij een breking wijziging.** Toegevoegd aan `CHANGELOG.md`:
+  pre-1.0, geen stabiliteitsgarantie, 0.11.0 stond maar enkele uren live zonder bekende consument.
+
+Alle zes gevonden en gerepareerd vóórdat deze PR gemerged werd — zie PR #258 voor de volledige
+keuringsgeschiedenis (muraqib, al-khasm, al-mustamil, elk tegen de definitieve commit).
+
+## D-023: drie nieuwe stukken bovenop fiscal-controls v2 (durable spend-cap, settlement-corroboratie, fiscal-check CLI) — en zes gaten die een completeness-critic review erin vond, allemaal gerepareerd vóór merge
+
+Drie nieuwe, onafhankelijk schakelbare stukken bovenop D-022's fiscal-controls v2, elk EXPLICIET al genoemd in D-022's eigen "bewust NIET vandaag gebouwd" lijst als volgende-ronde-werk — dit is die volgende ronde, niet een ongepland extraatje:
+
+1. **`CAPACITY_ATTEST_SPEND_CAP_DURABLE=1`** (nieuw bestand `src/spend-cap-store.ts`). D-022 koos bewust `scope: "server-instance"` + `persistence: "in-memory"` omdat dit package als één proces draait — "gedeelde opslag bouwen voor een situatie die nog niet bestaat is vroegtijdig". Die situatie bestaat nu wel genoeg om te bouwen: `DurableSpendCapStore` is `ledger.ts`'s eigen, al bewezen patroon (append-only JSONL, O_EXCL-lockfile met PID-levendigheid-herstel, in-memory cache ongeldig op bytegrootte) toegepast op een los, per-sleutel plafond-logboek — bewust GEEN import van `ledger.ts` zelf (dit bestand deelt geen bestandsformaat met de claims-ledger, zodat een toekomstige wijziging aan de een de ander nooit stilletjes raakt). `createSpendCapStore()` kiest de implementatie op basis van de env-var; onveranderd (`InMemorySpendCapStore`) is de standaard.
+2. **Afschrijvings-corroboratie** (nieuw bestand `src/settlement-corroboration.ts`, env-vars `CAPACITY_ATTEST_RPC_URL`/`CAPACITY_ATTEST_SETTLEMENT_ASSET`). Een ZACHTE, niet-blokkerende on-chain tegencontrole via het al bestaande `eip3009-authorizer-from-tx.ts`, nooit een nieuwe, eigen chain-leeslaag: beide betaalde hooks (`record_delivery`, `publish_reputation_feedback`) vuren hem `void` af, nooit `await`, zodat een trage of hangende RPC de echte actie nooit vertraagt — zie `settlement-corroboration.bench.ts` voor de gemeten "geen extra latency"-proef.
+3. **`npx capacity-attest-fiscal-check`** (nieuw bestand `src/fiscal-check-bin.ts`). `validateFiscalControls()` documenteerde zichzelf al als "voor een vreemde, niet alleen voor ons", maar tot nu had een vreemde dit hele package moeten installeren om het aan te roepen. Hergebruikt `fetchJsonBounded` (`http-source.ts`) voor de haal-stap, met expliciete `guardedFetch`-doorgave (een rode-teaming-vondst, 13 nov 2026: de kale `fetchJsonBounded` checkt zelf GEEN uitgaand adres — elke aanroeper moet dat zelf doen).
+
+**Zes gaten gevonden door een completeness-critic review, ná de eerste bouwronde, vóór deze samen gemerged werden (13 nov 2026):**
+- **`npm test` faalde niet-deterministisch** (één test in `fiscal-controls.test.ts` liep vast op vitest's standaard 5000ms-tijdslimiet, twee keer onafhankelijk gereproduceerd): elk van de vier testbestanden die `vi.resetModules()` + een verse `await import("./http-server.js")` doen werd dit keer meetbaar duurder, omdat `http-server.ts`'s eigen importboom twee zwaardere ketens erbij kreeg. Geen logicafout in de nieuwe code — een tijdsmarge-probleem. Gerepareerd met een nieuw `vitest.config.ts` (`testTimeout: 20_000`, vier keer de gemeten losse-import-kost), bewaakt door `src/vitest-config.test.ts` zodat een toekomstige verwijdering ervan zelf een falende test geeft.
+- **`buildFiscalControls()` loog over een actieve durable modus.** Met `CAPACITY_ATTEST_SPEND_CAP_DURABLE=1` werkelijk aan, bleef het gepubliceerde document kaal "in-memory"/"server-instance" rapporteren — precies de klasse onwaarachtige, zelf-gerapporteerde fiscale claim die deze hele functie moet voorkomen (en die D-022's eigen YE-YI7-aanleiding was). `SpendCapStore` kreeg een nieuwe, synchrone `describePersistence()`-methode (geen I/O, geen eigen env-var-lezing); `buildFiscalControls()` leest nu DAARVANDAAN, nooit meer een tweede, met de hand getypte kopie. `scope: "all-instances"`/`persistence: "durable"` gebruiken dezelfde twee enums die `fiscal-controls.ts`'s eigen schema al voorzag (D-022's commentaar noemde "een toekomstige duurzame, gedeelde-opslag-implementatie" met naam) — geen nieuw vocabulaire.
+- **Nul release-documentatie** voor alle drie nieuwe bestanden: dit hoofdstuk, plus `CHANGELOG.md`'s 0.13.0-regel en de versiebump zelf.
+- **README.md noemde geen van de drie nieuwe stukken**, en de bestaande fiscal-controls-sectie zei nog kaal "in-memory" zonder het durable-alternatief te noemen. Aangevuld (zie README.md, "Fiscal controls, before you ever pay" en de twee nieuwe subsecties erna).
+- **De `corroborateSettlement`-koppeling in beide `onAfterSettlement`-hooks had NUL testdekking**, zelfs niet dit bestand se eigen, al gevestigde bron-tekst-patroon (indexOf-gebaseerde controle dat een aanroep vóór de echte actie staat) dat al elk ander stuk hook-gedrag hier bewaakt. Toegevoegd aan `http-server-record-delivery.test.ts` en `http-server-publish-feedback.test.ts`: bewijst dat de aanroep bestaat, `void`-afgevuurd is (nooit `await`), vóór de echte actie staat, en `corroborationConfig` meekrijgt — elke mutatie (een `await` ervoor, de aanroep weghalen) laat de nieuwe test rood zien vóór de reparatie, groen erna (handmatig geverifieerd op allebei de hooks).
+- **De durable plafond-modus werd nooit via `http-server.ts`'s eigen export-laag beproefd** — alleen via `spend-cap-store.ts`'s eigen eenheidstests en de losse bench, in isolatie. Twee nieuwe tests in `http-server-publish-feedback.test.ts` (eigen, tijdelijke map per test, zelfde patroon als `spend-cap-store.test.ts`) bewijzen het echte reserveer/bevestig/piek-pad door `reserveFeedbackPublishSlot`/`consumeFeedbackPublishSlot`/`canPublishFeedbackNow` zelf, lezen de geschreven JSONL-regels rechtstreeks terug (onafhankelijk van `spend-cap-store.ts`'s eigen code), en bewijzen dat `buildFiscalControls()` voor DEZE bedrading ook het echte durable-antwoord teruggeeft.
+
+**Bewust NIET gerepareerd in deze ronde, met reden:**
+- **`README.nl.md`** heeft al vóór deze ronde geen enkele sectie over `http-server.ts` (geen `record_delivery`-over-HTTP, geen `publish_reputation_feedback`-over-HTTP, geen `.well-known`-route) — bestaande drift, niet iets wat deze ronde zelf kapotmaakte. Genoteerd zodat het niet stilletjes vergeten raakt, niet in deze ronde opgelost.
+- **Zichtbaarheid van een corroboratie-uitkomst voor een buitenstaander.** `settlement-corroboration.ts`'s eigen koptekst somt al bewust-niet-gebouwde dingen op in dezelfde stijl; een `matched`/`mismatched`-uitkomst voor de BUITENKANT (in `charge_evidence`, of een los endpoint) zou precies het soort externe lezer helpen dat dit bestand zegt te willen geruststellen, maar is vandaag alleen server-side gelogd. Waard om hardop te noemen (nu, hier), niet vandaag een blootstellingsmechanisme voor te bouwen.
+
+**Getest:** 8 nieuwe/uitgebreide tests over vier bestanden (`vitest.config.ts` + `src/vitest-config.test.ts`, `fiscal-controls.test.ts`, `http-server-record-delivery.test.ts`, `http-server-publish-feedback.test.ts` x2). Elke niet-triviale reparatie bewezen met een geplante fout (een hardgecodeerde waarde terugzetten, een `void` naar `await` muteren, de hele `vitest.config.ts` tijdelijk weghalen): rood vóór de reparatie, groen erna, handmatig gecontroleerd op elk van de vier. Volledige suite na deze ronde: zie `CHANGELOG.md` 0.13.0 voor het exacte, op dat moment gemeten aantal.
+
+## D-024: een adversariële rode-teaming-ronde tegen de drie D-023-stukken zelf (spend-cap-key-lengte, BigInt-DoS, SSRF in fiscal-check, server.json-registrymetadata) — zes echte gaten gerepareerd, vijf expliciet niet, allemaal op dezelfde dag (13 nov 2026)
+
+D-023 hierboven toetste of de drie nieuwe stukken VOLLEDIG en GETEST waren (documentatie, versiebump, testdekking van de eigen bedrading). Deze ronde toetst iets anders: heeft de nieuwe CODE ZELF een uitbuitbaar gat, gevonden door er bewust vijandig tegenaan te lezen en te draaien, niet door te checken of er een test bij staat. Aanleiding, letterlijk: drie gloednieuwe bestanden in dezelfde werkmap tegelijk, en elk van de drie is precies de vorm van een bekende bugklasse — een sleutel die in een bestandsnaam terechtkomt (pad-/resource-uitputting), een CLI die een door de aanroeper opgegeven URL opvraagt (SSRF), en een veld van een x402-facilitator (niet van ons eigen pakket) dat een parser voedt (computationele DoS). Volledige, geciteerde tabel met alle bevindingen uit D-022, D-023 én deze ronde samen: `docs/SECURITY-REVIEW-2026-11-13.md`.
+
+**`spend-cap-store.ts` (één echt gat, vier bevestigd correct):**
+- **Geen lengtegrens op een spend-cap-sleutel (gerepareerd).** `SPEND_CAP_KEY_PATTERN` had geen bovengrens; een sleutel van een paar honderd tekens haalt de regex probleemloos en crasht pas diep in `openSync()`/`statSync()` zodra `"spend-cap-" + key + ".jsonl"` de bestandsnaamlimiet van dit bestandssysteem overschrijdt — gemeten op dit Windows-host als `ENOENT` rond 255-260 tekens en `ENAMETOOLONG` daarboven (getest tot 2.000.000 tekens). Die rauwe fout had geen `invalid_spend_cap_key`-voorvoegsel (breekt de ene foutvorm die de eigen tests verwachten) en lekte het volledige, opgeloste pad, dus `CAPACITY_ATTEST_DATA_DIR`'s absolute locatie. `SPEND_CAP_KEY_MAX_LENGTH = 128` toegevoegd, plus een afgekapte preview (80 tekens) in de foutmelding zodat een te lange sleutel zichzelf niet alsnog door logs kan uitsmeren. Geplant-fout-bewijs: een 10.000-tekens-sleutel-test rood vóór de fix (met de rauwe, pad-lekkende fout), groen erna. 31/31 in `spend-cap-store.test.ts`.
+- **Vier dingen gecontroleerd, niets gevonden:** gescheurde/niet-op-newline-eindigende staart wordt al afgevangen (zelfde logica als `ledger.ts`); een reservering die precies op de TTL-grens bevestigd wordt valt consistent in het gedocumenteerde "laat-nog-steeds-vastgelegd"-pad in beide implementaties; 20 ronden van 10 gelijktijdige `reserve()`-aanroepen tegen een plafond van 3 overschreden het plafond geen enkele keer in geen van beide implementaties; en `CAPACITY_ATTEST_SPEND_CAP_DURABLE` op `"TRUE"`/`"1 "`/`"yes"`/`""`/etc. kiest altijd bewust de veilige standaard (`InMemorySpendCapStore`), alleen de exacte strings `"true"`/`"1"` kiezen de durable variant — precies de strenge, bedoelde ontwerp, geen los-matchende bug.
+
+**`settlement-corroboration.ts` (één echt gat, hoog risico; wiring nu bewezen; vijf dingen bevestigd correct; één bekend, niet hier gerepareerd gat):**
+- **`BigInt(chainMatch[1])` op een onbegrensde cijferreeks uit `settlement.network`, SYNCHROON, vóór de eerste `await` (gerepareerd, hoge severity).** Gemeten: een cijferreeks van louter "9"-en kost `BigInt()` ~140ms bij 1.000.000 cijfers, ~930ms bij 5.000.000, ~1,7s bij 10.000.000 (de regex zelf kost onder de 10ms, ook bij 10M — `BigInt`'s eigen decimaal-naar-binair-omzetting is het dure deel). `settlement.network` komt van de x402-facilitator, nu al overal elders in deze functie als onvertrouwd behandeld — een gecompromitteerde of gewoon kapotte facilitator bepaalt dit veld rechtstreeks. Omdat dit vóór de eerste `await` gebeurt, beschermt `http-server.ts`'s `void corroborateSettlement(...)`-patroon hier NIET tegen: de kosten landen binnen dezelfde synchrone beurt, en bevriezen Node se volledige, enkeldradige event loop — élk gelijktijdig bediend verzoek, niet alleen het veroorzakende — voor de volle duur. Rechtstreeks in strijd met dit bestand se eigen "geen extra latency"-belofte. `MAX_CHAIN_ID_DIGITS = 32` toegevoegd, gecontroleerd vóór `BigInt()` ooit aangeroepen wordt. Geplant-fout-bewijs: nieuwe test gemeten op 1334ms tegen de ongepatchte code bij 10.000.000 cijfers, groen na de fix. 49/49 in het eigen testbestand.
+- **De `void`-bedrading in beide `onAfterSettlement`-hooks vertraagt de echte actie nooit, ook niet onder een hangende RPC (bevestigd, nieuwe test).** Nieuwe test mockt `resolveAuthorizerFromTransaction` om nooit te resolven, vuurt `corroborateSettlement` af via exact het echte `void`/`.then`/`.catch`-patroon, en bewijst dat een los-staande, gelijktijdig aangeroepen echte actie ruim binnen 500ms resolvet, terwijl de mock bevestigd wél bereikt is. Kanttekening, want dit vangt alleen het ASYNCHRONE deel: beschermt niet tegen de synchrone BigInt-bug hierboven, die gebeurt vóórdat er überhaupt een promise is.
+- **Vijf dingen gecontroleerd, niets gevonden:** adresvergelijking is hoofdletter-ongevoelig op BEIDE kanten zonder botsingsrisico (alleen hex-letters A-F/a-f zijn gevoelig voor casing, en geen twee verschillende adressen vouwen samen tot dezelfde kleine-letter-vorm); een halve configuratie (alleen RPC-url OF alleen asset gezet) geeft meteen `'skipped'`, zonder enige netwerkaanroep; een `mismatched`-uitkomst krijgt altijd zijn eigen, grep-bare logregel (`settlement_corroboration_mismatch`), nooit stilletjes opgeslokt; en misvormde `settlement`-objecten plus de "netwerk claimt een chain die niet bij de echte RPC past"-deelcasus worden allebei al correct geweigerd (de laatste een laag lager, in `eip3009-authorizer-from-tx.ts`, buiten de eigendomsgrens van deze ronde).
+- **Bekend, NIET hier gerepareerd: een timeout racet een RPC-promise weg, annuleert hem niet.** Zowel dit bestand als `eip3009-authorizer-from-tx.ts` gebruiken `Promise.race`; bij een timeout blijft de onderliggende, echte netwerkaanroep op de achtergrond doorlopen. Geen invloed op het antwoord-blokkeren-probleem (corroboratie wordt altijd fire-and-forgotten, en `OUTER_TIMEOUT_MS` blijft als vangnet staan), puur een resource-notitie. Niet gerepareerd, want het zit in `eip3009-authorizer-from-tx.ts`, een bestand buiten deze ronde se eigendom.
+
+**`fiscal-check-bin.ts` (vijf echte gaten, allemaal gerepareerd; één bekend, niet hier gerepareerd gat):**
+- **SSRF: de URL-tak gaf `deps.fetchImpl` (altijd `undefined` in een echte aanroep) rechtstreeks aan `fetchJsonBounded` door, die zonder eigen `fetchImpl` terugvalt op de rauwe, ongeleide globale `fetch` (kritiek, gerepareerd).** Live bevestigd, vandaag: tegen `169.254.169.254`, `10.0.0.1` en `127.0.0.1` ging een echte, ongeleide uitgaande verbinding uit (`10.0.0.1` hing tot de timeout — een echte TCP-SYN verliet de machine). Een vreemde die `npx capacity-attest-fiscal-check <aanvaller-gekozen-url>` draait — dit gereedschap se eigen gedocumenteerde use-case — zou zijn EIGEN machine die aanroep laten doen. Standaard nu `deps.fetchImpl ?? guardedFetch` (uit `tokenizen-net-guard`), nog steeds overschrijfbaar voor tests. 5 nieuwe tests; live hertest vandaag: alle drie bovenstaande doelen nu instant geweigerd met een genoemde reden, geen hang, terwijl een echte publieke host (`example.com`) nog gewoon een echte netwerkaanroep doet (een echte 404, geen weigering).
+- **Geen groottelimiet op een lokaal bestand (hoog, gerepareerd).** `readFileSync` zonder enige grens, tegenover de URL-tak se 16 MiB-limiet. Nieuwe, gedeelde `MAX_DOCUMENT_BYTES = 2 MiB`, gecontroleerd via `statSync` vóór er gelezen wordt. Grens-test (precies op de limiet geaccepteerd, één byte erboven geweigerd) plus een te-groot-bestand-test.
+- **Diep-geneste JSON drijft geheugengebruik op vóór validatie (gemiddeld, deels gerepareerd).** Gemeten: 16 MiB pure `"[[[...]]]"`-nesting crasht `JSON.parse` niet, maar drijft de RSS op tot ~635 MB — voor invoer die nooit een geldig fiscal-controls-document kan zijn (echte documenten nesten nooit dieper dan 4). Gerepareerd voor het LOKALE-BESTAND-pad: een goedkope, tekst-niveau haakjes-dieptescan (`MAX_JSON_NESTING_DEPTH = 64`) vóór `JSON.parse` draait. NIET gerepareerd voor het URL-pad (dat erft dit van `http-source.ts`'s eigen `JSON.parse`, alleen indirect verkleind door de nieuwe 2 MiB-cap, niet weggenomen) — buiten de eigendomsgrens van dit bestand, gemeld voor wie `http-source.ts` beheert.
+- **Niet-UTF-8-bytes werden stilletjes vervangen en als "geldig" gerapporteerd (gemiddeld, gerepareerd).** `readFileSync(..., "utf-8")`'s lossy modus vervangt elke ongeldige byte door `U+FFFD` en gaat door — een bestand met kapotte bytes in een JSON-string-waarde zou alsnog "geldig" gerapporteerd zijn, met verhaspelde inhoud, zonder waarschuwing. Strikte `TextDecoder("utf-8", {fatal: true})`. Live hertest vandaag: twee rauwe `0xFF 0xFE`-bytes worden geweigerd met de exacte, genoemde foutmelding, geen stille "geldig".
+- **`process.exit()` direct na `console.log` (laag, VERDICT AANNEMELIJK, niet zelf gereproduceerd, toch preventief gerepareerd).** Node se eigen documentatie zegt dat een pipe-schrijfactie altijd asynchroon is op Windows; een directe reproductiepoging (36 MB / ~300.000 regels door een kunstmatig trage consument) liet geen zichtbare afkapping zien binnen de geprobeerde tijd. Toch gerepareerd, want gratis en strikt veiliger: `process.exitCode = code` in plaats van een gedwongen `process.exit()`.
+- **Bekend, NIET hier gerepareerd: `net-guard`'s eigen bouwtijd-bewaker (`no-raw-egress.test.ts`) scant dit bestand niet.** Die bewaker scant alleen een vaste pakketlijst plus `capacity-attest`'s eigen `http-server*.ts`-bestanden, niet `fiscal-check-bin.ts` — ook al beschrijft dit bestand se eigen koptekst precies het dreigingsmodel waar die bewaker voor bestaat. Niet hier gerepareerd (gedeelde, cross-package-infrastructuur buiten deze ronde se eigendom), gemeld zodat het niet stilletjes bij één aanroepplek blijft steken zonder automatische achtervang.
+
+**`server.json` (één echt gat, hoog; drie dingen bevestigd correct; één testdekkingsgat gemeld):**
+- **`_meta.fiscalControls.about` beschreef het verkeerde pakket (hoog, gerepareerd).** De tekst noemde fiscale-veiligheidscontroles voor "this server's paid tools" in het algemeen, maar het enige hier gedeclareerde pakket (de `npx capacity-attest` stdio-binary) registreert een `record_delivery` die altijd onbetaald is en geen signer heeft. De echte spend-cap/signer-data beschrijft een APARTE binary (`capacity-attest-http`), nergens via een `remotes`-regel aan dit document gekoppeld. Tekst herschreven: juiste binary genoemd, `RECORD_DELIVERY_PAY_TO`-voorwaarde vermeld, expliciet gezegd dat er geen `remotes` gedeclareerd is. Live hervalideerd vandaag: het gewijzigde `server.json` valideert nog steeds veld-voor-veld tegen het echte, opgehaalde schema (ajv), en `scripts/verify-registry-meta-persisted.mjs` draait er nog steeds schoon tegenaan.
+- **`wellKnownPath` heeft geen bijbehorende origin in dit document** — zelfde grondoorzaak als hierboven, al opgelost door dezelfde tekstreparatie. Live gecontroleerd vandaag: `tokenizen.nl/.well-known/fiscal-controls.json` geeft een echte `200`, maar is de SPA se vangnet-pagina (`text/html`, title "tokenizen | We find the leaks..."), geen JSON — een false positive, geen echte deployment, exact zoals D-021 al stelde.
+- **Schema-validatie en elke absolute URL in het document: niets gevonden.** Live opgehaald en gecontroleerd: `$schema` zelf, `specSource` en `repository.url` geven alle drie een echte `200`.
+- **`verify-registry-meta-persisted.mjs`'s eigen faalpaden (404, een onbereikbare registry) werken correct** — live gedraaid, vandaag, tegen de echte registry (404 "Server not found" voor de nog niet gepubliceerde 0.13.0, netjes afgehandeld, geen crash). Testdekkingsgat gemeld, niet hier gerepareerd: dit script heeft geen eigen, CI-draaiende test tegen een gemockte `fetch` voor deze faalpaden, alleen handmatige/live verificatie.
+
+**Bewust NIET gerepareerd in deze ronde, nogmaals expliciet (sommige al genoemd in D-023, hier herhaald zodat ze niet verdwijnen):** `README.nl.md`'s ontbrekende hele `http-server.ts`-sectie (ongewijzigd sinds D-023); het URL-pad se geneste-JSON-gat in `fiscal-check-bin.ts` (hierboven); `net-guard`'s eigen bouwtijd-bewaker die dit bestand niet scant (hierboven); de weg-racete, niet-geannuleerde RPC-promise bij een timeout (hierboven); `verify-registry-meta-persisted.mjs`'s ontbrekende eigen regressietests (hierboven).
+
+**Getest:** 906/906 in de volledige suite, `npm run typecheck` en `npm run build` allebei schoon — alle drie vandaag, opnieuw en volledig gedraaid, niet alleen aangenomen op basis van een eerder gemeten getal. De echte, gebouwde `capacity-attest-http`-server is vandaag ook ECHT gestart (met en zonder `CAPACITY_ATTEST_SPEND_CAP_DURABLE=1`) en de echte, gebouwde `capacity-attest-fiscal-check`-CLI is daar live tegenaan gedraaid, om findings 13 en 20-26 in `docs/SECURITY-REVIEW-2026-11-13.md` te verifiëren tegen draaiende code, niet alleen tegen gelezen code.
+
+Volledige, samenhangende tabel met ALLE bevindingen uit D-022, D-023 én deze D-024-ronde samen, in één bewijsbaar overzicht: `docs/SECURITY-REVIEW-2026-11-13.md`. Versiebump voor dit geheel: `CHANGELOG.md` 0.14.0 (0.13.0 → 0.14.0; zie dat bestand voor waarom een minor-bump en niet meer, pre-1.0).

@@ -15,15 +15,41 @@ import { FiscalControlSchema, validateFiscalControls } from "./fiscal-controls.j
 // by someone comparing our document against the actual GitHub thread by hand.
 const PROPOSAL_FIELDS = ["paid_action_surface", "approval_source", "spend_cap", "charge_evidence", "audit_trail", "revocation_path", "next_safe_threshold"];
 // Our own 1:1 (or split) mapping — see fiscal-controls.ts's header comment for why
-// approval_source maps to human_approval_threshold and spend_cap splits into two.
+// approval_source maps to human_approval_threshold and why spend_cap, as of v2
+// (13 nov 2026), is a structured object rather than a bare number.
 const OUR_FIELD_FOR = {
   paid_action_surface: "paid_action_surface",
   approval_source: "human_approval_threshold",
-  spend_cap: "spend_cap_per_hour",
+  spend_cap: "spend_cap",
   charge_evidence: "charge_evidence",
   audit_trail: "audit_trail",
   revocation_path: "revocation_path",
   next_safe_threshold: "next_safe_threshold",
+};
+
+const WELL_FORMED_SPEND_CAP = {
+  unit: "paid-attempts" as const,
+  max_per_window: 20,
+  window_seconds: 3600,
+  scope: "server-instance" as const,
+  persistence: "in-memory" as const,
+  reset_on_restart: true,
+  reservation_before_settlement: true,
+  pending_reservation_ttl_seconds: 600,
+};
+
+const WELL_FORMED_CONTROL = {
+  tool: "publish_reputation_feedback",
+  paid: true as const,
+  paid_action_surface: "broadcasts one on-chain transaction",
+  signer_isolation: true,
+  signer_custody: "a private key in an in-process wallet, isolated from caller funds and influence",
+  spend_cap: WELL_FORMED_SPEND_CAP,
+  human_approval_threshold: null,
+  charge_evidence: "the on-chain transaction itself",
+  audit_trail: "the registry contract on-chain",
+  next_safe_threshold: null,
+  revocation_path: "rotate the key and redeploy",
 };
 
 describe("coverage against the 7 fields modelcontextprotocol/registry#1300 actually proposed", () => {
@@ -38,55 +64,95 @@ describe("coverage against the 7 fields modelcontextprotocol/registry#1300 actua
 });
 
 describe("validateFiscalControls", () => {
-  it("accepts a well-formed document", () => {
-    const result = validateFiscalControls({
-      version: "1",
-      controls: [
-        {
-          tool: "publish_reputation_feedback",
-          paid: true,
-          paid_action_surface: "broadcasts one on-chain transaction",
-          signer_isolation: true,
-          spend_cap_per_hour: 20,
-          spend_cap_scope: "global",
-          reservation_before_settlement: true,
-          human_approval_threshold: null,
-          charge_evidence: "the on-chain transaction itself",
-          audit_trail: "the registry contract on-chain",
-          next_safe_threshold: null,
-          revocation_path: "rotate the key and redeploy",
-        },
-      ],
-    });
+  it("accepts a well-formed v2 document", () => {
+    const result = validateFiscalControls({ version: "2", controls: [WELL_FORMED_CONTROL] });
     expect(result.valid, JSON.stringify((result as { errors?: string[] }).errors)).toBe(true);
+  });
+
+  it("rejects a v1 document — the spend_cap shape changed, so a stale document must fail loudly, not be silently misread", () => {
+    const v1Shaped = { ...WELL_FORMED_CONTROL, spend_cap_per_hour: 20, spend_cap_scope: "global", reservation_before_settlement: true };
+    const { spend_cap, ...withoutV2Cap } = v1Shaped as typeof v1Shaped & { spend_cap?: unknown };
+    const result = validateFiscalControls({ version: "1", controls: [withoutV2Cap] });
+    expect(result.valid).toBe(false);
+    expect(result.errors?.join(" ")).toMatch(/version/);
   });
 
   it("rejects a document missing a required field, and says which one", () => {
     const result = validateFiscalControls({
-      version: "1",
+      version: "2",
       controls: [{ tool: "x", paid: true, signer_isolation: true }],
     });
     expect(result.valid).toBe(false);
-    expect(result.errors?.join(" ")).toMatch(/spend_cap_per_hour/);
+    expect(result.errors?.join(" ")).toMatch(/spend_cap/);
   });
 
   it("rejects paid: false — this schema only describes tools that actually move money", () => {
     const result = validateFiscalControls({
-      version: "1",
+      version: "2",
       controls: [
         {
           tool: "x",
           paid: false,
           signer_isolation: false,
-          spend_cap_per_hour: null,
-          spend_cap_scope: null,
-          reservation_before_settlement: null,
+          signer_custody: null,
+          spend_cap: null,
           human_approval_threshold: null,
+          charge_evidence: null,
+          audit_trail: null,
+          next_safe_threshold: null,
+          paid_action_surface: "x",
           revocation_path: "n/a",
         },
       ],
     });
     expect(result.valid).toBe(false);
+  });
+
+  it("rejects a spend_cap with no unit, scope or persistence stated — these are exactly the fields a client must not be left to assume (unit and the general scope/persistence category raised by YE-YI7's own review; the specific multi-instance framing came from a second, independent read the same evening, 13 nov 2026)", () => {
+    const result = validateFiscalControls({
+      version: "2",
+      controls: [{ ...WELL_FORMED_CONTROL, spend_cap: { max_per_window: 20, window_seconds: 3600 } }],
+    });
+    expect(result.valid).toBe(false);
+    const joined = result.errors?.join(" ") ?? "";
+    expect(joined).toMatch(/spend_cap\.unit/);
+    expect(joined).toMatch(/spend_cap\.scope/);
+    expect(joined).toMatch(/spend_cap\.persistence/);
+  });
+
+  it("rejects signer_isolation: true with signer_custody: null — a bare true invites reading HSM/TEE-grade isolation into an unproven claim (found 13 nov 2026)", () => {
+    const result = validateFiscalControls({ version: "2", controls: [{ ...WELL_FORMED_CONTROL, signer_custody: null }] });
+    expect(result.valid).toBe(false);
+    expect(result.errors?.join(" ")).toMatch(/signer_custody/);
+  });
+
+  it("rejects signer_custody: \"\" (or whitespace-only) just like null — an empty string gives zero basis for the claim too (found by muraqib-al-mustamil's adversarial review, 13 nov 2026)", () => {
+    for (const empty of ["", "   ", "\t\n"]) {
+      const result = validateFiscalControls({ version: "2", controls: [{ ...WELL_FORMED_CONTROL, signer_custody: empty }] });
+      expect(result.valid, `signer_custody=${JSON.stringify(empty)} must be rejected`).toBe(false);
+      expect(result.errors?.join(" ")).toMatch(/signer_custody/);
+    }
+  });
+
+  it("never throws, even when the candidate is a hostile object whose properties throw on read — the whole point of this function is to validate UNTRUSTED input, including its shape (found 13 nov 2026)", () => {
+    const hostile = {
+      version: "2",
+      get controls(): never {
+        throw new Error("gotcha");
+      },
+    };
+    expect(() => validateFiscalControls(hostile)).not.toThrow();
+    const result = validateFiscalControls(hostile);
+    expect(result.valid).toBe(false);
+    expect(result.errors?.join(" ")).toMatch(/gotcha/);
+  });
+
+  it("accepts signer_isolation: null with signer_custody: null — nothing to isolate means nothing to describe", () => {
+    const result = validateFiscalControls({
+      version: "2",
+      controls: [{ ...WELL_FORMED_CONTROL, signer_isolation: null, signer_custody: null, spend_cap: null }],
+    });
+    expect(result.valid, JSON.stringify((result as { errors?: string[] }).errors)).toBe(true);
   });
 });
 
@@ -97,10 +163,10 @@ describe("buildFiscalControls: derived from the real gates, not a second hand-ty
     delete process.env.PUBLISH_FEEDBACK_PAY_TO;
     delete process.env.RECORD_DELIVERY_PAY_TO;
     const { buildFiscalControls } = await import("./http-server.js");
-    expect(buildFiscalControls()).toEqual({ version: "1", controls: [] });
+    expect(buildFiscalControls()).toEqual({ version: "2", controls: [] });
   });
 
-  it("reflects the real PUBLISH_FEEDBACK_MAX_PER_HOUR value live — not a hardcoded number that could silently drift from the real cap", async () => {
+  it("reflects the real PUBLISH_FEEDBACK_MAX_PER_HOUR value live, inside the structured spend_cap, as paid-attempts not currency — not a hardcoded number that could silently drift from the real cap", async () => {
     vi.resetModules();
     process.env.REPUTATION_PUBLISHER_PRIVATE_KEY = "0x" + "7a".repeat(32);
     process.env.PUBLISH_FEEDBACK_PAY_TO = "0x2222222222222222222222222222222222222222";
@@ -109,7 +175,12 @@ describe("buildFiscalControls: derived from the real gates, not a second hand-ty
     const { buildFiscalControls } = await import("./http-server.js");
     const doc = buildFiscalControls();
     const entry = doc.controls.find((c) => c.tool === "publish_reputation_feedback");
-    expect(entry?.spend_cap_per_hour).toBe(7);
+    expect(entry?.spend_cap?.unit).toBe("paid-attempts");
+    expect(entry?.spend_cap?.max_per_window).toBe(7);
+    expect(entry?.spend_cap?.scope).toBe("server-instance");
+    expect(entry?.spend_cap?.persistence).toBe("in-memory");
+    expect(entry?.spend_cap?.reset_on_restart).toBe(true);
+    expect(entry?.signer_custody, "signer_isolation: true must always carry a non-null custody explanation").toBeTruthy();
     expect(validateFiscalControls(doc).valid, JSON.stringify(doc)).toBe(true);
 
     delete process.env.REPUTATION_PUBLISHER_PRIVATE_KEY;
@@ -117,7 +188,26 @@ describe("buildFiscalControls: derived from the real gates, not a second hand-ty
     delete process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR;
   });
 
-  it("record_delivery, when active, truthfully claims NO server-held signer at all (null, not false) — it only writes a local file", async () => {
+  it("reflects CAPACITY_ATTEST_SPEND_CAP_DURABLE=1 truthfully (durable/all-instances/reset_on_restart:false), not the in-memory defaults — found 13 nov 2026, a completeness-critic review caught buildFiscalControls() reporting a hardcoded in-memory triple even while a real DurableSpendCapStore was active underneath it", async () => {
+    vi.resetModules();
+    process.env.REPUTATION_PUBLISHER_PRIVATE_KEY = "0x" + "7a".repeat(32);
+    process.env.PUBLISH_FEEDBACK_PAY_TO = "0x2222222222222222222222222222222222222222";
+    process.env.CAPACITY_ATTEST_SPEND_CAP_DURABLE = "1";
+    delete process.env.RECORD_DELIVERY_PAY_TO;
+    const { buildFiscalControls } = await import("./http-server.js");
+    const doc = buildFiscalControls();
+    const entry = doc.controls.find((c) => c.tool === "publish_reputation_feedback");
+    expect(entry?.spend_cap?.scope).toBe("all-instances");
+    expect(entry?.spend_cap?.persistence).toBe("durable");
+    expect(entry?.spend_cap?.reset_on_restart).toBe(false);
+    expect(validateFiscalControls(doc).valid, JSON.stringify(doc)).toBe(true);
+
+    delete process.env.REPUTATION_PUBLISHER_PRIVATE_KEY;
+    delete process.env.PUBLISH_FEEDBACK_PAY_TO;
+    delete process.env.CAPACITY_ATTEST_SPEND_CAP_DURABLE;
+  });
+
+  it("record_delivery, when active, truthfully claims NO server-held signer at all (null, not false) and no spend cap — it only writes a local file", async () => {
     // null vs. false distinguishes "nothing to isolate" from "a signer exists but
     // isn't isolated" — found by muraqib-al-khasm's review, 12 nov 2026: a plain
     // false would have been unable to tell those two very different risk shapes apart.
@@ -129,7 +219,8 @@ describe("buildFiscalControls: derived from the real gates, not a second hand-ty
     const doc = buildFiscalControls();
     const entry = doc.controls.find((c) => c.tool === "record_delivery");
     expect(entry?.signer_isolation).toBeNull();
-    expect(entry?.spend_cap_per_hour).toBeNull();
+    expect(entry?.signer_custody).toBeNull();
+    expect(entry?.spend_cap).toBeNull();
     expect(validateFiscalControls(doc).valid, JSON.stringify(doc)).toBe(true);
 
     delete process.env.RECORD_DELIVERY_PAY_TO;

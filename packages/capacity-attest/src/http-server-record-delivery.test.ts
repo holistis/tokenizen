@@ -260,4 +260,74 @@ describe("http-server: record_delivery registered when RECORD_DELIVERY_PAY_TO is
       expect(handlerBody, "the handler must NOT itself call appendClaim").not.toContain("appendClaim(");
     },
   );
+
+  it(
+    "onAfterSettlement captures the incoming fee's own settlement reference before the ledger write (found 13 nov 2026, YE-YI7's review of fiscal-controls.json)",
+    async () => {
+      // Same reasoning as publish_reputation_feedback's attemptId logging: settlement.transaction
+      // is the facilitator's real settlement reference for THIS payment, handed to the hook by
+      // @x402/mcp but never read before this fix — charge_evidence had nothing binding the
+      // incoming fee to this specific write.
+      const { readFileSync } = await import("node:fs");
+      const { fileURLToPath } = await import("node:url");
+      const source = readFileSync(fileURLToPath(new URL("./http-server.ts", import.meta.url)), "utf-8");
+
+      const hooksStart = source.indexOf("onAfterSettlement:");
+      const hooksEnd = source.indexOf("},", hooksStart);
+      const hookBody = source.slice(hooksStart, hooksEnd);
+
+      expect(hookBody, "the hook must destructure settlement, not just arguments").toContain("settlement }");
+      const settledLogAt = hookBody.indexOf('logEvent("record_delivery_settled"');
+      const writeAt = hookBody.indexOf("await recordDelivery(");
+      expect(settledLogAt, "a settlement-captured log line must exist").toBeGreaterThan(-1);
+      expect(writeAt, "the real ledger write must exist").toBeGreaterThan(-1);
+      expect(settledLogAt, "settlement must be logged BEFORE the write").toBeLessThan(writeAt);
+      const settledBlock = hookBody.slice(settledLogAt, hookBody.indexOf("});", settledLogAt));
+      expect(settledBlock).toContain("settlement.transaction");
+    },
+  );
+
+  it(
+    "onAfterSettlement fires corroborateSettlement NON-blockingly (void, never awaited) before the real ledger write, with corroborationConfig — found 13 nov 2026, a completeness-critic review of this round's settlement-corroboration.ts wiring had zero test coverage of any kind",
+    async () => {
+      // Same source-text technique as the test above, for the same reason: forcing a real
+      // corroborateSettlement() call through a live RPC here would need a fake chain deep enough
+      // to be brittle, and settlement-corroboration.bench.ts already measures the "adds no
+      // latency" property directly. What a regression here could silently do instead — delete the
+      // call, pass the wrong config object, or accidentally `await` it before the real ledger
+      // write (defeating settlement-corroboration.ts's own "never gates the real action" design)
+      // — is exactly what this test is for.
+      const { readFileSync } = await import("node:fs");
+      const { fileURLToPath } = await import("node:url");
+      const source = readFileSync(fileURLToPath(new URL("./http-server.ts", import.meta.url)), "utf-8");
+
+      const hooksStart = source.indexOf("onAfterSettlement:");
+      const hooksEnd = source.indexOf("},", hooksStart);
+      const hookBody = source.slice(hooksStart, hooksEnd);
+
+      const corroborateAt = hookBody.indexOf("corroborateSettlement(");
+      const writeAt = hookBody.indexOf("await recordDelivery(");
+      expect(corroborateAt, "corroborateSettlement must be called in this hook").toBeGreaterThan(-1);
+      expect(writeAt, "the real ledger write must exist").toBeGreaterThan(-1);
+      expect(corroborateAt, "corroboration must be fired BEFORE the real ledger write").toBeLessThan(writeAt);
+
+      // The call site is "void corroborateSettlement(...)" — never "await corroborateSettlement(...)".
+      // A bare substring check for "await corroborateSettlement" existing ANYWHERE in the hook
+      // would miss an `await` added right at this call site, so this checks the few characters
+      // immediately before the call itself.
+      const beforeCall = hookBody.slice(Math.max(0, corroborateAt - 10), corroborateAt);
+      expect(beforeCall, "corroborateSettlement must be void-fired, never awaited").not.toMatch(/await\s*$/);
+      expect(beforeCall, "corroborateSettlement must be void-fired, never awaited").toMatch(/void\s*$/);
+
+      const corroborateCallEnd = hookBody.indexOf(")", corroborateAt);
+      const corroborateCallArgs = hookBody.slice(corroborateAt, corroborateCallEnd);
+      expect(corroborateCallArgs, "must pass this file's real corroborationConfig, not a hand-rolled or default one").toContain("corroborationConfig");
+
+      const betweenCorroborateAndWrite = hookBody.slice(corroborateAt, writeAt);
+      expect(
+        betweenCorroborateAndWrite,
+        "nothing between the void-fired corroboration call and the real ledger write may await it",
+      ).not.toContain("await corroborateSettlement(");
+    },
+  );
 });

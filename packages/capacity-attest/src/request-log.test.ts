@@ -76,4 +76,25 @@ describe("logEvent writes one line of JSON with the time, the kind of event and 
     expect(parsed.event).toBe("request");
     expect(Number.isNaN(Date.parse(parsed.t))).toBe(false);
   });
+
+  it(
+    "truncates a string field far longer than any real value logged today, instead of writing it unbounded — found by muraqib-al-khasm's review, 13 nov 2026 (settlement.transaction/network/payer come from the facilitator, typed as a bare string with no runtime length check anywhere in @x402)",
+    () => {
+      const huge = "x".repeat(5000);
+      const lines = captured(() => logEvent("record_delivery_settled", { settlementTx: huge }));
+      const parsed = JSON.parse(lines[0]);
+      expect(parsed.settlementTx.length).toBeLessThan(600);
+      expect(parsed.settlementTx).toContain("(truncated)");
+      expect(parsed.settlementTx.startsWith("x")).toBe(true);
+    },
+  );
+
+  it("never truncates a short, realistic field (a tx hash, a network id, a uuid)", () => {
+    const lines = captured(() =>
+      logEvent("record_delivery_settled", { settlementTx: "0x" + "a".repeat(64), settlementNetwork: "eip155:8453" }),
+    );
+    const parsed = JSON.parse(lines[0]);
+    expect(parsed.settlementTx).toBe("0x" + "a".repeat(64));
+    expect(parsed.settlementNetwork).toBe("eip155:8453");
+  });
 });

@@ -2,6 +2,51 @@
 
 Alle noemenswaardige wijzigingen aan dit package worden hier bijgehouden.
 
+## 0.14.0
+
+Geen nieuwe features; een adversariële rode-teaming-ronde tegen de drie stukken die 0.13.0 toevoegde, dezelfde dag (13 nov 2026), vóórdat ook maar iets hiervan gepubliceerd is. Zes echte gaten gevonden en gerepareerd, vijf expliciet niet (zie `DECISIONS.md` D-024 voor de volledige tabel per bestand, en `docs/SECURITY-REVIEW-2026-11-13.md` voor het samenhangende, controleerbare verslag over deze ronde PLUS de twee rondes die eraan voorafgingen, D-022 en D-023, in één tabel):
+
+- **`spend-cap-store.ts`:** een spend-cap-sleutel zonder lengtegrens kon een rauwe, pad-lekkende bestandssysteemfout veroorzaken in plaats van de eigen `invalid_spend_cap_key`-foutvorm. Nieuwe `SPEND_CAP_KEY_MAX_LENGTH = 128`.
+- **`settlement-corroboration.ts`:** een onbegrensde cijferreeks in `settlement.network` (de x402-facilitator se eigen, onvertrouwde veld) liet `BigInt()` SYNCHROON, vóór de eerste `await`, tot ~1,7 seconden kosten bij 10 miljoen cijfers — en blokkeerde daarmee de hele event loop, ook al wordt deze functie altijd `void`-afgevuurd. Nieuwe `MAX_CHAIN_ID_DIGITS = 32`, gecontroleerd vóór `BigInt()` ooit aangeroepen wordt.
+- **`fiscal-check-bin.ts`:** vijf gaten gerepareerd, waarvan de ernstigste een SSRF — de URL-tak viel terug op de rauwe, ongeleide globale `fetch` zodra geen test een eigen `fetchImpl` injecteerde (dus in élke echte aanroep), live bevestigd met een echte uitgaande verbinding naar `169.254.169.254`/`10.0.0.1`. Nu standaard `tokenizen-net-guard`'s `guardedFetch`. Plus: een groottelimiet op lokale bestanden (`MAX_DOCUMENT_BYTES = 2 MiB`), een dieptegrens tegen geneste-JSON-geheugendruk op het lokale-bestand-pad, een strikte UTF-8-decode in plaats van de stille, verhaspelende standaard, en `process.exitCode` in plaats van een gedwongen `process.exit()` direct na het wegschrijven van de output.
+- **`server.json`:** `_meta.fiscalControls.about` beschreef het verkeerde pakket (de fiscale controles gaan over de aparte `capacity-attest-http`-binary, niet over het hier gedeclareerde, altijd-onbetaalde `npx capacity-attest`-pakket). Tekst herschreven om het juiste pakket en de echte voorwaarde (`RECORD_DELIVERY_PAY_TO`) te noemen.
+
+Alle vijf reparaties live hertest tegen de echte, gebouwde code (niet alleen gelezen): de SSRF-gatst, de groottelimiet en de UTF-8-fix tegen de echte, gebouwde `capacity-attest-fiscal-check`-CLI; de `server.json`-reparatie tegen het echte, opgehaalde JSON-schema en `scripts/verify-registry-meta-persisted.mjs`; en `buildFiscalControls()`'s `describePersistence()`-koppeling (0.13.0, zie onder) opnieuw bevestigd door de echte `capacity-attest-http`-server te starten met `CAPACITY_ATTEST_SPEND_CAP_DURABLE=1` en de `.well-known`-route te curlen.
+
+Elf dingen expres gecontroleerd en NIET gewijzigd omdat er niets fout bleek: vier in `spend-cap-store.ts` (gescheurde-staart-bescherming, de reservering-op-de-TTL-grens, herstart-gedrag, de strikte `CAPACITY_ATTEST_SPEND_CAP_DURABLE`-matching), vijf in `settlement-corroboration.ts` (hoofdletter-ongevoelige adresvergelijking, halve-configuratie-afhandeling, de `mismatched`-logregel, misvormde-settlement-afwijzing, en de `void`-bedrading zelf, nu met een nieuwe test), en twee in `server.json` (schema-validatie, elke absolute URL erin).
+
+Vijf dingen bewust niet gerepareerd, elk met reden gemeld in plaats van stilzwijgend overgeslagen: `README.nl.md`'s ontbrekende `http-server.ts`-sectie (al bestaande drift); het URL-pad se geneste-JSON-gat in `fiscal-check-bin.ts` (zit in `http-source.ts`, buiten deze ronde se eigendom); `net-guard`'s eigen bouwtijd-bewaker die `fiscal-check-bin.ts` niet scant; een weg-racete, niet-geannuleerde RPC-promise bij een timeout in `eip3009-authorizer-from-tx.ts`; en `verify-registry-meta-persisted.mjs`'s ontbrekende eigen regressietests voor zijn faalpaden.
+
+Volledige suite opnieuw, volledig gedraaid: 906/906 groen, `tsc --noEmit` en `npm run build` allebei schoon.
+
+## 0.13.0
+
+Drie nieuwe, onafhankelijk schakelbare stukken, elk al expliciet genoemd in 0.12.0's eigen "bewust niet vandaag gebouwd"-lijst als volgende-ronde-werk (zie `DECISIONS.md` D-023 voor de volledige redenering):
+
+- **`CAPACITY_ATTEST_SPEND_CAP_DURABLE=1`** (nieuw bestand `src/spend-cap-store.ts`): schakelt `publish_reputation_feedback`'s uur-plafond van de standaard, enkel-proces `InMemorySpendCapStore` naar `DurableSpendCapStore` — `ledger.ts`'s eigen, al bewezen append-only-JSONL-plus-lockfile-patroon toegepast op een los, per-sleutel plafond-logboek onder `CAPACITY_ATTEST_DATA_DIR`. Zonder deze env-var verandert niets aan het bestaande, enkel-proces-gedrag. Zie `bench/spend-cap-store-concurrency.mjs` voor het gemeten resultaat onder echte proces-gelijktijdigheid.
+- **Afschrijvings-corroboratie** (nieuw bestand `src/settlement-corroboration.ts`, env-vars `CAPACITY_ATTEST_RPC_URL`/`CAPACITY_ATTEST_SETTLEMENT_ASSET`): een zachte, nooit-blokkerende on-chain tegencontrole op beide betaalde hooks, via het al bestaande `eip3009-authorizer-from-tx.ts`. Beide env-vars onbezet (de standaard) betekent: geen enkele netwerkpoging, altijd `'skipped'`. Zie `src/settlement-corroboration.bench.ts` voor de gemeten "geen extra latency"-proef.
+- **`npx capacity-attest-fiscal-check <url-of-bestand>`** (nieuw bestand `src/fiscal-check-bin.ts`): een losse CLI zodat een vreemde `validateFiscalControls()` kan aanroepen tegen ÉÉN server se `.well-known/fiscal-controls.json`, zonder dit hele package te installeren.
+
+`buildFiscalControls()`'s `spend_cap.scope`/`persistence`/`reset_on_restart` worden nu gelezen via een nieuwe, synchrone `SpendCapStore.describePersistence()`-methode, nooit meer een met de hand getypte kopie — gevonden door een completeness-critic review vóór merge: met `CAPACITY_ATTEST_SPEND_CAP_DURABLE=1` werkelijk aan, bleef het document eerder onvoorwaardelijk "in-memory"/"server-instance" claimen.
+
+Twee kleinere, bij dezelfde review gevonden gaten ook gerepareerd: `npm test` liep soms (reproduceerbaar, niet elke keer) tegen vitest's standaard 5000ms-tijdslimiet op, omdat dit package se eigen importboom dit keer zwaarder werd — nieuw `vitest.config.ts` (`testTimeout: 20_000`), bewaakt door een eigen test. En `corroborateSettlement`'s koppeling in beide `onAfterSettlement`-hooks had nul testdekking — nu bewezen `void`-afgevuurd, nooit `await`, vóór de echte actie.
+
+39 nieuwe/uitgebreide tests. Volledige suite: 906/906 groen.
+
+## 0.12.0 (BREAKING)
+Pre-1.0: geen stabiliteitsgarantie tussen minor-versies. De 0.11.0-versie van het
+fiscal-controls-document stond enkele uren live voor deze reparatie; er is geen bekende
+consument die tegen versie "1" bouwt, en geen omzettingspad wordt aangeboden — een document met
+`version: "1"` wordt vanaf nu gewoon afgewezen door `validateFiscalControls`.
+
+Fiscal-controls-document versie "1" → "2" (zie `DECISIONS.md` D-022). Aanleiding: YE-YI7's eigen test van de gepubliceerde 0.11.0 plus een tweede, onafhankelijke strategische lezing (13 nov 2026), beide vonden hetzelfde: `spend_cap_per_hour` was een kaal getal zonder eenheid, bereik of levensduur — kon gelezen worden als een geldplafond terwijl het een AANTAL betaalde pogingen per server-proces is, dat bij een herstart leeg begint. `spend_cap` is nu een gestructureerd, nullable object (`unit`, `max_per_window`, `window_seconds`, `scope`, `persistence`, `reset_on_restart`, `reservation_before_settlement`, `pending_reservation_ttl_seconds`) zodat elk van die feiten een verplicht veld is, geen impliciete aanname. Nieuw veld `signer_custody`: `signer_isolation: true` alleen nodigde uit tot het lezen van hardware-/TEE-niveau sleutelisolatie in een claim die vandaag een env-var-sleutel in een in-process signer betekent; een zod-`superRefine` dwingt nu af dat `signer_custody` verplicht (niet-null) is zodra `signer_isolation` niet null is.
+
+Een echte, los van deze schema-wijziging gevonden fout (onafhankelijk twee keer gevonden: onze eigen controleketen en een tweede, buitenstaande lezing): een reservering die langer duurt dan `FEEDBACK_RESERVATION_MS` (10 minuten) werd al verwijderd uit de levende lijst voor zijn eigen, trage afschrijving alsnog bevestigd werd — die bevestiging gebeurde dan onvoorwaardelijk, zonder dat iemand het kon zien. `reserveFeedbackPublishSlot`/`consumeFeedbackPublishSlot` geven reserveringen nu een eigen id (voor logboek-herkenbaarheid) en loggen het geval expliciet (`publish_feedback_confirmed_after_reservation_expired`) in plaats van het stil te laten gebeuren — de eerlijke, nog openstaande manier waarop het plafond in de praktijk een klein beetje overschreden kan worden.
+
+Beide betaalde tools loggen nu ook `settlement.transaction`/`network`/`payer` (de binnenkomende betaling se eigen, echte afschrijvingsreferentie van de facilitator) vóór de bijbehorende actie, en een mislukte actie NA een gelukte betaling krijgt een expliciete `payment_settled_action_failed`-foutmelding in plaats van een kale reden die niet zegt dat er al wel betaald is.
+
+30+ nieuwe/herschreven tests over vier bestanden; volledige suite 795/795 groen. Zes extra, kleinere gaten gevonden en gerepareerd door de eigen controleketen vóór merge (zie `DECISIONS.md` D-022, inclusief een echte toeschrijvingsfout aan een naam van een buitenstaander, rechtgezet).
+
 ## 0.11.0
 Nieuwe, altijd-gratis, nooit-rate-limited route `GET /.well-known/fiscal-controls.json` (zie `DECISIONS.md` D-021 voor de volledige redenering, inclusief een dekkingstabel tegen de 7 velden die modelcontextprotocol/registry#1300 letterlijk voorstelt): een statisch document dat VOOR een betaalde aanroep laat zien welke financiele veiligheidscontroles een tool heeft (geïsoleerde sleutel of niet, een plafond per uur, of dat plafond voor of na afschrijving gecontroleerd wordt, waar het bewijs van een afschrijving en een auditspoor te vinden zijn, en het intrekkingspad). Nieuw bestand `src/fiscal-controls.ts` (zod-schema + `validateFiscalControls`, zodat ook een derde partij's eigen document te checken is). Alle velden rechtstreeks afgeleid uit bestaande, al-geteste functionaliteit (`recordDeliveryPaid`/`publishFeedbackPaid`/`PUBLISH_FEEDBACK_MAX_PER_HOUR`, `get_delivery_history`, de ERC-8004 Reputation Registry), nooit een losse kopie. 13 nieuwe tests.
 
