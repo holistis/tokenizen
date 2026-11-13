@@ -65,10 +65,18 @@ const SpendCapSchema = z.object({
   // "server-instance": this one process's own in-memory count, the honest answer for
   // every capped tool in this package today -- NOT a cap shared across however many
   // instances of this server might be deployed behind a load balancer, despite v1's
-  // "global" name implying otherwise (YE-YI7, 13 nov 2026: "de huidige teller bestaat
-  // uit arrays in het geheugen van één Node.js-proces... dat is niet hetzelfde als
-  // één limiet over alle instanties"). "all-instances" is for a future durable,
-  // shared-storage implementation; "per-caller" for a future per-identity cap.
+  // "global" name implying otherwise. YE-YI7 himself raised this exact category
+  // (asking that "enforcement scope/lifetime" be made explicit, in his own words in
+  // the same GitHub comment cited above); the specific multi-instance framing below
+  // -- that the count is a plain in-memory array per Node.js process, so several
+  // instances behind a load balancer would each keep their own, separate count --
+  // came from the second, independent read the same evening (13 nov 2026), not from
+  // a YE-YI7 quote. Found by muraqib-al-khasm's review, 13 nov 2026: an earlier draft
+  // of this comment wrongly put that second reader's own words in quotation marks
+  // under YE-YI7's name -- a real attribution error to a real, named person, caught
+  // before merge, corrected here rather than only in a changelog note.
+  // "all-instances" is for a future durable, shared-storage implementation;
+  // "per-caller" for a future per-identity cap.
   scope: z.enum(["server-instance", "all-instances", "per-caller"]),
   persistence: z.enum(["in-memory", "durable"]),
   reset_on_restart: z.boolean(),
@@ -117,8 +125,13 @@ export const FiscalControlSchema = z.object({
   // schema would happily accept exactly the unproven HSM/TEE-grade implication this
   // field exists to prevent. Checked with a refinement, not a second nullable field
   // pair, so there is exactly one place this invariant can silently rot.
-  if (control.signer_isolation !== null && control.signer_custody === null) {
-    ctx.addIssue({ code: "custom", path: ["signer_custody"], message: "required (as a non-null string) whenever signer_isolation is true or false, not null" });
+  // Found by muraqib-al-mustamil's adversarial review, 13 nov 2026: the original check only
+  // tested `=== null`, so signer_custody: "" (or whitespace) slid straight through — zero basis
+  // for the claim, exactly like null, but accepted. Caught against OUR OWN document only by
+  // luck (this server always fills in a real string); a THIRD PARTY's document with an empty
+  // string would pass this validator's check right now. .trim().length === 0 catches both.
+  if (control.signer_isolation !== null && (control.signer_custody === null || control.signer_custody.trim().length === 0)) {
+    ctx.addIssue({ code: "custom", path: ["signer_custody"], message: "required (as a non-empty, non-null string) whenever signer_isolation is true or false, not null" });
   }
 });
 export type FiscalControl = z.infer<typeof FiscalControlSchema>;
@@ -137,7 +150,18 @@ export type FiscalControlsDocument = z.infer<typeof FiscalControlsDocumentSchema
  * bazaar-discovery.ts's own validateDiscoveryExtension already uses.
  */
 export function validateFiscalControls(candidate: unknown): { valid: boolean; errors?: string[] } {
-  const parsed = FiscalControlsDocumentSchema.safeParse(candidate);
-  if (parsed.success) return { valid: true };
-  return { valid: false, errors: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`) };
+  // Found by muraqib-al-mustamil's adversarial review, 13 nov 2026: `candidate` is explicitly
+  // documented as "a stranger's own document" -- untrusted input. A hostile object with a
+  // throwing getter on any property zod reads (e.g. `controls`) escapes safeParse's own
+  // try/catch-free internals and crashes the caller instead of returning {valid:false}. Not
+  // reachable through real JSON-over-HTTP (JSON.parse never produces getters), but this
+  // function's own contract is "never trust the input", so it should not trust the input's
+  // *shape* either.
+  try {
+    const parsed = FiscalControlsDocumentSchema.safeParse(candidate);
+    if (parsed.success) return { valid: true };
+    return { valid: false, errors: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`) };
+  } catch (e) {
+    return { valid: false, errors: [`candidate threw while being read: ${(e as Error).message}`] };
+  }
 }

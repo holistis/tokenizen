@@ -108,7 +108,7 @@ describe("validateFiscalControls", () => {
     expect(result.valid).toBe(false);
   });
 
-  it("rejects a spend_cap with no unit, scope or persistence stated — these are exactly the fields a client must not be left to assume (found by YE-YI7's review, 13 nov 2026)", () => {
+  it("rejects a spend_cap with no unit, scope or persistence stated — these are exactly the fields a client must not be left to assume (unit and the general scope/persistence category raised by YE-YI7's own review; the specific multi-instance framing came from a second, independent read the same evening, 13 nov 2026)", () => {
     const result = validateFiscalControls({
       version: "2",
       controls: [{ ...WELL_FORMED_CONTROL, spend_cap: { max_per_window: 20, window_seconds: 3600 } }],
@@ -124,6 +124,27 @@ describe("validateFiscalControls", () => {
     const result = validateFiscalControls({ version: "2", controls: [{ ...WELL_FORMED_CONTROL, signer_custody: null }] });
     expect(result.valid).toBe(false);
     expect(result.errors?.join(" ")).toMatch(/signer_custody/);
+  });
+
+  it("rejects signer_custody: \"\" (or whitespace-only) just like null — an empty string gives zero basis for the claim too (found by muraqib-al-mustamil's adversarial review, 13 nov 2026)", () => {
+    for (const empty of ["", "   ", "\t\n"]) {
+      const result = validateFiscalControls({ version: "2", controls: [{ ...WELL_FORMED_CONTROL, signer_custody: empty }] });
+      expect(result.valid, `signer_custody=${JSON.stringify(empty)} must be rejected`).toBe(false);
+      expect(result.errors?.join(" ")).toMatch(/signer_custody/);
+    }
+  });
+
+  it("never throws, even when the candidate is a hostile object whose properties throw on read — the whole point of this function is to validate UNTRUSTED input, including its shape (found 13 nov 2026)", () => {
+    const hostile = {
+      version: "2",
+      get controls(): never {
+        throw new Error("gotcha");
+      },
+    };
+    expect(() => validateFiscalControls(hostile)).not.toThrow();
+    const result = validateFiscalControls(hostile);
+    expect(result.valid).toBe(false);
+    expect(result.errors?.join(" ")).toMatch(/gotcha/);
   });
 
   it("accepts signer_isolation: null with signer_custody: null — nothing to isolate means nothing to describe", () => {

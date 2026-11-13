@@ -249,7 +249,12 @@ if (RECORD_DELIVERY_PAY_TO) {
         });
         const result = await recordDelivery(claimArgs);
         logEvent("record_delivery_done", { invocationId, ok: result.ok });
-        if (!result.ok) throw new Error(`payment_settled_action_failed: ${result.reason} — the fee already settled; do not retry expecting a second charge to resolve this`);
+        if (!result.ok) {
+          throw new Error(
+            `payment_settled_action_failed: ${result.reason} — the fee already settled (tx ${settlement.transaction || "unavailable"}); ` +
+              "do not retry expecting a second charge to resolve this",
+          );
+        }
       },
     },
   });
@@ -608,8 +613,19 @@ const GUARD_REFUSAL = /not publicly routable|link-local|loopback|private address
 const SAFE_NAME = /^[a-z0-9_]{1,64}$/;
 const SAFE_METHOD = /^[a-z/_]{1,64}$/;
 
+// Found by muraqib-al-khasm's adversarial review, 13 nov 2026: settlement.transaction/network/
+// payer (logged from publish-feedback.ts, record-delivery below) come from the x402 facilitator,
+// typed as a bare string with no runtime length check anywhere in @x402/mcp/@x402/core. A
+// misconfigured or future-different facilitator returning something far larger than a tx hash
+// would otherwise land unbounded in the logs. 500 chars is generous for any real value logged
+// here today (a tx hash is 66, a CAIP-2 network id under 20) while still bounding the worst case.
+const LOG_FIELD_MAX_CHARS = 500;
 export function logEvent(event: string, fields: Record<string, string | number | boolean> = {}): void {
-  console.log(JSON.stringify({ t: new Date().toISOString(), event, ...fields }));
+  const bounded: Record<string, string | number | boolean> = {};
+  for (const [key, value] of Object.entries(fields)) {
+    bounded[key] = typeof value === "string" && value.length > LOG_FIELD_MAX_CHARS ? value.slice(0, LOG_FIELD_MAX_CHARS) + "...(truncated)" : value;
+  }
+  console.log(JSON.stringify({ t: new Date().toISOString(), event, ...bounded }));
 }
 
 /** The tool name of a JSON-RPC tools/call body, or the method name of any other call. Nothing else is read from the body. */

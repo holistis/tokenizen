@@ -1634,3 +1634,35 @@ afschrijving zou moeten verwachten op te lossen.
 `http-server.ts`, `http-server-publish-feedback.test.ts`, `http-server-record-delivery.test.ts`.
 Elke nieuwe regel bewezen met een geplante weglating (de test gaat rood zonder de fix, groen
 erna). Volledige suite: 791/791 groen.
+
+**Vóór merge, door onze eigen controleketen op de PR zelf gevonden en gerepareerd (13 nov 2026),
+niet door de koning of een buitenstaander:**
+- **Een echte, publiekelijk zichtbare toeschrijvingsfout.** Een eerste versie van een
+  codecommentaar hier zette een Nederlandse zin tussen aanhalingstekens onder de naam van YE-YI7
+  — een echte, met naam genoemde buitenstaander — terwijl die zin in werkelijkheid van de tweede,
+  onafhankelijke lezing kwam (YE-YI7 schrijft uitsluitend Engels, en zei dit letterlijk nooit).
+  Gevonden door muraqib-al-khasm's eigen controle tegen de echte, opgehaalde GitHub-thread, niet
+  aangenomen. Dit is geen stijlfout: het legt een echt mens woorden in de mond. Rechtgezet in
+  `fiscal-controls.ts` en `fiscal-controls.test.ts`, met uitleg waarom en hoe het gebeurde, zodat
+  het zichtbaar blijft in plaats van stilletjes verdwenen te zijn. Precedent voor dit soort fout:
+  zie dit bestand se eigen `CORRECTIE (2026-09-07)`, hoger in deze lijst — de tweede keer dat
+  precies deze fout-klasse (een derde partij woorden toeschrijven die zij niet zei) hier gevonden
+  wordt.
+- **`signer_custody: ""` (lege string) gaf dezelfde valse "basis bewezen"-indruk als een echte
+  uitleg.** De `superRefine` controleerde alleen op `null`, niet op een lege of blanco string —
+  precies het gat dat het veld zegt te dichten. Gevonden door muraqib-al-mustamil se adversariële
+  test. Gerepareerd: `.trim().length === 0` telt nu ook als "geen basis".
+- **`validateFiscalControls()` zelf kon crashen** op een vijandig object met een gooiende getter
+  (niet bereikbaar via echte JSON-over-HTTP, wel via een los JS-object) — terwijl de hele reden
+  van bestaan van deze functie is dat ze NOOIT een niet-vertrouwde invoer mag vertrouwen, ook niet
+  qua vorm. Een `try/catch` om de echte validatie repareert dit.
+- **Onbegrensde loggbare velden.** `settlement.transaction`/`network`/`payer` komen van de
+  facilitator als kale, ongevalideerde strings. `logEvent()` kapt nu elk tekstveld af op 500
+  tekens, generiek voor alle toekomstige aanroepen, niet alleen deze twee.
+- **Inconsistente foutmelding.** `record_delivery`'s `payment_settled_action_failed`-fout noemde
+  geen transactiereferentie, `publish_reputation_feedback`'s wel. Nu gelijk.
+- **Geen compatibiliteitsvermelding bij een breking wijziging.** Toegevoegd aan `CHANGELOG.md`:
+  pre-1.0, geen stabiliteitsgarantie, 0.11.0 stond maar enkele uren live zonder bekende consument.
+
+Alle zes gevonden en gerepareerd vóórdat deze PR gemerged werd — zie PR #258 voor de volledige
+keuringsgeschiedenis (muraqib, al-khasm, al-mustamil, elk tegen de definitieve commit).
