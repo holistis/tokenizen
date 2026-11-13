@@ -218,7 +218,7 @@ describe("http-server: publish_reputation_feedback registered when both env vars
       // calls it.
       const source = readFileSync(fileURLToPath(new URL("./http-server.ts", import.meta.url)), "utf-8");
 
-      const hooksStart = source.indexOf("onAfterSettlement: async ({ arguments: rawArgs })");
+      const hooksStart = source.indexOf("onAfterSettlement: async (");
       expect(hooksStart, "publish_reputation_feedback's onAfterSettlement hook must exist").toBeGreaterThan(-1);
       const hooksEnd = source.indexOf("});\n}", hooksStart);
       const hookBody = source.slice(hooksStart, hooksEnd);
@@ -252,7 +252,7 @@ describe("http-server: publish_reputation_feedback registered when both env vars
       // CAN be proven directly from the source: the durable trace exists, is written before the
       // slow call (not after, which a crash would never reach), and both lines share one id.
       const source = readFileSync(fileURLToPath(new URL("./http-server.ts", import.meta.url)), "utf-8");
-      const hooksStart = source.indexOf("onAfterSettlement: async ({ arguments: rawArgs })");
+      const hooksStart = source.indexOf("onAfterSettlement: async (");
       const hooksEnd = source.indexOf("});\n}", hooksStart);
       const hookBody = source.slice(hooksStart, hooksEnd);
 
@@ -265,9 +265,12 @@ describe("http-server: publish_reputation_feedback registered when both env vars
       expect(attemptLogAt, "'attempting' must be logged BEFORE the slow call, not after — a crash during the call must never reach it").toBeLessThan(chainCallAt);
       expect(doneLogAt, "'done' must be logged after the call resolves").toBeGreaterThan(chainCallAt);
 
-      const attemptLine = hookBody.slice(attemptLogAt, hookBody.indexOf("\n", attemptLogAt));
+      // The attempting call now spans multiple lines (settlement fields added 13 nov 2026), so its
+      // extraction goes to the call's own closing "});", not just the next newline.
+      const attemptBlock = hookBody.slice(attemptLogAt, hookBody.indexOf("});", attemptLogAt));
       const doneLine = hookBody.slice(doneLogAt, hookBody.indexOf("\n", doneLogAt));
-      expect(attemptLine).toContain("attemptId");
+      expect(attemptBlock).toContain("attemptId");
+      expect(attemptBlock, "the attempting line must capture the incoming fee's own settlement reference, not just an internal id (found 13 nov 2026, YE-YI7's review)").toContain("settlement.transaction");
       expect(doneLine, "the done line must carry the SAME correlation id, not a fresh one").toContain("attemptId");
       expect(doneLine, "the done line must record success/failure, not just that the call returned").toContain("result.ok");
     },

@@ -232,9 +232,24 @@ if (RECORD_DELIVERY_PAY_TO) {
       // "payment took but the result failed" category every payment system
       // has somewhere, not the different, larger problem (free, unpaid
       // writes) this hook exists to close.
-      onAfterSettlement: async ({ arguments: claimArgs }) => {
+      onAfterSettlement: async ({ arguments: claimArgs, settlement }) => {
+        // Scenario found 13 nov 2026 (YE-YI7's own review of fiscal-controls.json, point 2): the
+        // incoming x402 fee's own settlement reference (settlement.transaction, straight from the
+        // facilitator's real /settle response — see @x402/mcp's settlePaymentResult, which passes
+        // the facilitator's own SettleResponse through unmodified) was never captured anywhere,
+        // even though the library hands it to this hook. Logged BEFORE the write, same reasoning
+        // as publish_reputation_feedback's attemptId logging below: a crash between settlement and
+        // the write must leave a trace that the fee genuinely cleared.
+        const invocationId = randomUUID();
+        logEvent("record_delivery_settled", {
+          invocationId,
+          settlementTx: settlement.transaction || "unavailable",
+          settlementNetwork: settlement.network || "unavailable",
+          settlementPayer: settlement.payer || "unavailable",
+        });
         const result = await recordDelivery(claimArgs);
-        if (!result.ok) throw new Error(result.reason);
+        logEvent("record_delivery_done", { invocationId, ok: result.ok });
+        if (!result.ok) throw new Error(`payment_settled_action_failed: ${result.reason} — the fee already settled; do not retry expecting a second charge to resolve this`);
       },
     },
   });
@@ -467,7 +482,7 @@ if (REPUTATION_PUBLISHER_PRIVATE_KEY && PUBLISH_FEEDBACK_PAY_TO) {
         "tool's own description for exactly what each does and does not protect against.",
     },
     hooks: {
-      onAfterSettlement: async ({ arguments: rawArgs }) => {
+      onAfterSettlement: async ({ arguments: rawArgs, settlement }) => {
         // Re-validate from the RAW arguments here, never trust the
         // pre-payment handler's earlier pass-through check — same reasoning
         // as record_delivery's own onAfterSettlement: this is the one
@@ -490,8 +505,18 @@ if (REPUTATION_PUBLISHER_PRIVATE_KEY && PUBLISH_FEEDBACK_PAY_TO) {
         // ever owed anything. attemptId correlates the two log lines below so an operator reading
         // the log after a crash can see an "attempting" with no matching "done", which a clean
         // throw/return never leaves (those always reach the second logEvent).
+        //
+        // settlementTx/settlementPayer (found 13 nov 2026, YE-YI7's review): the INCOMING fee's
+        // own settlement reference, straight from the facilitator's real /settle response — never
+        // captured here before. This is what binds "a fee was paid" to "this specific attempt",
+        // independent of whether the outgoing giveFeedback() transaction below ever succeeds.
         const attemptId = randomUUID();
-        logEvent("publish_feedback_attempting", { attemptId });
+        logEvent("publish_feedback_attempting", {
+          attemptId,
+          settlementTx: settlement.transaction || "unavailable",
+          settlementNetwork: settlement.network || "unavailable",
+          settlementPayer: settlement.payer || "unavailable",
+        });
         // The RPC is the server's own, never the caller's; identity lookups go through net-guard; the gas is capped.
         const result = await publishReputationFeedback(
           signer,
@@ -501,7 +526,12 @@ if (REPUTATION_PUBLISHER_PRIVATE_KEY && PUBLISH_FEEDBACK_PAY_TO) {
           { gasLimit: PUBLISH_FEEDBACK_GAS_LIMIT },
         );
         logEvent("publish_feedback_done", { attemptId, ok: result.ok });
-        if (!result.ok) throw new Error(result.reason);
+        if (!result.ok) {
+          throw new Error(
+            `payment_settled_action_failed: ${result.reason} — the fee already settled (tx ${settlement.transaction || "unavailable"}); ` +
+              "do not retry expecting a second charge to resolve this",
+          );
+        }
       },
     },
   });

@@ -260,4 +260,30 @@ describe("http-server: record_delivery registered when RECORD_DELIVERY_PAY_TO is
       expect(handlerBody, "the handler must NOT itself call appendClaim").not.toContain("appendClaim(");
     },
   );
+
+  it(
+    "onAfterSettlement captures the incoming fee's own settlement reference before the ledger write (found 13 nov 2026, YE-YI7's review of fiscal-controls.json)",
+    async () => {
+      // Same reasoning as publish_reputation_feedback's attemptId logging: settlement.transaction
+      // is the facilitator's real settlement reference for THIS payment, handed to the hook by
+      // @x402/mcp but never read before this fix — charge_evidence had nothing binding the
+      // incoming fee to this specific write.
+      const { readFileSync } = await import("node:fs");
+      const { fileURLToPath } = await import("node:url");
+      const source = readFileSync(fileURLToPath(new URL("./http-server.ts", import.meta.url)), "utf-8");
+
+      const hooksStart = source.indexOf("onAfterSettlement:");
+      const hooksEnd = source.indexOf("},", hooksStart);
+      const hookBody = source.slice(hooksStart, hooksEnd);
+
+      expect(hookBody, "the hook must destructure settlement, not just arguments").toContain("settlement }");
+      const settledLogAt = hookBody.indexOf('logEvent("record_delivery_settled"');
+      const writeAt = hookBody.indexOf("await recordDelivery(");
+      expect(settledLogAt, "a settlement-captured log line must exist").toBeGreaterThan(-1);
+      expect(writeAt, "the real ledger write must exist").toBeGreaterThan(-1);
+      expect(settledLogAt, "settlement must be logged BEFORE the write").toBeLessThan(writeAt);
+      const settledBlock = hookBody.slice(settledLogAt, hookBody.indexOf("});", settledLogAt));
+      expect(settledBlock).toContain("settlement.transaction");
+    },
+  );
 });
