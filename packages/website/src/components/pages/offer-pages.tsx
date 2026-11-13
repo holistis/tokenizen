@@ -457,7 +457,7 @@ export const AGENTS = {
     installs: [
       {
         name: "io.github.holistis/capacity-attest",
-        text: "Signed delivery claims for x402 capacity trades: GPU-hours, storage, API credits, bandwidth. Two tools, record_delivery and get_delivery_history, over stdio (npx capacity-attest). The HTTP variant also serves GET /.well-known/fiscal-controls.json: before you pay, see whether a tool holds an isolated signer, its spend cap, and whether that cap is checked before or after settlement.",
+        text: "Signed delivery claims for x402 capacity trades: GPU-hours, storage, API credits, bandwidth. Two tools, record_delivery and get_delivery_history, over stdio (npx capacity-attest). The HTTP variant also serves GET /.well-known/fiscal-controls.json: before you pay, see whether a tool holds an isolated signer, how many paid calls it allows per hour (a count, not a currency ceiling), and whether that cap is checked before or after settlement.",
         href: "https://www.npmjs.com/package/capacity-attest",
       },
       {
@@ -499,7 +499,7 @@ export const AGENTS = {
     installs: [
       {
         name: "io.github.holistis/capacity-attest",
-        text: "Ondertekende leveringsclaims voor x402-handel in capaciteit: GPU-uren, opslag, API-tegoed, bandbreedte. Twee hulpmiddelen, record_delivery en get_delivery_history, via stdio (npx capacity-attest). De HTTP-variant biedt ook GET /.well-known/fiscal-controls.json: voor je betaalt, zie je of een hulpmiddel een afgeschermde sleutel heeft, het plafond per uur, en of dat plafond voor of na de afschrijving gecontroleerd wordt.",
+        text: "Ondertekende leveringsclaims voor x402-handel in capaciteit: GPU-uren, opslag, API-tegoed, bandbreedte. Twee hulpmiddelen, record_delivery en get_delivery_history, via stdio (npx capacity-attest). De HTTP-variant biedt ook GET /.well-known/fiscal-controls.json: voor je betaalt, zie je of een hulpmiddel een afgeschermde sleutel heeft, hoeveel betaalde aanroepen per uur zijn toegestaan (een aantal, geen geldplafond), en of dat plafond voor of na de afschrijving gecontroleerd wordt.",
         href: "https://www.npmjs.com/package/capacity-attest",
       },
       {

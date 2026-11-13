@@ -553,11 +553,13 @@ export function buildFiscalControls(): FiscalControlsDocument {
       paid: true,
       paid_action_surface: "writes one signed delivery claim to this installation's local ledger after an x402 payment settles",
       signer_isolation: null,
-      spend_cap_per_hour: null,
-      spend_cap_scope: null,
-      reservation_before_settlement: null,
+      signer_custody: null,
+      spend_cap: null,
       human_approval_threshold: null,
-      charge_evidence: "the buyer's own signed claim (claimId, signature) — see get_delivery_history",
+      charge_evidence:
+        "the incoming fee: settlement.transaction/network/payer, captured from the facilitator's real settle response and logged as " +
+        "record_delivery_settled before the write (see DECISIONS.md D-022). The resulting action: the buyer's own signed claim " +
+        "(claimId, signature) — see get_delivery_history. These are two separate facts, not one.",
       audit_trail: "get_delivery_history and discover_delivery_history (public, re-verifiable by any installation, see discovery.ts)",
       next_safe_threshold: null,
       revocation_path:
@@ -570,18 +572,33 @@ export function buildFiscalControls(): FiscalControlsDocument {
       paid: true,
       paid_action_surface: "broadcasts one on-chain ERC-8004 giveFeedback() transaction, paid for with this server's own gas",
       signer_isolation: true,
-      spend_cap_per_hour: PUBLISH_FEEDBACK_MAX_PER_HOUR,
-      spend_cap_scope: "global",
-      reservation_before_settlement: true,
+      signer_custody:
+        "a private key read from REPUTATION_PUBLISHER_PRIVATE_KEY into an in-process ethers.Wallet — isolated from caller funds and " +
+        "caller influence (callers never supply or choose this key or the RPC it uses), NOT hardware/TEE-isolated from this process's " +
+        "own memory",
+      spend_cap: {
+        unit: "paid-attempts",
+        max_per_window: PUBLISH_FEEDBACK_MAX_PER_HOUR,
+        window_seconds: FEEDBACK_HOUR_MS / 1000,
+        scope: "server-instance",
+        persistence: "in-memory",
+        reset_on_restart: true,
+        reservation_before_settlement: true,
+        pending_reservation_ttl_seconds: FEEDBACK_RESERVATION_MS / 1000,
+      },
       human_approval_threshold: null,
-      charge_evidence: "the on-chain giveFeedback() transaction itself, plus this server's attemptId-correlated attempting/done log entries (see D-021 and the crash-safety fix above)",
+      charge_evidence:
+        "the incoming fee: settlement.transaction/network/payer, captured from the facilitator's real settle response and logged as " +
+        "publish_feedback_attempting before the chain call (see DECISIONS.md D-022). The resulting action: the on-chain giveFeedback() " +
+        "transaction itself, plus this server's attemptId-correlated attempting/done log entries (see D-021). These are two separate " +
+        "facts — a settled fee does not by itself prove the feedback transaction succeeded.",
       audit_trail: "the ERC-8004 Reputation Registry contract on-chain (public, independent of this server)",
       next_safe_threshold: null,
       revocation_path:
         "rotate REPUTATION_PUBLISHER_PRIVATE_KEY and redeploy — this signer only ever spends its own gas and never custodies caller funds",
     });
   }
-  return { version: "1", controls };
+  return { version: "2", controls };
 }
 
 // Request log (4 Nov 2026). Until then the server wrote only starts and stops, so nobody could tell afterwards whether a route had been
