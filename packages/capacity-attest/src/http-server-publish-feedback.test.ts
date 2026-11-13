@@ -88,6 +88,32 @@ async function postMcp(body: unknown): Promise<Response> {
   });
 }
 
+/**
+ * Isolates publish_reputation_feedback's own onAfterSettlement hook body from the rest of
+ * http-server.ts. Found 13 nov 2026, the hard way: two bugs that MASKED each other locally and
+ * only surfaced in CI. (1) A bare `source.indexOf("onAfterSettlement: async (")` matches
+ * record_delivery's hook FIRST (it appears earlier in the file) — anchoring on the
+ * publishFeedbackPaid module block first, then searching forward from there, is what makes this
+ * actually target the right hook. (2) The old end-boundary search, `source.indexOf("});\n}", ...)`,
+ * assumes a bare "\n" is adjacent to the preceding ";" — true on a Linux (CI) checkout, FALSE on a
+ * Windows (CRLF) checkout, where the real byte is ";\r\n}". On CRLF that search returned -1, and
+ * `.slice(start, -1)` silently captured almost the entire rest of the file instead of throwing —
+ * wide enough to ALSO contain record_delivery's real `publishReputationFeedback(` reference by
+ * accident, masking bug (1) in exactly the environment (Windows) these fixes were authored on.
+ * Both failures were silent; a loud throw on either anchor missing is deliberate so a THIRD such
+ * masking bug does not happen again.
+ */
+function publishFeedbackHookBody(source: string): string {
+  const moduleBlockStart = source.indexOf("publishFeedbackPaid = createPaymentWrapper(resourceServer, {");
+  if (moduleBlockStart === -1) throw new Error("publishFeedbackPaid's createPaymentWrapper block not found in http-server.ts");
+  const hooksStart = source.indexOf("onAfterSettlement: async (", moduleBlockStart);
+  if (hooksStart === -1) throw new Error("onAfterSettlement hook not found after the publishFeedbackPaid block");
+  const tail = source.slice(hooksStart);
+  const hooksEndMatch = /\}\);\r?\n\}/.exec(tail);
+  if (!hooksEndMatch) throw new Error("could not find the end of publish_reputation_feedback's onAfterSettlement hook body");
+  return tail.slice(0, hooksEndMatch.index);
+}
+
 const SOME_CLAIM_ARGS = {
   reputationRegistryRef: "eip155:8453:0x8004BAa17C55a88189AE136b182e5fdA19dE9b63",
   agentRegistryRef: "eip155:8453:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
@@ -217,11 +243,7 @@ describe("http-server: publish_reputation_feedback registered when both env vars
       // settlement, because that is literally the only place the source
       // calls it.
       const source = readFileSync(fileURLToPath(new URL("./http-server.ts", import.meta.url)), "utf-8");
-
-      const hooksStart = source.indexOf("onAfterSettlement: async (");
-      expect(hooksStart, "publish_reputation_feedback's onAfterSettlement hook must exist").toBeGreaterThan(-1);
-      const hooksEnd = source.indexOf("});\n}", hooksStart);
-      const hookBody = source.slice(hooksStart, hooksEnd);
+      const hookBody = publishFeedbackHookBody(source);
       expect(hookBody).toContain("publishReputationFeedback(");
       expect(hookBody).toContain("consumeFeedbackPublishSlot(");
 
@@ -252,9 +274,7 @@ describe("http-server: publish_reputation_feedback registered when both env vars
       // CAN be proven directly from the source: the durable trace exists, is written before the
       // slow call (not after, which a crash would never reach), and both lines share one id.
       const source = readFileSync(fileURLToPath(new URL("./http-server.ts", import.meta.url)), "utf-8");
-      const hooksStart = source.indexOf("onAfterSettlement: async (");
-      const hooksEnd = source.indexOf("});\n}", hooksStart);
-      const hookBody = source.slice(hooksStart, hooksEnd);
+      const hookBody = publishFeedbackHookBody(source);
 
       const attemptLogAt = hookBody.indexOf('logEvent("publish_feedback_attempting"');
       const chainCallAt = hookBody.indexOf("await publishReputationFeedback(");
