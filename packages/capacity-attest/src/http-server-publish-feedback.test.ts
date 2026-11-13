@@ -283,12 +283,12 @@ describe("http-server: the global hourly cap for publish_reputation_feedback (di
     const { canPublishFeedbackNow, reserveFeedbackPublishSlot } = await import("./http-server.js");
 
     expect(canPublishFeedbackNow()).toBe(true);
-    expect(reserveFeedbackPublishSlot()).toBe(true); // slot 1/2
+    expect(reserveFeedbackPublishSlot()).toEqual(expect.any(String)); // slot 1/2
     expect(canPublishFeedbackNow()).toBe(true);
-    expect(reserveFeedbackPublishSlot()).toBe(true); // slot 2/2
+    expect(reserveFeedbackPublishSlot()).toEqual(expect.any(String)); // slot 2/2
     expect(canPublishFeedbackNow()).toBe(false);
-    expect(reserveFeedbackPublishSlot()).toBe(false); // over cap — refused, and does not itself add a reservation
-    expect(reserveFeedbackPublishSlot()).toBe(false); // still refused, proving the previous refusal didn't sneak a slot in
+    expect(reserveFeedbackPublishSlot()).toBeNull(); // over cap — refused, and does not itself add a reservation
+    expect(reserveFeedbackPublishSlot()).toBeNull(); // still refused, proving the previous refusal didn't sneak a slot in
 
     delete process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR;
   });
@@ -308,7 +308,12 @@ describe("http-server: the global hourly cap for publish_reputation_feedback (di
 
       // Three concurrent callers all reach the pre-payment handler before any of them settles.
       const reservations = [reserveFeedbackPublishSlot(), reserveFeedbackPublishSlot(), reserveFeedbackPublishSlot()];
-      expect(reservations, "exactly the first 2 (the cap) may proceed to settlement; the 3rd must be refused up front").toEqual([true, true, false]);
+      expect(reservations.map((r) => r !== null), "exactly the first 2 (the cap) may proceed to settlement; the 3rd must be refused up front").toEqual([
+        true,
+        true,
+        false,
+      ]);
+      expect(new Set(reservations.filter((r): r is string => r !== null)).size, "the two granted reservations must have distinct ids").toBe(2);
 
       // The two winners settle (in any order) and are confirmed — confirming an
       // already-reserved slot always succeeds, since the cap was already enforced above.
@@ -327,7 +332,7 @@ describe("http-server: the global hourly cap for publish_reputation_feedback (di
     for (let i = 0; i < 10; i++) expect(canPublishFeedbackNow()).toBe(true);
     // After ten pure peeks, the single real slot must still be available —
     // if peeking secretly reserved, this would already be false.
-    expect(reserveFeedbackPublishSlot()).toBe(true);
+    expect(reserveFeedbackPublishSlot()).toEqual(expect.any(String));
     expect(canPublishFeedbackNow()).toBe(false);
 
     delete process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR;
@@ -346,19 +351,82 @@ describe("http-server: the global hourly cap for publish_reputation_feedback (di
       const { canPublishFeedbackNow, reserveFeedbackPublishSlot, consumeFeedbackPublishSlot } = await import("./http-server.js");
 
       // Two full, successful reserve-then-confirm cycles — well under the cap of 4.
-      expect(reserveFeedbackPublishSlot()).toBe(true);
+      expect(reserveFeedbackPublishSlot()).toEqual(expect.any(String));
       expect(consumeFeedbackPublishSlot()).toBe(true);
-      expect(reserveFeedbackPublishSlot()).toBe(true);
+      expect(reserveFeedbackPublishSlot()).toEqual(expect.any(String));
       expect(consumeFeedbackPublishSlot()).toBe(true);
 
       // 2 confirmed, 0 pending — there must still be room for 2 more, not 0.
       expect(canPublishFeedbackNow(), "a legitimate caller must not be wrongly refused after two unrelated, fully successful publishes").toBe(true);
-      expect(reserveFeedbackPublishSlot()).toBe(true);
+      expect(reserveFeedbackPublishSlot()).toEqual(expect.any(String));
       expect(canPublishFeedbackNow()).toBe(true);
-      expect(reserveFeedbackPublishSlot()).toBe(true);
+      expect(reserveFeedbackPublishSlot()).toEqual(expect.any(String));
       // Now genuinely at the cap (2 confirmed + 2 reserved = 4) — this one must be refused.
       expect(canPublishFeedbackNow()).toBe(false);
-      expect(reserveFeedbackPublishSlot()).toBe(false);
+      expect(reserveFeedbackPublishSlot()).toBeNull();
+
+      delete process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR;
+    },
+  );
+
+  it(
+    "a settlement slower than the reservation TTL still confirms (the caller was already charged) but logs it distinctly, instead of silently pretending nothing unusual happened (found independently twice, our own review and a second outside read, 12-13 nov 2026)",
+    async () => {
+      vi.useFakeTimers();
+      try {
+        vi.resetModules();
+        process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR = "5";
+        const { reserveFeedbackPublishSlot, consumeFeedbackPublishSlot, canPublishFeedbackNow } = await import("./http-server.js");
+
+        const reservationId = reserveFeedbackPublishSlot();
+        expect(reservationId).toEqual(expect.any(String));
+
+        // Outlive FEEDBACK_RESERVATION_MS (10 minutes) — the reservation is pruned as expired
+        // before its own (hypothetically very slow) settlement ever confirms.
+        vi.advanceTimersByTime(10 * 60 * 1000 + 1000);
+        // A fresh reservation now sees full room again — the expired one is gone, proving the
+        // prune genuinely ran, not just that confirm happens to tolerate an empty map by luck.
+        expect(canPublishFeedbackNow()).toBe(true);
+
+        const spy = vi.spyOn(console, "log").mockImplementation(() => {});
+        try {
+          // The slow settlement for the ORIGINAL reservation finally completes. It must still be
+          // confirmed (the caller was genuinely charged) — never refused this late — but the
+          // "nothing live to release" case must be visible, not indistinguishable from normal.
+          expect(consumeFeedbackPublishSlot()).toBe(true);
+          const lines = spy.mock.calls.map((c) => JSON.parse(String(c[0])));
+          const lateLine = lines.find((l) => l.event === "publish_feedback_confirmed_after_reservation_expired");
+          expect(lateLine, JSON.stringify(lines)).toBeTruthy();
+        } finally {
+          spy.mockRestore();
+        }
+
+        delete process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR;
+      } finally {
+        vi.useRealTimers();
+      }
+    },
+  );
+
+  it(
+    "the common case — reservations completing out of order, all still within the TTL — never triggers the 'expired' log line, only the genuinely late case does",
+    async () => {
+      vi.resetModules();
+      process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR = "5";
+      const { reserveFeedbackPublishSlot, consumeFeedbackPublishSlot } = await import("./http-server.js");
+
+      reserveFeedbackPublishSlot(); // A
+      reserveFeedbackPublishSlot(); // B, reserved after A
+
+      const spy = vi.spyOn(console, "log").mockImplementation(() => {});
+      try {
+        // B's settlement completes first — a normal, well-within-TTL reordering.
+        expect(consumeFeedbackPublishSlot()).toBe(true);
+        const lines = spy.mock.calls.map((c) => JSON.parse(String(c[0])));
+        expect(lines.some((l) => l.event === "publish_feedback_confirmed_after_reservation_expired"), JSON.stringify(lines)).toBe(false);
+      } finally {
+        spy.mockRestore();
+      }
 
       delete process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR;
     },

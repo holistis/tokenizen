@@ -348,12 +348,25 @@ const FEEDBACK_HOUR_MS = 60 * 60 * 1000;
 // capacity for long.
 const FEEDBACK_RESERVATION_MS = 10 * 60 * 1000;
 let feedbackPublishTimestamps: number[] = [];
-let feedbackReservationTimestamps: number[] = [];
+// A Map, not an array of bare timestamps (12 nov 2026, ChatGPT + our own review both
+// independently flagged this): tracing WHICH reservation a settlement corresponds to turned out,
+// on close reading of @x402/mcp's hook contexts, to need either a correlation key the library does
+// not actually give the handler (MCPToolContext has no paymentPayload — only the hooks do, and
+// onBeforeExecution can't return a custom error message, a real UX regression this file's history
+// shows was deliberately avoided), or an id with nothing to carry it between the handler and
+// onAfterSettlement. Reservations stay anonymous counters by necessity, not by choice reaffirmed —
+// the id here is for OBSERVABILITY (which specific reservation a log line refers to), not
+// cross-call correlation. Releasing the oldest LIVE one on confirm is genuinely correct for the
+// common case: reservations are fungible, so which specific one is marked "done" when two
+// settlements complete out of order does not change the total count. The one real, narrower risk
+// (see consumeFeedbackPublishSlot) is a reservation that already expired from this map before its
+// own slow settlement finally completes.
+let feedbackReservations = new Map<string, number>(); // id -> reserved-at
 
 function liveReservationCount(now: number): number {
   const cutoff = now - FEEDBACK_RESERVATION_MS;
-  feedbackReservationTimestamps = feedbackReservationTimestamps.filter((t) => t > cutoff);
-  return feedbackReservationTimestamps.length;
+  for (const [id, ts] of feedbackReservations) if (ts <= cutoff) feedbackReservations.delete(id);
+  return feedbackReservations.size;
 }
 
 // Exported (not just internal) for the same reason createApp() is exported
@@ -370,15 +383,17 @@ export function canPublishFeedbackNow(): boolean {
 
 /**
  * Claims a slot BEFORE settlement is attempted — see this file's hourly-cap comment above for
- * why. Returns false (and claims nothing) if the cap, counting confirmed publishes plus other
- * still-pending reservations, was already reached.
+ * why. Returns a reservation id on success (for log correlation only, see the Map comment above
+ * — not consumed by consumeFeedbackPublishSlot), or null if the cap, counting confirmed publishes
+ * plus other still-pending reservations, was already reached.
  */
-export function reserveFeedbackPublishSlot(): boolean {
+export function reserveFeedbackPublishSlot(): string | null {
   const now = Date.now();
   const confirmed = feedbackPublishTimestamps.filter((t) => t > now - FEEDBACK_HOUR_MS).length;
-  if (confirmed + liveReservationCount(now) >= PUBLISH_FEEDBACK_MAX_PER_HOUR) return false;
-  feedbackReservationTimestamps.push(now);
-  return true;
+  if (confirmed + liveReservationCount(now) >= PUBLISH_FEEDBACK_MAX_PER_HOUR) return null;
+  const id = randomUUID();
+  feedbackReservations.set(id, now);
+  return id;
 }
 
 /**
@@ -387,17 +402,37 @@ export function reserveFeedbackPublishSlot(): boolean {
  * (reserveFeedbackPublishSlot) — by the time this runs, the caller has already been charged, so
  * this never re-refuses; refusing here would recreate exactly the charged-but-got-nothing race
  * this two-step design exists to remove.
+ *
+ * Release one LIVE reservation. Without releasing any, a confirmed slot stayed counted TWICE for
+ * up to FEEDBACK_RESERVATION_MS — once here, once still sitting in feedbackReservations — so
+ * every legitimate, fully successful publish wrongly halved the effective cap for the next ten
+ * minutes (caught by muraqib's own probe test, 12 nov 2026). Reservations are anonymous counters,
+ * not tied to a specific caller, so releasing the oldest LIVE one is correct: two settlements
+ * completing out of order just swap which anonymous slot is "the one released", the total count
+ * is unaffected either way.
+ *
+ * The one real, narrower gap (found independently twice — our own review and ChatGPT, 12-13 nov
+ * 2026): a settlement slow enough to outlive FEEDBACK_RESERVATION_MS has its OWN reservation
+ * already pruned by liveReservationCount's expiry filter before this runs. This function still
+ * MUST confirm (the caller was already charged — see the comment above), so it does, but with
+ * nothing live to release. Logged distinctly rather than silently treated the same as the normal
+ * case, so an operator can see whether this ever actually happens and retune the TTL if so; this
+ * is also the one way the published cap can be exceeded by a small amount in practice, honestly
+ * stated rather than implied away.
  */
 export function consumeFeedbackPublishSlot(): boolean {
-  // Release the reservation this settlement corresponds to. Without this, a confirmed slot stayed
-  // counted TWICE for up to FEEDBACK_RESERVATION_MS — once here, once still sitting in
-  // feedbackReservationTimestamps — so every legitimate, fully successful publish wrongly halved
-  // the effective cap for the next 10 minutes. Caught by muraqib's own probe test, 12 nov 2026.
-  // Reservations are anonymous counters, not tied to a specific caller, so which one is released
-  // does not matter; FIFO is the simplest correct choice.
-  feedbackReservationTimestamps.shift();
-  feedbackPublishTimestamps = feedbackPublishTimestamps.filter((t) => t > Date.now() - FEEDBACK_HOUR_MS);
-  feedbackPublishTimestamps.push(Date.now());
+  const now = Date.now();
+  liveReservationCount(now); // prune expired entries first, so "any left" below is accurate
+  const [oldestId] = feedbackReservations.keys();
+  if (oldestId !== undefined) {
+    feedbackReservations.delete(oldestId);
+  } else {
+    logEvent("publish_feedback_confirmed_after_reservation_expired", {
+      reservationTtlMs: FEEDBACK_RESERVATION_MS,
+    });
+  }
+  feedbackPublishTimestamps = feedbackPublishTimestamps.filter((t) => t > now - FEEDBACK_HOUR_MS);
+  feedbackPublishTimestamps.push(now);
   return true;
 }
 
@@ -1019,12 +1054,14 @@ function buildServer(): McpServer {
         if (!verdict.ok) return errorResult(`signature_invalid: ${verdict.reason}`);
         const refusedRegistry = checkPublishFeedbackRegistries(parsed.data);
         if (refusedRegistry) return errorResult(refusedRegistry);
-        if (!reserveFeedbackPublishSlot()) {
+        const reservationId = reserveFeedbackPublishSlot();
+        if (reservationId === null) {
           return errorResult(
             `hourly_cap_exceeded: this server publishes at most ${PUBLISH_FEEDBACK_MAX_PER_HOUR} feedback entries ` +
               "per rolling hour, across all callers — try again later",
           );
         }
+        logEvent("publish_feedback_reserved", { reservationId });
         return textResult({ ok: true, note: "feedback will be published on-chain once payment settles" });
       }),
     );
