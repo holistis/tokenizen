@@ -1633,7 +1633,8 @@ afschrijving zou moeten verwachten op te lossen.
 **Getest:** 25+ nieuwe/herschreven tests over `fiscal-controls.ts`, `fiscal-controls.test.ts`,
 `http-server.ts`, `http-server-publish-feedback.test.ts`, `http-server-record-delivery.test.ts`.
 Elke nieuwe regel bewezen met een geplante weglating (de test gaat rood zonder de fix, groen
-erna). Volledige suite: 791/791 groen.
+erna). Volledige suite na de eerste ronde: 791/791 groen; na de zes reparaties uit de laatste
+controleronde hieronder: 795/795 groen.
 
 **Vóór merge, door onze eigen controleketen op de PR zelf gevonden en gerepareerd (13 nov 2026),
 niet door de koning of een buitenstaander:**
