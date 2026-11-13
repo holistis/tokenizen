@@ -18,11 +18,13 @@
 // write-after-settlement property (same technique, same reasoning), and
 // direct unit tests against the exported, pure cap functions — which is the
 // exact logic that decides whether a real chain call is even attempted.
-import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from "vitest";
 import { createServer as createHttpServer, type Server } from "node:http";
 import { once } from "node:events";
-import { readFileSync } from "node:fs";
+import { readFileSync, mkdtempSync, rmSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 let fakeFacilitator: Server;
 let facilitatorUrl: string;
@@ -295,6 +297,50 @@ describe("http-server: publish_reputation_feedback registered when both env vars
       expect(doneLine, "the done line must record success/failure, not just that the call returned").toContain("result.ok");
     },
   );
+
+  it(
+    "onAfterSettlement fires corroborateSettlement NON-blockingly (void, never awaited) before the real chain call, with corroborationConfig — found 13 nov 2026, a completeness-critic review of this round's settlement-corroboration.ts wiring had zero test coverage of any kind",
+    async () => {
+      // Same source-text technique as the two tests above, for the same reason: forcing a real
+      // corroborateSettlement() call through a live RPC here would need a fake chain deep enough
+      // to be brittle, and settlement-corroboration.bench.ts already measures the "adds no
+      // latency" property directly. What a regression here could silently do instead — delete the
+      // call, pass the wrong config object, or accidentally `await` it before the real chain call
+      // (defeating settlement-corroboration.ts's own "never gates the real action" design) — is
+      // exactly what this test is for.
+      const source = readFileSync(fileURLToPath(new URL("./http-server.ts", import.meta.url)), "utf-8");
+      const hookBody = publishFeedbackHookBody(source);
+
+      const corroborateAt = hookBody.indexOf("corroborateSettlement(");
+      const chainCallAt = hookBody.indexOf("await publishReputationFeedback(");
+      expect(corroborateAt, "corroborateSettlement must be called in this hook").toBeGreaterThan(-1);
+      expect(chainCallAt, "the real chain call must exist").toBeGreaterThan(-1);
+      expect(corroborateAt, "corroboration must be fired BEFORE the real chain call").toBeLessThan(chainCallAt);
+
+      // The call site is "void corroborateSettlement(...)" — never "await corroborateSettlement(...)".
+      // Looking at the few characters immediately before the call is what actually distinguishes
+      // "fire-and-forget" from "gates the real action": `await` directly before this call is the
+      // one mutation that would silently reintroduce the latency/hang risk this feature's own
+      // header comment is built around, and a bare substring check for "await corroborateSettlement"
+      // existing ANYWHERE in the hook would miss it being added right here.
+      const beforeCall = hookBody.slice(Math.max(0, corroborateAt - 10), corroborateAt);
+      expect(beforeCall, "corroborateSettlement must be void-fired, never awaited").not.toMatch(/await\s*$/);
+      expect(beforeCall, "corroborateSettlement must be void-fired, never awaited").toMatch(/void\s*$/);
+
+      const corroborateCallEnd = hookBody.indexOf(")", corroborateAt);
+      const corroborateCallArgs = hookBody.slice(corroborateAt, corroborateCallEnd);
+      expect(corroborateCallArgs, "must pass this file's real corroborationConfig, not a hand-rolled or default one").toContain("corroborationConfig");
+
+      // Must never be awaited before the real chain call either (the two could be reordered so the
+      // `void` call site stays correct while a second, awaited reference sneaks in just above the
+      // real action).
+      const betweenCorroborateAndChainCall = hookBody.slice(corroborateAt, chainCallAt);
+      expect(
+        betweenCorroborateAndChainCall,
+        "nothing between the void-fired corroboration call and the real chain call may await it",
+      ).not.toContain("await corroborateSettlement(");
+    },
+  );
 });
 
 describe("http-server: the global hourly cap for publish_reputation_feedback (direct unit tests, no chain, no HTTP)", () => {
@@ -305,13 +351,13 @@ describe("http-server: the global hourly cap for publish_reputation_feedback (di
     delete process.env.PUBLISH_FEEDBACK_PAY_TO;
     const { canPublishFeedbackNow, reserveFeedbackPublishSlot } = await import("./http-server.js");
 
-    expect(canPublishFeedbackNow()).toBe(true);
-    expect(reserveFeedbackPublishSlot()).toEqual(expect.any(String)); // slot 1/2
-    expect(canPublishFeedbackNow()).toBe(true);
-    expect(reserveFeedbackPublishSlot()).toEqual(expect.any(String)); // slot 2/2
-    expect(canPublishFeedbackNow()).toBe(false);
-    expect(reserveFeedbackPublishSlot()).toBeNull(); // over cap — refused, and does not itself add a reservation
-    expect(reserveFeedbackPublishSlot()).toBeNull(); // still refused, proving the previous refusal didn't sneak a slot in
+    expect(await canPublishFeedbackNow()).toBe(true);
+    expect(await reserveFeedbackPublishSlot()).toEqual(expect.any(String)); // slot 1/2
+    expect(await canPublishFeedbackNow()).toBe(true);
+    expect(await reserveFeedbackPublishSlot()).toEqual(expect.any(String)); // slot 2/2
+    expect(await canPublishFeedbackNow()).toBe(false);
+    expect(await reserveFeedbackPublishSlot()).toBeNull(); // over cap — refused, and does not itself add a reservation
+    expect(await reserveFeedbackPublishSlot()).toBeNull(); // still refused, proving the previous refusal didn't sneak a slot in
 
     delete process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR;
   });
@@ -330,7 +376,7 @@ describe("http-server: the global hourly cap for publish_reputation_feedback (di
       const { reserveFeedbackPublishSlot, consumeFeedbackPublishSlot } = await import("./http-server.js");
 
       // Three concurrent callers all reach the pre-payment handler before any of them settles.
-      const reservations = [reserveFeedbackPublishSlot(), reserveFeedbackPublishSlot(), reserveFeedbackPublishSlot()];
+      const reservations = [await reserveFeedbackPublishSlot(), await reserveFeedbackPublishSlot(), await reserveFeedbackPublishSlot()];
       expect(reservations.map((r) => r !== null), "exactly the first 2 (the cap) may proceed to settlement; the 3rd must be refused up front").toEqual([
         true,
         true,
@@ -340,8 +386,8 @@ describe("http-server: the global hourly cap for publish_reputation_feedback (di
 
       // The two winners settle (in any order) and are confirmed — confirming an
       // already-reserved slot always succeeds, since the cap was already enforced above.
-      expect(consumeFeedbackPublishSlot()).toBe(true);
-      expect(consumeFeedbackPublishSlot()).toBe(true);
+      expect(await consumeFeedbackPublishSlot()).toBe(true);
+      expect(await consumeFeedbackPublishSlot()).toBe(true);
 
       delete process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR;
     },
@@ -352,11 +398,11 @@ describe("http-server: the global hourly cap for publish_reputation_feedback (di
     process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR = "1";
     const { canPublishFeedbackNow, reserveFeedbackPublishSlot } = await import("./http-server.js");
 
-    for (let i = 0; i < 10; i++) expect(canPublishFeedbackNow()).toBe(true);
+    for (let i = 0; i < 10; i++) expect(await canPublishFeedbackNow()).toBe(true);
     // After ten pure peeks, the single real slot must still be available —
     // if peeking secretly reserved, this would already be false.
-    expect(reserveFeedbackPublishSlot()).toEqual(expect.any(String));
-    expect(canPublishFeedbackNow()).toBe(false);
+    expect(await reserveFeedbackPublishSlot()).toEqual(expect.any(String));
+    expect(await canPublishFeedbackNow()).toBe(false);
 
     delete process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR;
   });
@@ -374,19 +420,19 @@ describe("http-server: the global hourly cap for publish_reputation_feedback (di
       const { canPublishFeedbackNow, reserveFeedbackPublishSlot, consumeFeedbackPublishSlot } = await import("./http-server.js");
 
       // Two full, successful reserve-then-confirm cycles — well under the cap of 4.
-      expect(reserveFeedbackPublishSlot()).toEqual(expect.any(String));
-      expect(consumeFeedbackPublishSlot()).toBe(true);
-      expect(reserveFeedbackPublishSlot()).toEqual(expect.any(String));
-      expect(consumeFeedbackPublishSlot()).toBe(true);
+      expect(await reserveFeedbackPublishSlot()).toEqual(expect.any(String));
+      expect(await consumeFeedbackPublishSlot()).toBe(true);
+      expect(await reserveFeedbackPublishSlot()).toEqual(expect.any(String));
+      expect(await consumeFeedbackPublishSlot()).toBe(true);
 
       // 2 confirmed, 0 pending — there must still be room for 2 more, not 0.
-      expect(canPublishFeedbackNow(), "a legitimate caller must not be wrongly refused after two unrelated, fully successful publishes").toBe(true);
-      expect(reserveFeedbackPublishSlot()).toEqual(expect.any(String));
-      expect(canPublishFeedbackNow()).toBe(true);
-      expect(reserveFeedbackPublishSlot()).toEqual(expect.any(String));
+      expect(await canPublishFeedbackNow(), "a legitimate caller must not be wrongly refused after two unrelated, fully successful publishes").toBe(true);
+      expect(await reserveFeedbackPublishSlot()).toEqual(expect.any(String));
+      expect(await canPublishFeedbackNow()).toBe(true);
+      expect(await reserveFeedbackPublishSlot()).toEqual(expect.any(String));
       // Now genuinely at the cap (2 confirmed + 2 reserved = 4) — this one must be refused.
-      expect(canPublishFeedbackNow()).toBe(false);
-      expect(reserveFeedbackPublishSlot()).toBeNull();
+      expect(await canPublishFeedbackNow()).toBe(false);
+      expect(await reserveFeedbackPublishSlot()).toBeNull();
 
       delete process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR;
     },
@@ -401,7 +447,7 @@ describe("http-server: the global hourly cap for publish_reputation_feedback (di
         process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR = "5";
         const { reserveFeedbackPublishSlot, consumeFeedbackPublishSlot, canPublishFeedbackNow } = await import("./http-server.js");
 
-        const reservationId = reserveFeedbackPublishSlot();
+        const reservationId = await reserveFeedbackPublishSlot();
         expect(reservationId).toEqual(expect.any(String));
 
         // Outlive FEEDBACK_RESERVATION_MS (10 minutes) — the reservation is pruned as expired
@@ -409,14 +455,14 @@ describe("http-server: the global hourly cap for publish_reputation_feedback (di
         vi.advanceTimersByTime(10 * 60 * 1000 + 1000);
         // A fresh reservation now sees full room again — the expired one is gone, proving the
         // prune genuinely ran, not just that confirm happens to tolerate an empty map by luck.
-        expect(canPublishFeedbackNow()).toBe(true);
+        expect(await canPublishFeedbackNow()).toBe(true);
 
         const spy = vi.spyOn(console, "log").mockImplementation(() => {});
         try {
           // The slow settlement for the ORIGINAL reservation finally completes. It must still be
           // confirmed (the caller was genuinely charged) — never refused this late — but the
           // "nothing live to release" case must be visible, not indistinguishable from normal.
-          expect(consumeFeedbackPublishSlot()).toBe(true);
+          expect(await consumeFeedbackPublishSlot()).toBe(true);
           const lines = spy.mock.calls.map((c) => JSON.parse(String(c[0])));
           const lateLine = lines.find((l) => l.event === "publish_feedback_confirmed_after_reservation_expired");
           expect(lateLine, JSON.stringify(lines)).toBeTruthy();
@@ -438,13 +484,13 @@ describe("http-server: the global hourly cap for publish_reputation_feedback (di
       process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR = "5";
       const { reserveFeedbackPublishSlot, consumeFeedbackPublishSlot } = await import("./http-server.js");
 
-      reserveFeedbackPublishSlot(); // A
-      reserveFeedbackPublishSlot(); // B, reserved after A
+      await reserveFeedbackPublishSlot(); // A
+      await reserveFeedbackPublishSlot(); // B, reserved after A
 
       const spy = vi.spyOn(console, "log").mockImplementation(() => {});
       try {
         // B's settlement completes first — a normal, well-within-TTL reordering.
-        expect(consumeFeedbackPublishSlot()).toBe(true);
+        expect(await consumeFeedbackPublishSlot()).toBe(true);
         const lines = spy.mock.calls.map((c) => JSON.parse(String(c[0])));
         expect(lines.some((l) => l.event === "publish_feedback_confirmed_after_reservation_expired"), JSON.stringify(lines)).toBe(false);
       } finally {
@@ -454,4 +500,78 @@ describe("http-server: the global hourly cap for publish_reputation_feedback (di
       delete process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR;
     },
   );
+});
+
+describe("http-server: the global hourly cap wiring under CAPACITY_ATTEST_SPEND_CAP_DURABLE=1 (real durable store, no chain, no HTTP)", () => {
+  // Found 13 nov 2026 (a completeness-critic review): the describe block above proves this exact
+  // reserve/consume/peek wiring works through http-server.ts's own real exports, but ONLY ever
+  // against the default InMemorySpendCapStore — nothing exercised the same wiring with
+  // CAPACITY_ATTEST_SPEND_CAP_DURABLE=1 set, so a real end-to-end proof that durable mode's
+  // request-handling path (not just spend-cap-store.ts's own unit tests and concurrency bench, in
+  // isolation) actually holds together was missing. Same per-test isolated-directory pattern as
+  // spend-cap-store.test.ts and ledger.test.ts.
+  let tmpDir: string;
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(join(tmpdir(), "capacity-attest-http-server-durable-test-"));
+  });
+
+  afterEach(() => {
+    delete process.env.CAPACITY_ATTEST_SPEND_CAP_DURABLE;
+    delete process.env.CAPACITY_ATTEST_DATA_DIR;
+    delete process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR;
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it("reserve/consume/peek through http-server.ts's own real exports behave identically to in-memory mode, and the events actually land on disk", async () => {
+    vi.resetModules();
+    process.env.CAPACITY_ATTEST_SPEND_CAP_DURABLE = "1";
+    process.env.CAPACITY_ATTEST_DATA_DIR = tmpDir;
+    process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR = "2";
+    delete process.env.REPUTATION_PUBLISHER_PRIVATE_KEY; // this describe block never builds the paid tool itself
+    delete process.env.PUBLISH_FEEDBACK_PAY_TO;
+    const { canPublishFeedbackNow, reserveFeedbackPublishSlot, consumeFeedbackPublishSlot } = await import("./http-server.js");
+
+    expect(await canPublishFeedbackNow()).toBe(true);
+    const first = await reserveFeedbackPublishSlot();
+    expect(first).toEqual(expect.any(String));
+    expect(await canPublishFeedbackNow()).toBe(true);
+    const second = await reserveFeedbackPublishSlot();
+    expect(second).toEqual(expect.any(String));
+    expect(await canPublishFeedbackNow()).toBe(false);
+    expect(await reserveFeedbackPublishSlot(), "a 3rd reservation past the cap of 2 must be refused").toBeNull();
+
+    expect(await consumeFeedbackPublishSlot()).toBe(true);
+    expect(await consumeFeedbackPublishSlot()).toBe(true);
+
+    // Proves this actually went through DurableSpendCapStore's real file-backed path, not a
+    // silently-still-in-memory store: the per-key event log file must exist on disk, under the
+    // CAPACITY_ATTEST_DATA_DIR this test set, and contain one "reserve" event per reservation and
+    // one "consume" event per confirm — the exact shape spend-cap-store.ts's own DurableSpendCapStore
+    // writes, read back here with no import from that module (an independent check of the real
+    // bytes on disk, not a second call into the same code under test).
+    const eventLogPath = join(tmpDir, "spend-cap-publish_feedback.jsonl");
+    const lines = readFileSync(eventLogPath, "utf-8").split("\n").filter(Boolean).map((l) => JSON.parse(l) as { type: string });
+    expect(lines.filter((l) => l.type === "reserve")).toHaveLength(2);
+    expect(lines.filter((l) => l.type === "consume")).toHaveLength(2);
+  });
+
+  it("buildFiscalControls() reports durable/all-instances for THIS wiring too, matching the real store actually built, not just when called in isolation", async () => {
+    vi.resetModules();
+    process.env.CAPACITY_ATTEST_SPEND_CAP_DURABLE = "1";
+    process.env.CAPACITY_ATTEST_DATA_DIR = tmpDir;
+    process.env.REPUTATION_PUBLISHER_PRIVATE_KEY = TEST_PRIVATE_KEY;
+    process.env.PUBLISH_FEEDBACK_PAY_TO = FAKE_PAY_TO;
+    const { buildFiscalControls, reserveFeedbackPublishSlot } = await import("./http-server.js");
+
+    // A reservation actually goes through the durable path before the document is built, so this
+    // is not just reading a static flag — the store that served a real reserve() call is the same
+    // one buildFiscalControls() describes.
+    expect(await reserveFeedbackPublishSlot()).toEqual(expect.any(String));
+    const doc = buildFiscalControls();
+    const entry = doc.controls.find((c) => c.tool === "publish_reputation_feedback");
+    expect(entry?.spend_cap?.scope).toBe("all-instances");
+    expect(entry?.spend_cap?.persistence).toBe("durable");
+    expect(entry?.spend_cap?.reset_on_restart).toBe(false);
+  });
 });

@@ -7,12 +7,12 @@
     "source": "github",
     "subfolder": "packages/capacity-attest"
   },
-  "version": "0.12.0",
+  "version": "0.14.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "capacity-attest",
-      "version": "0.12.0",
+      "version": "0.14.0",
       "runtimeHint": "npx",
       "transport": {
         "type": "stdio"
@@ -27,5 +27,15 @@
         }
       ]
     }
-  ]
+  ],
+  "_meta": {
+    "io.modelcontextprotocol.registry/publisher-provided": {
+      "fiscalControls": {
+        "about": "Static, pre-connection fiscal-safety metadata (spend caps, signer isolation/custody, audit trail) for the SEPARATE, operator-run capacity-attest-http binary (src/http-server.ts) -- NOT for the npx/stdio package declared in `packages` above, whose record_delivery is always unpaid and holds no signer. Even in the HTTP binary these controls only activate once an operator sets RECORD_DELIVERY_PAY_TO; unset, record_delivery stays unpaid there too. See modelcontextprotocol/registry discussion #1300. wellKnownPath resolves against that operator's own deployed origin -- this server.json does not declare one (no `remotes` entry), so none is canonical.",
+        "wellKnownPath": "/.well-known/fiscal-controls.json",
+        "schemaVersion": "2",
+        "specSource": "https://github.com/holistis/tokenizen/blob/main/packages/capacity-attest/src/fiscal-controls.ts"
+      }
+    }
+  }
 }

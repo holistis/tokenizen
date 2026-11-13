@@ -188,6 +188,25 @@ describe("buildFiscalControls: derived from the real gates, not a second hand-ty
     delete process.env.PUBLISH_FEEDBACK_MAX_PER_HOUR;
   });
 
+  it("reflects CAPACITY_ATTEST_SPEND_CAP_DURABLE=1 truthfully (durable/all-instances/reset_on_restart:false), not the in-memory defaults — found 13 nov 2026, a completeness-critic review caught buildFiscalControls() reporting a hardcoded in-memory triple even while a real DurableSpendCapStore was active underneath it", async () => {
+    vi.resetModules();
+    process.env.REPUTATION_PUBLISHER_PRIVATE_KEY = "0x" + "7a".repeat(32);
+    process.env.PUBLISH_FEEDBACK_PAY_TO = "0x2222222222222222222222222222222222222222";
+    process.env.CAPACITY_ATTEST_SPEND_CAP_DURABLE = "1";
+    delete process.env.RECORD_DELIVERY_PAY_TO;
+    const { buildFiscalControls } = await import("./http-server.js");
+    const doc = buildFiscalControls();
+    const entry = doc.controls.find((c) => c.tool === "publish_reputation_feedback");
+    expect(entry?.spend_cap?.scope).toBe("all-instances");
+    expect(entry?.spend_cap?.persistence).toBe("durable");
+    expect(entry?.spend_cap?.reset_on_restart).toBe(false);
+    expect(validateFiscalControls(doc).valid, JSON.stringify(doc)).toBe(true);
+
+    delete process.env.REPUTATION_PUBLISHER_PRIVATE_KEY;
+    delete process.env.PUBLISH_FEEDBACK_PAY_TO;
+    delete process.env.CAPACITY_ATTEST_SPEND_CAP_DURABLE;
+  });
+
   it("record_delivery, when active, truthfully claims NO server-held signer at all (null, not false) and no spend cap — it only writes a local file", async () => {
     // null vs. false distinguishes "nothing to isolate" from "a signer exists but
     // isn't isolated" — found by muraqib-al-khasm's review, 12 nov 2026: a plain
