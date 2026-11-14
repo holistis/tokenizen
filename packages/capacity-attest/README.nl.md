@@ -112,7 +112,7 @@ Getest tegen een injecteerbare `ContractFactory` (`src/erc8004.test.ts`, geen ne
 
 ### 4. `publishReputationFeedback` *(sinds 0.6.0, library-functie, geen MCP-tool)*
 
-**Let op (adversariele review 2026-09-11): op het moment van schrijven staat op npm nog versie 0.5.0 gepubliceerd, zonder deze functie.** Wie via GitHub leest en meteen `npm install capacity-attest` doet zoals verderop in dit document beschreven, krijgt dus nog geen `publishReputationFeedback`, check `npm view capacity-attest version` voor de daadwerkelijk gepubliceerde versie voor je dit importeert. Alles hieronder beschrijft de code zoals hij op de `main`-branch staat.
+**Let op:** deze functie staat al sinds 0.6.0 op npm, en de nu gepubliceerde versie staat daar ver voorbij, maar dit document beschrijft de code op de `main`-branch, die voor kan lopen op wat echt gepubliceerd is. Check altijd `npm view capacity-attest version` voor de versie die nu echt live staat, voor je op een functie of commando hieruit vertrouwt.
 
 Publiceert het `delivered`-feit van een al ondertekende claim naar een ERC-8004 Reputation Registry se `giveFeedback()`, dezelfde plek waar ~500k geregistreerde agents al naar reputatiesignalen kunnen kijken, in plaats van alleen naar deze installatie se eigen ledger of EAS. Het contract vereist een numeriek `value`+`valueDecimals`-veld; dit pakket verzint daar bewust geen eigen beoordelingsschaal voor. `value` is een letterlijke, mechanische spiegel van `delivered` (yes=1.0, partial=0.5, no=0.0), nooit een nieuw oordeel, en capacity-attest leest of toont dat getal zelf nergens terug. Herverifieert de claim se handtekening voordat er iets on-chain geschreven wordt.
 

@@ -36,7 +36,7 @@ npx tsx examples/demo.ts
 
 Full worked example, including the "ownership not yet proven" failure path and an honest `failed` outcome: [examples/demo.ts](examples/demo.ts).
 
-From 0.1.1 on, `npm install trust-attest-server` works on its own: its dependencies `endpoint-attest` and `capacity-attest` are on the npm registry. Version 0.1.0 does not install, because `endpoint-attest` was not on the registry when it was published; use 0.1.1 or later.
+From 0.1.1 on, `npm install trust-attest-server` works on its own: its dependency `endpoint-attest` is on the npm registry. Version 0.1.0 does not install, because `endpoint-attest` was not on the registry when it was published; use 0.1.1 or later.
 
 ## Status
 
