@@ -51,8 +51,8 @@
 // every existing test's injected fetchImpl keeps working unchanged — closes
 // it the same way http-server.ts already does, without copying guard logic
 // into this file.
-import { readFileSync, statSync } from "node:fs";
-import { pathToFileURL } from "node:url";
+import { readFileSync, statSync, realpathSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { validateFiscalControls, FiscalControlsDocumentSchema, type FiscalControl, type SpendCap } from "./fiscal-controls.js";
 import { fetchJsonBounded } from "./http-source.js";
 import { guardedFetch } from "tokenizen-net-guard";
@@ -328,19 +328,11 @@ async function main(): Promise<number> {
 // checkFiscalControls directly from this same file, and must not trigger a
 // real CLI run (console output, process.exit) just by doing that.
 //
-// http-server.ts documents, at length, why IT deliberately avoids exactly
-// this import.meta.url-vs-process.argv[1] comparison for its OWN entrypoint:
-// under PM2 fork mode the comparison silently evaluated to false, so a
-// long-running SERVER never started, with no crash to even signal the
-// problem — which is why that file's real entrypoint is a separate,
-// untested http-server-bin.ts instead. That failure mode is specific to a
-// DAEMON managed by a process supervisor that may wrap or re-exec node.
-// capacity-attest-fiscal-check is a one-shot CLI a human runs directly (or
-// via npx) that exits immediately after — there is no supervisor re-exec
-// step here for this comparison to be fooled by, and if it were ever wrong,
-// running this file's own test suite (where process.argv[1] is vitest's own
-// entry script, never this file) would fail loudly and immediately, not
-// silently in production the way a never-started server would.
+// npm/npx bin shims and macOS /tmp or /var aliases can leave argv[1]
+// symlinked while import.meta.url names the physical file. Compare canonical
+// filesystem paths so the CLI actually runs through those entry points.
+// Unresolvable argv values (for example node reading an importing script from
+// stdin) mean this module is being imported, not invoked as the CLI.
 // EXIT CODE VS. FLUSHED OUTPUT (adversarial red-team finding, 13 nov 2026):
 // process.exit(code) terminates the process immediately, without waiting
 // for pending I/O — and per Node's own documented stdout/stderr semantics,
@@ -367,7 +359,15 @@ async function main(): Promise<number> {
 // more pending work — which includes draining any queued stdout/stderr
 // writes — so the exit code and the output it describes can never finish
 // arriving out of sync.
-const isEntryPoint = process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href;
+function isInvokedDirectly(): boolean {
+  if (process.argv[1] === undefined) return false;
+  try {
+    return realpathSync(fileURLToPath(import.meta.url)) === realpathSync(process.argv[1]);
+  } catch {
+    return false;
+  }
+}
+const isEntryPoint = isInvokedDirectly();
 if (isEntryPoint) {
   main()
     .then((code) => {
