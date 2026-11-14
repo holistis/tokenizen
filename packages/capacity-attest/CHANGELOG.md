@@ -2,6 +2,10 @@
 
 Alle noemenswaardige wijzigingen aan dit package worden hier bijgehouden.
 
+## 0.14.1
+
+`capacity-attest-fiscal-check` zweeg stilzwijgend (exit 0, geen uitvoer) voor een geldig EN een ongeldig bestand zodra het via een echte npm-bin-symlink werd aangeroepen (standaard `npm install`-gedrag op macOS/Linux) — gevonden door YE-YI7. De "ben ik rechtstreeks gestart"-check vergeleek het ontbonden pad van `import.meta.url` tegen het ONontbonden pad van `argv[1]`, dus de symlink liet de vergelijking altijd mislukken. Reparatie (YE-YI7, PR 261, plus een Windows-fix in de bijbehorende test): beide paden eerst via `realpathSync` ontbinden. Zelf opnieuw bevestigd met een echte `npm install capacity-attest@0.14.0` op Linux door de echte `node_modules/.bin`-symlink: de drie bins zijn nu getest, niet alleen fiscal-check, zie `docs/SECURITY-REVIEW-2026-11-14-entrypoint-symlink.md`.
+
 ## 0.14.0
 
 Geen nieuwe features; een adversariële rode-teaming-ronde tegen de drie stukken die 0.13.0 toevoegde, dezelfde dag (13 nov 2026), vóórdat ook maar iets hiervan gepubliceerd is. Zes echte gaten gevonden en gerepareerd, vijf expliciet niet (zie `DECISIONS.md` D-024 voor de volledige tabel per bestand, en `docs/SECURITY-REVIEW-2026-11-13.md` voor het samenhangende, controleerbare verslag over deze ronde PLUS de twee rondes die eraan voorafgingen, D-022 en D-023, in één tabel):
