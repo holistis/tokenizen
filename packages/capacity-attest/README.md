@@ -21,6 +21,7 @@ Every claim about this project below is clickable and independently verifiable, 
 | Proposed as a buyer-side addition to someone else's agent spec | [omworldprotocol/om-world#18](https://github.com/omworldprotocol/om-world/pull/18) | In review, not yet merged |
 | An independently rebuilt, stdlib-only Python verifier (its own secp256k1/EIP-191/canonical-JSON implementation, no shared code), 7/7 match against our own test vectors including both negative controls (forged signature, tampered claim), now a permanent regression test in a separate, independently published project | [x402-foundation/x402#2887 (comment)](https://github.com/x402-foundation/x402/issues/2887#issuecomment-5687398497), author goun7, integrated into Tamga (`pip install tamga-protocol`) | Permanently integrated into someone else's project |
 | The `measured` block cited as the source of truth for metered delivery in a draft ERC-8004 grounded-feedback convention, pinned to a specific commit of this repo, with two independent verifiers (Node and Python) green on five signed test vectors | [erc-8004/erc-8004-contracts#99](https://github.com/erc-8004/erc-8004-contracts/issues/99), schema doc at [predgeAI/erc8004-outcome-validator](https://github.com/predgeAI/erc8004-outcome-validator/blob/2c4d745f1205ba91f3aabded221b5b5acdbcb5ed/grounded-feedback/README.md) | Draft v0, public, referenced by commit hash |
+| Found, by actually running the real published package instead of reading about it, that npm still had an older version than `main` and that a documented command (`npx capacity-attest-fiscal-check`) 404'd against the real registry | [YE-YI7, registry#1300](https://github.com/modelcontextprotocol/registry/discussions/1300#discussioncomment-19603893) | Fixed same day: `capacity-attest@0.14.0` published, command corrected to the version-pinned form, verified again in a clean install with no workspace links |
 
 **Kept honestly separate from the table above, because this is not third-party review:** before 0.6.0 (the first version that actually writes to the blockchain), we ran our own adversarial security review. Nine findings, all fixed: seven closed by a dedicated regression test, one verified by a packaging check (`npm pack --dry-run`) rather than a unit test, and one a documentation-only fix. Not an independent audit by an outside party. Full, checkable report: [docs/SECURITY-REVIEW-2026-09-11.md](https://github.com/holistis/tokenizen/blob/main/packages/capacity-attest/docs/SECURITY-REVIEW-2026-09-11.md).
 
@@ -117,7 +118,7 @@ Tested against an injectable `ContractFactory` (`src/erc8004.test.ts`, no networ
 
 ### 4. `publishReputationFeedback` *(since 0.6.0, library function, not an MCP tool)*
 
-**Note (adversarial review 2026-09-11): at the time of writing, npm still has version 0.5.0 published, without this function.** Anyone reading via GitHub and immediately running `npm install capacity-attest` as described further below will not yet get `publishReputationFeedback` — check `npm view capacity-attest version` for the actually published version before importing this. Everything below describes the code as it stands on the `main` branch.
+**Note:** this function has been on npm since 0.6.0, and the currently published version is well past that — but the README you're reading describes the code on the `main` branch, which can be ahead of what's actually published. Before relying on any specific function or CLI command described here, check `npm view capacity-attest version` for the version really live right now.
 
 Publishes the `delivered` fact of an already-signed claim to an ERC-8004 Reputation Registry's `giveFeedback()`, the same place roughly 500k registered agents can already look for reputation signals, instead of only this installation's own ledger or EAS. The contract requires a numeric `value`+`valueDecimals` field; this package deliberately does not invent its own rating scale for that. `value` is a literal, mechanical mirror of `delivered` (yes=1.0, partial=0.5, no=0.0), never a new judgment, and capacity-attest never reads or displays that number back anywhere itself. Re-verifies the claim's signature before writing anything on-chain.
 
@@ -233,11 +234,13 @@ The field names match the 7 proposed in [modelcontextprotocol/registry#1300](htt
 curl http://localhost:8402/.well-known/fiscal-controls.json
 ```
 
-A stranger checking any server's claim at that path — ours or a third party's — can skip installing this whole package and run the standalone CLI instead:
+A stranger checking any server's claim at that path — ours or a third party's — doesn't need to write any code against this package to do it. `capacity-attest-fiscal-check` is one of three command-line tools this package publishes (see `package.json`'s `bin` field), not a separate npm package of its own, so `npx` needs the real package name and a real published version to find it:
 
 ```bash
-npx capacity-attest-fiscal-check https://example.com/.well-known/fiscal-controls.json
+npx --package=capacity-attest@0.14.0 capacity-attest-fiscal-check https://example.com/.well-known/fiscal-controls.json
 ```
+
+Check `npm view capacity-attest version` for the actual currently-published version before trusting a version number written here, same caution as the note further up this README — and even once that command shows the new version, npm's own CDN can take a few minutes after a fresh publish to catch up with itself on the actual file.
 
 It fetches (or, given a local path, reads) the document, validates it against the same schema above, and prints a plain-language report — no capacity-attest-specific knowledge required beyond the URL or file path itself. See `src/fiscal-check-bin.ts`'s own header for the outbound-guard reasoning behind the URL branch.
 
