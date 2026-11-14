@@ -59,3 +59,13 @@ jobs:
 
       - name: Publish to npm with provenance
         run: npm publish --provenance --access public
+
+      # A build/test run inside this workspace proves nothing about a real
+      # install: npm symlinks our own dependencies locally here, and the
+      # entrypoint-detection bug that shipped silently in 0.14.0 (found by
+      # YE-YI7, 14 nov 2026) only shows up through a REAL npm bin symlink,
+      # which only a fresh, external install creates. Run every published
+      # bin through exactly that real path before calling this done.
+      - name: Verify every published bin through a real, external install
+        working-directory: .
+        run: node scripts/verify-published-bins.mjs --pakket=capacity-attest --versie=$(node -p "require('./packages/capacity-attest/package.json').version")
