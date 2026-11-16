@@ -1014,6 +1014,19 @@
       "twitterDescription": "On 8 sealed audit contests our scan in production found 1 of 105 known findings, a new version 4. Our bar was 5 more, so production stays as it is.",
       "alternates": []
     },
+    "/notes/who-holds-the-keys-of-erc-3643-issuances": {
+      "lang": "en",
+      "title": "Who holds the keys of ERC-3643 token issuances? | tokenizen",
+      "description": "3,427 ERC-3643 issuances on Polygon and Ethereum: 97.2% have a single account or a one-signature Safe as owner. Open data, open code, a recount script.",
+      "canonical": "https://tokenizen.nl/notes/who-holds-the-keys-of-erc-3643-issuances",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/who-holds-the-keys-of-erc-3643-issuances",
+      "ogTitle": "Who holds the keys of ERC-3643 token issuances? | tokenizen",
+      "ogDescription": "3,427 ERC-3643 issuances on Polygon and Ethereum: 97.2% have a single account or a one-signature Safe as owner. Open data, open code, a recount script.",
+      "twitterTitle": "Who holds the keys of ERC-3643 token issuances? | tokenizen",
+      "twitterDescription": "3,427 ERC-3643 issuances on Polygon and Ethereum: 97.2% have a single account or a one-signature Safe as owner. Open data, open code, a recount script.",
+      "alternates": []
+    },
     "/notes/x402-security-sellers-90-days": {
       "lang": "en",
       "title": "What x402 sellers that mention audits, security or smart contracts received in 90 days | tokenizen",

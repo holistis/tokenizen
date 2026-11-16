@@ -274,7 +274,7 @@ A throwaway address bought the full scan (5 dollars) with @x402/fetch 2.28.0 and
 
 The official x402 client refuses a payment above 1 dollar per request unless its owner raises the limit. The scan costs 5 dollars, so a default agent will refuse it. There is now a quick scan for exactly 1 dollar that returns the 15 hypotheses the model is most confident about; the full scan adds 15 more with lower confidence. A second throwaway address bought the quick scan with the default limit left in place, and the same six checks pass.
 
-## What this does not show
+## What we do not claim
 
 - Two purchases, both by us. Nobody else has used it yet.
 - A receipt says that the service saw a payment. It says nothing about how good the report is.
@@ -1574,6 +1574,58 @@ A search on GitHub on 9 November 2026 found 118 public repositories that mention
         links: [
           { label: "A signed receipt for every name", href: "/notes/a-signed-receipt-for-every-name" },
           { label: "Al-Muqarin on GitHub", href: "https://github.com/holistis/al-muqarin" },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "who-holds-the-keys-of-erc-3643-issuances",
+    date: "2026-11-16",
+    title: "Who holds the keys of ERC-3643 token issuances?",
+    dek: "We listed every token announced by the standard ERC-3643 factory event on Polygon and Ethereum, read its owner, and counted. Anyone can recount it with one command.",
+    description:
+      "3,427 ERC-3643 issuances on Polygon and Ethereum: 97.2% have a single account or a one-signature Safe as owner. Open data, open code, a recount script.",
+    tags: ["Measurements"],
+    readMinutes: 3,
+    kind: "note",
+    blocks: [
+      {
+        type: "md",
+        text: `We counted. Using only public chain data, we listed every token announced by the standard ERC-3643 factory event on Polygon and Ethereum (3,427 issuances from 222 factory contracts), read the owner of each one, and followed that owner until it reached an account, a Safe, a timelock or a dead end.
+
+The result: 97.2% of the issuances have a single account, or a Safe that needs only one signature, as owner. 0.3% need more than one party (a Safe with two or more signatures, or a timelock that answers getMinDelay()). Among the 1,052 issuances that are active (supply above zero, not paused), the shares are 95.7% and 0.8%. No owner in the list answers getMinDelay(), the call that identifies a standard timelock.`,
+      },
+      {
+        type: "facts",
+        heading: "The numbers",
+        intro: "Counted on 16 November 2026 from public chain data. Each number can be recounted with one command.",
+        items: [
+          { value: "3,427", label: "ERC-3643 issuances announced by the standard factory event, 3,363 on Polygon and 64 on Ethereum, from 222 factory contracts.", href: "https://github.com/holistis/erc3643-key-census/blob/main/data/discovery.json", hrefLabel: "data/discovery.json" },
+          { value: "97.2%", label: "have a single account, or a Safe that needs one signature, as owner.", href: "https://github.com/holistis/erc3643-key-census#the-numbers", hrefLabel: "README, the numbers" },
+          { value: "0.3%", label: "need more than one party: a Safe with a threshold of two or more, or a timelock that answers getMinDelay().", href: "https://github.com/holistis/erc3643-key-census#what-was-measured", hrefLabel: "README, what was measured" },
+          { value: "1,052", label: "issuances are active. 95.7% of them have a single key and 0.8% need more than one party.", href: "https://github.com/holistis/erc3643-key-census/blob/main/data/summary.json", hrefLabel: "data/summary.json" },
+          { value: "80%", label: "of the active issuances have one of the 50 largest of 222 final controllers as final controller, counted per issuance and not by supply.", href: "https://github.com/holistis/erc3643-key-census/blob/main/data/tokens.csv", hrefLabel: "data/tokens.csv" },
+        ],
+      },
+      {
+        type: "md",
+        text: `## What we do not claim
+
+An account address can sit in front of custody software such as MPC or an HSM, which cannot be seen on a chain, so a single key here means a single address. We measured the owner role only, not the agents who can mint, freeze or force transfers. Anyone can deploy a factory that emits the event, so the list includes small and test deployments, and supply is not money. A Safe with two or more signatures is counted as multi party even if a module lets fewer signers act. This is an observation about who can act. It does not say that anything is wrong, and it names no issuer or platform.
+
+## Why we publish it
+
+A number nobody can check is worth little. The code that builds the list, the code that counts, the data and a recount script are public, and the recount script plants at least thirty errors in a copy of the data and fails if it misses any of them. If you count differently, please tell us and we will credit you and correct the page, in the open.
+
+Cite as: holistis (github.com/holistis), ERC-3643 key-control census, 16 November 2026.`,
+      },
+      {
+        type: "cta",
+        heading: "Recount it yourself",
+        text: "The repository has the data, the code that builds the list and a one-command recount. It needs Node 22 and nothing else.",
+        links: [
+          { label: "erc3643-key-census on GitHub", href: "https://github.com/holistis/erc3643-key-census" },
+          { label: "How to recount", href: "https://github.com/holistis/erc3643-key-census#recount-it-yourself" },
         ],
       },
     ],
