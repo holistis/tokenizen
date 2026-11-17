@@ -3,13 +3,13 @@ import type { Dictionary } from "./types";
 export const en: Dictionary = {
   "htmlLang": "en",
   "meta": {
-    "title": "tokenizen | We find the leaks. We publish the numbers.",
-    "description": "Security research, free checks and a log with a timestamp outside our control, by two brothers in Eindhoven. We measured 109 public repositories on eight security signals and publish our misses too.",
+    "title": "tokenizen | Proof of what AI agents actually delivered",
+    "description": "Signed receipts for AI agent payments: proof of what was delivered, and proof of what an inspection found. Built by two brothers in Eindhoven. No paying customers yet, we say so.",
     "ogLocale": "en_US",
-    "ogTitle": "tokenizen | We find the leaks. We publish the numbers.",
-    "ogDescription": "Security research, free checks and a log with a timestamp outside our control, by two brothers in Eindhoven. We measured 109 public repositories on eight security signals and publish our misses too.",
-    "twitterTitle": "tokenizen | We find the leaks. We publish the numbers.",
-    "twitterDescription": "Security research, free checks and a log with a timestamp outside our control. Two brothers in Eindhoven."
+    "ogTitle": "tokenizen | Proof of what AI agents actually delivered",
+    "ogDescription": "Signed receipts for AI agent payments: proof of what was delivered, and proof of what an inspection found. Built by two brothers in Eindhoven. No paying customers yet, we say so.",
+    "twitterTitle": "tokenizen | Proof of what AI agents actually delivered",
+    "twitterDescription": "Signed receipts for AI agent payments: proof of what was delivered and what an inspection found. Two brothers in Eindhoven."
   },
   "header": {
     "navLabel": "Main navigation",
