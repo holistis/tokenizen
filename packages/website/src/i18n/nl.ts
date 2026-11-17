@@ -3,16 +3,16 @@ import type { Dictionary } from "./types";
 export const nl: Dictionary = {
   htmlLang: "nl",
   meta: {
-    title: "tokenizen | Wij vinden de lekken. Wij publiceren de cijfers.",
+    title: "tokenizen | Bewijs van wat AI-agents echt afleverden",
     description:
-      "Beveiligingsonderzoek, gratis checks en een logboek met een tijdstempel buiten onze controle, van twee broers in Eindhoven. We maten 109 openbare repositories op acht beveiligingssignalen en publiceren onze missers ook.",
+      "Getekende bonnetjes voor betalingen tussen AI-agents: bewijs van wat geleverd is, en bewijs van wat een inspectie vond. Gebouwd door twee broers uit Eindhoven. Nog geen betalende klanten, dat zeggen we er gewoon bij.",
     ogLocale: "nl_NL",
-    ogTitle: "tokenizen | Wij vinden de lekken. Wij publiceren de cijfers.",
+    ogTitle: "tokenizen | Bewijs van wat AI-agents echt afleverden",
     ogDescription:
-      "Beveiligingsonderzoek, gratis checks en een logboek met een tijdstempel buiten onze controle, van twee broers in Eindhoven. We maten 109 openbare repositories op acht beveiligingssignalen en publiceren onze missers ook.",
-    twitterTitle: "tokenizen | Wij vinden de lekken. Wij publiceren de cijfers.",
+      "Getekende bonnetjes voor betalingen tussen AI-agents: bewijs van wat geleverd is, en bewijs van wat een inspectie vond. Gebouwd door twee broers uit Eindhoven. Nog geen betalende klanten, dat zeggen we er gewoon bij.",
+    twitterTitle: "tokenizen | Bewijs van wat AI-agents echt afleverden",
     twitterDescription:
-      "Beveiligingsonderzoek, gratis checks en een logboek met een tijdstempel buiten onze controle. Twee broers in Eindhoven.",
+      "Getekende bonnetjes voor betalingen tussen AI-agents: bewijs van wat geleverd is en wat een inspectie vond. Twee broers in Eindhoven.",
   },
   header: {
     navLabel: "Hoofdnavigatie",
