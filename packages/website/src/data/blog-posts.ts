@@ -1609,23 +1609,32 @@ The result: 97.2% of the issuances have a single account, or a Safe that needs o
       },
       {
         type: "md",
+        text: `## Agents and levels
+
+On 17 November 2026 we also read who holds the agent role. In ERC-3643 an agent can mint, burn, freeze and force transfers on its own, and the owner can add and remove agents. 789 distinct agent addresses hold the role somewhere in the list. 86.2% of all issuances have at least one agent that is directly an account or a Safe that needs one signature. Counting also agents that are contracts whose owner chain ends at an account, the share is 91.9%.
+
+We then took the weakest role holder, the owner or any agent. 98.5% of the issuances are at Level 0, where at least one role holder is a single address that can act alone. 0.3% are at Level 1, where every role holder is a Safe that needs two or more signatures. A level describes who can act alone, not whether an issuer is safe, and no issuer is named. The definitions are in LEVELS.md in the repository, and the command node card.mjs followed by a token address shows the owner, the agents and the level of one token in words.`,
+      },
+      {
+        type: "md",
         text: `## What we do not claim
 
-An account address can sit in front of custody software such as MPC or an HSM, which cannot be seen on a chain, so a single key here means a single address. We measured the owner role only, not the agents who can mint, freeze or force transfers. Anyone can deploy a factory that emits the event, so the list includes small and test deployments, and supply is not money. A Safe with two or more signatures is counted as multi party even if a module lets fewer signers act. This is an observation about who can act. It does not say that anything is wrong, and it names no issuer or platform.
+An account address can sit in front of custody software such as MPC or an HSM, which cannot be seen on a chain, so a single key here means a single address. The agent numbers are one snapshot taken on 17 November 2026 and are not part of the weekly series yet. Agents of the identity registry are not read, and neither are upgrade rights or anything off chain. Anyone can deploy a factory that emits the event, so the list includes small and test deployments, and supply is not money. A Safe with two or more signatures is counted as multi party even if a module lets fewer signers act. This is an observation about who can act. It does not say that anything is wrong, and it names no issuer or platform.
 
 ## Why we publish it
 
 A number nobody can check is worth little. The code that builds the list, the code that counts, the data and a recount script are public, and the recount script plants at least thirty errors in a copy of the data and fails if it misses any of them. If you count differently, please tell us and we will credit you and correct the page, in the open.
 
-Cite as: holistis (github.com/holistis), ERC-3643 key-control census, 16 November 2026.`,
+Cite as: holistis (github.com/holistis), ERC-3643 key-control census, 16 November 2026. DOI 10.5281/zenodo.24323265.`,
       },
       {
         type: "cta",
         heading: "Recount it yourself",
-        text: "The repository has the data, the code that builds the list and a one-command recount. It needs Node 22 and nothing else.",
+        text: "The repository has the data, the code that builds the list, a one-command recount and a command that shows one token in words. It needs Node 22 and nothing else.",
         links: [
           { label: "erc3643-key-census on GitHub", href: "https://github.com/holistis/erc3643-key-census" },
           { label: "How to recount", href: "https://github.com/holistis/erc3643-key-census#recount-it-yourself" },
+          { label: "Archived on Zenodo, DOI 10.5281/zenodo.24323265", href: "https://doi.org/10.5281/zenodo.24323265" },
         ],
       },
     ],
