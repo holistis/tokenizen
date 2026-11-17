@@ -249,6 +249,15 @@ export const nl: Dictionary = {
           "een storing bij de controleur.",
       },
       {
+        date: "17 oktober 2026",
+        title: "Degene die de x402-specificatie schreef, controleerde ons onafhankelijk",
+        body:
+          "De auteur van de x402-betaalspecificatie bouwde een eigen implementatie, zonder onze code te " +
+          "gebruiken, en testte die tegen drie echte bonnetjes. Alle drie de afrekeningen kwamen exact " +
+          "overeen met de onze: x402-foundation/x402#3827. Dat is iemand met alle reden om een verschil te " +
+          "vinden, en die vond er geen.",
+      },
+      {
         date: "stand van nu",
         title: "Nog geen betalende klant",
         body:

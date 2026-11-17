@@ -262,6 +262,11 @@ export const en: Dictionary = {
         "body": "In the public discussions about these agreements, four people adopted our breakdown. The one that matters most is the difference between this is wrong and I could not check this. That sounds small and it is not: anyone who merges those two blames an honest seller for a failure at the checker end."
       },
       {
+        "date": "17 October 2026",
+        "title": "The person who wrote the x402 spec checked us independently",
+        "body": "The author of the x402 payment specification built their own implementation, sharing no code with ours, and ran it against three real receipts. All three settlements matched ours exactly: x402-foundation/x402#3827. That is someone with every reason to find a disagreement, and they did not."
+      },
+      {
         "date": "as of today",
         "title": "No paying customer yet",
         "body": "Zero. Nobody outside this project pays for this yet. We would rather write that down ourselves than have someone find it out."
