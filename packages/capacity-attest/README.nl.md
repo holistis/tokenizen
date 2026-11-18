@@ -4,22 +4,29 @@ MCP-server voor leverings-attestaties bij x402-capaciteitshandel tussen AI-agent
 
 > Status: MVP, gepubliceerd op npm (`npm install capacity-attest`) en in het officiële MCP-register (`io.github.holistis/capacity-attest`).
 
-## Onafhankelijk gecontroleerd, niet alleen beweerd
+## Door anderen gecontroleerd, en wat je zelf kunt nagaan
 
-Beweringen over dit project zijn hieronder allemaal aanklikbaar en zelf na te trekken, niet op ons woord te geloven.
+Alles hieronder is aanklikbaar. Deel één is gecontroleerd door mensen buiten dit project. Deel twee noemt on-chain feiten die we zelf publiceerden, die iedereen kan lezen en decoderen.
+
+### Deel één: gecontroleerd door mensen buiten dit project
 
 | Wat | Door wie | Status |
 |---|---|---|
 | Gebruikt `capacity-attest@0.2.0` als echte dependency, verifieert claim-digest/claimId/handtekening via onze eigen code | [YE-YI7/asm-spec#18](https://github.com/YE-YI7/asm-spec/pull/18) | Gemerged |
 | BSV-rail-adapter op hetzelfde content-geadresseerde claim-formaat | [YE-YI7/asm-spec#19](https://github.com/YE-YI7/asm-spec/pull/19) (auteur EmbryoSpace) | Gemerged |
-| Onze grensuitspraken ("vindbaarheid ≠ volledigheid") zelf op de keten geverifieerd door een derde, geen woord aangenomen | [x402-foundation/x402#3379](https://github.com/x402-foundation/x402/issues/3379) | Publiek, doorlopend |
+| Een derde partij haalde onze twee testattestaties van Base mainnet en las ze terug; de draad corrigeerde ook wie het gas betaalde en wie de koper is. | [x402-foundation/x402#3379](https://github.com/x402-foundation/x402/issues/3379) | Publiek, doorlopend |
+| Voorgesteld als koperszijde-aanvulling op een andermans agent-spec | [omworldprotocol/om-world#18](https://github.com/omworldprotocol/om-world/pull/18) | In review, nog niet gemerged |
+| Een van de grond af herbouwde Python-verifier van een externe ontwikkelaar (alleen standaardbibliotheek, eigen code voor secp256k1, EIP-191 en canonieke JSON): 7 van 7 vectoren komen overeen, inclusief beide negatieve controles (vervalste handtekening, geknoeide claim). Hij zit in hun gepubliceerde pakket (`pip install tamga-protocol`), en een regressietest tegen onze vectoren draait in hun repository. | [x402-foundation/x402#2887 (comment)](https://github.com/x402-foundation/x402/issues/2887#issuecomment-5687398497), auteur goun7 | Meegeleverd in hun gepubliceerde pakket |
+
+### Deel twee: on-chain feiten die we zelf publiceerden
+
+| Wat | Waar | Status |
+|---|---|---|
 | Live delivery-claims als on-chain attestaties op Base mainnet, door iedereen te decoderen | [delivered=yes](https://base.easscan.org/attestation/view/0x81a55d54452b2cf8bdda7918f63a27bf9ff79e5025b485f7316aae6259288ccc) · [delivered=no](https://base.easscan.org/attestation/view/0xe736b005cbcb54f8f196ac64ef09d75d939c8a18c0d5d9670b5c5025c07398c4) | Live |
 | Hetzelfde, live op een tweede en derde chain (WP2), bewijst dat de EAS-bron over meerdere deployments werkt, niet alleen Base | [Optimism](https://optimism.easscan.org/attestation/view/0x46148283cb005aa43387fb62b2e1ccd0b001ff82dc9310ea885237fd8dea8832) · [Ethereum mainnet](https://easscan.org/attestation/view/0x40da382231eeb6186b7daf231a430488627769feb64039ae3ac671a14f7a8137) | Live |
-| Echte `giveFeedback()`-aanroep op de ERC-8004 Reputation Registry, Base mainnet | [tx 0x2217...efc0](https://basescan.org/tx/0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0) | Live |
-| Voorgesteld als koperszijde-aanvulling op een andermans agent-spec | [omworldprotocol/om-world#18](https://github.com/omworldprotocol/om-world/pull/18) | In review, nog niet gemerged |
-| Zelfstandig herbouwde, stdlib-only Python-verifier (eigen secp256k1/EIP-191/canonical-JSON-implementatie, geen gedeelde code), 7/7 match op onze eigen testvectoren inclusief beide negatieve controles (vervalste handtekening, geknoeide claim), nu permanent als regressietest in een ander, apart gepubliceerd project | [x402-foundation/x402#2887 (comment)](https://github.com/x402-foundation/x402/issues/2887#issuecomment-5687398497), auteur goun7, geintegreerd in Tamga (`pip install tamga-protocol`) | Permanent geintegreerd in andermans project |
+| Een echte `giveFeedback()`-aanroep op het ERC-8004 Reputation Registry, Base mainnet, verstuurd door een testagent die wij registreerden | [tx 0x2217...efc0](https://basescan.org/tx/0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0) | Live |
 
-**Eerlijk apart gehouden van bovenstaande tabel, want dit is geen derde-partij-controle:** voor 0.6.0 (de eerste keer dat dit pakket echt naar de blockchain schrijft) hebben we zelf een adversariële security review uitgevoerd. Negen bevindingen, allemaal gefixt: zeven met een eigen regressietest, een gecontroleerd via een packaging-check (`npm pack --dry-run`, geen unit test), en een pure documentatiefix. Geen onafhankelijke audit door een externe partij. Volledig, controleerbaar verslag: [docs/SECURITY-REVIEW-2026-09-11.md](https://github.com/holistis/tokenizen/blob/main/packages/capacity-attest/docs/SECURITY-REVIEW-2026-09-11.md).
+**Eerlijk apart gehouden van bovenstaande tabellen, want dit is geen derde-partij-controle:** voor 0.6.0 (de eerste keer dat dit pakket echt naar de blockchain schrijft) hebben we zelf een adversariële security review uitgevoerd. Negen bevindingen, allemaal gefixt: zeven met een eigen regressietest, een gecontroleerd via een packaging-check (`npm pack --dry-run`, geen unit test), en een pure documentatiefix. Geen onafhankelijke audit door een externe partij. Volledig, controleerbaar verslag: [docs/SECURITY-REVIEW-2026-09-11.md](https://github.com/holistis/tokenizen/blob/main/packages/capacity-attest/docs/SECURITY-REVIEW-2026-09-11.md).
 
 Een tweede, zelfde soort review, zelfde regel (eigen werk, nooit "onafhankelijk"): de fiscal-controls-v2-herziening en de drie stukken daarna gebouwd in 0.13.0/0.14.0 (durable spend-cap-opslag, afschrijvings-corroboratie, de `fiscal-check`-CLI). 30 bevindingen over de hele ronde, de meeste gerepareerd met een genoemde regressietest, enkele bewust open gelaten met de reden erbij — inclusief een echte, met naam genoemde buitenstaander (YE-YI7) die zelf twee vragen stelde, apart aangehaald en nooit meegeteld als "onafhankelijk bevestigd". Volledig, controleerbaar verslag (Engels): [docs/SECURITY-REVIEW-2026-11-13.md](https://github.com/holistis/tokenizen/blob/main/packages/capacity-attest/docs/SECURITY-REVIEW-2026-11-13.md).
 
