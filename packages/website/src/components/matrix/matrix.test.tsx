@@ -11,6 +11,7 @@ import { SCAN_FOUND, SCAN_KNOWN } from "@/components/matrix/miss-strip";
 import { repoFromHash } from "@/components/pages/cra-check-page";
 import { AboutPage, ChecksPage, ConsultancyPage, ScanPage, SecurityPage, ToolsPage } from "@/components/pages/offer-pages";
 import { BENCHMARK_REPOSITORIES, BENCHMARK_SIGNALS } from "@/data/cra-benchmark";
+import { findPostByPath } from "@/data/blog-posts";
 import { ADVISORY_URL, CINEMA, HOME, OFFERS } from "@/data/home-copy";
 import { SCORE_RUNS } from "@/data/scoreboard";
 import { LocaleProvider, type Locale } from "@/i18n/context";
@@ -245,7 +246,13 @@ describe("the homepage", () => {
     for (const pillar of CINEMA[locale].pillars) {
       expect(html, pillar.id).toContain(pillar.title);
       for (const point of pillar.points) expect(html, point).toContain(point.replace(/'/g, "&#x27;"));
+      if (pillar.source) {
+        expect(html, pillar.id).toContain(`href="${pillar.source.href}"`);
+        expect(html, pillar.id).toContain(pillar.source.label);
+        expect(findPostByPath(pillar.source.href.replace(/^\/nl/, "")), pillar.source.href).toBeDefined();
+      }
     }
+    expect(CINEMA[locale].pillars.filter((p) => p.source).length, "the reliability pillar links the ERC-3643 note").toBe(1);
     expect(html).not.toContain('action="/en/cra-check"');
     expect(html).not.toMatch(LONG_DASH);
   });
