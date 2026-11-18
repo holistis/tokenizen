@@ -12,7 +12,7 @@ import { repoFromHash } from "@/components/pages/cra-check-page";
 import { AboutPage, ChecksPage, ConsultancyPage, ScanPage, SecurityPage, ToolsPage } from "@/components/pages/offer-pages";
 import { BENCHMARK_REPOSITORIES, BENCHMARK_SIGNALS } from "@/data/cra-benchmark";
 import { findPostByPath } from "@/data/blog-posts";
-import { ADVISORY_URL, CINEMA, HOME, OFFERS } from "@/data/home-copy";
+import { ADVISORY_URL, CINEMA, CONTACT_EMAIL, HOME, OFFERS } from "@/data/home-copy";
 import { SCORE_RUNS } from "@/data/scoreboard";
 import { LocaleProvider, type Locale } from "@/i18n/context";
 import { cellPath, hashMarkCells } from "@/lib/hash-mark";
@@ -149,7 +149,8 @@ describe("the words", () => {
 
   it("give every offer its promise, its way to check it and its limit, in both languages", () => {
     for (const locale of ["en", "nl"] as const) {
-      expect(OFFERS[locale]).toHaveLength(7);
+      // Six offers with data; the seventh card on the homepage is the work-with-us block, counted in the homepage test.
+      expect(OFFERS[locale]).toHaveLength(6);
       for (const o of OFFERS[locale]) {
         expect(o.gets.length, `${locale} ${o.id} gets`).toBeGreaterThan(20);
         expect(o.verify.length, `${locale} ${o.id} verify`).toBeGreaterThan(20);
@@ -223,7 +224,7 @@ describe("the words", () => {
     expect(en?.price).toContain("1 dollar");
     expect(en?.price).toContain("5 dollars");
     for (const locale of ["en", "nl"] as const) {
-      for (const id of ["security", "talk"] as const) {
+      for (const id of ["security"] as const) {
         const offer = OFFERS[locale].find((o) => o.id === id);
         expect(offer?.price, `${locale} ${id}`).toMatch(/No fixed offer yet|Nog geen vast aanbod/);
       }
@@ -265,6 +266,36 @@ describe("the homepage", () => {
     expect([...at].sort((a, b) => a - b)).toEqual(at);
     expect(html).toContain(CINEMA.en.mission.mission.title);
     expect(html).toContain(CINEMA.en.mission.vision.title);
+  });
+
+  // The block that replaced the conversation card. The words below are typed by hand on purpose: they must not be read back from the copy file.
+  const WORK_WITH_US = [
+    {
+      locale: "en" as const,
+      title: "Work with us",
+      button: "Contact us",
+      reply: "We reply within two working days with a scoped proposal and a fixed price.",
+      steps: ["Receipt check.", "Failure review.", "Repository check."],
+    },
+    {
+      locale: "nl" as const,
+      title: "Werk met ons",
+      button: "Neem contact op",
+      reply: "Binnen twee werkdagen krijg je een afgebakend voorstel met een vaste prijs.",
+      steps: ["Bonnetjescontrole.", "Foutenonderzoek.", "Repositorycontrole."],
+    },
+  ];
+
+  it.each(WORK_WITH_US)("replaces the conversation card with the work-with-us block in $locale", ({ locale, title, button, reply, steps }) => {
+    const html = page(locale, <HomePage />);
+    for (const text of [title, button, reply, ...steps]) expect(html, text).toContain(text);
+    expect(html).toContain(`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(title)}`);
+    expect(html.match(/id="aanbod-talk"/g)).toHaveLength(1);
+    // The old card's price line is gone; the Security research card keeps its own sentence.
+    expect(html.match(/No fixed offer yet|Nog geen vast aanbod/g)).toHaveLength(1);
+    // No price in the block.
+    expect(JSON.stringify(CINEMA[locale].workWithUs)).not.toMatch(/\d|€|\beuro\b|dollar/i);
+    expect(CINEMA[locale].workWithUs.steps).toHaveLength(3);
   });
 
   // Who we are belongs on the About page. The homepage does not name the owners and shows no portrait.
