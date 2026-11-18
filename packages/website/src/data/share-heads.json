@@ -185,14 +185,14 @@
     "/deep-scan": {
       "lang": "en",
       "title": "Deep scan of a smart contract repository | tokenizen",
-      "description": "Security research, free checks and a log with a timestamp outside our control, by two brothers in Eindhoven. We measured 109 public repositories on eight security signals and publish our misses too.",
+      "description": "Signed receipts for AI agent payments: proof of what was delivered, and proof of what an inspection found. Built by two brothers in Eindhoven. No paying customers yet, we say so.",
       "canonical": "https://tokenizen.nl/deep-scan",
       "ogLocale": "en_US",
       "ogUrl": "https://tokenizen.nl/deep-scan",
       "ogTitle": "Deep scan of a smart contract repository | tokenizen",
-      "ogDescription": "Security research, free checks and a log with a timestamp outside our control, by two brothers in Eindhoven. We measured 109 public repositories on eight security signals and publish our misses too.",
+      "ogDescription": "Signed receipts for AI agent payments: proof of what was delivered, and proof of what an inspection found. Built by two brothers in Eindhoven. No paying customers yet, we say so.",
       "twitterTitle": "Deep scan of a smart contract repository | tokenizen",
-      "twitterDescription": "Security research, free checks and a log with a timestamp outside our control, by two brothers in Eindhoven. We measured 109 public repositories on eight security signals and publish our misses too.",
+      "twitterDescription": "Signed receipts for AI agent payments: proof of what was delivered, and proof of what an inspection found. Built by two brothers in Eindhoven. No paying customers yet, we say so.",
       "alternates": [
         {
           "hreflang": "en",
@@ -236,15 +236,15 @@
     },
     "/nl": {
       "lang": "nl",
-      "title": "tokenizen | Wij vinden de lekken. Wij publiceren de cijfers.",
-      "description": "Beveiligingsonderzoek, gratis checks en een logboek met een tijdstempel buiten onze controle, van twee broers in Eindhoven. We maten 109 openbare repositories op acht beveiligingssignalen en publiceren onze missers ook.",
+      "title": "tokenizen | Bewijs van wat AI-agents echt afleverden",
+      "description": "Getekende bonnetjes voor betalingen tussen AI-agents: bewijs van wat geleverd is, en bewijs van wat een inspectie vond. Gebouwd door twee broers uit Eindhoven. Nog geen betalende klanten, dat zeggen we er gewoon bij.",
       "canonical": "https://tokenizen.nl/nl",
       "ogLocale": "nl_NL",
       "ogUrl": "https://tokenizen.nl/nl",
-      "ogTitle": "tokenizen | Wij vinden de lekken. Wij publiceren de cijfers.",
-      "ogDescription": "Beveiligingsonderzoek, gratis checks en een logboek met een tijdstempel buiten onze controle, van twee broers in Eindhoven. We maten 109 openbare repositories op acht beveiligingssignalen en publiceren onze missers ook.",
-      "twitterTitle": "tokenizen | Wij vinden de lekken. Wij publiceren de cijfers.",
-      "twitterDescription": "Beveiligingsonderzoek, gratis checks en een logboek met een tijdstempel buiten onze controle. Twee broers in Eindhoven.",
+      "ogTitle": "tokenizen | Bewijs van wat AI-agents echt afleverden",
+      "ogDescription": "Getekende bonnetjes voor betalingen tussen AI-agents: bewijs van wat geleverd is, en bewijs van wat een inspectie vond. Gebouwd door twee broers uit Eindhoven. Nog geen betalende klanten, dat zeggen we er gewoon bij.",
+      "twitterTitle": "tokenizen | Bewijs van wat AI-agents echt afleverden",
+      "twitterDescription": "Getekende bonnetjes voor betalingen tussen AI-agents: bewijs van wat geleverd is en wat een inspectie vond. Twee broers in Eindhoven.",
       "alternates": [
         {
           "hreflang": "en",
@@ -445,14 +445,14 @@
     "/nl/deep-scan": {
       "lang": "nl",
       "title": "Diepe scan van een smart-contractrepository | tokenizen",
-      "description": "Security research, free checks and a log with a timestamp outside our control, by two brothers in Eindhoven. We measured 109 public repositories on eight security signals and publish our misses too.",
+      "description": "Signed receipts for AI agent payments: proof of what was delivered, and proof of what an inspection found. Built by two brothers in Eindhoven. No paying customers yet, we say so.",
       "canonical": "https://tokenizen.nl/nl/deep-scan",
       "ogLocale": "nl_NL",
       "ogUrl": "https://tokenizen.nl/nl/deep-scan",
       "ogTitle": "Diepe scan van een smart-contractrepository | tokenizen",
-      "ogDescription": "Security research, free checks and a log with a timestamp outside our control, by two brothers in Eindhoven. We measured 109 public repositories on eight security signals and publish our misses too.",
+      "ogDescription": "Signed receipts for AI agent payments: proof of what was delivered, and proof of what an inspection found. Built by two brothers in Eindhoven. No paying customers yet, we say so.",
       "twitterTitle": "Diepe scan van een smart-contractrepository | tokenizen",
-      "twitterDescription": "Security research, free checks and a log with a timestamp outside our control, by two brothers in Eindhoven. We measured 109 public repositories on eight security signals and publish our misses too.",
+      "twitterDescription": "Signed receipts for AI agent payments: proof of what was delivered, and proof of what an inspection found. Built by two brothers in Eindhoven. No paying customers yet, we say so.",
       "alternates": [
         {
           "hreflang": "en",

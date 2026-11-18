@@ -150,9 +150,9 @@ export function conformanceFixture() {
     },
 
     independentlyVerified: {
-      by: "the author of the specification, using their own implementation, which shares no code with ours",
+      by: "the author of an open proposal to change the x402 offer-and-receipt extension (x402-foundation/x402#3827), using a checker that, by their own account, shares no code with agent-receipt-verify",
       where: "https://github.com/x402-foundation/x402/pull/3827#issuecomment-6230063003",
-      result: "All three cases resolved to the settlements listed above.",
+      result: "All three cases resolved to the settlements listed above. These are test receipts on Base Sepolia, a test network.",
     },
 
     honestLimits: [
