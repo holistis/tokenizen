@@ -286,12 +286,12 @@ export const en: Dictionary = {
       },
       {
         "title": "First external use",
-        "body": "Someone outside this project depending on capacity-attest without us demonstrating it first. Three parties now do: a draft ERC-8004 convention that pins this repo by commit hash, an independently rebuilt verifier shipped inside someone else's published package, and a BSV rail adapter built on the same claim format by a separate author.",
+        "body": "Someone outside this project depending on capacity-attest without us demonstrating it first. Three parties now do: Predge, in a draft grounded-feedback convention for ERC-8004 (not an ERC-8004 document) that pins this repo by commit hash; an outside developer who rebuilt the verifier in Python and ships it in a published package; and a separate author who built a BSV rail adapter on the same claim format.",
         "achieved": true
       },
       {
         "title": "Independent verification by someone else's code",
-        "body": "An outside party rebuilt the verifier from scratch, standard library only, with its own secp256k1, EIP-191 and canonical JSON implementation. Seven of seven vectors match, including both negative controls, and it now runs as a permanent regression test inside their own published package.",
+        "body": "An outside developer rebuilt the verifier from scratch in Python, standard library only, with their own secp256k1, EIP-191 and canonical JSON code. Seven of seven vectors match, including both negative controls. The verifier ships in their published package, and a regression test against our vectors runs in their repository.",
         "achieved": true
       },
       {
@@ -301,13 +301,13 @@ export const en: Dictionary = {
       },
       {
         "title": "The format in an official conformance set",
-        "body": "The measured block already sits inside one party's own conformance set, which has five signed vectors and two verifiers built around it. On 14 October the author writing the ERC-8004 grounded-feedback vocabulary said those five vectors can go into the shared conformance set as-is, alongside fixtures from two other parties. That is a commitment from the person drafting it, not a published decision, so this stays open until the vectors are actually in the set.",
+        "body": "The measured block already sits inside Predge's own draft conformance set: five signed vectors, two of them carrying the measured block, and two verifiers that Predge wrote. On 14 October a contributor who proposes section 5.5 of the x402 spec (open PR 3776) wrote that these five vectors can go into a shared conformance set as they are, next to a set of 728 entries from another contributor, almost all of them plain USDC transfers, and three vectors that a third offered to publish. That is a contributor's offer, not a published decision, so this stays open until the vectors are in a set.",
         "achieved": false
       }
     ],
     "proof": {
-      "title": "Independently verified",
-      "body": "Independent checks by other people rather than by us: a real payment claim verified by an external project on September 1, 2026, with the same claimId and the same signature recovered to the buyer; a verifier rebuilt from scratch in another language; live delivery claims readable by anyone on three separate chains; and a real giveFeedback call against the ERC-8004 Reputation Registry on Base mainnet. Each one is linked from the repository so it can be checked again.",
+      "title": "Checked by others, and on-chain facts anyone can read",
+      "body": "Checked by others: on 1 September 2026 an outside developer recomputed the claimId of one of our real 0.001 USDC test payments on Base mainnet (our own test of our own service) and recovered the buyer from its signature; they note that this does not prove delivery. Another outside developer rebuilt our verifier from scratch in Python, and it matches our seven test vectors. On-chain facts we published ourselves, readable by anyone: delivery claims on Base, Optimism and Ethereum mainnet, and one giveFeedback call from a test agent we registered to the ERC-8004 Reputation Registry on Base mainnet.",
       "txLabel": "View the transaction",
       "verificationLabel": "View the verification"
     },
