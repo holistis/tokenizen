@@ -282,12 +282,12 @@ export const nl: Dictionary = {
       },
       {
         title: "Eerste extern gebruik",
-        body: "Iemand buiten dit project die van capacity-attest afhangt zonder dat wij het voordoen. Drie partijen doen dat nu: een concept-ERC-8004-conventie die deze repo op commit-niveau vastpint, een onafhankelijk herbouwde verifier die meegeleverd wordt in andermans gepubliceerde pakket, en een BSV-rail-adapter op hetzelfde claimformaat van een losse auteur.",
+        body: "Iemand buiten dit project die van capacity-attest afhangt zonder dat wij het voordoen. Drie partijen doen dat nu: Predge, in een concept-conventie voor grounded feedback bij ERC-8004 (geen ERC-8004-document) die deze repo op commit-niveau vastpint; een externe ontwikkelaar die de verifier in Python herbouwde en meelevert in een gepubliceerd pakket; en een losse auteur die een BSV-rail-adapter op hetzelfde claimformaat bouwde.",
         achieved: true,
       },
       {
         title: "Onafhankelijke verificatie door andermans code",
-        body: "Een externe partij heeft de verifier van de grond af opnieuw gebouwd, alleen met de standaardbibliotheek, met een eigen implementatie van secp256k1, EIP-191 en canonieke JSON. Zeven van zeven vectoren komen overeen, inclusief beide negatieve controles, en het draait nu als permanente regressietest binnen zijn eigen gepubliceerde pakket.",
+        body: "Een externe ontwikkelaar heeft de verifier van de grond af opnieuw gebouwd in Python, alleen met de standaardbibliotheek, met eigen code voor secp256k1, EIP-191 en canonieke JSON. Zeven van zeven vectoren komen overeen, inclusief beide negatieve controles. De verifier zit in hun gepubliceerde pakket, en een regressietest tegen onze vectoren draait in hun repository.",
         achieved: true,
       },
       {
@@ -297,13 +297,13 @@ export const nl: Dictionary = {
       },
       {
         title: "Het formaat in een officiële conformance-set",
-        body: "Het measured-blok zit al in de eigen conformance-set van één partij, met vijf ondertekende vectoren en twee verifiers eromheen gebouwd. Op 14 oktober zei de auteur die de ERC-8004-vocabulaire voor grounded feedback schrijft dat die vijf vectoren ongewijzigd in de gedeelde conformance-set kunnen, naast fixtures van twee andere partijen. Dat is een toezegging van degene die het opschrijft, geen gepubliceerd besluit, dus dit blijft open tot de vectoren er echt in staan.",
+        body: "Het measured-blok zit al in de eigen concept-conformance-set van Predge: vijf ondertekende vectoren, waarvan twee het measured-blok dragen, en twee verifiers die Predge zelf schreef. Op 14 oktober schreef een bijdrager die sectie 5.5 van de x402-spec voorstelt (open PR 3776) dat die vijf vectoren ongewijzigd in een gedeelde conformance-set kunnen, naast een set van 728 items van een andere bijdrager, bijna allemaal gewone USDC-overschrijvingen, en drie vectoren die een derde aanbood te publiceren. Dat is een aanbod van een bijdrager, geen gepubliceerd besluit, dus dit blijft open tot de vectoren in een set staan.",
         achieved: false,
       },
     ],
     proof: {
-      title: "Onafhankelijk geverifieerd",
-      body: "Onafhankelijke controles door andere mensen in plaats van door ons: een echte betaalclaim die een extern project op 1 september 2026 verifieerde, met hetzelfde claimId en dezelfde handtekening terugberekend naar de koper; een verifier die van de grond af in een andere taal is herbouwd; live leveringsclaims die iedereen kan uitlezen op drie losse chains; en een echte giveFeedback-aanroep op het ERC-8004 Reputation Registry op Base mainnet. Elke controle staat gelinkt vanuit de repository, zodat hij opnieuw na te rekenen is.",
+      title: "Door anderen gecontroleerd, en on-chain feiten die iedereen kan lezen",
+      body: "Door anderen gecontroleerd: op 1 september 2026 berekende een externe ontwikkelaar het claimId van een van onze echte testbetalingen van 0,001 USDC op Base mainnet opnieuw (onze eigen test van onze eigen dienst) en haalde de koper uit de handtekening, met de kanttekening dat dit geen levering bewijst. Een andere externe ontwikkelaar herbouwde onze verifier van de grond af in Python, en die komt overeen met onze zeven testvectoren. On-chain feiten die we zelf publiceerden, door iedereen te lezen: leveringsclaims op Base, Optimism en Ethereum mainnet, en één giveFeedback-aanroep van een testagent die wij registreerden naar het ERC-8004 Reputation Registry op Base mainnet.",
       txLabel: "Bekijk de transactie",
       verificationLabel: "Bekijk de verificatie",
     },

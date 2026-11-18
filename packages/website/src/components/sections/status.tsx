@@ -7,7 +7,7 @@ import { withInlineCode } from "@/i18n/inline-code";
 import { cn } from "@/lib/utils";
 
 const TX_URL = "https://basescan.org/tx/0xc00a638491986962ca125c01da4e3df8a07d715216694bb0a59ff257c88e6880";
-const VERIFICATION_URL = "https://github.com/modelcontextprotocol/registry/discussions/1300";
+const VERIFICATION_URL = "https://github.com/modelcontextprotocol/registry/discussions/1300#discussioncomment-18226135";
 
 export function Status() {
   const { t } = useLocale();
