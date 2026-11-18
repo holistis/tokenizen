@@ -21,6 +21,22 @@ const OVERCLAIMS = [
   "auteur van de specificatie",
 ];
 
+// A second, hand-typed copy that does not read OVERCLAIMS. If a phrase is dropped or reworded
+// above, the scanner still passes tests that loop over OVERCLAIMS itself; this list fails instead.
+const MUST_STAY_FLAGGED = [
+  "spec author",
+  "specification author",
+  "wrote the x402",
+  "author of the x402 payment specification",
+  "author of the x402 specification",
+  "author of the specification",
+  "specificatieschrijver",
+  "x402-specificatie schreef",
+  "auteur van de x402-betaalspecificatie",
+  "auteur van de x402-specificatie",
+  "auteur van de specificatie",
+];
+
 /** Returns the overclaim phrases found in a text, case-insensitive, with any run of whitespace as one space. */
 export function findOverclaims(text: string): string[] {
   const flat = text.toLowerCase().replace(/\s+/g, " ");
@@ -42,13 +58,18 @@ function walk(dir: string, out: string[] = []): string[] {
 
 describe("x402#3827 cross-check wording", () => {
   it("finds a planted phrase in every spelling we expect, and nothing in clean text", () => {
-    for (const p of OVERCLAIMS) {
+    for (const p of new Set([...MUST_STAY_FLAGGED, ...OVERCLAIMS])) {
       expect(findOverclaims(`Some text ${p} more text`), p).toContain(p);
       expect(findOverclaims(p.toUpperCase()), `${p} in capitals`).toContain(p);
       expect(findOverclaims(p.replace(/ /g, "\n  ")), `${p} across a line break`).toContain(p);
     }
     expect(findOverclaims("The author of an open proposal ran a second checker on test receipts.")).toEqual([]);
     expect(findOverclaims("")).toEqual([]);
+  });
+
+  it("still carries every agreed phrase: none dropped, none reworded", () => {
+    expect(OVERCLAIMS).toEqual(expect.arrayContaining(MUST_STAY_FLAGGED));
+    expect(OVERCLAIMS.length).toBeGreaterThanOrEqual(MUST_STAY_FLAGGED.length);
   });
 
   it("keeps the overclaims out of src and public, generated page text included", () => {
