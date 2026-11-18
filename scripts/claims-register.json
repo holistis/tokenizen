@@ -236,6 +236,37 @@
     ]
   },
   {
+    "id": "matrix-countersigned",
+    "text": "The proof matrix says one receipt for a paid call on a test network was signed by us and countersigned by the party that paid, with its id and both signatures recomputed by a second implementer, and that the check the call ran came back as not passed, measured 18 November 2026",
+    "pages": [
+      "/",
+      "/nl"
+    ],
+    "mustContain": [
+      {
+        "regex": "\\b2 (of|van) 2\\b"
+      },
+      {
+        "regex": "(Test network|Testnetwerk)"
+      },
+      {
+        "regex": "(Measured |Gemeten )?(18 Nov|18 nov) 2026"
+      }
+    ],
+    "source": [
+      {
+        "file": "packages/website/src/data/proof-matrix.ts",
+        "kind": "contains",
+        "expected": "id: \"countersigned\""
+      },
+      {
+        "file": "packages/website/src/data/proof-matrix.ts",
+        "kind": "contains",
+        "expected": "COUNTERSIGNED = \"https://github.com/x402-foundation/x402/issues/2887#issuecomment-6987288414\""
+      }
+    ]
+  },
+  {
     "id": "matrix-payment",
     "text": "The proof matrix says one real payment was made on Base mainnet from a test agent of ours to our own service, measured 23 October 2026",
     "pages": ["/", "/nl"],

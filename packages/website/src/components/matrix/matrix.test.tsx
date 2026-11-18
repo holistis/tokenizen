@@ -304,8 +304,8 @@ describe("the homepage", () => {
     {
       locale: "en" as const,
       heading: "What we measured, and how you can check it",
-      numbers: ["7 audits", "3 of 3", "109", "0 of 600", "1 payment", "97 of 105"],
-      dates: ["Measured 2 Nov 2026", "Measured 17 Oct 2026", "Measured 28 Oct 2026", "Measured 15 Oct 2026", "Measured 23 Oct 2026", "Measured 25 Oct 2026"],
+      numbers: ["7 audits", "3 of 3", "2 of 2", "109", "0 of 600", "1 payment", "97 of 105"],
+      dates: ["Measured 2 Nov 2026", "Measured 17 Oct 2026", "Measured 18 Nov 2026", "Measured 28 Oct 2026", "Measured 15 Oct 2026", "Measured 23 Oct 2026", "Measured 25 Oct 2026"],
       chips: ["Our own measurement", "Checked by someone outside our team", "On-chain", "A limit we publish", "Test network", "Our own test"],
       columns: ["Number", "What it says", "Checked by", "Measured", "Check"],
       check: "Check it yourself",
@@ -314,8 +314,8 @@ describe("the homepage", () => {
     {
       locale: "nl" as const,
       heading: "Wat we maten, en hoe je het zelf nagaat",
-      numbers: ["7 audits", "3 van 3", "109", "0 van 600", "1 betaling", "97 van 105"],
-      dates: ["Gemeten 2 nov 2026", "Gemeten 17 okt 2026", "Gemeten 28 okt 2026", "Gemeten 15 okt 2026", "Gemeten 23 okt 2026", "Gemeten 25 okt 2026"],
+      numbers: ["7 audits", "3 van 3", "2 van 2", "109", "0 van 600", "1 betaling", "97 van 105"],
+      dates: ["Gemeten 2 nov 2026", "Gemeten 17 okt 2026", "Gemeten 18 nov 2026", "Gemeten 28 okt 2026", "Gemeten 15 okt 2026", "Gemeten 23 okt 2026", "Gemeten 25 okt 2026"],
       chips: ["Eigen meting", "Nagekeken door iemand buiten ons team", "Op de keten", "Een grens die we zelf publiceren", "Testnetwerk", "Eigen test"],
       columns: ["Getal", "Wat het zegt", "Nagekeken door", "Gemeten", "Check"],
       check: "Ga het zelf na",
@@ -325,19 +325,19 @@ describe("the homepage", () => {
 
   afterEach(() => vi.useRealTimers());
 
-  it.each(MATRIX)("shows the proof matrix as a table with a caption, headers, six rows and a check link in $locale", (m) => {
+  it.each(MATRIX)("shows the proof matrix as a table with a caption, headers, seven rows and a check link in $locale", (m) => {
     const html = page(m.locale, <HomePage />);
     const text = readableText(html);
     expect(html.match(/<table/g)).toHaveLength(1);
     expect(html).toMatch(/<caption[^>]*>/);
     expect(html.match(/scope="col"/g)).toHaveLength(5);
-    expect(html.match(/scope="row"/g)).toHaveLength(6);
-    expect(html.match(/class="proof-row"/g)).toHaveLength(6);
+    expect(html.match(/scope="row"/g)).toHaveLength(7);
+    expect(html.match(/class="proof-row"/g)).toHaveLength(7);
     for (const piece of [m.heading, ...m.numbers, ...m.dates, ...m.chips, ...m.columns]) expect(text, piece).toContain(piece);
     const links = [...html.matchAll(/<a [^>]*class="proof-link"[^>]*>([\s\S]*?)<\/a>/g)].map((x) => readableText(x[1], { gap: "" }).trim());
-    expect(links).toEqual(Array(6).fill(m.check));
+    expect(links).toEqual(Array(7).fill(m.check));
     // The days since the measurement are worked out by the page: a number, not a word.
-    expect(html.match(/\(\d+ (days|dagen) (ago|geleden)\)/g)).toHaveLength(6);
+    expect(html.match(/\(\d+ (days|dagen) (ago|geleden)\)/g)).toHaveLength(7);
   });
 
   // The hero heading is one heading in one serif, in the colour of the page text: no gradient, no capitals, no second typeface. Its sizes live in the stylesheet.
