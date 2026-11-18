@@ -9,7 +9,7 @@ export const GITHUB_URL = "https://github.com/holistis/tokenizen";
 export const CONTACT_EMAIL = "info@tokenizen.nl";
 
 export interface Offer {
-  id: "checks" | "signal-log" | "security" | "scan" | "tools" | "sanctions" | "talk";
+  id: "checks" | "signal-log" | "security" | "scan" | "tools" | "sanctions";
   status: string;
   name: string;
   line: string;
@@ -87,17 +87,6 @@ const OFFERS_EN: Offer[] = [
     price: "Deep scan by card or iDEAL: 0.02 euro per line of Solidity, minimum 2 euro, and a full refund if the scan fails, finds nothing or reads less than half of your code. For AI agents an older x402 route remains: quick scan 1 dollar, full scan 5 dollars, paid in USDC on Base. Payment address: the official sources.",
     cta: { label: "Open the scoreboard", href: "/scoreboard" },
   },
-  {
-    id: "talk",
-    status: "a conversation",
-    name: "Talk to Ahmed",
-    line: "Start with a conversation about where you stand.",
-    gets: "A conversation about security, the EU Cyber Resilience Act or payments between agents.",
-    verify: "Ask for our measurements. We show how each one was made.",
-    not: "No legal advice, no certificate and no promise of a result.",
-    price: "Ask. No fixed offer yet.",
-    cta: { label: "Write to Ahmed", href: `mailto:${CONTACT_EMAIL}?subject=A%20conversation%20with%20Ahmed` },
-  },
 ];
 
 const OFFERS_NL: Offer[] = [
@@ -166,17 +155,6 @@ const OFFERS_NL: Offer[] = [
     not: "Geen audit en geen garantie dat een contract veilig is. Wat hij vindt en mist staat op het openbare scorebord.",
     price: "Diepe scan met kaart of iDEAL: 0,02 euro per regel Solidity, minimum 2 euro, en een volledige terugbetaling als de scan mislukt, niets vindt of minder dan de helft van je code leest. Voor AI-agents blijft een oudere x402-route: snelle scan 1 dollar, volledige scan 5 dollar, betaald in USDC op Base. Betaaladres: de officiële bronnen.",
     cta: { label: "Open het scorebord", href: "/scoreboard" },
-  },
-  {
-    id: "talk",
-    status: "een gesprek",
-    name: "Praat met Ahmed",
-    line: "Begin met een gesprek over waar jij staat.",
-    gets: "Een gesprek over beveiliging, de Europese Cyber Resilience Act of betalingen tussen agenten.",
-    verify: "Vraag naar onze metingen. We laten zien hoe elke meting is gemaakt.",
-    not: "Geen juridisch advies, geen certificaat en geen belofte van een uitkomst.",
-    price: "Vraag het. Nog geen vast aanbod.",
-    cta: { label: "Schrijf Ahmed", href: `mailto:${CONTACT_EMAIL}?subject=Een%20gesprek%20met%20Ahmed` },
   },
 ];
 
@@ -359,13 +337,15 @@ export interface Pillar {
 export interface CinemaCopy {
   offers: { heading: string; intro: string; open: string };
   tilePrice: Record<Offer["id"], string>;
-  /** The homepage names no person; the conversation card is called by what it is. The offer page keeps its own name. */
+  /** A tile may carry a shorter name than the offer page. */
   tileName: Partial<Record<Offer["id"], string>>;
   /** A number printed big on a tile, with the words that say exactly what it counts. */
   tileStat: Partial<Record<Offer["id"], { value: string; label: string }>>;
   pillars: Pillar[];
   mission: { label: string; mission: { label: string; title: string; text: string }; vision: { label: string; title: string; text: string } };
   talk: { heading: string; body: string; button: string; secondary: string; subject: string };
+  /** The block that replaces the conversation card among the offers: what we do for a team, three first steps, how we answer. No price. */
+  workWithUs: { title: string; intro: string; stepsLead: string; steps: { name: string; text: string }[]; closing: string; button: string; subject: string };
   note: string;
 }
 
@@ -384,9 +364,8 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
       scan: "From 2 euro per scan",
       tools: "Free",
       sanctions: "Free",
-      talk: "No fixed offer yet",
     },
-    tileName: { scan: "Cyber security scan for smart contracts", talk: "Talk to us" },
+    tileName: { scan: "Cyber security scan for smart contracts" },
     tileStat: {
       scan: {
         value: "77.4%",
@@ -428,6 +407,19 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
       secondary: "Who we are",
       subject: "A conversation",
     },
+    workWithUs: {
+      title: "Work with us",
+      intro: "If you build AI agents that pay or get paid, someone will ask you what exactly your agent got for the money. We check the payment flow from the outside and give you a short report with evidence that your customer can re-run.",
+      stepsLead: "A first step can be one of these:",
+      steps: [
+        { name: "Receipt check.", text: "We replay your signed receipts and payment records with our open-source checkers and tell you which claims a stranger can verify and which are only your word." },
+        { name: "Failure review.", text: "We walk through what happens when a payment response is lost, repeated or disputed, and list what your records can and cannot prove." },
+        { name: "Repository check.", text: "We run our eight security signals over your public repositories and explain what each result does and does not say about the EU Cyber Resilience Act." },
+      ],
+      closing: "Tell us where you stand. We reply within two working days with a scoped proposal and a fixed price. No paying customers yet, we say so, and we show our work.",
+      button: "Contact us",
+      subject: "Work with us",
+    },
     note: "The photographs on this page are illustrations made with AI.",
   },
   nl: {
@@ -443,9 +435,8 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
       scan: "Vanaf 2 euro per scan",
       tools: "Gratis",
       sanctions: "Gratis",
-      talk: "Nog geen vast aanbod",
     },
-    tileName: { scan: "Cyber security scan voor smart contracts", talk: "Praat met ons" },
+    tileName: { scan: "Cyber security scan voor smart contracts" },
     tileStat: {
       scan: {
         value: "77,4%",
@@ -486,6 +477,19 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
       button: "Schrijf ons",
       secondary: "Wie wij zijn",
       subject: "Een gesprek",
+    },
+    workWithUs: {
+      title: "Werk met ons",
+      intro: "Bouw je AI-agents die betalen of betaald worden, dan vraagt iemand je vroeg of laat wat de agent precies kreeg voor het geld. Wij lezen jouw betaalstroom van buitenaf na en geven je een kort rapport met bewijs dat jouw klant zelf kan nadraaien.",
+      stepsLead: "Een eerste stap kan een van deze zijn:",
+      steps: [
+        { name: "Bonnetjescontrole.", text: "We spelen je getekende bonnetjes en betaalgegevens opnieuw af met onze openbare controleprogramma's en vertellen welke beweringen een vreemde kan nagaan en welke alleen jouw woord zijn." },
+        { name: "Foutenonderzoek.", text: "We lopen na wat er gebeurt als een betaalantwoord zoekraakt, dubbel komt of betwist wordt, en zetten op een rij wat je gegevens wel en niet bewijzen." },
+        { name: "Repositorycontrole.", text: "We laten onze acht beveiligingssignalen over je openbare repositories lopen en leggen uit wat elk resultaat wel en niet zegt over de Europese Cyber Resilience Act." },
+      ],
+      closing: "Vertel ons waar je staat. Binnen twee werkdagen krijg je een afgebakend voorstel met een vaste prijs. We hebben nog geen betalende klanten, dat zeggen we er gewoon bij, en we laten ons werk zien.",
+      button: "Neem contact op",
+      subject: "Werk met ons",
     },
     note: "De foto's op deze pagina zijn illustraties, met AI gemaakt.",
   },

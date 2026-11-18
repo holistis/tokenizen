@@ -11,9 +11,8 @@ import { localePath } from "@/lib/locale-paths";
 const eyebrow = "mb-4 font-mono text-xs font-medium uppercase tracking-[0.2em] text-[color:var(--glow)]";
 const title = "font-display text-4xl leading-[1.05] sm:text-5xl";
 
-/** The page behind a card, in the reader's language. The conversation card opens the page about it, not a mail window. */
+/** The page behind a card, in the reader's language. */
 function tileHref(offer: Offer, locale: Locale): string {
-  if (offer.id === "talk") return localePath(locale, "/consultancy");
   return offer.cta.href.startsWith("/") ? localePath(locale, offer.cta.href) : offer.cta.href;
 }
 
@@ -72,7 +71,7 @@ export function OfferTiles({ locale }: { locale: Locale }) {
         </div>
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {OFFERS[locale].map((offer) => (
-            <Tilt key={offer.id} as="article" className={offer.id === "talk" ? "tile sm:col-span-2 lg:col-span-3" : "tile"}>
+            <Tilt key={offer.id} as="article" className="tile">
               <p id={`aanbod-${offer.id}`} className="inline-flex w-fit rounded-full border border-white/20 px-3 py-0.5 font-mono text-[11px] uppercase tracking-wide text-[color:var(--glow)]">
                 {offer.status}
               </p>
@@ -95,9 +94,41 @@ export function OfferTiles({ locale }: { locale: Locale }) {
               </p>
             </Tilt>
           ))}
+          <WorkWithUsTile locale={locale} />
         </div>
       </div>
     </section>
+  );
+}
+
+/** Replaces the old conversation card: what we do for a team that builds agents that pay, three first steps, and how fast we answer. No price is shown. */
+function WorkWithUsTile({ locale }: { locale: Locale }) {
+  const c = CINEMA[locale].workWithUs;
+  return (
+    <Tilt as="article" className="tile sm:col-span-2 lg:col-span-3">
+      <h3 id="aanbod-talk" className="font-display text-3xl leading-tight">
+        {c.title}
+      </h3>
+      <p className="mt-4 max-w-3xl text-sm leading-relaxed text-[color:var(--soft)]">{c.intro}</p>
+      <p className="mt-6 text-sm leading-relaxed text-white/90">{c.stepsLead}</p>
+      <ul className="mt-3 max-w-3xl space-y-3">
+        {c.steps.map((s) => (
+          <li key={s.name} className="flex gap-3 text-sm leading-relaxed text-[color:var(--soft)]">
+            <span aria-hidden="true" className="mt-2 size-1.5 shrink-0 rotate-45 bg-[color:var(--glow)]" />
+            <span>
+              <span className="text-white">{s.name}</span> {s.text}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-6 max-w-3xl text-sm leading-relaxed text-[color:var(--soft)]">{c.closing}</p>
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(c.subject)}`} className="btn-glow">
+          <Mail className="size-4" aria-hidden="true" />
+          {c.button}
+        </a>
+      </div>
+    </Tilt>
   );
 }
 
