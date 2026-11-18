@@ -224,6 +224,7 @@ export const HOME: Record<Locale, HomeCopy> = {
         { value: "On-chain", label: "one real AI-agent payment on Base mainnet, with the commands to check it yourself", href: "/notes/check-pay-prove" },
         { value: "109", label: "public repositories in ten EU countries measured on eight security signals, our misses published", href: "/notes/eight-security-signals-109-repositories" },
         { value: "Recount", label: "our scan results come with every verdict and a script that recounts them, the leader's higher score included. Someone outside our team has already recounted them", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-02-our-scan-under-the-benchmark-judge" },
+        { value: "3 of 3", label: "test receipts on which a second checker, written separately by the author of an open x402 receipt proposal, reached the same result as ours", href: "https://github.com/x402-foundation/x402/pull/3827#issuecomment-6230063003" },
       ],
     },
     check: {
@@ -290,6 +291,7 @@ export const HOME: Record<Locale, HomeCopy> = {
         { value: "Op de keten", label: "één echte betaling van een AI-agent op Base mainnet, met de commando's om het zelf na te gaan", href: "/notes/check-pay-prove" },
         { value: "109", label: "openbare repositories in tien EU-landen gemeten op acht beveiligingssignalen, onze missers gepubliceerd", href: "/notes/eight-security-signals-109-repositories" },
         { value: "Tel na", label: "onze scanresultaten komen met elk oordeel en een script dat alles opnieuw telt, ook het hogere cijfer van de leider. Iemand buiten ons team heeft het al nagerekend", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-02-our-scan-under-the-benchmark-judge" },
+        { value: "3 van 3", label: "testbonnetjes waarop een tweede controleprogramma, apart geschreven door de schrijver van een openstaand x402-bonnetjesvoorstel, tot hetzelfde resultaat kwam als het onze", href: "https://github.com/x402-foundation/x402/pull/3827#issuecomment-6230063003" },
       ],
     },
     check: {
