@@ -304,7 +304,7 @@ describe("the homepage", () => {
     {
       locale: "en" as const,
       heading: "What we measured, and how you can check it",
-      numbers: ["7 audits", "3 of 3", "2 signatures", "109", "0 of 600", "1 payment", "97 of 105"],
+      numbers: ["7 audits", "3 of 3", "2 of 2", "109", "0 of 600", "1 payment", "97 of 105"],
       dates: ["Measured 2 Nov 2026", "Measured 17 Oct 2026", "Measured 18 Nov 2026", "Measured 28 Oct 2026", "Measured 15 Oct 2026", "Measured 23 Oct 2026", "Measured 25 Oct 2026"],
       chips: ["Our own measurement", "Checked by someone outside our team", "On-chain", "A limit we publish", "Test network", "Our own test"],
       columns: ["Number", "What it says", "Checked by", "Measured", "Check"],
@@ -314,7 +314,7 @@ describe("the homepage", () => {
     {
       locale: "nl" as const,
       heading: "Wat we maten, en hoe je het zelf nagaat",
-      numbers: ["7 audits", "3 van 3", "2 handtekeningen", "109", "0 van 600", "1 betaling", "97 van 105"],
+      numbers: ["7 audits", "3 van 3", "2 van 2", "109", "0 van 600", "1 betaling", "97 van 105"],
       dates: ["Gemeten 2 nov 2026", "Gemeten 17 okt 2026", "Gemeten 18 nov 2026", "Gemeten 28 okt 2026", "Gemeten 15 okt 2026", "Gemeten 23 okt 2026", "Gemeten 25 okt 2026"],
       chips: ["Eigen meting", "Nagekeken door iemand buiten ons team", "Op de keten", "Een grens die we zelf publiceren", "Testnetwerk", "Eigen test"],
       columns: ["Getal", "Wat het zegt", "Nagekeken door", "Gemeten", "Check"],

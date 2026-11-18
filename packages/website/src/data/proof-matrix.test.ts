@@ -37,8 +37,8 @@ describe("the proof matrix rows", () => {
   // What someone outside our team checked comes first, our own measurements next, the chain after that, and our own limit closes.
   it("are the seven rows the king approved, in this order", () => {
     expect(PROOF_ROWS.map((r) => r.id)).toEqual(["recount", "second-checker", "countersigned", "repositories", "x402-receipts", "payment", "scan-misses"]);
-    expect(PROOF_ROWS.map((r) => r.value.en)).toEqual(["7 audits", "3 of 3", "2 signatures", "109", "0 of 600", "1 payment", "97 of 105"]);
-    expect(PROOF_ROWS.map((r) => r.value.nl)).toEqual(["7 audits", "3 van 3", "2 handtekeningen", "109", "0 van 600", "1 betaling", "97 van 105"]);
+    expect(PROOF_ROWS.map((r) => r.value.en)).toEqual(["7 audits", "3 of 3", "2 of 2", "109", "0 of 600", "1 payment", "97 of 105"]);
+    expect(PROOF_ROWS.map((r) => r.value.nl)).toEqual(["7 audits", "3 van 3", "2 van 2", "109", "0 van 600", "1 betaling", "97 van 105"]);
     expect(PROOF_ROWS.map((r) => r.checkedBy)).toEqual(["outside", "outside", "outside", "own", "own", "chain", "limit"]);
     expect(PROOF_ROWS.map((r) => r.measuredAt)).toEqual(["2026-11-02", "2026-10-17", "2026-11-18", "2026-10-28", "2026-10-15", "2026-10-23", "2026-10-25"]);
   });

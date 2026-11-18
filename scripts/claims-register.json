@@ -244,7 +244,7 @@
     ],
     "mustContain": [
       {
-        "regex": "\\b2 (signatures|handtekeningen)\\b"
+        "regex": "\\b2 (of|van) 2\\b"
       },
       {
         "regex": "(Test network|Testnetwerk)"

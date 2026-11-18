@@ -99,7 +99,7 @@ export const PROOF_ROWS: ProofRow[] = [
   },
   {
     id: "countersigned",
-    value: { en: "2 signatures", nl: "2 handtekeningen" },
+    value: { en: "2 of 2", nl: "2 van 2" },
     claim: {
       en: "One receipt for a paid call to our service on a test network, signed by us and countersigned by the party that paid, with its id and both signatures recomputed by a second implementer. The check the call ran came back as not passed, and the receipt says so",
       nl: "Een bonnetje voor een betaalde aanroep van onze dienst op een testnetwerk, door ons ondertekend en door de betalende partij mee ondertekend, waarvan een tweede ontwikkelaar het id en beide handtekeningen opnieuw uitrekende. De controle die de aanroep deed kwam niet door, en dat staat zo in het bonnetje",
