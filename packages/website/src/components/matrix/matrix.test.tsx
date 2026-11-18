@@ -340,6 +340,33 @@ describe("the homepage", () => {
     expect(html.match(/\(\d+ (days|dagen) (ago|geleden)\)/g)).toHaveLength(6);
   });
 
+  // The hero heading is one heading in one serif, in the colour of the page text: no gradient, no capitals, no second typeface. Its sizes live in the stylesheet.
+  it.each(["en", "nl"] as const)("sets both sentences of the hero heading in one style, in %s", (locale) => {
+    const html = page(locale, <HomePage />);
+    const open = /<h1([^>]*)>/.exec(html);
+    expect(open, "the hero has an h1").not.toBeNull();
+    const attributes = open?.[1] ?? "";
+    expect(attributes).toContain("hero-title");
+    expect(attributes).toContain("font-display");
+    for (const banned of ["glow-text", "font-signage", "uppercase", "tracking-tight", "font-bold"]) expect(attributes, banned).not.toContain(banned);
+    const inner = html.slice(html.indexOf(open?.[0] ?? "") + (open?.[0].length ?? 0), html.indexOf("</h1>"));
+    // Two plain spans, one per sentence, with a space between them so the sentences also read right when they sit on one line.
+    expect(inner).toMatch(/^<span>[^<]+<\/span> <span>[^<]+<\/span>$/);
+    expect(readableText(inner)).toContain(HOME[locale].hero.h1a);
+    expect(readableText(inner)).toContain(HOME[locale].hero.h1b);
+  });
+
+  // What the stylesheet does with it: the column is the container the sizes are taken from, each sentence is one wide line from 36 rem of room,
+  // both sentences sit next to each other on one line from 68 rem, and the sentences get no style of their own.
+  it("sets the hero heading in wide lines in the stylesheet", () => {
+    expect(css).toMatch(/\.hero-copy\s*\{[^}]*container-type:\s*inline-size/);
+    expect(css).toMatch(/@container \(min-width: 36rem\)\s*\{\s*\.hero-title\s*\{[^}]*white-space:\s*nowrap/);
+    expect(css).toMatch(/@container \(min-width: 68rem\)\s*\{[^@]*\.hero-title > span\s*\{[^}]*display:\s*inline;/);
+    expect(css.match(/font-size:\s*clamp\([^;]*100cqw[^;]*\)/g), "both wide sizes are taken from the width of the column").toHaveLength(2);
+    const own = [...css.matchAll(/\.hero-title[^{]*\{([^}]*)\}/g)].map((m) => m[1]).join(";");
+    for (const banned of ["gradient", "text-transform", "font-family", "font-weight", "letter-spacing", "color", "background"]) expect(own, banned).not.toContain(banned);
+  });
+
   it("puts the proof matrix between the seven offers and the reliability section, and keeps the five tiles out of the hero", () => {
     for (const locale of ["en", "nl"] as const) {
       const html = page(locale, <HomePage />);

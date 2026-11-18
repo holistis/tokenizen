@@ -24,10 +24,9 @@ export function Hero({ locale }: { locale: Locale }) {
     <CinemaHero image="keten">
       <div ref={reveal} className="reveal hero-copy">
         <p className={eyebrow}>{c.eyebrow}</p>
-        <h1 className="text-[2.9rem] leading-[1] sm:text-7xl md:text-[5.5rem]">
-          <span className="font-display">{c.h1a}</span>
-          <br />
-          <span className="glow-text font-signage font-bold uppercase tracking-tight">{c.h1b}</span>
+        {/* One heading in one style. Each sentence is a plain span: the stylesheet (.hero-title) sets them in lines as wide as the page allows, next to each other on a wide screen, so they stay above the photograph. */}
+        <h1 className="hero-title font-display">
+          <span>{c.h1a}</span> <span>{c.h1b}</span>
         </h1>
         <div className="glass mt-6 max-w-xl">
           <p className="text-base leading-relaxed text-white md:text-lg">{c.body}</p>
