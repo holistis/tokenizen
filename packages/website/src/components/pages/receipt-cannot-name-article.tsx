@@ -9,9 +9,9 @@ const DESCRIPTION = "A receipt that verifies, carries an authorized signature, a
 
 const BODY = `I paid my own API a tenth of a cent to find out whether the receipt it hands back is worth anything. It is signed, it verifies, the key is provably mine, and it cannot tell you which payment it is about.
 
-Of 20,462 live x402 resources I sampled, not one declared the receipt extension at all. So I built the first one. The first receipt it ever issued was broken in a way that passes every check you can run on it.
+I sampled 600 records at six places in one x402 index of 20,462 listings. Not one declared the receipt extension at all. So I built the first one. The first receipt it ever issued was broken in a way that passes every check you can run on it.
 
-Within hours of publishing that, the author of an independent verifier went and tested his own implementation against the case, found it would have accepted the receipt too, and shipped a hard-fail, a new conformance vector and a new invariant the same day. That invariant now correctly rejects every receipt my own live route issues. I would rather say that out loud than have someone find it.
+Within hours of publishing that, the author of a separate verifier, [giskard09 on x402#2887](https://github.com/x402-foundation/x402/issues/2887#issuecomment-6198739245), tested it against the case, found it would have accepted the receipt too, and shipped a hard-fail, a new conformance vector and a new invariant the same day. That invariant now correctly rejects every receipt my own live route issues. I would rather say that out loud than have someone find it.
 
 ## The thing everyone agrees on
 

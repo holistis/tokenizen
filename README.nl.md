@@ -16,21 +16,28 @@ Drie concrete dingen dichten dat gat:
 
 Geen reputatiescore, geen oordeel, geen financieel instrument. Een leveringsbon, geen vonnis.
 
-## Onafhankelijk nagerekend
+## Door anderen gecontroleerd, en wat je zelf kunt nagaan
 
-Code is te kopiëren, onafhankelijke verificatie niet. Alles hieronder is iemand anders die ons werk zelf heeft nagerekend in plaats van erover gelezen, met de link erbij zodat het opnieuw te controleren is.
+Alles hieronder is aanklikbaar. Deel één is gecontroleerd door mensen buiten dit project. Deel twee noemt on-chain feiten die we zelf publiceerden, die iedereen kan lezen en decoderen.
+
+### Deel één: gecontroleerd door mensen buiten dit project
 
 | Wat iemand anders heeft nagerekend | Waar |
 | --- | --- |
-| Het `measured`-blok aangehaald als bron van waarheid voor gemeten levering in een concept-conventie voor ERC-8004 grounded feedback, vastgepind op een specifieke commit van deze repo. Die partij bouwde er zijn eigen conformance-set van vijf ondertekende vectoren om heen, plus twee verifiers die geen code delen (Node en Python), beide groen | [erc-8004/erc-8004-contracts#99](https://github.com/erc-8004/erc-8004-contracts/issues/99), vectoren en verifiers in [predgeAI/erc8004-outcome-validator](https://github.com/predgeAI/erc8004-outcome-validator/tree/main/grounded-feedback) |
-| Een onafhankelijk herbouwde Python-verifier, alleen standaardbibliotheek, met eigen secp256k1, EIP-191 en canonieke JSON, geen gedeelde code, 7 van 7 gelijk inclusief beide negatieve controles, nu een permanente regressietest in een apart gepubliceerd project | [x402#2887 (reactie)](https://github.com/x402-foundation/x402/issues/2887#issuecomment-5687398497), auteur goun7, meegeleverd in Tamga |
+| Het `measured`-blok wordt aangehaald als bron van waarheid voor gemeten levering in de concept-conventie voor grounded feedback bij ERC-8004 van Predge (geen ERC-8004-document), vastgepind op een specifieke commit van deze repo. De vijf ondertekende vectoren van Predge slagen in de twee verifiers die Predge schreef; twee van de vijf dragen het `measured`-blok | [erc-8004/erc-8004-contracts#99](https://github.com/erc-8004/erc-8004-contracts/issues/99), vectoren en verifiers in [predgeAI/erc8004-outcome-validator](https://github.com/predgeAI/erc8004-outcome-validator/tree/main/grounded-feedback) |
+| Een van de grond af herbouwde Python-verifier van een externe ontwikkelaar (alleen standaardbibliotheek, eigen code voor secp256k1, EIP-191 en canonieke JSON): 7 van 7 vectoren komen overeen, inclusief beide negatieve controles. Hij zit in hun gepubliceerde pakket, en een regressietest tegen onze vectoren draait in hun repository | [x402#2887 (reactie)](https://github.com/x402-foundation/x402/issues/2887#issuecomment-5687398497), auteur goun7, meegeleverd in Tamga |
 | Een BSV-rail-adapter op hetzelfde content-geadresseerde claimformaat, gebouwd door een losse auteur en gemergd in de spec-repo van een derde partij | [asm-spec#19](https://github.com/YE-YI7/asm-spec/pull/19), auteur EmbryoSpace |
+
+### Deel twee: on-chain feiten die we zelf publiceerden
+
+| Wat | Waar |
+| --- | --- |
 | Live leveringsclaims die iedereen on-chain kan uitlezen, op drie losse deployments | [Base](https://base.easscan.org/attestation/view/0x81a55d54452b2cf8bdda7918f63a27bf9ff79e5025b485f7316aae6259288ccc) · [Optimism](https://optimism.easscan.org/attestation/view/0x46148283cb005aa43387fb62b2e1ccd0b001ff82dc9310ea885237fd8dea8832) · [Ethereum](https://easscan.org/attestation/view/0x40da382231eeb6186b7daf231a430488627769feb64039ae3ac671a14f7a8137) |
-| Een echte `giveFeedback()`-aanroep op het ERC-8004 Reputation Registry, Base mainnet | [tx 0x2217...efc0](https://basescan.org/tx/0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0) |
+| Een echte `giveFeedback()`-aanroep op het ERC-8004 Reputation Registry, Base mainnet, verstuurd door een testagent die wij registreerden | [tx 0x2217...efc0](https://basescan.org/tx/0x221797800d5941dff62e87022083e7c6dfba3e07b35c84e56b10fdca8967efc0) |
 
 Volledige lijst, inclusief wat nog in review is: [`packages/capacity-attest/README.md`](packages/capacity-attest/README.md).
 
-Apart van die tabel, omdat dit geen toetsing door een derde partij is: we hebben zelf een adversariële security review gedaan voor de eerste versie die naar een blockchain schrijft. Negen bevindingen, alle negen gerepareerd, rapport openbaar. Dat was ons eigen werk, geen onafhankelijke audit, en staat daarom apart vermeld.
+Apart van die tabellen, omdat dit geen toetsing door een derde partij is: we hebben zelf een adversariële security review gedaan voor de eerste versie die naar een blockchain schrijft. Negen bevindingen, alle negen gerepareerd, rapport openbaar. Dat was ons eigen werk, geen onafhankelijke audit, en staat daarom apart vermeld.
 
 ## Waarom dit bestaat
 
