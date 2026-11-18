@@ -356,9 +356,38 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: min(calc(100svh - 4rem), 56rem);
   padding-block: 4rem 3rem;
+}
+/* The heading of the homepage: two sentences in one serif and one colour. The text column is the container the sizes are taken from
+   (cqw), so a sentence always fits its line. On a phone the sentences wrap, balanced. From 36 rem of room each sentence is one wide line.
+   From 68 rem both sentences sit next to each other on one line, up in the sky of the photograph, clear of the glowing cubes. */
+.hero-copy {
+  container-type: inline-size;
+}
+.hero-title {
+  font-size: 2.6rem;
+  line-height: 1.05;
+}
+.hero-title > span {
+  display: block;
+  text-wrap: balance;
+}
+@container (min-width: 36rem) {
+  .hero-title {
+    font-size: clamp(2rem, calc(100cqw / 14.4), 3.5rem);
+    white-space: nowrap;
+  }
+}
+@container (min-width: 68rem) {
+  .hero-title {
+    font-size: clamp(2.2rem, calc(100cqw / 27), 3.6rem);
+    line-height: 1.1;
+  }
+  .hero-title > span {
+    display: inline;
+  }
 }
 .hero-media {
   position: absolute;
@@ -374,6 +403,12 @@
   object-position: 60% 78%;
   transform: translate3d(calc(var(--mx, 0) * -22px), calc(var(--my, 0) * -14px + var(--p, 0) * -3%), 0) scale(1.12);
   transition: transform 0.4s ease-out;
+}
+/* On a very wide screen the photograph is cropped hard from the top and the bottom, and the row of cubes rises toward the heading. Show a little more of the upper part. */
+@media (min-width: 2000px) {
+  .hero-img {
+    object-position: 60% 55%;
+  }
 }
 .hero-shade {
   position: absolute;
