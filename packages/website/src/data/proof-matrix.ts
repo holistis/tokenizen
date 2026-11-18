@@ -59,6 +59,7 @@ const SAMPLE_NOTE = "/notes/zero-of-600-x402-services-sign-a-receipt";
 const PAYMENT_NOTE = "check-pay-prove";
 const RESULTS_FOLDER = "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-02-our-scan-under-the-benchmark-judge";
 const SECOND_CHECKER = "https://github.com/x402-foundation/x402/pull/3827#issuecomment-6230063003";
+const COUNTERSIGNED = "https://github.com/x402-foundation/x402/issues/2887#issuecomment-6987288414";
 
 const recount = scoreRun("benchmark-judge-seven");
 const sealed = scoreRun("v31-same-eight");
@@ -95,6 +96,20 @@ export const PROOF_ROWS: ProofRow[] = [
     staleAfterDays: 60,
     checkUrl: SECOND_CHECKER,
     source: SECOND_CHECKER,
+  },
+  {
+    id: "countersigned",
+    value: { en: "2 signatures", nl: "2 handtekeningen" },
+    claim: {
+      en: "One receipt for a paid call to our service on a test network, signed by us and countersigned by the party that paid, with its id and both signatures recomputed by a second implementer. The check the call ran came back as not passed, and the receipt says so",
+      nl: "Een bonnetje voor een betaalde aanroep van onze dienst op een testnetwerk, door ons ondertekend en door de betalende partij mee ondertekend, waarvan een tweede ontwikkelaar het id en beide handtekeningen opnieuw uitrekende. De controle die de aanroep deed kwam niet door, en dat staat zo in het bonnetje",
+    },
+    checkedBy: "outside",
+    caveats: ["testnet"],
+    measuredAt: "2026-11-18",
+    staleAfterDays: 60,
+    checkUrl: COUNTERSIGNED,
+    source: COUNTERSIGNED,
   },
   {
     id: "repositories",

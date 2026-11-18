@@ -35,12 +35,12 @@ describe("the proof matrix rows", () => {
 
   // Typed by hand on purpose: these must not be read back from the data file.
   // What someone outside our team checked comes first, our own measurements next, the chain after that, and our own limit closes.
-  it("are the six rows the king approved, in this order", () => {
-    expect(PROOF_ROWS.map((r) => r.id)).toEqual(["recount", "second-checker", "repositories", "x402-receipts", "payment", "scan-misses"]);
-    expect(PROOF_ROWS.map((r) => r.value.en)).toEqual(["7 audits", "3 of 3", "109", "0 of 600", "1 payment", "97 of 105"]);
-    expect(PROOF_ROWS.map((r) => r.value.nl)).toEqual(["7 audits", "3 van 3", "109", "0 van 600", "1 betaling", "97 van 105"]);
-    expect(PROOF_ROWS.map((r) => r.checkedBy)).toEqual(["outside", "outside", "own", "own", "chain", "limit"]);
-    expect(PROOF_ROWS.map((r) => r.measuredAt)).toEqual(["2026-11-02", "2026-10-17", "2026-10-28", "2026-10-15", "2026-10-23", "2026-10-25"]);
+  it("are the seven rows the king approved, in this order", () => {
+    expect(PROOF_ROWS.map((r) => r.id)).toEqual(["recount", "second-checker", "countersigned", "repositories", "x402-receipts", "payment", "scan-misses"]);
+    expect(PROOF_ROWS.map((r) => r.value.en)).toEqual(["7 audits", "3 of 3", "2 signatures", "109", "0 of 600", "1 payment", "97 of 105"]);
+    expect(PROOF_ROWS.map((r) => r.value.nl)).toEqual(["7 audits", "3 van 3", "2 handtekeningen", "109", "0 van 600", "1 betaling", "97 van 105"]);
+    expect(PROOF_ROWS.map((r) => r.checkedBy)).toEqual(["outside", "outside", "outside", "own", "own", "chain", "limit"]);
+    expect(PROOF_ROWS.map((r) => r.measuredAt)).toEqual(["2026-11-02", "2026-10-17", "2026-11-18", "2026-10-28", "2026-10-15", "2026-10-23", "2026-10-25"]);
   });
 
   it("name an existing file as their source, and a path of this site or an https address to check", () => {
@@ -162,7 +162,9 @@ describe("the words of the matrix", () => {
   });
 
   it("keep the wording of the homepage tiles they replace, with a capital at the start and without the two phrases the king took out", () => {
-    const en = PROOF_ROWS.map((r) => r.claim.en);
+    // The six rows that replace the old tiles, in their order; the countersigned receipt has its own test below.
+    const tiles = PROOF_ROWS.filter((r) => r.id !== "countersigned");
+    const en = tiles.map((r) => r.claim.en);
     expect(en[0]).toBe(
       "Our research scan runs on 7 audits come with their verdict files and a script that recounts them, the leader's higher score included. Someone outside our team has already recounted them",
     );
@@ -171,7 +173,7 @@ describe("the words of the matrix", () => {
     expect(en[3]).toBe("x402 catalogue records we sampled from one index declare the offer-receipt extension. Ours signs offers, and you can check one yourself");
     expect(en[4]).toBe("One real payment on Base mainnet from a test agent of ours to our own service, with the transactions open to check");
     expect(en[5]).toBe("Our scan missed 97 of 105 known findings in its run on eight audit contests.");
-    const nl = PROOF_ROWS.map((r) => r.claim.nl);
+    const nl = tiles.map((r) => r.claim.nl);
     expect(nl[0]).toBe(
       "Onze onderzoeksscans op 7 audits komen met hun oordeelsbestanden en een script dat alles opnieuw telt, ook de hogere score van de koploper. Iemand buiten ons team heeft het al nagerekend",
     );
@@ -182,5 +184,17 @@ describe("the words of the matrix", () => {
     expect(nl[5]).toBe("Onze scan miste 97 van de 105 bekende bevindingen in de run op acht auditwedstrijden.");
     // Every sentence starts with a capital, except the two that start with the name x402.
     for (const claim of [...en, ...nl]) expect(claim.startsWith("x402") || /^[A-Z]/.test(claim), claim).toBe(true);
+  });
+
+  it("says what the countersigned receipt is, in the words approved, typed by hand here", () => {
+    const row = PROOF_ROWS.find((r) => r.id === "countersigned");
+    expect(row?.claim.en).toBe(
+      "One receipt for a paid call to our service on a test network, signed by us and countersigned by the party that paid, with its id and both signatures recomputed by a second implementer. The check the call ran came back as not passed, and the receipt says so",
+    );
+    expect(row?.claim.nl).toBe(
+      "Een bonnetje voor een betaalde aanroep van onze dienst op een testnetwerk, door ons ondertekend en door de betalende partij mee ondertekend, waarvan een tweede ontwikkelaar het id en beide handtekeningen opnieuw uitrekende. De controle die de aanroep deed kwam niet door, en dat staat zo in het bonnetje",
+    );
+    expect(row?.caveats).toEqual(["testnet"]);
+    expect(row?.checkedBy).toBe("outside");
   });
 });
