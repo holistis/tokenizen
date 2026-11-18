@@ -1,9 +1,10 @@
 import type { FormEvent } from "react";
-import { ArrowRight, ArrowUpRight, Mail } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Clock, Flag, Link2, Mail, Ruler, UserCheck } from "lucide-react";
 
 import { CinemaHero, Scene, Tilt, useReveal } from "@/components/home/cinema";
 import { repoFromHash } from "@/components/pages/cra-check-page";
 import { CINEMA, CONTACT_EMAIL, HOME, OFFERS, type Locale, type Offer, type Pillar } from "@/data/home-copy";
+import { formatMeasured, PROOF_COPY, PROOF_ROWS, proofAge, type CheckedBy } from "@/data/proof-matrix";
 import { localePath } from "@/lib/locale-paths";
 
 // The sections of the homepage, from the first screen down. Each of them says one thing and has its own photograph.
@@ -41,19 +42,6 @@ export function Hero({ locale }: { locale: Locale }) {
           </div>
         </div>
       </div>
-      <ul className="mt-12 grid gap-3 sm:grid-cols-2 lg:mt-16">
-        {c.chips.map((chip) => (
-          <li key={chip.label}>
-            <a
-              href={chip.href.startsWith("/") ? localePath(locale, chip.href) : chip.href}
-              className="chip-glass group flex h-full items-baseline gap-4 px-5 py-4"
-            >
-              <span className="glow-text font-signage text-5xl font-bold leading-none">{chip.value}</span>
-              <span className="text-sm leading-snug text-[color:var(--soft)] group-hover:text-white">{chip.label}</span>
-            </a>
-          </li>
-        ))}
-      </ul>
     </CinemaHero>
   );
 }
@@ -129,6 +117,108 @@ function WorkWithUsTile({ locale }: { locale: Locale }) {
         </a>
       </div>
     </Tilt>
+  );
+}
+
+const CHECKED_BY_ICON: Record<CheckedBy, typeof Ruler> = { own: Ruler, outside: UserCheck, chain: Link2, limit: Flag };
+
+/**
+ * The numbers we show, one row each: the number, what it says, who checked it, when it was measured and where to run it again. A table from 900 px
+ * up, one card per row below that. How old a row is is worked out here from its date; the days and the "due for a new measurement" line carry
+ * data-capture-skip because they change every day, so the saved page text (share-bodies.json) keeps only the date.
+ */
+export function ProofMatrix({ locale }: { locale: Locale }) {
+  const c = PROOF_COPY[locale];
+  const reveal = useReveal<HTMLDivElement>();
+  const now = new Date();
+  return (
+    <section id="bewijs" aria-labelledby="bewijs-titel" className="scroll-mt-16 py-20 md:py-28">
+      <div className="container">
+        <div ref={reveal} className="reveal">
+          <h2 id="bewijs-titel" className={title}>
+            {c.heading}
+          </h2>
+          <p id="bewijs-uitleg" className="mt-4 max-w-2xl text-base leading-relaxed text-[color:var(--soft)]">
+            {c.subtitle}
+          </p>
+          <div className="proof-panel mt-12">
+            <table className="proof-table" role="table" aria-describedby="bewijs-uitleg">
+              <caption data-capture-skip>{c.heading}</caption>
+              <thead className="proof-head" role="rowgroup">
+                <tr role="row">
+                  <th role="columnheader" scope="col">{c.columns.number}</th>
+                  <th role="columnheader" scope="col">{c.columns.says}</th>
+                  <th role="columnheader" scope="col">{c.columns.checkedBy}</th>
+                  <th role="columnheader" scope="col">{c.columns.measured}</th>
+                  <th role="columnheader" scope="col">{c.columns.check}</th>
+                </tr>
+              </thead>
+              <tbody role="rowgroup">
+                {PROOF_ROWS.map((row) => {
+                  const age = proofAge(row, now);
+                  const Icon = CHECKED_BY_ICON[row.checkedBy];
+                  return (
+                    <tr key={row.id} className="proof-row" role="row">
+                      <th role="rowheader" scope="row" className="proof-number">
+                        <span className="proof-figure">
+                          {row.value[locale].split(/(\d+)/).map((part, i) =>
+                            part && !/^\d+$/.test(part) ? (
+                              <span key={i} className="proof-unit">
+                                {part}
+                              </span>
+                            ) : (
+                              part
+                            ),
+                          )}
+                        </span>
+                      </th>
+                      <td role="cell" className="proof-says">
+                        {row.claim[locale]}
+                      </td>
+                      <td role="cell" className="proof-by">
+                        <span className="proof-chip" data-by={row.checkedBy}>
+                          <Icon aria-hidden="true" />
+                          {c.chips[row.checkedBy]}
+                        </span>
+                        {row.caveats.map((caveat) => (
+                          <span key={caveat} className="proof-flag">
+                            {c.chips[caveat]}
+                          </span>
+                        ))}
+                      </td>
+                      <td role="cell" className="proof-when">
+                        <time dateTime={row.measuredAt}>
+                          <span className="proof-measured-word">{c.measured} </span>
+                          <span className="proof-date">{formatMeasured(row.measuredAt, locale)}</span>
+                        </time>
+                        <span className="proof-ago" data-capture-skip>
+                          ({c.ago(age.days)})
+                        </span>
+                        {age.stale ? (
+                          <span className="proof-stale" data-capture-skip>
+                            <Clock aria-hidden="true" />
+                            {c.stale(row.staleAfterDays)}
+                          </span>
+                        ) : null}
+                      </td>
+                      <td role="cell" className="proof-check">
+                        <a href={row.checkUrl.startsWith("/") ? localePath(locale, row.checkUrl) : row.checkUrl} className="proof-link">
+                          {c.check.slice(0, c.check.lastIndexOf(" ") + 1)}
+                          <span className="whitespace-nowrap">
+                            {c.check.slice(c.check.lastIndexOf(" ") + 1)}
+                            <ArrowUpRight aria-hidden="true" />
+                          </span>
+                        </a>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 

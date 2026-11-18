@@ -69,7 +69,8 @@ const pageText = () => {
     if (node.nodeType === 3) return esc(inPre ? node.nodeValue : node.nodeValue.replace(/\s+/g, " "));
     if (node.nodeType !== 1) return "";
     const tag = node.tagName.toUpperCase();
-    if (SKIP.has(tag) || node.hidden || node.getAttribute("aria-hidden") === "true") return "";
+    // data-capture-skip marks text that changes every day or repeats another element on the page (the days since a measurement, the table caption).
+    if (SKIP.has(tag) || node.hidden || node.getAttribute("aria-hidden") === "true" || node.hasAttribute("data-capture-skip")) return "";
     const display = getComputedStyle(node).display;
     if (display === "none") return "";
     // Boxes the page lays out side by side or one under the other (flex items, blocks) are separate words even when the code has no space between them.

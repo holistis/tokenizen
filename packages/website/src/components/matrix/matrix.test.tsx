@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { BUSINESS_LINE } from "@/components/footer";
 import { HomePage, legacyAnchorTarget } from "@/components/home/home-page";
@@ -15,6 +15,7 @@ import { findPostByPath } from "@/data/blog-posts";
 import { ADVISORY_URL, CINEMA, CONTACT_EMAIL, HOME, OFFERS } from "@/data/home-copy";
 import { SCORE_RUNS } from "@/data/scoreboard";
 import { LocaleProvider, type Locale } from "@/i18n/context";
+import { readableText } from "@/test-utils/readable-text";
 import { cellPath, hashMarkCells } from "@/lib/hash-mark";
 
 import blogPosts from "@/data/blog-posts.ts?raw";
@@ -261,7 +262,7 @@ describe("the homepage", () => {
   // The visitor asked for: reliability, technique, what is unique, mission and vision, all on the homepage, each with its own picture.
   it("shows the pillars, security, mission and vision in order, between the offers and the conversation", () => {
     const html = page("en", <HomePage />);
-    const at = ["top", "aanbod", "betrouwbaarheid", "beveiliging", "missie", "nagaan", "onbekend", "praat"].map((id) => html.indexOf(`id="${id}"`));
+    const at = ["top", "aanbod", "bewijs", "betrouwbaarheid", "beveiliging", "missie", "nagaan", "onbekend", "praat"].map((id) => html.indexOf(`id="${id}"`));
     expect(at.every((i) => i > -1)).toBe(true);
     expect([...at].sort((a, b) => a - b)).toEqual(at);
     expect(html).toContain(CINEMA.en.mission.mission.title);
@@ -296,6 +297,71 @@ describe("the homepage", () => {
     // No price in the block.
     expect(JSON.stringify(CINEMA[locale].workWithUs)).not.toMatch(/\d|€|\beuro\b|dollar/i);
     expect(CINEMA[locale].workWithUs.steps).toHaveLength(3);
+  });
+
+  // The proof matrix replaced the five tiles of the hero. The words below are typed by hand: they must not be read back from the data file.
+  const MATRIX = [
+    {
+      locale: "en" as const,
+      heading: "What we measured, and how you can check it",
+      numbers: ["7 audits", "3 of 3", "109", "0 of 600", "1 payment", "97 of 105"],
+      dates: ["Measured 2 Nov 2026", "Measured 17 Oct 2026", "Measured 28 Oct 2026", "Measured 15 Oct 2026", "Measured 23 Oct 2026", "Measured 25 Oct 2026"],
+      chips: ["Our own measurement", "Checked by someone outside our team", "On-chain", "A limit we publish", "Test network", "Our own test"],
+      columns: ["Number", "What it says", "Checked by", "Measured", "Check"],
+      check: "Check it yourself",
+      stale: "Older than 60 days: due for a new measurement",
+    },
+    {
+      locale: "nl" as const,
+      heading: "Wat we maten, en hoe je het zelf nagaat",
+      numbers: ["7 audits", "3 van 3", "109", "0 van 600", "1 betaling", "97 van 105"],
+      dates: ["Gemeten 2 nov 2026", "Gemeten 17 okt 2026", "Gemeten 28 okt 2026", "Gemeten 15 okt 2026", "Gemeten 23 okt 2026", "Gemeten 25 okt 2026"],
+      chips: ["Eigen meting", "Nagekeken door iemand buiten ons team", "Op de keten", "Een grens die we zelf publiceren", "Testnetwerk", "Eigen test"],
+      columns: ["Getal", "Wat het zegt", "Nagekeken door", "Gemeten", "Check"],
+      check: "Ga het zelf na",
+      stale: "Ouder dan 60 dagen: tijd voor een nieuwe meting",
+    },
+  ];
+
+  afterEach(() => vi.useRealTimers());
+
+  it.each(MATRIX)("shows the proof matrix as a table with a caption, headers, six rows and a check link in $locale", (m) => {
+    const html = page(m.locale, <HomePage />);
+    const text = readableText(html);
+    expect(html.match(/<table/g)).toHaveLength(1);
+    expect(html).toMatch(/<caption[^>]*>/);
+    expect(html.match(/scope="col"/g)).toHaveLength(5);
+    expect(html.match(/scope="row"/g)).toHaveLength(6);
+    expect(html.match(/class="proof-row"/g)).toHaveLength(6);
+    for (const piece of [m.heading, ...m.numbers, ...m.dates, ...m.chips, ...m.columns]) expect(text, piece).toContain(piece);
+    const links = [...html.matchAll(/<a [^>]*class="proof-link"[^>]*>([\s\S]*?)<\/a>/g)].map((x) => readableText(x[1], { gap: "" }).trim());
+    expect(links).toEqual(Array(6).fill(m.check));
+    // The days since the measurement are worked out by the page: a number, not a word.
+    expect(html.match(/\(\d+ (days|dagen) (ago|geleden)\)/g)).toHaveLength(6);
+  });
+
+  it("puts the proof matrix between the seven offers and the reliability section, and keeps the five tiles out of the hero", () => {
+    for (const locale of ["en", "nl"] as const) {
+      const html = page(locale, <HomePage />);
+      expect(html.indexOf('id="aanbod-talk"'), locale).toBeLessThan(html.indexOf('id="bewijs"'));
+      expect(html.indexOf('id="bewijs"'), locale).toBeLessThan(html.indexOf('id="betrouwbaarheid"'));
+      expect(html, locale).not.toContain("chip-glass");
+      expect("chips" in HOME[locale].hero, locale).toBe(false);
+    }
+  });
+
+  it.each(MATRIX)("says which rows are older than their limit, and only those, in $locale", (m) => {
+    // 20 December 2026: the sample (15 Oct) is 66 days old and the second checker (17 Oct) 64; the others are 48 to 58.
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-12-20T09:00:00Z"));
+    const html = page(m.locale, <HomePage />);
+    expect(html.match(new RegExp(m.stale, "g"))).toHaveLength(2);
+    expect(html).toContain(m.locale === "en" ? "(66 days ago)" : "(66 dagen geleden)");
+    expect(html).toContain(m.locale === "en" ? "(48 days ago)" : "(48 dagen geleden)");
+    // Today, nothing is old yet.
+    vi.setSystemTime(new Date("2026-11-18T09:00:00Z"));
+    expect(page(m.locale, <HomePage />)).not.toContain(m.stale);
+    expect(page(m.locale, <HomePage />)).toContain(m.locale === "en" ? "(21 days ago)" : "(21 dagen geleden)");
   });
 
   // Who we are belongs on the About page. The homepage does not name the owners and shows no portrait.
