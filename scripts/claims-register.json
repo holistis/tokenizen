@@ -254,5 +254,26 @@
       { "file": "packages/website/src/data/scoreboard.ts", "kind": "contains", "expected": "97 of 105 known findings were still not found" },
       { "file": "packages/website/src/data/proof-matrix.ts", "kind": "contains", "expected": "id: \"scan-misses\"" }
     ]
+  },
+  {
+    "id": "home-autoharness-20-to-4",
+    "text": "The home page says our merged pull request cut the leaks of fake secret keys in an open-source AI tool's test from 20 of 68 cases to 4 (public in the pull request: 68 cases, 20 on main, 4 after)",
+    "pages": ["/", "/nl"],
+    "mustContain": [{ "regex": "20 (of|van de) 68 (cases|gevallen) (to|naar) 4\\b" }, { "regex": "(fake secret keys|nepsleutels)" }],
+    "source": [
+      { "file": "packages/website/src/data/home-copy.ts", "kind": "contains", "expected": "from 20 of 68 cases to 4." },
+      { "file": "packages/website/src/data/home-copy.ts", "kind": "contains", "expected": "van 20 van de 68 gevallen naar 4." },
+      { "file": "packages/website/src/data/blog-posts.ts", "kind": "contains", "expected": "value: \"20 to 4\"" }
+    ]
+  },
+  {
+    "id": "note-autoharness-20-to-4",
+    "text": "The fact card in the note Check. Pay. Prove. says 20 fake secret keys leaked in 68 test cases before our merged pull request and 4 after, covers only the redaction function, and names what still leaks",
+    "pages": ["/notes/check-pay-prove"],
+    "mustContain": ["20 before and 4 after our pull request (merged)", "The test covers only the function that hides keys", "a bare 40-character AWS key and a password in plain words"],
+    "source": [
+      { "file": "packages/website/src/data/blog-posts.ts", "kind": "contains", "expected": "href: \"https://github.com/tigerless-labs/autoharness/pull/278\"" },
+      { "file": "packages/website/src/data/blog-posts.ts", "kind": "contains", "expected": "Fake secret keys that still leaked in 68 test cases" }
+    ]
   }
 ]

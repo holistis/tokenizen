@@ -141,9 +141,9 @@ Eight checks read it back from the chain. The video shows four: the rater is the
         intro: "Six numbers, each one with the place where you can check it.",
         items: [
           {
-            value: "33 to 20 to 4",
+            value: "20 to 4",
             label:
-              "Secrets still leaking in 68 test cases of an open-source AI coding tool with more than 10,000 stars: before, after the maintainers' own fixes, and with our fix (our pull request is merged).",
+              "Fake secret keys that still leaked in 68 test cases of an open-source AI coding tool with more than 10,000 stars: 20 before and 4 after our pull request (merged). The test covers only the function that hides keys. Still leaking: a bare 40-character AWS key and a password in plain words.",
             href: "https://github.com/tigerless-labs/autoharness/pull/278",
             hrefLabel: "Our pull request",
           },

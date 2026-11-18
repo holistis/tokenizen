@@ -19,6 +19,11 @@ const OVERCLAIMS = [
   "auteur van de x402-betaalspecificatie",
   "auteur van de x402-specificatie",
   "auteur van de specificatie",
+  "33 secrets leaked",
+  "33 to 20 to 4",
+  "after the maintainers' own fixes",
+  "lekten 33 geheimen",
+  "na de eigen reparaties van de makers",
 ];
 
 // A second, hand-typed copy that does not read OVERCLAIMS. If a phrase is dropped or reworded
@@ -35,6 +40,11 @@ const MUST_STAY_FLAGGED = [
   "auteur van de x402-betaalspecificatie",
   "auteur van de x402-specificatie",
   "auteur van de specificatie",
+  "33 secrets leaked",
+  "33 to 20 to 4",
+  "after the maintainers' own fixes",
+  "lekten 33 geheimen",
+  "na de eigen reparaties van de makers",
 ];
 
 /** Returns the overclaim phrases found in a text, case-insensitive, with any run of whitespace as one space. */
