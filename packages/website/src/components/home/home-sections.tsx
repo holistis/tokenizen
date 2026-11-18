@@ -114,6 +114,14 @@ export function PillarScene({ pillar, image, side }: { pillar: Pillar; image: st
           </li>
         ))}
       </ul>
+      {pillar.source ? (
+        <p className="mt-6">
+          <a href={pillar.source.href} className="inline-flex items-center gap-1 font-mono text-xs uppercase tracking-wide text-[color:var(--glow)] underline-offset-2 hover:underline">
+            {pillar.source.label}
+            <ArrowUpRight className="size-3.5" aria-hidden="true" />
+          </a>
+        </p>
+      ) : null}
     </Scene>
   );
 }

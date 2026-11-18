@@ -350,6 +350,8 @@ export interface Pillar {
   label: string;
   title: string;
   points: string[];
+  /** An optional link under the points, to the page where the numbers come from. */
+  source?: { label: string; href: string };
 }
 
 export interface CinemaCopy {
@@ -397,9 +399,11 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
         points: [
           "Each result lists the public pages that were asked for, and whether that worked.",
           "Eight security signals, measured over 109 public repositories on 28 October 2026. The method is in a published note.",
+          "Example: we counted who holds the keys of 3,427 ERC-3643 token issuances. Anyone can recount it with one command.",
           "A Signal log is a log in which every line holds the hash of the line before it. Its timestamp comes from OpenTimestamps, outside our control, and shows that the log existed by that date.",
           "Our misses sit on the same page as our hits. Our scan missed 97 of 105 known findings in its run on eight audit contests.",
         ],
+        source: { label: "Read the note", href: "/notes/who-holds-the-keys-of-erc-3643-issuances" },
       },
     ],
     mission: {
@@ -454,9 +458,11 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
         points: [
           "Elke uitslag noemt de openbare pagina's die zijn opgevraagd, en of dat lukte.",
           "Acht beveiligingssignalen, gemeten bij 109 openbare repositories op 28 oktober 2026. De methode staat in een gepubliceerde notitie.",
+          "Voorbeeld: we telden wie de sleutels houdt van 3.427 ERC-3643-uitgiften. Iedereen kan het met één commando natellen.",
           "Een Signal log is een logboek waarin elke regel de hash van de regel ervoor bevat. De tijdstempel komt van OpenTimestamps, buiten onze controle, en laat zien dat het logboek op die datum al bestond.",
           "Onze missers staan op dezelfde pagina als onze successen. Onze scan miste 97 van de 105 bekende bevindingen in de run op acht auditwedstrijden.",
         ],
+        source: { label: "Lees de notitie (Engels)", href: "/nl/notes/who-holds-the-keys-of-erc-3643-issuances" },
       },
     ],
     mission: {
