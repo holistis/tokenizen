@@ -334,7 +334,7 @@ describe("the homepage", () => {
     expect(html.match(/scope="row"/g)).toHaveLength(6);
     expect(html.match(/class="proof-row"/g)).toHaveLength(6);
     for (const piece of [m.heading, ...m.numbers, ...m.dates, ...m.chips, ...m.columns]) expect(text, piece).toContain(piece);
-    const links = [...html.matchAll(/<a [^>]*class="proof-link"[^>]*>([\s\S]*?)<\/a>/g)].map((x) => x[1].replace(/<[^>]+>/g, "").trim());
+    const links = [...html.matchAll(/<a [^>]*class="proof-link"[^>]*>([\s\S]*?)<\/a>/g)].map((x) => readableText(x[1], { gap: "" }).trim());
     expect(links).toEqual(Array(6).fill(m.check));
     // The days since the measurement are worked out by the page: a number, not a word.
     expect(html.match(/\(\d+ (days|dagen) (ago|geleden)\)/g)).toHaveLength(6);
