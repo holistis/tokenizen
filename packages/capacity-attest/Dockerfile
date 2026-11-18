@@ -14,14 +14,14 @@
 # gepubliceerde registry. Live getest in een losse map met precies deze stappen
 # voor dit bestand geschreven werd: npm install + npm run build + een echte
 # initialize/tools/list-uitwisseling over stdio, alle drie groen.
-FROM node:26-alpine@sha256:8996bb5821d62a8fd9bb27c1cb07462f3fdce6e47d640c6a881ead0b064ce216 AS build
+FROM node:26-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5 AS build
 WORKDIR /app
 COPY package.json tsconfig.json ./
 RUN npm install --no-audit --no-fund
 COPY src ./src
 RUN npm run build
 
-FROM node:26-alpine@sha256:8996bb5821d62a8fd9bb27c1cb07462f3fdce6e47d640c6a881ead0b064ce216
+FROM node:26-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5
 WORKDIR /app
 COPY --from=build /app/package.json ./
 RUN npm install --omit=dev --no-audit --no-fund
