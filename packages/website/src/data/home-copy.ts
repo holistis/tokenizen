@@ -168,7 +168,6 @@ export interface HomeCopy {
     body: string;
     ctaPrimary: string;
     ctaSecondary: string;
-    chips: Array<{ value: string; label: string; href: string }>;
   };
   check: { heading: string; body: string; placeholder: string; button: string; fine: string; label: string };
   proof: { heading: string; body: string; sealed: string; scoreboard: string };
@@ -197,13 +196,6 @@ export const HOME: Record<Locale, HomeCopy> = {
       body: "AI agents now pay each other. Our open-source receipts record what the seller offered and what the buyer says arrived, each signed by its own side, so anyone can check them. We also find leaks in real software and show the numbers. In an open-source AI tool with more than 10,000 stars, 33 secrets leaked before, 20 after the maintainers' own fixes and 4 with ours (our pull request is merged). Check your repository free in a minute, see the price of a smart contract scan before you pay, and keep a log whose timestamp is outside our control. Every number below links to the commands, so you can run it yourself.",
       ctaPrimary: "Check your repository",
       ctaSecondary: "See what we offer",
-      chips: [
-        { value: "0 of 600", label: "x402 catalogue records we sampled from one index declare the offer-receipt extension (October 2026). Ours signs offers, and you can check one yourself", href: "/notes/zero-of-600-x402-services-sign-a-receipt" },
-        { value: "On-chain", label: "one real payment on Base mainnet from a test agent of ours to our own service, with the transactions open to check", href: "/notes/check-pay-prove" },
-        { value: "109", label: "public repositories in ten EU countries measured on eight security signals, our misses published", href: "/notes/eight-security-signals-109-repositories" },
-        { value: "Recount", label: "the results of our research scan runs on 7 audits come with their verdict files and a script that recounts them, the leader's higher score included. Someone outside our team has already recounted them", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-02-our-scan-under-the-benchmark-judge" },
-        { value: "3 of 3", label: "test receipts on which a second checker, written separately by the author of an open x402 receipt proposal, reached the same result as ours", href: "https://github.com/x402-foundation/x402/pull/3827#issuecomment-6230063003" },
-      ],
     },
     check: {
       heading: "Now check yours.",
@@ -264,13 +256,6 @@ export const HOME: Record<Locale, HomeCopy> = {
       body: "AI-agents betalen elkaar nu. Onze open-source bonnetjes leggen vast wat de verkoper aanbood en wat de koper zegt te hebben ontvangen, elk ondertekend door de eigen kant, zodat iedereen het kan nagaan. Daarnaast vinden wij lekken in echte software en laten de cijfers zien. In een open-source AI-gereedschap met meer dan 10.000 sterren lekten 33 geheimen, na de eigen reparaties van de makers nog 20 en met de onze nog 4 (onze pull request is samengevoegd). Check je repository gratis in een minuut, zie de prijs van een smart-contractscan voordat je betaalt en houd een logboek bij met een tijdstempel buiten onze controle. Elk getal hieronder linkt naar de commando's, dus je kunt het zelf draaien.",
       ctaPrimary: "Check jouw repository",
       ctaSecondary: "Bekijk ons aanbod",
-      chips: [
-        { value: "0 van 600", label: "x402-catalogusrecords uit een index die we als steekproef namen, vermelden de offer-receipt-extensie (oktober 2026). Onze dienst ondertekent aanbiedingen, en je kunt er zelf een nalopen", href: "/notes/zero-of-600-x402-services-sign-a-receipt" },
-        { value: "Op de keten", label: "een echte betaling op Base mainnet van een testagent van ons aan onze eigen dienst, met de transacties open om na te kijken", href: "/notes/check-pay-prove" },
-        { value: "109", label: "openbare repositories in tien EU-landen gemeten op acht beveiligingssignalen, onze missers gepubliceerd", href: "/notes/eight-security-signals-109-repositories" },
-        { value: "Tel na", label: "de resultaten van onze onderzoeksscans op 7 audits komen met hun oordeelsbestanden en een script dat alles opnieuw telt, ook de hogere score van de koploper. Iemand buiten ons team heeft het al nagerekend", href: "https://github.com/holistis/bug-bounty-intelligence-mcp/tree/main/results/2026-11-02-our-scan-under-the-benchmark-judge" },
-        { value: "3 van 3", label: "testbonnetjes waarop een tweede controleprogramma, apart geschreven door de schrijver van een openstaand x402-bonnetjesvoorstel, tot hetzelfde resultaat kwam als het onze", href: "https://github.com/x402-foundation/x402/pull/3827#issuecomment-6230063003" },
-      ],
     },
     check: {
       heading: "Check nu de jouwe.",

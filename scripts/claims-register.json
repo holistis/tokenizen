@@ -195,5 +195,64 @@
       { "file": "packages/website/src/data/blog-posts.ts", "kind": "contains", "expected": "value: \"64 of 117\"" },
       { "file": "packages/website/src/data/blog-posts.ts", "kind": "contains", "expected": "value: \"98 of 117\"" }
     ]
+  },
+  {
+    "id": "matrix-x402-receipts",
+    "text": "The proof matrix on the home page says 0 of 600 sampled x402 catalogue records declare the offer-receipt extension, measured 15 October 2026",
+    "pages": ["/", "/nl"],
+    "mustContain": [{ "regex": "\\b0 (of|van) 600\\b" }, { "regex": "(Measured |Gemeten )?(15 Oct|15 okt) 2026" }],
+    "source": [
+      { "file": "packages/website/src/data/proof-matrix.ts", "kind": "contains", "expected": "id: \"x402-receipts\"" },
+      { "file": "packages/website/src/data/blog-posts.ts", "kind": "contains", "expected": "value: \"0 of 600\"" }
+    ]
+  },
+  {
+    "id": "matrix-repositories",
+    "text": "The proof matrix says 109 public repositories were measured on eight security signals, measured 28 October 2026",
+    "pages": ["/", "/nl"],
+    "mustContain": [{ "regex": "\\b109 (Public repositories in ten EU countries|Openbare repositories in tien EU-landen)" }, { "regex": "(Measured |Gemeten )?(28 Oct|28 okt) 2026" }],
+    "source": [
+      { "file": "packages/website/src/data/cra-benchmark.ts", "kind": "contains", "expected": "BENCHMARK_REPOSITORIES = 109" },
+      { "file": "packages/website/src/data/cra-benchmark.ts", "kind": "contains", "expected": "BENCHMARK_DATE = \"2026-10-28\"" }
+    ]
+  },
+  {
+    "id": "matrix-recount",
+    "text": "The proof matrix says our research scan runs on 7 audits can be recounted, measured 2 November 2026",
+    "pages": ["/", "/nl"],
+    "mustContain": [{ "regex": "\\b7 audits\\b" }, { "regex": "(Measured |Gemeten )?(2 Nov|2 nov) 2026" }],
+    "source": [
+      { "file": "packages/website/src/data/scoreboard.ts", "kind": "contains", "expected": "7 audits of the public EVMbench detect set" }
+    ]
+  },
+  {
+    "id": "matrix-second-checker",
+    "text": "The proof matrix says a second checker reached the same result on 3 of 3 test receipts, on a test network, measured 17 October 2026",
+    "pages": ["/", "/nl"],
+    "mustContain": [{ "regex": "\\b3 (of|van) 3\\b" }, { "regex": "(Test network|Testnetwerk)" }, { "regex": "(Measured |Gemeten )?(17 Oct|17 okt) 2026" }],
+    "source": [
+      { "file": "packages/website/src/data/proof-matrix.ts", "kind": "contains", "expected": "id: \"second-checker\"" },
+      { "file": "packages/website/src/data/proof-matrix.ts", "kind": "contains", "expected": "SECOND_CHECKER = \"https://github.com/x402-foundation/x402/pull/3827#issuecomment-6230063003\"" }
+    ]
+  },
+  {
+    "id": "matrix-payment",
+    "text": "The proof matrix says one real payment was made on Base mainnet from a test agent of ours to our own service, measured 23 October 2026",
+    "pages": ["/", "/nl"],
+    "mustContain": [{ "regex": "\\b1 (payment|betaling)\\b" }, { "regex": "(Our own test|Eigen test)" }, { "regex": "(Measured |Gemeten )?(23 Oct|23 okt) 2026" }],
+    "source": [
+      { "file": "packages/website/src/data/proof-matrix.ts", "kind": "contains", "expected": "id: \"payment\"" },
+      { "file": "packages/website/src/data/blog-posts.ts", "kind": "contains", "expected": "One real AI-agent payment on Base mainnet" }
+    ]
+  },
+  {
+    "id": "matrix-scan-misses",
+    "text": "The proof matrix publishes that our scan missed 97 of 105 known findings, measured 25 October 2026, as a limit",
+    "pages": ["/", "/nl"],
+    "mustContain": [{ "regex": "(Our scan missed|Onze scan miste) 97 (of|van de) 105\\b" }, { "regex": "(A limit we publish|Een grens die we zelf publiceren)" }, { "regex": "(Measured |Gemeten )?(25 Oct|25 okt) 2026" }],
+    "source": [
+      { "file": "packages/website/src/data/scoreboard.ts", "kind": "contains", "expected": "97 of 105 known findings were still not found" },
+      { "file": "packages/website/src/data/proof-matrix.ts", "kind": "contains", "expected": "id: \"scan-misses\"" }
+    ]
   }
 ]
