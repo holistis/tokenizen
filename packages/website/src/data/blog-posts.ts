@@ -1639,6 +1639,59 @@ Cite as: holistis (github.com/holistis), ERC-3643 key-control census, 16 Novembe
       },
     ],
   },
+  {
+    slug: "we-planted-mistakes-in-our-own-test-vectors",
+    kind: "note",
+    date: "2026-11-20",
+    title: "We planted 23 mistakes in our own code. Our 22 test vectors caught 11.",
+    dek: "A test file that every correct implementation passes tells you little unless a wrong one fails. We measured how many wrong ones ours miss, and closed four of the gaps.",
+    description:
+      "We planted 23 plausible mistakes in our own canonicalization code: 22 test vectors and a two-implementation harness caught 11. Four new pairs close four gaps.",
+    tags: ["Tools", "Measurements"],
+    readMinutes: 3,
+    blocks: [
+      {
+        type: "md",
+        text: `On 20 November 2026 we tested our own tests. The 22 known-answer vectors for section 5.5 of the x402 specification, the part that gives a payment attempt one identity, are frozen, and two people outside our project have checked them. We wanted to know what they would not notice.
+
+We took our canonicalization code, a file of 162 lines, and planted 23 plausible mistakes in a copy of it, one at a time: a query sorted when it should keep its arrival order, a plus sign read as a space, lowercase hex, a body hashed before it was decompressed, and so on. Each copy was run against the 22 files and against the harness that compares two separately written implementations. They caught 11 of the 23. The other 12 passed. The tests that were already in the repository caught four more of those 12, so 8 mistakes passed everything we had.
+
+Four of the 8 were rules that standards settle and that no file pinned down: a body compressed with deflate, the order of several content encodings, a charset name written in capitals, and a media type that ends in plus json. We added a pair of files for each, a right answer and a plausible wrong one, in a folder of their own. The 22 frozen files were not touched. Our own code and the Python standard library checker read all eight files and agree on every value, and each of the four mistakes now fails.
+
+Four mistakes still pass, and we say which: empty segments in a query, the x-gzip alias, a body that is not valid in its declared charset, and brotli. Two of them, empty query segments and invalid bytes, are choices that nothing we know of settles. The x-gzip alias is a legacy name that the HTTP standard says to treat as gzip, and we have no file for it yet. Brotli cannot be computed independently with the Python standard library, so a second reader cannot confirm it yet.
+
+If you publish test vectors, ask what mistakes they cannot see. A file that every correct implementation passes is only half a test.`,
+      },
+      {
+        type: "facts",
+        heading: "What you can check",
+        intro: "Each card links to the place where a stranger can look.",
+        items: [
+          { value: "11 of 23", label: "planted mistakes caught by the 22 frozen files and the interop harness, counted on 20 November 2026 in our own run", href: "https://github.com/holistis/agent-receipt-verify/tree/main/vectors/attempt-identity-extra", hrefLabel: "The README with the counts" },
+          { value: "8 of 23", label: "planted mistakes that also passed the other tests of the repository, so nothing we had would have noticed them", href: "https://github.com/holistis/agent-receipt-verify/tree/main/vectors/attempt-identity-extra", hrefLabel: "The same README" },
+          { value: "4 pairs", label: "new files, a right answer and a wrong one each, merged as pull request 113; the 22 frozen files are unchanged", href: "https://github.com/holistis/agent-receipt-verify/pull/113", hrefLabel: "Pull request 113" },
+          { value: "npm run interop-extra", label: "the command that reads the eight new files with two separately written implementations and judges them with seven rules", href: "https://github.com/holistis/agent-receipt-verify/blob/main/interop/README.md", hrefLabel: "The interop README" },
+        ],
+      },
+      {
+        type: "md",
+        text: `## What we do not claim
+
+The 23 mistakes are our own picks, so a stranger could plant others and count differently. We have not published the script that plants them, so you cannot repeat our exact count yet. Nobody outside our project has read the eight new values; they were computed by our own code and reproduced by the Python checker. The extra files cover one canonicalization step, not the whole identity, and four known gaps are still open. This is our own check of our own work, not an independent audit.
+
+We are Tokenizen (tokenizen.nl) and we build these tools ourselves, so we are not neutral here.`,
+      },
+      {
+        type: "cta",
+        heading: "Run it yourself",
+        text: "Clone the repository, run npm run interop-extra, then break the canonicalization code in a way we did not think of. If a mistake passes, tell us.",
+        links: [
+          { label: "agent-receipt-verify on GitHub", href: "https://github.com/holistis/agent-receipt-verify" },
+          { label: "The extra vectors", href: "https://github.com/holistis/agent-receipt-verify/tree/main/vectors/attempt-identity-extra" },
+        ],
+      },
+    ],
+  },
 ];
 
 export function postPath(slug: string): string {
