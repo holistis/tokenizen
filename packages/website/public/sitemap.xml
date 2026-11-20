@@ -419,4 +419,9 @@
     <xhtml:link rel="alternate" hreflang="nl" href="https://tokenizen.nl/nl/check" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://tokenizen.nl/check" />
   </url>
+  <url>
+    <loc>https://tokenizen.nl/notes/we-planted-mistakes-in-our-own-test-vectors</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>

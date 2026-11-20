@@ -1014,6 +1014,19 @@
       "twitterDescription": "On 8 sealed audit contests our scan in production found 1 of 105 known findings, a new version 4. Our bar was 5 more, so production stays as it is.",
       "alternates": []
     },
+    "/notes/we-planted-mistakes-in-our-own-test-vectors": {
+      "lang": "en",
+      "title": "We planted 23 mistakes in our own code. Our 22 test vectors caught 11. | tokenizen",
+      "description": "We planted 23 plausible mistakes in our own canonicalization code: 22 test vectors and a two-implementation harness caught 11. Four new pairs close four gaps.",
+      "canonical": "https://tokenizen.nl/notes/we-planted-mistakes-in-our-own-test-vectors",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/we-planted-mistakes-in-our-own-test-vectors",
+      "ogTitle": "We planted 23 mistakes in our own code. Our 22 test vectors caught 11. | tokenizen",
+      "ogDescription": "We planted 23 plausible mistakes in our own canonicalization code: 22 test vectors and a two-implementation harness caught 11. Four new pairs close four gaps.",
+      "twitterTitle": "We planted 23 mistakes in our own code. Our 22 test vectors caught 11. | tokenizen",
+      "twitterDescription": "We planted 23 plausible mistakes in our own canonicalization code: 22 test vectors and a two-implementation harness caught 11. Four new pairs close four gaps.",
+      "alternates": []
+    },
     "/notes/who-holds-the-keys-of-erc-3643-issuances": {
       "lang": "en",
       "title": "Who holds the keys of ERC-3643 token issuances? | tokenizen",
