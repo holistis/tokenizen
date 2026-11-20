@@ -57,10 +57,14 @@ export function tlsDagen(host, nu = Date.now()) {
 // ---------------------------------------------------------------------------------------------------------------------------------
 // Judging: plain functions of an answer, so a test can feed them a good answer and a broken one.
 
-export function oordeelStartpagina(ant) {
+/** The expected title comes from scripts/diensten.json (`startTitel`), and a test keeps it equal to the title in packages/website/index.html. It was hard-coded here
+ *  and went stale when the site changed its title, which kept the watcher red for more than a day while the site itself was fine. Without a configured title the
+ *  answer is onbekend, never green. */
+export function oordeelStartpagina(ant, titel) {
   if (ant.fout) return uitslag("website-start", "website", ONBEKEND, "niet bereikbaar om te meten");
   if (ant.status !== 200) return uitslag("website-start", "website", ROOD, `status ${ant.status}`);
-  if (!ant.tekst.includes('<html lang="en"') || !ant.tekst.includes("<title>tokenizen | We find the leaks.")) return uitslag("website-start", "website", ROOD, "de startpagina mist zijn vaste kop");
+  if (typeof titel !== "string" || titel.trim() === "") return uitslag("website-start", "website", ONBEKEND, "er staat geen verwachte titel in de lijst");
+  if (!ant.tekst.includes('<html lang="en"') || !ant.tekst.includes(`<title>${titel}</title>`)) return uitslag("website-start", "website", ROOD, "de startpagina mist zijn vaste kop");
   return uitslag("website-start", "website", GROEN);
 }
 
@@ -191,7 +195,7 @@ export async function eenRonde(config, { haal: lees = (u) => haal(u, { token: pr
   // A drill: a red that is put there on purpose, to see that a failed run really reaches the owner. Only a person starts it, by hand.
   if (oefenalarm) r.push(uitslag("oefenalarm", "bewaker", ROOD, "dit is een proef: een bewust rood alarm om te zien dat de mail de eigenaar bereikt"));
   const start = await lees("https://tokenizen.nl/");
-  r.push(oordeelStartpagina(start));
+  r.push(oordeelStartpagina(start, config.startTitel));
 
   let bundel = null;
   const adres = start.tekst ? bundelAdres(start.tekst) : null;
