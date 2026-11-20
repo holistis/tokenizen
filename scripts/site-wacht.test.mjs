@@ -34,7 +34,7 @@ const WORTEL = fileURLToPath(new URL("..", import.meta.url));
 function wereld(wijziging = {}) {
   const bundel = [...config.inhoud.moetErInStaan, ...config.betaallinks].join(" ... ");
   const goed = {
-    "https://tokenizen.nl/": { status: 200, location: "", paymentRequired: "", tekst: '<!doctype html><html lang="en"><head><title>tokenizen | We find the leaks. We publish the numbers.</title><script type="module" src="/assets/index-AbC123.js"></script></head></html>' },
+    "https://tokenizen.nl/": { status: 200, location: "", paymentRequired: "", tekst: '<!doctype html><html lang="en"><head><title>' + config.startTitel + '</title><script type="module" src="/assets/index-AbC123.js"></script></head></html>' },
     "https://tokenizen.nl/assets/index-AbC123.js": { status: 200, location: "", paymentRequired: "", tekst: bundel },
     "https://tokenizen.nl/en/checks": { status: 301, location: "https://tokenizen.nl/checks", paymentRequired: "", tekst: "" },
     "https://tokenizen.nl/sitemap.xml": { status: 200, location: "", paymentRequired: "", tekst: '<?xml version="1.0"?><urlset><url><loc>https://tokenizen.nl/checks</loc></url><url><loc>https://tokenizen.nl/nl/checks</loc></url></urlset>' },
@@ -207,10 +207,35 @@ test("the deploy check: success is green, a failure is red, a running or cancell
   assert.equal(oordeelUitrol(antwoord([run("cancelled", "2026-10-29T08:00:00Z")]), naam).stand, ONBEKEND);
   assert.equal(oordeelUitrol(antwoord([{ name: "iets anders", status: "completed", conclusion: "failure", started_at: "2026-10-29T08:00:00Z" }]), naam).stand, ONBEKEND, "another check does not count");
   assert.equal(oordeelUitrol(antwoord([], 403), naam).stand, ONBEKEND, "a refused read is never green");
-  assert.equal(naam, "Workers Builds: tokenizen", "the watcher follows the worker that serves tokenizen.nl");
-  assert.equal(oordeelUitrol(antwoord([{ name: "Workers Builds: tokenizen-website", status: "completed", conclusion: "failure", started_at: "2026-10-29T08:00:00Z" }]), naam).stand, ONBEKEND, "the old worker's check no longer counts");
+  assert.equal(naam, "Workers Builds: tokenizen-website", "the watcher follows the worker that owns the routes of tokenizen.nl (packages/website/wrangler.jsonc)");
+  assert.equal(oordeelUitrol(antwoord([{ name: "Workers Builds: tokenizen", status: "completed", conclusion: "failure", started_at: "2026-10-29T08:00:00Z" }]), naam).stand, ONBEKEND, "the check of the legacy worker named tokenizen does not count");
+  assert.equal(oordeelUitrol(antwoord([{ name: "Workers Builds: tokenizen", status: "completed", conclusion: "failure", started_at: "2026-11-20T08:00:00Z" }, run("success", "2026-11-20T07:00:00Z")]), naam).stand, GROEN, "a failing legacy worker does not turn a good website deploy red");
   assert.equal(oordeelUitrol({ fout: "x" }, naam).stand, ONBEKEND);
   assert.equal(oordeelUitrol({ status: 200, tekst: "geen json" }, naam).stand, ONBEKEND);
+});
+
+test("the start page check: the exact title from the list is green, and every way to break it is red or onbekend (never green)", () => {
+  const titel = config.startTitel;
+  const pagina = (t, lang = '<html lang="en">') => ({ status: 200, tekst: `<!doctype html>${lang}<head><title>${t}</title></head></html>` });
+  assert.equal(oordeelStartpagina(pagina(titel), titel).stand, GROEN);
+  assert.equal(oordeelStartpagina(pagina("tokenizen | We find the leaks. We publish the numbers."), titel).stand, ROOD, "the old title is no longer the right one");
+  assert.equal(oordeelStartpagina(pagina(titel + " extra"), titel).stand, ROOD, "a title that only starts the same is not the same");
+  assert.equal(oordeelStartpagina(pagina(titel.slice(0, 20)), titel).stand, ROOD, "a cut-off title");
+  assert.equal(oordeelStartpagina(pagina(""), titel).stand, ROOD, "an empty title");
+  assert.equal(oordeelStartpagina(pagina(titel, '<html lang="nl">'), titel).stand, ROOD, "the page language changed");
+  assert.equal(oordeelStartpagina({ status: 200, tekst: "<html lang=\"en\"><head></head></html>" }, titel).stand, ROOD, "no title at all");
+  assert.equal(oordeelStartpagina({ status: 500, tekst: "" }, titel).stand, ROOD);
+  assert.equal(oordeelStartpagina({ fout: "x" }, titel).stand, ONBEKEND);
+  assert.equal(oordeelStartpagina(pagina(titel), undefined).stand, ONBEKEND, "without a configured title the answer is onbekend, never green");
+  assert.equal(oordeelStartpagina(pagina(titel), "").stand, ONBEKEND, "an empty configured title is not a title");
+});
+
+test("the title in the list equals the title of the website's own index.html, so the watcher cannot go stale again", () => {
+  const html = readFileSync(new URL("../packages/website/index.html", import.meta.url), "utf8");
+  const m = /<title>([^<]*)<\/title>/.exec(html);
+  assert.ok(m, "the website has a title");
+  assert.equal(config.startTitel, m[1], "scripts/diensten.json startTitel must be changed together with the title in packages/website/index.html");
+  assert.ok(html.includes('<html lang="en"'), "the page language the watcher expects");
 });
 
 test("the token goes to api.github.com only and to no other host", async () => {
