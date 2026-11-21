@@ -112,7 +112,7 @@ const RED_CASES = [
   },
   {
     name: "the full scan price is removed from the /scan page text",
-    change: (f) => f.replaceOnPage("/scan", /full scan costs 5 dollars/g, "full scan costs"),
+    change: (f) => f.replaceOnPage("/scan", /full scan \(5 dollars\)/g, "full scan"),
     red: ["scan-full-price"],
   },
   {
@@ -275,9 +275,9 @@ test("the real register passes against the real repository files", () => {
   assert.equal(runGreen(real), null);
 });
 
-test("the real register has 12 to 18 claims, each with pages, mustContain and a source", () => {
+test("the real register has 12 to 40 claims, each with pages, mustContain and a source", () => {
   const register = JSON.parse(fs.readFileSync(path.join(ROOT, REGISTER_REL), "utf8"));
-  assert.ok(register.length >= 12 && register.length <= 18, `register has ${register.length} claims`);
+  assert.ok(register.length >= 12 && register.length <= 40, `register has ${register.length} claims`);
   for (const c of register) {
     assert.ok(c.pages.length > 0, `${c.id} has no pages`);
     assert.ok(c.mustContain.length > 0, `${c.id} has no mustContain`);

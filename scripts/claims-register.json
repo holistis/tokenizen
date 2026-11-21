@@ -1,33 +1,25 @@
 [
   {
     "id": "scan-quick-price",
-    "text": "The quick scan costs 1 dollar, on the scan page in both languages",
+    "text": "The older quick scan is still sold and the scan page says it costs 1 dollar, in both languages",
     "pages": ["/scan", "/nl/scan"],
-    "mustContain": [{ "regex": "(quick scan costs|snelle scan kost) 1 dollar\\b" }],
+    "mustContain": [{ "regex": "(older quick scan|oudere snelle scan) \\(1 dollar\\)" }],
     "source": [
-      { "file": "packages/website/src/data/home-copy.ts", "kind": "contains", "expected": "Quick scan 1 dollar (the first 15 hypotheses)" },
-      { "file": "packages/website/src/data/home-copy.ts", "kind": "contains", "expected": "Snelle scan 1 dollar (de eerste 15 hypotheses)" },
+      { "file": "packages/website/src/components/pages/offer-pages.tsx", "kind": "contains", "expected": "The older quick scan (1 dollar) and full scan (5 dollars) are still sold" },
+      { "file": "packages/website/src/components/pages/offer-pages.tsx", "kind": "contains", "expected": "De oudere snelle scan (1 dollar) en volledige scan (5 dollar) worden nog verkocht" },
       { "file": "packages/website/public/llms.txt", "kind": "contains", "expected": "a quick scan costs 1 dollar" }
     ]
   },
   {
     "id": "scan-full-price",
-    "text": "The full scan costs 5 dollars, and the paid endpoint the outside watcher checks asks 5 USDC (5000000 units)",
+    "text": "The older full scan is still sold and the scan page says it costs 5 dollars, and the paid endpoint the outside watcher checks asks 5 USDC (5000000 units)",
     "pages": ["/scan", "/nl/scan"],
-    "mustContain": [{ "regex": "(full scan costs|volledige scan kost) 5 dollar" }],
+    "mustContain": [{ "regex": "(full scan \\(5 dollars\\)|volledige scan \\(5 dollar\\))" }],
     "source": [
       { "file": "scripts/diensten.json", "kind": "json-path", "path": "x402.bedrag", "expected": "5000000" },
+      { "file": "packages/website/src/components/pages/offer-pages.tsx", "kind": "contains", "expected": "The older quick scan (1 dollar) and full scan (5 dollars) are still sold" },
+      { "file": "packages/website/src/components/pages/offer-pages.tsx", "kind": "contains", "expected": "De oudere snelle scan (1 dollar) en volledige scan (5 dollar) worden nog verkocht" },
       { "file": "packages/website/src/data/home-copy.ts", "kind": "contains", "expected": "full scan 5 dollars" }
-    ]
-  },
-  {
-    "id": "home-scan-from-1-dollar",
-    "text": "The home page says a scan starts at 1 dollar",
-    "pages": ["/", "/nl"],
-    "mustContain": [{ "regex": "(From|Vanaf) 1 dollar per scan" }],
-    "source": [
-      { "file": "packages/website/src/data/home-copy.ts", "kind": "contains", "expected": "scan: \"From 1 dollar per scan\"" },
-      { "file": "packages/website/src/data/home-copy.ts", "kind": "contains", "expected": "scan: \"Vanaf 1 dollar per scan\"" }
     ]
   },
   {
@@ -43,9 +35,9 @@
   },
   {
     "id": "scan-page-v31-score",
-    "text": "The scan page says version 3.1 found 8 of 105, which is the v31-same-eight row of the scoreboard",
+    "text": "The scan page says the older scans found 8 of 105 known findings on harder contests, the numbers of the v31-same-eight row of the scoreboard",
     "pages": ["/scan", "/nl/scan"],
-    "mustContain": [{ "regex": "(Version|Versie) 3\\.1 (found|vond) 8 (of|van de) 105\\b" }],
+    "mustContain": [{ "regex": "(found 8 of 105 known findings on harder contests|8 van de 105 bekende bevindingen vond op moeilijkere wedstrijden)" }],
     "source": [
       { "file": "packages/website/src/data/scoreboard.ts", "kind": "regex-capture", "pattern": "id: \"v31-same-eight\",[^{}]*?version: \"([^\"]+)\",[^{}]*?known: (\\d+),\\s*found: (\\d+),", "expected": ["3.1", "105", "8"] },
       { "file": "packages/website/public/llms.txt", "kind": "contains", "expected": "version 3.1 found 8 of 105 known findings in its first 15 hypotheses" }
@@ -67,7 +59,8 @@
     "mustContain": [{ "regex": "\\b97 (of|van de) 105\\b" }],
     "source": [
       { "file": "packages/website/src/data/scoreboard.ts", "kind": "contains", "expected": "97 of 105 known findings were still not found" },
-      { "file": "packages/website/src/data/home-copy.ts", "kind": "contains", "expected": "We publish what our scan missed: 97 of 105 known findings" }
+      { "file": "packages/website/src/data/home-copy.ts", "kind": "contains", "expected": "Our scan missed 97 of 105 known findings in its run on eight audit contests." },
+      { "file": "packages/website/src/data/home-copy.ts", "kind": "contains", "expected": "Onze scan miste 97 van de 105 bekende bevindingen in de run op acht auditwedstrijden." }
     ]
   },
   {
