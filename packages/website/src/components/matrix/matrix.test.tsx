@@ -294,8 +294,12 @@ describe("the homepage", () => {
     expect(html.match(/id="aanbod-talk"/g)).toHaveLength(1);
     // The old card's price line is gone; the Security research card keeps its own sentence.
     expect(html.match(/No fixed offer yet|Nog geen vast aanbod/g)).toHaveLength(1);
-    // No price in the block.
-    expect(JSON.stringify(CINEMA[locale].workWithUs)).not.toMatch(/\d|€|\beuro\b|dollar/i);
+    // No price in the block. The three pages that others wrote about our work carry numbers of their own (cases, pull requests, a date), so for
+    // them only the words for money are barred; every other part of the block stays free of any digit.
+    const { others, othersLead, othersOpen, othersNote, ...ownText } = CINEMA[locale].workWithUs;
+    expect(JSON.stringify(ownText)).not.toMatch(/\d|€|\beuro\b|dollar/i);
+    expect(JSON.stringify([others, othersLead, othersOpen, othersNote])).not.toMatch(/€|\beuro\b|dollar|\bprice\b|\bprijs\b/i);
+    expect(others).toHaveLength(3);
     expect(CINEMA[locale].workWithUs.steps).toHaveLength(3);
   });
 

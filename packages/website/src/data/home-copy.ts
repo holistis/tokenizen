@@ -330,7 +330,20 @@ export interface CinemaCopy {
   mission: { label: string; mission: { label: string; title: string; text: string }; vision: { label: string; title: string; text: string } };
   talk: { heading: string; body: string; button: string; secondary: string; subject: string };
   /** The block that replaces the conversation card among the offers: what we do for a team, three first steps, how we answer. No price. */
-  workWithUs: { title: string; intro: string; stepsLead: string; steps: { name: string; text: string }[]; closing: string; button: string; subject: string };
+  workWithUs: {
+    title: string;
+    intro: string;
+    stepsLead: string;
+    steps: { name: string; text: string }[];
+    /** Pages other people wrote about our work, linked to the original: what they say, who wrote it, where it is. */
+    othersLead: string;
+    others: { text: string; source: string; href: string }[];
+    othersOpen: string;
+    othersNote: string;
+    closing: string;
+    button: string;
+    subject: string;
+  };
   note: string;
 }
 
@@ -401,6 +414,18 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
         { name: "Failure review.", text: "We walk through what happens when a payment response is lost, repeated or disputed, and list what your records can and cannot prove." },
         { name: "Repository check.", text: "We run our eight security signals over your public repositories and explain what each result does and does not say about the EU Cyber Resilience Act." },
       ],
+      othersLead: "What others wrote about our work:",
+      others: [
+        { text: "Nirium merged our 21 outside test vectors into its own test folder (pull request 398).", source: "Nirium", href: "https://github.com/nirium-protocol/nirium/pull/398" },
+        { text: "The changelog of x402-decision-record thanks us for an independent verifier that passed all 70 cases.", source: "x402-decision-record", href: "https://github.com/jrosgren/x402-decision-record/blob/main/CHANGELOG.md" },
+        {
+          text: "NSPG13 recomputed our known-answer vector on x402 pull request 4215 with Python. The receipt ID and the salt matched.",
+          source: "x402 pull request 4215",
+          href: "https://github.com/x402-foundation/x402/pull/4215#issuecomment-7046859777",
+        },
+      ],
+      othersOpen: "Open the original",
+      othersNote: "Facts from their own pages, not recommendations. Each link opens without a login. We checked all three on 21 November 2026.",
       closing: "Tell us where you stand. We reply within two working days with a scoped proposal and a fixed price. No paying customers yet, we say so, and we show our work.",
       button: "Contact us",
       subject: "Work with us",
@@ -472,6 +497,18 @@ export const CINEMA: Record<Locale, CinemaCopy> = {
         { name: "Foutenonderzoek.", text: "We lopen na wat er gebeurt als een betaalantwoord zoekraakt, dubbel komt of betwist wordt, en zetten op een rij wat je gegevens wel en niet bewijzen." },
         { name: "Repositorycontrole.", text: "We laten onze acht beveiligingssignalen over je openbare repositories lopen en leggen uit wat elk resultaat wel en niet zegt over de Europese Cyber Resilience Act." },
       ],
+      othersLead: "Wat anderen over ons werk schreven:",
+      others: [
+        { text: "Nirium nam onze 21 testgevallen van buitenaf op in de eigen testmap (pull request 398).", source: "Nirium", href: "https://github.com/nirium-protocol/nirium/pull/398" },
+        { text: "De changelog van x402-decision-record bedankt ons voor een onafhankelijke verifier die alle 70 gevallen haalde.", source: "x402-decision-record", href: "https://github.com/jrosgren/x402-decision-record/blob/main/CHANGELOG.md" },
+        {
+          text: "NSPG13 rekende ons known-answer-vector op x402 pull request 4215 zelfstandig na met Python. Receipt ID en salt kwamen overeen.",
+          source: "x402 pull request 4215",
+          href: "https://github.com/x402-foundation/x402/pull/4215#issuecomment-7046859777",
+        },
+      ],
+      othersOpen: "Open het origineel",
+      othersNote: "Feiten uit hun eigen pagina's, geen aanbevelingen. Elke link opent zonder inlog. We hebben alle drie gecontroleerd op 21 november 2026.",
       closing: "Vertel ons waar je staat. Binnen twee werkdagen krijg je een afgebakend voorstel met een vaste prijs. We hebben nog geen betalende klanten, dat zeggen we er gewoon bij, en we laten ons werk zien.",
       button: "Neem contact op",
       subject: "Werk met ons",
