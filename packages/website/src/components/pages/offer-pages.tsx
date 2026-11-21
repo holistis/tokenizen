@@ -921,6 +921,23 @@ const TALK = {
     getText: "A conversation about security, the EU Cyber Resilience Act or payments between agents, with the brother who does our consultancy and communication.",
     checkLabel: "How you check it",
     checkText: "Ask for our measurements. We show how each one was made and what it leaves out.",
+    othersLabel: "What others wrote about our work",
+    othersIntro: "Facts from their own pages, not recommendations. Each link opens without a login. We checked all three on 21 November 2026.",
+    othersOpen: "Open the original",
+    others: [
+      {
+        text: "Nirium merged our 21 outside test vectors into its own test folder (pull request 398).",
+        href: "https://github.com/nirium-protocol/nirium/pull/398",
+      },
+      {
+        text: "The changelog of x402-decision-record thanks us for an independent verifier that passed all 70 cases.",
+        href: "https://github.com/jrosgren/x402-decision-record/blob/main/CHANGELOG.md",
+      },
+      {
+        text: "NSPG13 recomputed our known-answer vector on x402 pull request 4215 with Python. The receipt ID and the salt matched.",
+        href: "https://github.com/x402-foundation/x402/pull/4215#issuecomment-7046859777",
+      },
+    ],
     notLabel: "Where it stops",
     notText: "No legal advice, no certificate and no promise of a result.",
     startLabel: "Start",
@@ -937,6 +954,23 @@ const TALK = {
     getText: "Een gesprek over beveiliging, de Europese Cyber Resilience Act of betalingen tussen agenten, met de broer die onze consultancy en communicatie doet.",
     checkLabel: "Zo ga je het na",
     checkText: "Vraag naar onze metingen. We laten zien hoe elke meting is gemaakt en wat ze buiten beschouwing laat.",
+    othersLabel: "Wat anderen over ons werk schreven",
+    othersIntro: "Feiten uit hun eigen pagina's, geen aanbevelingen. Elke link opent zonder inlog. We hebben alle drie gecontroleerd op 21 november 2026.",
+    othersOpen: "Open het origineel",
+    others: [
+      {
+        text: "Nirium nam onze 21 testgevallen van buitenaf op in de eigen testmap (pull request 398).",
+        href: "https://github.com/nirium-protocol/nirium/pull/398",
+      },
+      {
+        text: "De changelog van x402-decision-record bedankt ons voor een onafhankelijke verifier die alle 70 gevallen haalde.",
+        href: "https://github.com/jrosgren/x402-decision-record/blob/main/CHANGELOG.md",
+      },
+      {
+        text: "NSPG13 rekende ons known-answer-vector op x402 pull request 4215 zelfstandig na met Python. Receipt ID en salt kwamen overeen.",
+        href: "https://github.com/x402-foundation/x402/pull/4215#issuecomment-7046859777",
+      },
+    ],
     notLabel: "Waar het ophoudt",
     notText: "Geen juridisch advies, geen certificaat en geen belofte van een uitkomst.",
     startLabel: "Start",
@@ -955,6 +989,19 @@ export function ConsultancyPage() {
       </Block>
       <Block label={c.checkLabel}>
         <p>{c.checkText}</p>
+      </Block>
+      <Block label={c.othersLabel}>
+        <p>{c.othersIntro}</p>
+        <ul className="space-y-4">
+          {c.others.map((item) => (
+            <li key={item.href}>
+              <p>{item.text}</p>
+              <p className="mt-2">
+                <LinkOut href={item.href}>{c.othersOpen}</LinkOut>
+              </p>
+            </li>
+          ))}
+        </ul>
       </Block>
       <Block label={c.notLabel}>
         <p>{c.notText}</p>
