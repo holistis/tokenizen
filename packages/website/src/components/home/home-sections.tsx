@@ -108,6 +108,21 @@ function WorkWithUsTile({ locale }: { locale: Locale }) {
           </li>
         ))}
       </ul>
+      <p className="mt-6 text-sm leading-relaxed text-white/90">{c.othersLead}</p>
+      <ul className="mt-3 max-w-3xl space-y-3">
+        {c.others.map((o) => (
+          <li key={o.href} className="flex gap-3 text-sm leading-relaxed text-[color:var(--soft)]">
+            <span aria-hidden="true" className="mt-2 size-1.5 shrink-0 rotate-45 bg-[color:var(--glow)]" />
+            <span>
+              {o.text}{" "}
+              <a href={o.href} aria-label={`${c.othersOpen}: ${o.source}`} className="text-[color:var(--glow)] underline underline-offset-2 hover:no-underline">
+                {c.othersOpen}
+              </a>
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-3 max-w-3xl text-xs leading-relaxed text-[color:var(--soft)]">{c.othersNote}</p>
       <p className="mt-6 max-w-3xl text-sm leading-relaxed text-[color:var(--soft)]">{c.closing}</p>
       <div className="mt-6 flex flex-wrap items-center gap-3">
         <a href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(c.subject)}`} className="btn-glow">
