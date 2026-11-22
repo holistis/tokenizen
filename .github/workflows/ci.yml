@@ -67,6 +67,15 @@ jobs:
       - name: Test the own-dependency guard
         run: npm run check-own-deps-test
 
+      # Every hard number or fact the site states (a price, a score, a version) is in scripts/claims-register.json and is checked against the
+      # rendered page text and its source. Nothing ran this check in CI, so a change of wording on the site left it red for 19 days without
+      # anyone seeing it. It reads files only, no network. The second step plants faults in a copy and requires the checker to go red.
+      - name: Check the claims of the site against the register
+        run: npm run claims-check
+
+      - name: Test the claims checker
+        run: npm run claims-check-test
+
       # A publish workflow has to build every sibling package its package needs, in order. CI builds in the right order by itself, so only this test notices when a publish workflow does not.
       - name: Test that the publish workflows build what they need
         run: npm run publish-workflows-test
