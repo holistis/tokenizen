@@ -819,6 +819,19 @@
       "twitterDescription": "One real AI-agent payment on Base mainnet: check the tool, pay through x402, prove it from the chain. Open tools, real transactions, the commands to repeat it.",
       "alternates": []
     },
+    "/notes/confirm-check-terminal-confirmation-spoofing": {
+      "lang": "en",
+      "title": "confirm-check: a free scanner for a spoofable confirmation prompt in AI coding agents | tokenizen",
+      "description": "A free, open source scanner for confirmation prompts in AI coding agents that can be spoofed with ANSI escape codes. One of nine reports confirmed so far.",
+      "canonical": "https://tokenizen.nl/notes/confirm-check-terminal-confirmation-spoofing",
+      "ogLocale": "en_US",
+      "ogUrl": "https://tokenizen.nl/notes/confirm-check-terminal-confirmation-spoofing",
+      "ogTitle": "confirm-check: a free scanner for a spoofable confirmation prompt in AI coding agents | tokenizen",
+      "ogDescription": "A free, open source scanner for confirmation prompts in AI coding agents that can be spoofed with ANSI escape codes. One of nine reports confirmed so far.",
+      "twitterTitle": "confirm-check: a free scanner for a spoofable confirmation prompt in AI coding agents | tokenizen",
+      "twitterDescription": "A free, open source scanner for confirmation prompts in AI coding agents that can be spoofed with ANSI escape codes. One of nine reports confirmed so far.",
+      "alternates": []
+    },
     "/notes/eight-security-signals-109-repositories": {
       "lang": "en",
       "title": "Eight security signals in 109 public repositories of organisations in ten EU countries | tokenizen",

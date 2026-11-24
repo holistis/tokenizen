@@ -1692,6 +1692,58 @@ We are Tokenizen (tokenizen.nl) and we build these tools ourselves, so we are no
       },
     ],
   },
+  {
+    slug: "confirm-check-terminal-confirmation-spoofing",
+    kind: "note",
+    date: "2026-11-24",
+    title: "confirm-check: a free scanner for a spoofable confirmation prompt in AI coding agents",
+    dek: "An AI coding agent asks before it runs a command. That text can carry ANSI escape codes that hide what it is really asking. We built a free scanner for it, found it by hand eight times, and one report has been confirmed and shipped so far.",
+    description:
+      "A free, open source scanner for confirmation prompts in AI coding agents that can be spoofed with ANSI escape codes. One of nine reports confirmed so far.",
+    tags: ["Tools", "Security"],
+    readMinutes: 3,
+    blocks: [
+      {
+        type: "md",
+        text: `Most AI coding agents ask before they act: run this command, yes or no. The answer only means something if the question is honest. We kept finding agents where it was not: the text shown before that yes or no can carry raw ANSI escape codes or terminal control characters, so what the agent prints and what the human reads can differ. A command can look harmless and still run.
+
+This bug class has a name: Terminal DiLLMa, first documented by Johann Rehberger at embracethered.com. His [terminal-dillma](https://github.com/wunderwuzzi23/terminal-dillma) repository demonstrates the technique. We did not find the technique. What we built is a scanner that checks whether a given codebase's own confirmation-rendering code is internally consistent about stripping this kind of input, so a maintainer can check their own tool for it in one command.
+
+The signal is not "no sanitizing anywhere," since most code sanitizes nothing and that is usually fine. The signal is an asymmetry: one render call on untrusted text strips ANSI codes, a sibling call on similarly untrusted text does not, in a function whose name reads as a confirmation, approval or elicitation gate.
+
+By reading code by hand we found this pattern eight times across coding agents, including Aider, qwen-code and goose. One of those reports has been confirmed and shipped: [MCP Inspector #2984](https://github.com/modelcontextprotocol/inspector/pull/2984). The rest are open or in triage with their maintainers; finding the bug by hand does not mean a maintainer has agreed it is one. Today we also sent a ninth report, to the Haystack security team, after the same scanner flagged two confirmation renderers in their human-in-the-loop module. No reply yet.
+
+confirm-check is free, open source, and runs with one command: \`npx confirm-check <path-to-your-repo>\`. If you maintain a coding agent, we would rather you ran it than take our word for it.`,
+      },
+      {
+        type: "facts",
+        heading: "What you can check",
+        intro: "Each card links to the place where a stranger can look.",
+        items: [
+          { value: "1 of 9", label: "our own reports confirmed and shipped by a maintainer so far; the rest are open, in triage, or awaiting a first reply (counted 24 November 2026)", href: "https://github.com/modelcontextprotocol/inspector/pull/2984", hrefLabel: "The confirmed case" },
+          { value: "confirm-check@0.1.1", label: "the scanner, MIT licensed, zero runtime dependencies, installed with npx confirm-check", href: "https://github.com/holistis/confirm-check", hrefLabel: "The code" },
+          { value: "42 tests", label: "including fixtures built from the real pre-fix source of the confirmed and open cases, not synthetic examples only", href: "https://github.com/holistis/confirm-check", hrefLabel: "The code" },
+          { value: "2024", label: "when Johann Rehberger first documented this bug class as Terminal DiLLMa", href: "https://embracethered.com/blog/", hrefLabel: "embracethered.com" },
+        ],
+      },
+      {
+        type: "md",
+        text: `## What we do not claim
+
+This is our own reading of other people's code, not an independent audit, and a clean scan does not mean a codebase is safe: the scanner checks one specific pattern, not every way a confirmation prompt can be spoofed. It flags a code pattern, not confirmed AI-agent involvement: in our own testing it flagged a plain file-deletion confirmation with no AI agent in sight, so a human still has to read the flagged lines before acting on them. Eight hand-found cases and one confirmed fix is a small sample; we are publishing the real count rather than rounding it up.
+
+We are Tokenizen (tokenizen.nl) and we built this tool ourselves, so we are not neutral about whether it is useful.`,
+      },
+      {
+        type: "cta",
+        heading: "Run it yourself",
+        text: "One command against your own repository. Issues and pull requests are welcome.",
+        links: [
+          { label: "The code on GitHub", href: "https://github.com/holistis/confirm-check" },
+        ],
+      },
+    ],
+  },
 ];
 
 export function postPath(slug: string): string {
