@@ -99,6 +99,13 @@ export const VERIFIED_FINDS: VerifiedFinding[] = [
     facts: ["Broken UK sanctions source, issue 119", "Fixed, pull request 126", "Thanked in the v1.3.0 release notes", "693 ships now matched, up from 81"],
     href: "https://github.com/AndrewCTF/velocity/releases/tag/v1.3.0",
   },
+  {
+    id: "shell-mcp-2026-09-18",
+    tier: "silver",
+    project: "shell-mcp",
+    facts: ["find's -exec/-execdir/-ok/-okdir/-delete bypassed the default allowlist", "Fixed, pull request 1", "Merged 18 September 2026", "2 stars"],
+    href: "https://github.com/devrelopers/shell-mcp/pull/1",
+  },
 ];
 
 export const VERIFIED_FINDS_COPY: Record<
