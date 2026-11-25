@@ -582,7 +582,7 @@
 
 /* Verified Finds coin: tilts via .tilt above (shared with .tile), flips open on click to reveal the facts. Every coin shares the same front
    finish so the row reads as one equal set of confirmed findings, not a ranking; data-tier is kept on the element for the record but no
-   longer changes its look. The one finding marked data-featured gets a larger size and its own richer finish instead. */
+   longer changes its look. The one finding marked data-featured only gets a larger size and a "Most recent" label, same color as the rest. */
 .coin-tilt {
   width: 11rem;
   margin-inline: auto;
@@ -678,7 +678,8 @@
 .coin[data-featured="true"] .coin-project-name {
   font-size: 1.3rem;
 }
-/* One shared finish for every coin in the row, a brushed, cool metal in the site's own navy, so no coin reads as worth more than another. */
+/* One shared finish for every coin, featured one included: a brushed, cool metal in the site's own navy. The featured coin (data-featured,
+   sized larger via .coin-tilt above) differs only in size and its "Most recent" label, never in color — all coins are worth the same. */
 .coin .coin-face--front {
   background: radial-gradient(circle at 32% 26%, #fbfaf6, #d7d9dd 28%, #9aa1ab 56%, #5b636f 82%, #313744 100%);
   border: 2px solid rgba(255, 255, 255, 0.55);
@@ -687,18 +688,6 @@
     inset 0 -8px 16px rgba(20, 24, 30, 0.35),
     0 16px 34px rgba(43, 58, 85, 0.25);
   color: #1c1f26;
-}
-/* The one featured coin: a richer, warmer finish (the site's own glow color) and a soft halo, so it stands apart as a highlight, not a
-   higher rank; the rest of the row keeps the same equal finish above. */
-.coin[data-featured="true"] .coin-face--front {
-  background: radial-gradient(circle at 32% 26%, #fff8e8, #fbd98a 28%, #f5a524 58%, #c77d10 84%, #8a5608 100%);
-  border: 2px solid rgba(255, 232, 180, 0.9);
-  box-shadow:
-    inset 0 2px 6px rgba(255, 255, 255, 0.55),
-    inset 0 -8px 16px rgba(60, 35, 0, 0.35),
-    0 18px 40px rgba(245, 165, 36, 0.4),
-    0 0 30px rgba(245, 165, 36, 0.25);
-  color: #3a2504;
 }
 
 .btn-glow,
