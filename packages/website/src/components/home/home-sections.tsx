@@ -297,13 +297,20 @@ export function SecurityScene({ locale }: { locale: Locale }) {
 /** One coin per publicly published, credited security finding. See src/data/verified-finds.ts for how a new finding gets added. */
 export function VerifiedFindsScene({ locale }: { locale: Locale }) {
   const c = VERIFIED_FINDS_COPY[locale];
+  const featured = VERIFIED_FINDS.find((finding) => finding.featured);
+  const rest = VERIFIED_FINDS.filter((finding) => !finding.featured);
   return (
     <Scene id="bevestigd" image="kluisdeur" side="left" label={c.heading} wide>
       <p className={eyebrow}>{c.eyebrow}</p>
       <h2 className={title}>{c.heading}</h2>
       <p className="mt-4 max-w-xl text-base leading-relaxed text-[color:var(--soft)]">{c.intro}</p>
-      <div className="mt-8 flex flex-wrap gap-8">
-        {VERIFIED_FINDS.map((finding) => (
+      {featured ? (
+        <div className="mt-8 flex justify-center">
+          <FindingCoin finding={featured} linkLabel={c.linkLabel} flipHint={c.flipHint} featuredLabel={c.featuredLabel} />
+        </div>
+      ) : null}
+      <div className="mt-8 flex flex-wrap justify-center gap-8">
+        {rest.map((finding) => (
           <FindingCoin key={finding.id} finding={finding} linkLabel={c.linkLabel} flipHint={c.flipHint} />
         ))}
       </div>

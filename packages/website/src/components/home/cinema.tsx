@@ -219,7 +219,12 @@ export function Scene({
 }
 
 /** A card of glass that tilts toward the mouse and lets a light follow it. Touch and reduced motion get a flat card. */
-export function Tilt({ children, className = "", as: Tag = "div" }: { children: ReactNode; className?: string; as?: "div" | "article" }) {
+export function Tilt({
+  children,
+  className = "",
+  as: Tag = "div",
+  ...rest
+}: { children: ReactNode; className?: string; as?: "div" | "article" } & Record<string, unknown>) {
   function onMove(e: PointerEvent<HTMLElement>) {
     if (e.pointerType !== "mouse") return;
     const el = e.currentTarget;
@@ -238,7 +243,7 @@ export function Tilt({ children, className = "", as: Tag = "div" }: { children: 
   }
   const style: CSSProperties = {};
   return (
-    <Tag onPointerMove={onMove} onPointerLeave={onLeave} style={style} className={`tilt ${className}`}>
+    <Tag {...rest} onPointerMove={onMove} onPointerLeave={onLeave} style={style} className={`tilt ${className}`}>
       {children}
     </Tag>
   );

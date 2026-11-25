@@ -6,10 +6,22 @@ import type { VerifiedFinding } from "@/data/verified-finds";
 
 /**
  * One Verified Find coin: tilts toward the pointer (reuses Tilt from cinema.tsx, the same mechanic as the homepage offer tiles), and flips on
- * click or Enter/Space to show the facts on the back. The front never claims more than the project name and tier; the hard facts (CVE, GHSA
- * id, severity, date, link) only ever live on the back, next to their source.
+ * click or Enter/Space to show the facts on the back. Every coin in the row shares the same front styling, regardless of tier, so the wall
+ * reads as one equal set of confirmed findings rather than a ranking; `finding.tier` only ever shows up in the facts on the back. A coin
+ * marked `featured` renders larger with its own finish, and `featuredLabel` names why it stands apart (e.g. "Most recent") rather than
+ * implying the rest are worth less.
  */
-export function FindingCoin({ finding, linkLabel, flipHint }: { finding: VerifiedFinding; linkLabel: string; flipHint: string }) {
+export function FindingCoin({
+  finding,
+  linkLabel,
+  flipHint,
+  featuredLabel,
+}: {
+  finding: VerifiedFinding;
+  linkLabel: string;
+  flipHint: string;
+  featuredLabel?: string;
+}) {
   const [flipped, setFlipped] = useState(false);
 
   function toggle() {
@@ -23,10 +35,11 @@ export function FindingCoin({ finding, linkLabel, flipHint }: { finding: Verifie
   }
 
   return (
-    <Tilt className="coin-tilt">
+    <Tilt className="coin-tilt" data-featured={finding.featured ? "true" : undefined}>
       <div
         className="coin"
         data-tier={finding.tier}
+        data-featured={finding.featured ? "true" : undefined}
         data-flipped={flipped}
         role="button"
         tabIndex={0}
@@ -38,7 +51,7 @@ export function FindingCoin({ finding, linkLabel, flipHint }: { finding: Verifie
         <div className="coin-inner">
           <div className="coin-face coin-face--front">
             <span aria-hidden="true" className="coin-shine" />
-            <span className="coin-tier-label">{finding.tier}</span>
+            {finding.featured && featuredLabel ? <span className="coin-featured-label">{featuredLabel}</span> : null}
             <span className="coin-project-name font-display">{finding.project}</span>
           </div>
           <div className="coin-face coin-face--back">
