@@ -36,8 +36,8 @@ export const VERIFIED_FINDS: VerifiedFinding[] = [
     id: "puppeteer-2026-11-13",
     tier: "gold",
     project: "Puppeteer",
-    date: "2026-11-13",
-    facts: ["3 bugs fixed: cookies, waitForSelector, abort signal","Pull requests 15790, 15791, 15792","Merged within 14 hours","95,828 stars"],
+    date: "2026-11-25",
+    facts: ["4 bugs fixed: cookies, waitForSelector, abort signal x2","Pull requests 15790, 15791, 15792, 15804","Latest merged 25 November 2026","95,828 stars"],
     href: "https://github.com/puppeteer/puppeteer/pull/15790",
   },
   {
