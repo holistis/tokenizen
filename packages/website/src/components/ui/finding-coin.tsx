@@ -1,5 +1,5 @@
 import { useState, type KeyboardEvent } from "react";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Github } from "lucide-react";
 
 import { Tilt } from "@/components/home/cinema";
 import type { VerifiedFinding } from "@/data/verified-finds";
@@ -71,6 +71,26 @@ export function FindingCoin({
           </div>
         </div>
       </div>
+    </Tilt>
+  );
+}
+
+/**
+ * The row never grows past 10 regular coins (see VerifiedFindsScene): once there are more
+ * confirmed findings than that, the oldest ones fold into this one coin instead of a longer
+ * and longer row. Same gold material and shape as a regular coin, no flip, links straight to
+ * the full, growing list on the profile.
+ */
+export function MoreFindingsCoin({ label }: { label: string }) {
+  return (
+    <Tilt className="coin-tilt">
+      <a href="https://github.com/holistis" target="_blank" rel="noreferrer noopener" className="coin" aria-label={label}>
+        <div className="coin-face coin-face--front">
+          <span aria-hidden="true" className="coin-shine" />
+          <Github className="size-6" aria-hidden="true" />
+          <span className="coin-project-name font-display">{label}</span>
+        </div>
+      </a>
     </Tilt>
   );
 }

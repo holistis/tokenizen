@@ -3,7 +3,7 @@ import { ArrowRight, ArrowUpRight, Clock, Flag, Link2, Mail, Ruler, UserCheck } 
 
 import { CinemaHero, Scene, Tilt, useReveal } from "@/components/home/cinema";
 import { repoFromHash } from "@/components/pages/cra-check-page";
-import { FindingCoin } from "@/components/ui/finding-coin";
+import { FindingCoin, MoreFindingsCoin } from "@/components/ui/finding-coin";
 import { CINEMA, CONTACT_EMAIL, HOME, OFFERS, type Locale, type Offer, type Pillar } from "@/data/home-copy";
 import { formatMeasured, PROOF_COPY, PROOF_ROWS, proofAge, type CheckedBy } from "@/data/proof-matrix";
 import { VERIFIED_FINDS, VERIFIED_FINDS_COPY } from "@/data/verified-finds";
@@ -294,11 +294,16 @@ export function SecurityScene({ locale }: { locale: Locale }) {
   );
 }
 
+/** The row never grows past this. Past it, the oldest findings fold into one "view all on GitHub" coin instead of a longer and longer row. */
+const MAX_REGULAR_COINS = 10;
+
 /** One coin per publicly published, credited security finding. See src/data/verified-finds.ts for how a new finding gets added. */
 export function VerifiedFindsScene({ locale }: { locale: Locale }) {
   const c = VERIFIED_FINDS_COPY[locale];
   const featured = VERIFIED_FINDS.find((finding) => finding.featured);
-  const rest = VERIFIED_FINDS.filter((finding) => !finding.featured);
+  const rest = [...VERIFIED_FINDS.filter((finding) => !finding.featured)].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+  const overflow = rest.length > MAX_REGULAR_COINS;
+  const shown = overflow ? rest.slice(0, MAX_REGULAR_COINS - 1) : rest;
   return (
     <Scene id="bevestigd" image="kluisdeur" side="left" label={c.heading} wide>
       <p className={eyebrow}>{c.eyebrow}</p>
@@ -310,9 +315,10 @@ export function VerifiedFindsScene({ locale }: { locale: Locale }) {
         </div>
       ) : null}
       <div className="mt-8 flex flex-wrap justify-center gap-8">
-        {rest.map((finding) => (
+        {shown.map((finding) => (
           <FindingCoin key={finding.id} finding={finding} linkLabel={c.linkLabel} flipHint={c.flipHint} />
         ))}
+        {overflow ? <MoreFindingsCoin label={c.viewAllLabel} /> : null}
       </div>
     </Scene>
   );
