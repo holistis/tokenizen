@@ -580,6 +580,116 @@
   }
 }
 
+/* Verified Finds coin: tilts via .tilt above (shared with .tile), flips open on click to reveal the facts. Every coin shares the same front
+   finish so the row reads as one equal set of confirmed findings, not a ranking; data-tier is kept on the element for the record but no
+   longer changes its look. The one finding marked data-featured only gets a larger size and a "Most recent" label, same color as the rest. */
+.coin-tilt {
+  width: 11rem;
+  margin-inline: auto;
+  perspective: 1400px;
+}
+.coin-tilt[data-featured="true"] {
+  width: 13.5rem;
+}
+.coin {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  cursor: pointer;
+}
+.coin:focus-visible {
+  outline: 2px solid var(--glow);
+  outline-offset: 6px;
+}
+.coin-inner {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  transform-style: preserve-3d;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .coin-inner {
+    transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+}
+.coin[data-flipped="true"] .coin-inner {
+  transform: rotateY(180deg);
+}
+.coin-face {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 1.1rem;
+  text-align: center;
+  overflow: hidden;
+}
+.coin-face--back {
+  transform: rotateY(180deg);
+  background: #11181c;
+  color: #e8ecef;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  line-height: 1.5;
+}
+.coin-face--back a {
+  color: var(--glow);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.coin-shine {
+  position: absolute;
+  inset: -40%;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.5) 48%, transparent 60%);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .coin-shine {
+    animation: coin-shine 5s ease-in-out infinite;
+  }
+}
+@keyframes coin-shine {
+  0%,
+  20% {
+    transform: translateX(-60%);
+  }
+  50%,
+  100% {
+    transform: translateX(60%);
+  }
+}
+.coin-featured-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  opacity: 0.75;
+}
+.coin-project-name {
+  font-size: 1.1rem;
+  line-height: 1.15;
+}
+.coin[data-featured="true"] .coin-project-name {
+  font-size: 1.3rem;
+}
+/* One shared finish for every coin, featured one included: a brushed, cool metal in the site's own navy. The featured coin (data-featured,
+   sized larger via .coin-tilt above) differs only in size and its "Most recent" label, never in color — all coins are worth the same. */
+.coin .coin-face--front {
+  background: radial-gradient(circle at 32% 26%, #fbfaf6, #d7d9dd 28%, #9aa1ab 56%, #5b636f 82%, #313744 100%);
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    inset 0 2px 6px rgba(255, 255, 255, 0.5),
+    inset 0 -8px 16px rgba(20, 24, 30, 0.35),
+    0 16px 34px rgba(43, 58, 85, 0.25);
+  color: #1c1f26;
+}
+
 .btn-glow,
 .btn-ghost {
   display: inline-flex;
