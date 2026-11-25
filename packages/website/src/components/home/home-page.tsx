@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { CheckScene, Hero, MissionScene, OfferTiles, PillarScene, ProofMatrix, SecurityScene, TalkScene, Unknowns } from "@/components/home/home-sections";
+import { CheckScene, Hero, MissionScene, OfferTiles, PillarScene, ProofMatrix, SecurityScene, TalkScene, Unknowns, VerifiedFindsScene } from "@/components/home/home-sections";
 import { CINEMA } from "@/data/home-copy";
 import { useLocale } from "@/i18n/context";
 import { localePath } from "@/lib/locale-paths";
@@ -37,6 +37,7 @@ export function HomePage() {
         <PillarScene key={pillar.id} pillar={pillar} image={PILLAR_STAGE[i].image} side={PILLAR_STAGE[i].side} />
       ))}
       <SecurityScene locale={loc} />
+      <VerifiedFindsScene locale={loc} />
       <MissionScene locale={loc} />
       <CheckScene locale={loc} />
       <Unknowns locale={loc} />

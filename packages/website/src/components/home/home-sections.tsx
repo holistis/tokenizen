@@ -3,8 +3,10 @@ import { ArrowRight, ArrowUpRight, Clock, Flag, Link2, Mail, Ruler, UserCheck } 
 
 import { CinemaHero, Scene, Tilt, useReveal } from "@/components/home/cinema";
 import { repoFromHash } from "@/components/pages/cra-check-page";
+import { FindingCoin } from "@/components/ui/finding-coin";
 import { CINEMA, CONTACT_EMAIL, HOME, OFFERS, type Locale, type Offer, type Pillar } from "@/data/home-copy";
 import { formatMeasured, PROOF_COPY, PROOF_ROWS, proofAge, type CheckedBy } from "@/data/proof-matrix";
+import { VERIFIED_FINDS, VERIFIED_FINDS_COPY } from "@/data/verified-finds";
 import { localePath } from "@/lib/locale-paths";
 
 // The sections of the homepage, from the first screen down. Each of them says one thing and has its own photograph.
@@ -288,6 +290,23 @@ export function SecurityScene({ locale }: { locale: Locale }) {
           <ArrowUpRight className="size-3.5" aria-hidden="true" />
         </a>
       </p>
+    </Scene>
+  );
+}
+
+/** One coin per publicly published, credited security finding. See src/data/verified-finds.ts for how a new finding gets added. */
+export function VerifiedFindsScene({ locale }: { locale: Locale }) {
+  const c = VERIFIED_FINDS_COPY[locale];
+  return (
+    <Scene id="bevestigd" image="kluisdeur" side="left" label={c.heading} wide>
+      <p className={eyebrow}>{c.eyebrow}</p>
+      <h2 className={title}>{c.heading}</h2>
+      <p className="mt-4 max-w-xl text-base leading-relaxed text-[color:var(--soft)]">{c.intro}</p>
+      <div className="mt-8 flex flex-wrap gap-8">
+        {VERIFIED_FINDS.map((finding) => (
+          <FindingCoin key={finding.id} finding={finding} linkLabel={c.linkLabel} flipHint={c.flipHint} />
+        ))}
+      </div>
     </Scene>
   );
 }
