@@ -7,7 +7,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
 
 const require = createRequire(import.meta.url);
-const loader = require.resolve("tsx");
+const loader = pathToFileURL(require.resolve("tsx")).href;
 const entry = realpathSync(fileURLToPath(new URL("./fiscal-check-bin.ts", import.meta.url)));
 let directory: string;
 let linkedEntry: string;
