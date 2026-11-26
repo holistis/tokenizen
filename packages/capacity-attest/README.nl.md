@@ -17,6 +17,7 @@ Alles hieronder is aanklikbaar. Deel één is gecontroleerd door mensen buiten d
 | Een derde partij haalde onze twee testattestaties van Base mainnet en las ze terug; de draad corrigeerde ook wie het gas betaalde en wie de koper is. | [x402-foundation/x402#3379](https://github.com/x402-foundation/x402/issues/3379) | Publiek, doorlopend |
 | Voorgesteld als koperszijde-aanvulling op een andermans agent-spec | [omworldprotocol/om-world#18](https://github.com/omworldprotocol/om-world/pull/18) | In review, nog niet gemerged |
 | Een van de grond af herbouwde Python-verifier van een externe ontwikkelaar (alleen standaardbibliotheek, eigen code voor secp256k1, EIP-191 en canonieke JSON): 7 van 7 vectoren komen overeen, inclusief beide negatieve controles (vervalste handtekening, geknoeide claim). Hij zit in hun gepubliceerde pakket (`pip install tamga-protocol`), en een regressietest tegen onze vectoren draait in hun repository. | [x402-foundation/x402#2887 (comment)](https://github.com/x402-foundation/x402/issues/2887#issuecomment-5687398497), auteur goun7 | Meegeleverd in hun gepubliceerde pakket |
+| Ontdekte, door het echte gepubliceerde pakket daadwerkelijk te draaien in plaats van er alleen over te lezen, dat npm nog een oudere versie had dan `main` en dat een gedocumenteerd commando (`npx capacity-attest-fiscal-check`) 404'de tegen het echte register | [YE-YI7, registry#1300](https://github.com/modelcontextprotocol/registry/discussions/1300#discussioncomment-19603893) | Dezelfde dag gefixt: `capacity-attest@0.14.0` gepubliceerd, commando gecorrigeerd naar de versie-vastgepinde vorm, opnieuw geverifieerd in een schone installatie zonder workspace-links |
 
 ### Deel twee: on-chain feiten die we zelf publiceerden
 
@@ -28,7 +29,7 @@ Alles hieronder is aanklikbaar. Deel één is gecontroleerd door mensen buiten d
 
 **Eerlijk apart gehouden van bovenstaande tabellen, want dit is geen derde-partij-controle:** voor 0.6.0 (de eerste keer dat dit pakket echt naar de blockchain schrijft) hebben we zelf een adversariële security review uitgevoerd. Negen bevindingen, allemaal gefixt: zeven met een eigen regressietest, een gecontroleerd via een packaging-check (`npm pack --dry-run`, geen unit test), en een pure documentatiefix. Geen onafhankelijke audit door een externe partij. Volledig, controleerbaar verslag: [docs/SECURITY-REVIEW-2026-09-11.md](https://github.com/holistis/tokenizen/blob/main/packages/capacity-attest/docs/SECURITY-REVIEW-2026-09-11.md).
 
-Een tweede, zelfde soort review, zelfde regel (eigen werk, nooit "onafhankelijk"): de fiscal-controls-v2-herziening en de drie stukken daarna gebouwd in 0.13.0/0.14.0 (durable spend-cap-opslag, afschrijvings-corroboratie, de `fiscal-check`-CLI). 30 bevindingen over de hele ronde, de meeste gerepareerd met een genoemde regressietest, enkele bewust open gelaten met de reden erbij — inclusief een echte, met naam genoemde buitenstaander (YE-YI7) die zelf twee vragen stelde, apart aangehaald en nooit meegeteld als "onafhankelijk bevestigd". Volledig, controleerbaar verslag (Engels): [docs/SECURITY-REVIEW-2026-11-13.md](https://github.com/holistis/tokenizen/blob/main/packages/capacity-attest/docs/SECURITY-REVIEW-2026-11-13.md).
+Een tweede, zelfde soort review, zelfde regel (eigen werk, nooit "onafhankelijk"): de fiscal-controls-v2-herziening en de drie stukken daarna gebouwd in 0.13.0/0.14.0 (durable spend-cap-opslag, afschrijvings-corroboratie, de `fiscal-check`-CLI). 30 bevindingen over de hele ronde, de meeste gerepareerd met een genoemde regressietest, enkele bewust open gelaten met de reden erbij, inclusief een echte, met naam genoemde buitenstaander (YE-YI7) die zelf twee vragen stelde, apart aangehaald en nooit meegeteld als "onafhankelijk bevestigd". Volledig, controleerbaar verslag (Engels): [docs/SECURITY-REVIEW-2026-11-13.md](https://github.com/holistis/tokenizen/blob/main/packages/capacity-attest/docs/SECURITY-REVIEW-2026-11-13.md).
 
 ## Waarom dit bestaat
 
@@ -156,6 +157,23 @@ Let op: importeer `capacity-attest/dist/signing.js` rechtstreeks, niet het packa
 
 Een werkend, extern gereproduceerd voorbeeld van deze exacte stappen staat in [github.com/YE-YI7/asm-spec, PR #18](https://github.com/YE-YI7/asm-spec/pull/18): een onafhankelijk project dat dit tegen een echte, live geregistreerde claim heeft gedraaid.
 
+## Wat veilig is om op te bouwen
+
+Als je je eigen verifier schrijft, of deze repo vastpint in een specificatie, is dit het stuk dat je nodig hebt: wat niet onder je verandert.
+
+Vier dingen liggen vast, en een claim die vandaag wordt ondertekend moet over jaren nog steeds kloppen:
+
+- De canonieke vorm waarover een claim gehasht wordt, byte voor byte, zoals gespecificeerd in [`docs/metered-delivery-spec.md`](docs/metered-delivery-spec.md).
+- Hoe `claimId` uit die canonieke vorm wordt afgeleid.
+- Het EIP-191-bericht dat ondertekend wordt, en dat de handtekening terugrekent naar `buyerAddress`.
+- De strikte `issuedAt`-vorm, `YYYY-MM-DDTHH:MM:SS.sssZ` met precies drie decimalen.
+
+Een nieuw optioneel veld toevoegen is geen breuk en kan in een minor-versie, want een oude verifier die een nieuwe claim leest, krijgt nog steeds dezelfde `claimId` voor de velden die hij kent. Een veld weghalen, hernoemen, de canonieke vorm herordenen, of de hash-berekening veranderen zou elke ooit ondertekende claim ongeldig maken, dus dat behandelen we als iets wat we niet doen, niet als iets wat we versioneren.
+
+Die belofte wordt gecontroleerd, niet alleen beweerd. De gepubliceerde testvectoren in [`examples/`](examples) dragen elke tussenstap apart: de canonieke preimage, zijn bytelengte, de `claimId`, de EIP-191-digest, de handtekening en het verwachte teruggerekende adres. Twee losstaande scripts verifiëren ze bij elke CI-run, en beide zijn bewuste herimplementaties die één JSON-bestand lezen en nooit de eigen broncode van dit package importeren, dus ze kunnen niet slagen door het gewoon eens te zijn met de code die ze zouden moeten controleren. Breek het formaat en CI gaat rood voor er iets gepubliceerd kan worden.
+
+Als een breuk ooit echt onvermijdelijk wordt, verschijnt die als een nieuwe major-versie onder een andere package-naam, de oude blijft werken en gepubliceerd, en de reden gaat in [DECISIONS.md](DECISIONS.md) voordat de code verandert. Partijen die een commit hebben vastgepind, worden door ons niet verplaatst.
+
 ## Je eigen ingediende claims delen, los van een host (D-006)
 
 `get_delivery_history` vertrouwt op de eerlijkheid van wie de MCP-server bedient: zie de `note` in dat tool-antwoord en [DECISIONS.md](https://github.com/holistis/tokenizen/blob/main/packages/capacity-attest/DECISIONS.md) (D-006). Elke getoonde claim is wel degelijk echt (ondertekening wordt sinds 2026-09-06 ook bij het lezen opnieuw gecontroleerd, niet alleen bij het schrijven), maar niets bewijst dat de host de VOLLEDIGE set laat zien die hij daadwerkelijk heeft.
@@ -189,6 +207,54 @@ npm start           # start de MCP-server over stdio (bijv. voor Claude Desktop/
 ```
 
 De ledger-locatie is instelbaar via `CAPACITY_ATTEST_DATA_DIR` (default: `./data` in dit package). Tests en de demo gebruiken altijd een eigen, wegwerpbare tijdelijke map, nooit de echte `data/` map.
+
+## HTTP-bereikbare variant, voor deployments die een netwerk-eindpunt nodig hebben
+
+Sommige MCP-registers en -gidsen vereisen een bereikbaar HTTPS-eindpunt voordat ze een server vermelden. `capacity-attest-http` (`src/http-server.ts`) is die variant: een gewone Node-HTTP-server die het MCP Streamable HTTP-transport spreekt op `POST /mcp`.
+
+Hij is bewust smaller dan de stdio-server hierboven: alleen de twee read-only, zonder-bijeffect-tools worden blootgesteld (`get_delivery_history`, `resolve_agent_identity`). `record_delivery` bewust niet. De ledger van de stdio-server is een lokaal, één-installatie-ontwerp; schrijfacties achter een publiek, ongeauthenticeerd HTTP-eindpunt zetten roept een echte vraag op (in wiens ledger schrijft een anonieme aanroeper) die dit bestand niet voor je beantwoordt. Zie de opmerking bovenaan `http-server.ts` voor de volledige redenering, en voor hoe de 4 verplichte checks (auth, data-validatie, blootstelling, rate-limiting) worden toegepast.
+
+```bash
+npm run start:http     # luistert standaard op :8402, override met PORT=
+```
+
+```bash
+curl -X POST http://localhost:8402/mcp \
+  -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}'
+```
+
+### Fiscal controls, voor je ooit betaalt
+
+`GET /.well-known/fiscal-controls.json` antwoordt, statisch en zonder betaling of auth, welke van de betaalde tools van deze server een server-side signing key vasthoudt, of er een spend cap is en wat die precies telt, en wat het intrekkingspad is als de key ooit gecompromitteerd wordt. Dit controleert wat de server *beweert*, niet of het waar is; echtheid rust op de eigen TLS van de verbinding, het document zelf is niet apart ondertekend. Dit is een andere laag dan x402 se eigen per-call-prijs (`accepts[]`, pas zichtbaar na een eerste poging) en dan de bazaar-discovery-extensie hieronder (wat een tool doet, niet wat hij riskeert); zie de koptekst van `src/fiscal-controls.ts` voor de volledige redenering. `validateFiscalControls()` uit datzelfde bestand laat iedereen de vorm van dit document controleren, ook dat van een derde partij.
+
+De veldnamen komen 1:1 overeen met de 7 voorgestelde velden in [modelcontextprotocol/registry#1300](https://github.com/modelcontextprotocol/registry/discussions/1300), dus dekking tegen dat exacte voorstel is controleerbaar, niet alleen tegen onze eigen parafrase ervan, maar dekking van de zeven *onderwerpen*, elk met expliciete grenzen, geen semantische gelijkwaardigheid aan de originele categorieën (YE-YI7 se eigen formulering, 13 nov 2026): `paid_action_surface` (welke actie kosten kan veroorzaken), `approval_source` (`human_approval_threshold` hier, `null` betekent niets geconfigureerd, dat vouwt de vijf goedkeuringsbron-categorieën van de post samen tot twee), `spend_cap` (een gestructureerd object, zie hieronder, nooit een kaal getal), `charge_evidence` en `audit_trail` (welk niet-geheim bonnetje een kosten bewijst, en waar het zelfstandig te controleren is; de instromende betalingsreferentie en het bewijs van de resulterende actie worden als twee aparte feiten vermeld, allebei wijzend naar tools die dit package al meeleverde: `get_delivery_history`/`discover_delivery_history`, of het on-chain ERC-8004 Reputation Registry zelf, nooit nieuwe infrastructuur), `revocation_path`, en `next_safe_threshold` (eerlijk `null` voor beide tools vandaag, er is hier geen mechanisme dat een cap automatisch verhoogt). Zie `DECISIONS.md` D-021/D-022 voor de volledige tabel per tool.
+
+`spend_cap`, als die niet `null` is, vermeldt zijn `unit` (`"paid-attempts"`, een telling van betaalde aanroepen, GEEN valuta-plafond op wat een aanroeper uitgeeft; de tools van vandaag gebruiken nooit `"currency"`), `scope`, `persistence`, en `reservation_before_settlement`. Standaard is `scope` `"server-instance"` en `persistence` `"in-memory"` (`reset_on_restart: true`), de eigen telling van dit ene proces, niet gedeeld over hoeveel instanties er ook achter een load balancer draaien. `CAPACITY_ATTEST_SPEND_CAP_DURABLE=1` instellen (zie hieronder) schakelt de *echte* cap om naar een cross-process, op schijf opgeslagen, lock-beschermde store, en dit document meldt dat ook eerlijk: `scope: "all-instances"`, `persistence: "durable"`, `reset_on_restart: false`, live afgelezen van welke store er daadwerkelijk draait, nooit een tweede, met de hand overgetypte kopie ervan. Als `signer_isolation` niet `null` is, vermeldt `signer_custody` waar de claim daadwerkelijk op rust (vandaag: een private key in een in-process wallet, geïsoleerd van de fondsen en invloed van de aanroeper, NIET hardware/TEE-geïsoleerd van het eigen geheugen van dit proces), schema-afgedwongen, niet alleen gedocumenteerd, zodat geen van beide velden een sterkere garantie kan beschrijven dan de code werkelijk geeft.
+
+```bash
+curl http://localhost:8402/.well-known/fiscal-controls.json
+```
+
+Een vreemde die de claim van een willekeurige server controleert, van ons of van een derde partij, hoeft daarvoor geen code tegen dit package te schrijven. `capacity-attest-fiscal-check` is een van drie command-line-tools die dit package publiceert (zie het `bin`-veld van `package.json`), geen apart npm-package op zich, dus `npx` heeft de echte packagenaam en een echt gepubliceerde versie nodig om het te vinden:
+
+```bash
+npx --package=capacity-attest@0.14.0 capacity-attest-fiscal-check https://example.com/.well-known/fiscal-controls.json
+```
+
+Check `npm view capacity-attest version` voor de werkelijk nu gepubliceerde versie voor je een hier genoemd versienummer vertrouwt, dezelfde voorzichtigheid als de noot verderop in dit document, en zelfs als dat commando de nieuwe versie toont, kan npm se eigen CDN na een verse publicatie nog een paar minuten nodig hebben om zichzelf bij te werken met het echte bestand.
+
+Het haalt het document op (of leest het, bij een lokaal pad), valideert het tegen hetzelfde schema hierboven, en print een rapport in gewone taal, geen capacity-attest-specifieke kennis nodig buiten de URL of het bestandspad zelf. Zie de koptekst van `src/fiscal-check-bin.ts` voor de redenering achter de uitgaande-verkeer-bescherming van de URL-tak.
+
+Die bescherming behandelt je eigen machine net zo wantrouwend als een vijandig doelwit: `http://localhost`, loopback en elk privé-netwerkadres worden bewust geweigerd, net als een cloud-metadata-adres. Deze CLI kan dus geen `capacity-attest-http`-instantie op je eigen machine of LAN controleren, gebruik daarvoor rechtstreeks `curl` tegen het eindpunt (zie hierboven).
+
+### Spend-cap-duurzaamheid, over proces-herstarts en replica's heen
+
+`CAPACITY_ATTEST_SPEND_CAP_DURABLE=1` verwisselt de hourly cap van `publish_reputation_feedback` van de zero-config, single-process `InMemorySpendCapStore` naar `DurableSpendCapStore`, hetzelfde append-only-JSONL-plus-lockfile-patroon dat `ledger.ts` al gebruikt voor delivery-claims, toegepast op een per-sleutel spend-cap-gebeurtenislog onder `CAPACITY_ATTEST_DATA_DIR`. Gebruik dit wanneer meer dan één instantie van deze server één `CAPACITY_ATTEST_DATA_DIR` deelt (zodat de hourly cap echt gedeeld wordt, niet één aparte telling per instantie) of wanneer de cap een herstart moet overleven. Blijft het ongezet, dan verandert er niets aan het standaard, single-instance-gedrag van deze server. Zie de koptekst van `src/spend-cap-store.ts` voor de volledige ontwerpredenering en `bench/spend-cap-store-concurrency.mjs` voor het gemeten multi-process-resultaat.
+
+### Afwikkelingscorroboratie, een onafhankelijke tegencontrole bovenop het eigen zeggen van de facilitator
+
+Zet `CAPACITY_ATTEST_RPC_URL` (en optioneel `CAPACITY_ATTEST_SETTLEMENT_ASSET`) om beide betaalde tools se `onAfterSettlement`-hooks een ZACHTE, niet-blokkerende on-chain-controle te laten afvuren, via `eip3009-authorizer-from-tx.ts`, of de afwikkeling die de facilitator meldde ook echt op-chain klopt. Dit blokkeert, vertraagt of laat nooit de echte actie falen waar het naast draait: allebei ongezet (de standaard) maakt dat elke aanroep onmiddellijk `'skipped'` teruggeeft, voor elke netwerkpoging, en een trage of falende RPC blokkeert nooit de schrijf-/chain-aanroep waar het bij hoort, alleen gelogde uitkomsten (`settlement_corroboration_result` / `settlement_corroboration_mismatch`), server-side. Zie de koptekst van `src/settlement-corroboration.ts` voor de volledige ontwerpredenering en niet-doelen, en `src/settlement-corroboration.bench.ts` voor het gemeten "voegt geen latency toe"-bewijs.
 
 ## Architectuur
 
